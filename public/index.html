@@ -6,6 +6,7 @@
 <title>學中文 · Học Tiếng Trung</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--ink:#1a1208;--paper:#faf7f2;--paper2:#f3ede3;--red:#c0392b;--red-light:#fde8e6;--gold:#b8860b;--gold-light:#fdf6e3;--teal:#1a6b5a;--teal-light:#e6f4f0;--muted:#7a6e60;--border:#e0d8cc;--shadow:0 2px 16px rgba(26,18,8,.09)}
 *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
@@ -236,6 +237,9 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
 // ── PROXY API — FIX CORS ──────────────────────────
 // When deployed to Vercel: calls /api/proxy
 // When local file: falls back to direct call (may fail due to CORS)
+const SUPABASE_URL = 'https://prctmferugkxabyizslx.supabase.co';  // ← dán URL của bạn
+const SUPABASE_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';  // ← dán anon key của bạn
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const PROXY_URL = (location.protocol === 'file:')
   ? null
   : (location.origin + '/api/proxy');
@@ -303,7 +307,24 @@ let selStart=-1,selEnd=-1,selTarget='';
 let hwW=null,hwM='a',hwCs=[],hwI=0,hwDone=[];
 let chatHistory=[];
 
-function init(){lessons=[...B,...JSON.parse(localStorage.getItem('user_lessons')||'[]')];renderGrid();renderFC();updKeyUI()}
+async function init() {
+  // Load lessons từ Supabase
+  const { data } = await sb.from('lessons').select('*').order('id');
+  if (data && data.length) {
+    lessons = data.map(l => ({
+      id: l.id, title: l.title, desc: l.description,
+      zh: l.chinese, py: l.pinyin, vi: l.vietnamese
+    }));
+  } else {
+    lessons = [...B]; // fallback nếu Supabase trống
+  }
+
+  // Load flashcards từ Supabase
+  const { data: fcData } = await sb.from('flashcards').select('*').order('id');
+  if (fcData) FC = fcData.map(f => ({ char: f.char, pinyin: f.pinyin, meaning: f.meaning }));
+
+  renderGrid(); renderFC(); updKeyUI();
+}
 function showView(n){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('view-'+n).classList.add('active');document.querySelectorAll('.nav-tab')[{lessons:0,flashcards:1,upload:2}[n]].classList.add('active');if(n==='flashcards')renderFC();clearSel()}
 function renderGrid(){document.getElementById('lesson-grid').innerHTML=lessons.map((l,i)=>`<div class="lesson-card" onclick="openL(${i})"><div class="lesson-num">${i+1}</div><div class="lesson-info"><h3>${l.title}</h3><p>${l.desc||''}</p></div><div class="lesson-arrow">›</div></div>`).join('')}
 
@@ -338,10 +359,25 @@ function exportCSV(){if(!CV.length)return;const h='Từ vựng,Pinyin,Nghĩa,Ví
 const DM={1:[{char:'生活習慣',pinyin:'shēnghuó xíguàn',meaning:'thói quen sinh hoạt',example:'大學生的生活習慣普通不是很好',exPinyin:'dàxuéshēng de shēnghuó xíguàn pǔtōng bù shì hěn hǎo',exMeaning:'Thói quen SH của SV thường không tốt',level:'trung cấp'},{char:'上網',pinyin:'shàngwǎng',meaning:'lên mạng',example:'尤其是上網',exPinyin:'yóuqí shì shàngwǎng',exMeaning:'đặc biệt là lên mạng',level:'cơ bản'},{char:'深夜',pinyin:'shēnyè',meaning:'đêm khuya',example:'不知不覺就已經深夜了',exPinyin:'bùzhī bùjué jiù yǐjīng shēnyè le',exMeaning:'không hay biết đã khuya',level:'cơ bản'},{char:'期末考',pinyin:'qīmò kǎo',meaning:'thi cuối kỳ',example:'就又得準備期末考',exPinyin:'jiù yòu děi zhǔnbèi qīmò kǎo',exMeaning:'lại phải chuẩn bị thi cuối kỳ',level:'trung cấp'},{char:'健康',pinyin:'jiànkāng',meaning:'sức khỏe',example:'健康亮起了紅燈',exPinyin:'jiànkāng liàngqǐ le hóngdēng',exMeaning:'sức khỏe bật đèn đỏ',level:'cơ bản'},{char:'開夜車',pinyin:'kāi yèchē',meaning:'thức đêm',example:'不少大學生開夜車趕報告',exPinyin:'bùshǎo dàxuéshēng kāi yèchē gǎn bàogào',exMeaning:'nhiều SV thức đêm chạy báo cáo',level:'trung cấp'}],2:[{char:'獎學金',pinyin:'jiǎngxuéjīn',meaning:'học bổng',example:'申請獎學金來付學費',exPinyin:'shēnqǐng jiǎngxuéjīn lái fù xuéfèi',exMeaning:'xin học bổng trả học phí',level:'trung cấp'},{char:'申請',pinyin:'shēnqǐng',meaning:'nộp đơn',example:'申請獎學金',exPinyin:'shēnqǐng jiǎngxuéjīn',exMeaning:'xin học bổng',level:'cơ bản'},{char:'成績單',pinyin:'chéngjìdān',meaning:'bảng điểm',example:'準備一份成績單',exPinyin:'zhǔnbèi yī fèn chéngjìdān',exMeaning:'chuẩn bị bảng điểm',level:'trung cấp'},{char:'填寫',pinyin:'tiánxiě',meaning:'điền vào',example:'填寫一張申請表',exPinyin:'tiánxiě yī zhāng shēnqǐng biǎo',exMeaning:'điền đơn',level:'cơ bản'}],3:[{char:'吉他',pinyin:'jítā',meaning:'guitar',example:'學彈吉他',exPinyin:'xué tán jítā',exMeaning:'học đánh guitar',level:'cơ bản'},{char:'免費',pinyin:'miǎnfèi',meaning:'miễn phí',example:'免費借用',exPinyin:'miǎnfèi jièyòng',exMeaning:'mượn miễn phí',level:'cơ bản'},{char:'打折',pinyin:'dǎzhé',meaning:'giảm giá',example:'買吉他打折',exPinyin:'mǎi jítā dǎzhé',exMeaning:'mua guitar giảm giá',level:'trung cấp'}],4:[{char:'打工',pinyin:'dǎgōng',meaning:'làm thêm',example:'一心只想著打工賺錢',exPinyin:'yīxīn zhǐ xiǎngzhe dǎgōng zhuànqián',exMeaning:'chỉ nghĩ đi làm kiếm tiền',level:'cơ bản'},{char:'成就感',pinyin:'chéngjiùgǎn',meaning:'thành tựu',example:'覺得打工很有成就感',exPinyin:'juédé dǎgōng hěn yǒu chéngjiùgǎn',exMeaning:'thấy làm thêm có thành tựu',level:'trung cấp'},{char:'成熟',pinyin:'chéngshú',meaning:'chín chắn',example:'等更成熟了',exPinyin:'děng gèng chéngshú le',exMeaning:'khi chín chắn hơn',level:'trung cấp'},{char:'動力',pinyin:'dònglì',meaning:'động lực',example:'不同的學習動力',exPinyin:'bùtóng de xuéxí dònglì',exMeaning:'động lực học tập khác',level:'cơ bản'}]};
 
 // ── FLASHCARDS ─────────────────────────────────────
-function addF(i){const v=CV[i];if(!v||FC.some(f=>f.char===v.char))return;FC.push({char:v.char,pinyin:v.pinyin||'',meaning:v.meaning||''});localStorage.setItem('flashcards',JSON.stringify(FC));const b=document.getElementById('fb'+i);if(b){b.textContent='✓';b.classList.add('added')}}
-function renderFC(){const a=document.getElementById('fc-area');document.getElementById('fc-count').textContent=FC.length+' thẻ';if(!FC.length){a.innerHTML=`<div class="empty-state"><div class="big">學</div><p>Chưa có flashcard.</p></div>`;return}if(CI>=FC.length)CI=0;const c=FC[CI];a.innerHTML=`<div class="flashcard-wrap"><div class="flashcard" id="fc" onclick="document.getElementById('fc').classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><div class="fc-char">${c.char}</div><div class="fc-hint">Nhấn để xem</div></div><div class="flashcard-back"><div class="fc-pinyin-back">${c.pinyin}</div><div class="fc-meaning-back">${c.meaning}</div><div class="fc-char-back">${c.char}</div></div></div></div><button class="vocab-btn write-btn" style="font-size:11px;padding:5px 14px" onclick="openHw('${esc(c.char)}','${esc(c.pinyin)}','${esc(c.meaning)}')">✏️ Viết</button><div class="fc-nav"><button class="fc-nav-btn" onclick="CI=(CI-1+FC.length)%FC.length;renderFC()">‹</button><span class="fc-progress">${CI+1}/${FC.length}</span><button class="fc-nav-btn" onclick="CI=(CI+1)%FC.length;renderFC()">›</button></div></div>`}
-function clearFlash(){if(!confirm('Xóa?'))return;FC=[];CI=0;localStorage.removeItem('flashcards');renderFC()}
+async function addF(i) {
+  const v = CV[i];
+  if (!v || FC.some(f => f.char === v.char)) return;
 
+  // Lưu vào Supabase
+  await sb.from('flashcards').insert([{
+    char: v.char, pinyin: v.pinyin || '', meaning: v.meaning || ''
+  }]);
+
+  FC.push({ char: v.char, pinyin: v.pinyin||'', meaning: v.meaning||'' });
+  const b = document.getElementById('fb'+i);
+  if (b) { b.textContent = '✓'; b.classList.add('added'); }
+}
+function renderFC(){const a=document.getElementById('fc-area');document.getElementById('fc-count').textContent=FC.length+' thẻ';if(!FC.length){a.innerHTML=`<div class="empty-state"><div class="big">學</div><p>Chưa có flashcard.</p></div>`;return}if(CI>=FC.length)CI=0;const c=FC[CI];a.innerHTML=`<div class="flashcard-wrap"><div class="flashcard" id="fc" onclick="document.getElementById('fc').classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><div class="fc-char">${c.char}</div><div class="fc-hint">Nhấn để xem</div></div><div class="flashcard-back"><div class="fc-pinyin-back">${c.pinyin}</div><div class="fc-meaning-back">${c.meaning}</div><div class="fc-char-back">${c.char}</div></div></div></div><button class="vocab-btn write-btn" style="font-size:11px;padding:5px 14px" onclick="openHw('${esc(c.char)}','${esc(c.pinyin)}','${esc(c.meaning)}')">✏️ Viết</button><div class="fc-nav"><button class="fc-nav-btn" onclick="CI=(CI-1+FC.length)%FC.length;renderFC()">‹</button><span class="fc-progress">${CI+1}/${FC.length}</span><button class="fc-nav-btn" onclick="CI=(CI+1)%FC.length;renderFC()">›</button></div></div>`}
+async function clearFlash() {
+  if (!confirm('Xóa tất cả flashcard?')) return;
+  await sb.from('flashcards').delete().neq('id', 0); // xóa tất cả
+  FC = []; CI = 0; renderFC();
+}
 // ── CHATBOT ────────────────────────────────────────
 async function sendChat(){const inp=document.getElementById('chat-input'),msg=inp.value.trim();if(!msg)return;inp.value='';const ms=document.getElementById('chat-msgs');ms.innerHTML+=`<div class="chat-msg user">${msg}</div>`;ms.scrollTop=ms.scrollHeight;chatHistory.push({role:'user',content:msg});const k=getKey();if(!k){ms.innerHTML+=`<div class="chat-msg system">⚠ Chưa có API key.</div>`;ms.scrollTop=ms.scrollHeight;return}ms.innerHTML+=`<div class="chat-msg bot" id="cl">⏳ ...</div>`;ms.scrollTop=ms.scrollHeight;
 const sys=`Bạn là trợ lý dạy tiếng Trung cho người Việt. Trả lời dựa trên bài đọc. Ngắn gọn.\n\nBÀI ĐỌC:\n${CL.zh}\n\nPINYIN:\n${CL.py}\n\nTIẾNG VIỆT:\n${CL.vi}`;
@@ -358,8 +394,27 @@ function hwQuiz(){if(!hwW)return;hwW.hideCharacter({duration:0});hwW.showOutline
 function hwReset(){hwDone=hwCs.map(()=>false);hwI=0;renderHN();loadHC(0);document.getElementById('hw-sc').textContent=''}
 function closeHw(){if(hwW){try{hwW.cancelQuiz()}catch(e){}}document.getElementById('hw-overlay').classList.remove('open');document.body.style.overflow=''}
 
-function addLesson(){const t=document.getElementById('up-title').value.trim(),z=document.getElementById('up-zh').value.trim(),p=document.getElementById('up-py').value.trim(),v=document.getElementById('up-vi').value.trim();if(!t||!z){alert('Nhập tiêu đề và tiếng Trung.');return}const nl={id:Date.now(),title:t,desc:z.slice(0,40)+'...',zh:z,py:p,vi:v};const ul=JSON.parse(localStorage.getItem('user_lessons')||'[]');ul.push(nl);localStorage.setItem('user_lessons',JSON.stringify(ul));lessons.push(nl);renderGrid();['up-title','up-zh','up-py','up-vi'].forEach(id=>document.getElementById(id).value='');alert('✓ '+t);showView('lessons')}
+async function addLesson() {
+  const t = document.getElementById('up-title').value.trim();
+  const z = document.getElementById('up-zh').value.trim();
+  const p = document.getElementById('up-py').value.trim();
+  const v = document.getElementById('up-vi').value.trim();
+  if (!t || !z) { alert('Nhập tiêu đề và tiếng Trung.'); return; }
 
+  // Lưu vào Supabase
+  const { error } = await sb.from('lessons').insert([{
+    title: t, description: z.slice(0,40)+'...',
+    chinese: z, pinyin: p, vietnamese: v
+  }]);
+
+  if (error) { alert('Lỗi: ' + error.message); return; }
+
+  ['up-title','up-zh','up-py','up-vi'].forEach(id =>
+    document.getElementById(id).value = '');
+  alert('✓ Đã lưu: ' + t);
+  await init(); // reload từ database
+  showView('lessons');
+}
 init();
 </script>
 </body>
