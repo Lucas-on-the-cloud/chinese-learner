@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>學中文 · Học Tiếng Trung</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+<style>
+:root{--ink:#1a1208;--paper:#faf7f2;--paper2:#f3ede3;--red:#c0392b;--red-light:#fde8e6;--gold:#b8860b;--gold-light:#fdf6e3;--teal:#1a6b5a;--teal-light:#e6f4f0;--muted:#7a6e60;--border:#e0d8cc;--shadow:0 2px 16px rgba(26,18,8,.09)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+nav{background:var(--ink);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Noto Serif TC',serif;color:#fff;font-size:18px;letter-spacing:2px}.nav-logo span{color:#e8c97a}
+.nav-tabs{display:flex;gap:3px;flex-wrap:wrap}
+.nav-tab{background:none;border:none;color:rgba(255,255,255,.55);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;transition:all .2s}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.08)}.nav-tab.active{color:#fff;background:rgba(255,255,255,.15)}
+main{max-width:920px;margin:0 auto;padding:1.5rem}
+.view{display:none}.view.active{display:block}
+.page-title{font-family:'Noto Serif TC',serif;font-size:24px;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem}
+.lesson-grid{display:grid;gap:10px}
+.lesson-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:1rem}
+.lesson-card:hover{border-color:var(--red);box-shadow:var(--shadow);transform:translateY(-1px)}
+.lesson-num{font-family:'Noto Serif TC',serif;font-size:26px;color:var(--red);min-width:40px;text-align:center}
+.lesson-info h3{font-size:14px;font-weight:600;margin-bottom:3px}.lesson-info p{font-size:11px;color:var(--muted)}
+.lesson-arrow{margin-left:auto;color:var(--muted);font-size:16px}
+.back-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;color:var(--muted);padding:5px 12px;border-radius:7px;cursor:pointer;margin-bottom:1.25rem}
+.back-btn:hover{color:var(--ink);border-color:var(--ink)}
+.reading-header{margin-bottom:1rem}.reading-header h2{font-family:'Noto Serif TC',serif;font-size:20px;margin-bottom:3px}.reading-header p{font-size:12px;color:var(--muted)}
+.text-tabs{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap}
+.text-tab{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;padding:4px 12px;border-radius:16px;cursor:pointer;color:var(--muted);transition:all .15s}
+.text-tab.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.il-block{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:.75rem}
+.il-pair{margin-bottom:1rem}.il-pair:last-child{margin-bottom:0}
+.il-zh{font-family:'Noto Serif TC',serif;font-size:17px;letter-spacing:.03em;line-height:2.2}
+.il-py{font-size:12px;color:var(--muted);font-style:italic;line-height:1.6;margin-top:3px}
+.text-block{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:.75rem;line-height:2;white-space:pre-wrap}
+.text-block.vietnamese{font-size:13px;line-height:1.9}
+.zh-char,.vi-char{cursor:pointer;border-radius:2px;transition:background .1s;padding:0 .5px}
+.zh-char:hover,.vi-char:hover{background:#e8e3da}
+.zh-char.selecting,.vi-char.selecting{background:#bde0d1}
+.zh-char.hl-1,.vi-char.hl-1{background:#C0E1D2}.zh-char.hl-2,.vi-char.hl-2{background:#E5EEE4}
+.zh-char.hl-3,.vi-char.hl-3{background:#F6F4E8}.zh-char.hl-4,.vi-char.hl-4{background:#DC9B9B}
+.sel-bar{display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:7px 10px;margin-bottom:8px;align-items:center;gap:6px;flex-wrap:wrap;box-shadow:var(--shadow)}
+.sel-bar.show{display:flex}
+.sel-word{font-family:'Noto Serif TC',serif;font-size:18px;color:var(--red);margin-right:4px}
+.sel-label{font-size:11px;color:var(--muted);margin-right:auto}
+.hl-color{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .12s;flex-shrink:0}
+.hl-color:hover{transform:scale(1.15);border-color:var(--muted)}
+.sel-divider{width:1px;height:20px;background:var(--border);margin:0 3px}
+.sel-action{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:10px;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.sel-action.add{color:var(--teal)}.sel-action.add:hover{background:var(--teal-light);border-color:var(--teal)}
+.sel-action.clear{color:var(--muted)}.sel-action.remove{color:var(--red)}.sel-action.remove:hover{background:var(--red-light)}
+.sel-hint{font-size:10px;color:var(--muted);text-align:center;margin-bottom:6px}
+.ai-panel{background:var(--gold-light);border:1px solid #e8d5a0;border-radius:12px;padding:1rem 1.25rem;margin-top:1.25rem}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px}
+.ai-panel-header h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.ai-badge{background:var(--gold);color:#fff;font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px}
+.ai-btn{background:var(--ink);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;border-radius:7px;cursor:pointer}
+.ai-btn:hover{opacity:.85}.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-btn.csv-btn{background:var(--teal)}
+.ai-loading{font-size:12px;color:var(--gold);display:none;align-items:center;gap:7px;margin-bottom:.75rem}
+.ai-loading.show{display:flex}
+.spinner{width:14px;height:14px;border:2px solid #e8d5a0;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vocab-list{display:grid;gap:7px}
+.vocab-item{background:#fff;border:1px solid #e8d5a0;border-radius:9px;padding:9px 12px;display:flex;align-items:center;gap:10px;transition:all .15s}
+.vocab-item:hover{border-color:var(--gold)}.vocab-item.user-added{border-left:3px solid var(--teal)}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:20px;color:var(--red);min-width:44px;text-align:center;cursor:pointer;border-radius:5px;padding:2px}
+.vocab-char:hover{background:var(--red-light)}
+.vocab-details{flex:1;min-width:0}
+.vocab-pinyin{font-size:10px;color:var(--muted);font-style:italic}
+.vocab-meaning{font-size:12px;font-weight:500;margin-top:1px}
+.vocab-example{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic}
+.vocab-actions{display:flex;gap:5px;flex-shrink:0}
+.vocab-btn{background:none;border:1px solid var(--border);font-size:10px;color:var(--muted);padding:3px 8px;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Be Vietnam Pro',sans-serif}
+.vocab-btn:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.vocab-btn.added{background:var(--teal-light);border-color:var(--teal);color:var(--teal)}
+.vocab-btn.write-btn:hover{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.flashcard-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.fc-count{font-size:12px;color:var(--muted)}
+.clear-btn{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer}
+.clear-btn:hover{border-color:var(--red);color:var(--red)}
+.flashcard-wrap{display:flex;flex-direction:column;align-items:center;gap:1.25rem;padding:1.5rem 0}
+.flashcard{width:100%;max-width:400px;height:220px;perspective:1000px;cursor:pointer}
+.flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.flashcard-front,.flashcard-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.flashcard-front{background:#fff}.flashcard-back{background:var(--ink);transform:rotateY(180deg)}
+.fc-char{font-family:'Noto Serif TC',serif;font-size:56px;color:var(--red)}.fc-hint{font-size:11px;color:var(--muted)}
+.fc-pinyin-back{font-size:14px;color:#e8c97a;font-style:italic}.fc-meaning-back{font-size:18px;font-weight:500;color:#fff}
+.fc-char-back{font-family:'Noto Serif TC',serif;font-size:24px;color:rgba(255,255,255,.2);margin-top:3px}
+.fc-nav{display:flex;align-items:center;gap:14px}
+.fc-nav-btn{background:#fff;border:1px solid var(--border);width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.fc-nav-btn:hover{border-color:var(--ink);background:var(--ink);color:#fff}
+.fc-progress{font-size:12px;color:var(--muted);min-width:50px;text-align:center}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-state .big{font-family:'Noto Serif TC',serif;font-size:44px;margin-bottom:.75rem;opacity:.25}
+.empty-state p{font-size:13px;line-height:1.7}
+.chat-panel{background:#fff;border:1px solid var(--border);border-radius:12px;margin-top:1.25rem;overflow:hidden}
+.chat-header{background:var(--ink);color:#fff;padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#5dca82}
+.chat-messages{height:260px;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.chat-msg{max-width:85%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.user{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-msg.system{background:var(--gold-light);border:1px solid #e8d5a0;align-self:center;font-size:11px;color:var(--gold);text-align:center}
+.chat-input-row{display:flex;border-top:1px solid var(--border)}
+.chat-input{flex:1;border:none;padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;outline:none;background:transparent}
+.chat-send{background:var(--red);color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;font-weight:500}
+.chat-send:hover{opacity:.85}
+.hw-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,18,8,.6);align-items:center;justify-content:center}
+.hw-overlay.open{display:flex}
+.hw-modal{background:var(--paper);border-radius:18px;padding:1.75rem;width:92%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.25);position:relative;max-height:92vh;overflow-y:auto}
+.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer}.hw-close:hover{color:var(--red)}
+.hw-word-title{font-family:'Noto Serif TC',serif;font-size:24px;color:var(--red);text-align:center;margin-bottom:2px}
+.hw-sub{font-size:13px;color:var(--muted);text-align:center;font-style:italic;margin-bottom:2px}
+.hw-meaning{font-size:14px;font-weight:500;text-align:center;margin-bottom:1rem}
+.hw-char-nav{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:.75rem;flex-wrap:wrap}
+.hw-pip{font-family:'Noto Serif TC',serif;font-size:16px;width:34px;height:34px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);background:#fff;transition:all .15s}
+.hw-pip.active{border-color:var(--red);color:var(--red);font-weight:600;background:var(--red-light)}
+.hw-pip.done{border-color:var(--teal);color:var(--teal);background:var(--teal-light)}
+.hw-mode-tabs{display:flex;gap:7px;justify-content:center;margin-bottom:1rem}
+.hw-mode-tab{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;padding:4px 16px;border-radius:16px;cursor:pointer;color:var(--muted);transition:all .15s}
+.hw-mode-tab.active{background:var(--red);color:#fff;border-color:var(--red)}
+.hw-canvas-wrap{display:flex;justify-content:center;margin-bottom:1rem}
+#hw-target{border-radius:10px;background:#fff;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden}
+.hw-grid{position:absolute;background:#ede8df}
+.hw-controls{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.hw-btn{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;color:var(--ink);padding:7px 16px;border-radius:7px;cursor:pointer;transition:all .15s}
+.hw-btn:hover{background:var(--paper2)}.hw-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.hw-btn.primary:hover{opacity:.85}
+.hw-btn.danger{border-color:#e0b8b8;color:var(--red)}.hw-btn.danger:hover{background:var(--red-light)}
+.hw-score{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;min-height:18px}
+.hw-score.good{color:var(--teal);font-weight:500}.hw-score.bad{color:var(--red)}
+.setting-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:.75rem}
+.setting-card h3{font-size:13px;font-weight:600;margin-bottom:5px}
+.setting-card p{font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.key-row{display:flex;gap:6px;margin-bottom:4px}.key-row input{flex:1;height:36px;font-size:12px}
+.key-row select{height:36px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:0 8px;background:var(--paper);color:var(--ink);outline:none}
+.save-key-btn{background:var(--teal);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:0 14px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.key-status{font-size:10px;margin-top:4px}.key-status.ok{color:var(--teal)}.key-status.miss{color:var(--muted)}
+.upload-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:.75rem}
+.upload-section h3{font-size:13px;font-weight:600;margin-bottom:6px;margin-top:.75rem}.upload-section h3:first-child{margin-top:0}
+textarea{width:100%;min-height:100px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:10px;resize:vertical;background:var(--paper);color:var(--ink);outline:none;line-height:1.7}textarea:focus{border-color:var(--red)}
+input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:0 10px;background:var(--paper);color:var(--ink);outline:none}input[type="text"]:focus{border-color:var(--red)}
+.submit-btn{background:var(--red);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;padding:9px 24px;border-radius:7px;cursor:pointer;margin-top:.75rem}.submit-btn:hover{opacity:.88}
+.provider-badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;margin-left:6px}
+.provider-badge.anthropic{background:#d4a574;color:#fff}.provider-badge.openai{background:#10a37f;color:#fff}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">學中文<span>·</span>Học Tiếng Trung</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showView('lessons')">📖 Bài học</button>
+    <button class="nav-tab" onclick="showView('flashcards')">🃏 Flash</button>
+    <button class="nav-tab" onclick="showView('upload')">⚙️ Cài đặt</button>
+  </div>
+</nav>
+<main>
+<div class="view active" id="view-lessons"><div class="page-title">Bài học</div><div class="page-sub">Chọn bài để đọc, highlight, chat AI, tạo từ vựng</div><div class="lesson-grid" id="lesson-grid"></div></div>
+<div class="view" id="view-reading">
+  <button class="back-btn" onclick="showView('lessons')">← Danh sách</button>
+  <div class="reading-header"><h2 id="r-title"></h2><p id="r-desc"></p></div>
+  <div class="text-tabs">
+    <button class="text-tab active" onclick="setMode(this,'paired')">漢字+Pinyin</button>
+    <button class="text-tab" onclick="setMode(this,'vietnamese')">Tiếng Việt</button>
+    <button class="text-tab" onclick="setMode(this,'all')">Tất cả</button>
+  </div>
+  <div class="sel-bar" id="sel-bar"><span class="sel-word" id="sel-word"></span><span class="sel-label">Highlight:</span>
+    <div class="hl-color" style="background:#C0E1D2" onclick="doHL('hl-1')"></div>
+    <div class="hl-color" style="background:#E5EEE4" onclick="doHL('hl-2')"></div>
+    <div class="hl-color" style="background:#F6F4E8" onclick="doHL('hl-3')"></div>
+    <div class="hl-color" style="background:#DC9B9B" onclick="doHL('hl-4')"></div>
+    <div class="sel-divider"></div>
+    <button class="sel-action add" onclick="addSelVocab()">+ Từ vựng</button>
+    <button class="sel-action remove" onclick="removeHL()">✕</button>
+    <button class="sel-action clear" onclick="clearSel()">Bỏ</button>
+  </div>
+  <div id="text-paired" class="il-block"></div>
+  <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
+  <div class="sel-hint">💡 Nhấn chữ đầu → nhấn chữ cuối để chọn vùng highlight</div>
+  <div class="ai-panel">
+    <div class="ai-panel-header">
+      <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ai-btn csv-btn" id="csv-btn" onclick="exportCSV()" style="display:none">⬇ CSV</button>
+        <button class="ai-btn" id="gen-btn" onclick="genVocab()">Phân tích &amp; tạo từ vựng</button>
+      </div>
+    </div>
+    <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
+    <div class="vocab-list" id="vocab-list"></div>
+  </div>
+  <div class="chat-panel">
+    <div class="chat-header"><div class="dot"></div>Chat với bài đọc<span class="provider-badge" id="cp" style="margin-left:auto"></span></div>
+    <div class="chat-messages" id="chat-msgs"><div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc.</div></div>
+    <div class="chat-input-row"><input class="chat-input" id="chat-input" placeholder="Hỏi về bài đọc..." onkeydown="if(event.key==='Enter')sendChat()"><button class="chat-send" onclick="sendChat()">Gửi</button></div>
+  </div>
+</div>
+<div class="view" id="view-flashcards"><div class="page-title">Flashcard</div><div class="flashcard-controls"><span class="fc-count" id="fc-count">0</span><button class="clear-btn" onclick="clearFlash()">Xóa tất cả</button></div><div id="fc-area"></div></div>
+<div class="view" id="view-upload">
+  <div class="page-title">Cài đặt</div>
+  <div class="setting-card">
+    <h3>🔑 API Provider</h3>
+    <p>Chọn nhà cung cấp AI và dán key. App gọi qua proxy server (không lộ key, không bị CORS).</p>
+    <div class="key-row">
+      <select id="api-provider"><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI (GPT)</option></select>
+      <input type="text" id="api-key-input" placeholder="Dán API key...">
+      <button class="save-key-btn" onclick="saveKey()">Lưu</button>
+    </div>
+    <div class="key-status" id="key-status"></div>
+  </div>
+  <div class="upload-section">
+    <h3>Thêm bài mới</h3>
+    <h3>Tiêu đề</h3><input type="text" id="up-title" placeholder="VD: Thói quen sinh viên">
+    <h3>Tiếng Trung</h3><textarea id="up-zh"></textarea>
+    <h3>Pinyin</h3><textarea id="up-py"></textarea>
+    <h3>Tiếng Việt</h3><textarea id="up-vi"></textarea>
+    <button class="submit-btn" onclick="addLesson()">Lưu bài học</button>
+  </div>
+</div>
+</main>
+<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)closeHw()">
+  <div class="hw-modal">
+    <button class="hw-close" onclick="closeHw()">&#215;</button>
+    <div class="hw-word-title" id="hw-title"></div><div class="hw-sub" id="hw-py"></div><div class="hw-meaning" id="hw-mg"></div>
+    <div class="hw-char-nav" id="hw-nav"></div>
+    <div class="hw-mode-tabs"><button class="hw-mode-tab active" id="mt-a" onclick="hwSetMode('a')">▶ Xem nét</button><button class="hw-mode-tab" id="mt-q" onclick="hwSetMode('q')">✏️ Viết</button></div>
+    <div class="hw-canvas-wrap"><div id="hw-target"><div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div><div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div></div></div>
+    <div class="hw-controls" id="hw-ca"><button class="hw-btn primary" onclick="hwAnim()">▶ Animate</button><button class="hw-btn" onclick="hwLoop()">↺ Loop</button></div>
+    <div class="hw-controls" id="hw-cq" style="display:none"><button class="hw-btn primary" onclick="hwQuiz()">Bắt đầu viết</button><button class="hw-btn danger" onclick="hwReset()">↺ Reset</button></div>
+    <div class="hw-score" id="hw-sc"></div>
+  </div>
+</div>
+<script>
+// ── PROXY API — FIX CORS ──────────────────────────
+// When deployed to Vercel: calls /api/proxy
+// When local file: falls back to direct call (may fail due to CORS)
+const PROXY_URL = (location.protocol === 'file:')
+  ? null
+  : (location.origin + '/api/proxy');
+
+async function callAI(systemPrompt, userMsg, maxTokens, chatMsgs) {
+  const p = getProvider(), k = getKey();
+  if (!k) return null;
+
+  let reqBody;
+  if (p === 'anthropic') {
+    reqBody = { model: 'claude-sonnet-4-6', max_tokens: maxTokens || 1800, system: systemPrompt };
+    reqBody.messages = chatMsgs || [{ role: 'user', content: userMsg }];
+  } else {
+    const msgs = [{ role: 'system', content: systemPrompt }];
+    if (chatMsgs) msgs.push(...chatMsgs);
+    else msgs.push({ role: 'user', content: userMsg });
+    reqBody = { model: 'gpt-4o-mini', max_tokens: maxTokens || 1800, messages: msgs };
+  }
+
+  let data;
+  if (PROXY_URL) {
+    const r = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: p, apiKey: k, body: reqBody })
+    });
+    data = await r.json();
+    if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
+  } else {
+    // Direct call fallback (local dev, may have CORS issues)
+    let url, headers;
+    if (p === 'anthropic') {
+      url = 'https://api.anthropic.com/v1/messages';
+      headers = { 'Content-Type': 'application/json', 'x-api-key': k, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    } else {
+      url = 'https://api.openai.com/v1/chat/completions';
+      headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + k };
+    }
+    const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify(reqBody) });
+    data = await r.json();
+    if (!r.ok) throw new Error(JSON.stringify(data));
+  }
+
+  if (p === 'anthropic') return data.content[0].text;
+  return data.choices[0].message.content;
+}
+
+// ── CONFIG ─────────────────────────────────────────
+function getProvider(){return localStorage.getItem('api_provider')||'anthropic'}
+function getKey(){return localStorage.getItem('api_key_'+getProvider())||''}
+function saveKey(){const p=document.getElementById('api-provider').value;const k=document.getElementById('api-key-input').value.trim();if(!k)return;localStorage.setItem('api_provider',p);localStorage.setItem('api_key_'+p,k);updKeyUI();alert('✓ Lưu '+p+' key')}
+function updKeyUI(){const p=getProvider(),k=getKey(),el=document.getElementById('key-status');el.textContent=k?`✓ ${p} key OK`:'Chưa có key';el.className='key-status '+(k?'ok':'miss');document.getElementById('api-provider').value=p;if(k)document.getElementById('api-key-input').value=k.slice(0,16)+'...';document.querySelectorAll('.provider-badge').forEach(b=>{b.textContent=p==='openai'?'OpenAI':'Claude';b.className='provider-badge '+p})}
+const esc=s=>(s||'').replace(/'/g,"&apos;").replace(/"/g,'&quot;');
+
+// ── LESSONS ────────────────────────────────────────
+const B=[
+{id:1,title:'Thói quen sinh viên',desc:'Cuộc sống đại học',zh:`大學生的生活習慣普通不是很好，尤其是上網，每天晚上差不多十點以後就進入了「上網高峰」時段，在網路上跟同學聊天、玩線上遊戲，不知不覺就已經深夜了。\n到了學期最後，不少大學生開夜車趕報告，交了報告以後，就又得準備期末考，許多人因此健康亮起了紅燈。\n台大社工系三年級學生張敬發起了「健康」運動，希望大學生要為自己的健康負起責任，要改掉夜生活的壞習慣，建立起正常的作息時間。`,py:`Dàxuéshēng de shēnghuó xíguàn pǔtōng bù shì hěn hǎo, yóuqí shì shàngwǎng, měitiān wǎnshàng chàbùduō shí diǎn yǐhòu jiù jìnrùle "shàngwǎng gāofēng" shíduàn.\nDàole xuéqī zuìhòu, bùshǎo dàxuéshēng kāi yèchē gǎn bàogào, jiāo le bàogào yǐhòu, jiù yòu děi zhǔnbèi qīmò kǎo.\nTáidà shè gōng xì sān niánjí xuéshēng Zhāng Jìng fāqǐ le "jiànkāng" yùndòng.`,vi:`Thói quen sinh hoạt của sinh viên đại học thường không tốt, đặc biệt là việc lên mạng.\nĐến cuối học kỳ, nhiều sinh viên phải thức đêm chạy báo cáo, sức khỏe bật đèn đỏ.\nTrương Kính đã khởi xướng phong trào "sức khỏe".`},
+{id:2,title:'Xin học bổng',desc:'Thủ tục & hồ sơ',zh:`我家的經濟情況不是很好，上高中、大學的時候，為了減輕父母的負擔，我靠申請獎學金來付學費。\n申請獎學金要先填寫一張獎學金申請表，還要準備一份成績單、一份上課出席紀錄表，以及學生證影印本，另外要寫一篇自傳文章、一份學習計畫，當然還要有一封老師的推薦信。`,py:`Wǒ jiā de jīngjì qíngkuàng bù shì hěn hǎo, wèile jiǎnqīng fùmǔ de fùdān, wǒ kào shēnqǐng jiǎngxuéjīn lái fù xuéfèi.\nShēnqǐng jiǎngxuéjīn yào xiān tiánxiě shēnqǐng biǎo, zhǔnbèi chéngjìdān, chūxí jìlù, xuéshēngzhèng yǐngyìnběn, zìzhuàn, xuéxí jìhuà, tuījiànxìn.`,vi:`Hoàn cảnh kinh tế gia đình không tốt, tôi dựa vào học bổng để trả học phí.\nCần: đơn, bảng điểm, bảng điểm danh, thẻ SV, tự truyện, kế hoạch, thư giới thiệu.`},
+{id:3,title:'CLB Guitar',desc:'Tuyển thành viên',zh:`吉他社招生\n目標：學彈吉他、自彈自唱、能上台表演\n說明：學習中外民歌；吉他可以免費借用；社員買吉他打折；教學免費`,py:`Jítā shè zhāoshēng\nMùbiāo: Xué tán jítā, zì tán zì chàng\nShuōmíng: Xuéxí míngē; miǎnfèi jièyòng; dǎzhé; miǎnfèi jiàoxué`,vi:`Tuyển thành viên CLB Guitar.\nMục tiêu: Học đánh guitar, tự đàn tự hát.\nGuitar mượn miễn phí; giảm giá; dạy miễn phí.`},
+{id:4,title:'Đi làm hay đi học',desc:'Tiểu Vương',zh:`小王不愛念書，看到書就想睡，他一心只想著打工賺錢，可是他爸媽認為他這個年紀應該以課業為重。\n因為有工作就能賺錢，甚至能自己付學費，小王覺得打工很有成就感。\n其實，並不是每個人都適合讀書做研究，不想念書的年輕人不如先工作，等更成熟了也許會有不同的學習動力。`,py:`Xiǎo Wáng bù ài niànshū, tā yīxīn zhǐ xiǎngzhe dǎgōng zhuànqián.\nYǒu gōngzuò jiù néng zhuànqián, Xiǎo Wáng juédé hěn yǒu chéngjiùgǎn.\nBìng bùshì měi gèrén dōu shìhé dúshū, bùrú xiān gōngzuò.`,vi:`Tiểu Vương không thích học, chỉ muốn đi làm kiếm tiền.\nCó việc là kiếm được tiền, cậu thấy rất có thành tựu.\nKhông phải ai cũng phù hợp nghiên cứu, thà đi làm trước.`}
+];
+let lessons=[],CL=null,CV=[];
+let FC=JSON.parse(localStorage.getItem('flashcards')||'[]'),CI=0;
+let selStart=-1,selEnd=-1,selTarget='';
+let hwW=null,hwM='a',hwCs=[],hwI=0,hwDone=[];
+let chatHistory=[];
+
+function init(){lessons=[...B,...JSON.parse(localStorage.getItem('user_lessons')||'[]')];renderGrid();renderFC();updKeyUI()}
+function showView(n){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('view-'+n).classList.add('active');document.querySelectorAll('.nav-tab')[{lessons:0,flashcards:1,upload:2}[n]].classList.add('active');if(n==='flashcards')renderFC();clearSel()}
+function renderGrid(){document.getElementById('lesson-grid').innerHTML=lessons.map((l,i)=>`<div class="lesson-card" onclick="openL(${i})"><div class="lesson-num">${i+1}</div><div class="lesson-info"><h3>${l.title}</h3><p>${l.desc||''}</p></div><div class="lesson-arrow">›</div></div>`).join('')}
+
+function openL(i){CL=lessons[i];CV=[];clearSel();chatHistory=[];document.getElementById('r-title').textContent=CL.title;document.getElementById('r-desc').textContent=CL.desc||'';document.getElementById('vocab-list').innerHTML='';document.getElementById('csv-btn').style.display='none';const b=document.getElementById('gen-btn');b.disabled=false;b.textContent='Phân tích & tạo từ vựng';renderIL();renderViB();document.querySelectorAll('.text-tab').forEach((t,j)=>t.classList.toggle('active',j===0));document.getElementById('text-paired').style.display='block';document.getElementById('text-vi').style.display='none';document.getElementById('chat-msgs').innerHTML='<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.</div>';document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('view-reading').classList.add('active');document.querySelectorAll('.nav-tab')[0].classList.add('active');updKeyUI()}
+
+function wrapC(text,pfx,cls){let i=0;return[...text].map(c=>{if(c==='\n')return'<br>';const id=i++;return`<span class="${cls}-char" data-g="${pfx}" data-i="${id}" onclick="charClick('${pfx}',${id})">${c}</span>`}).join('')}
+function renderIL(){const z=CL.zh.split('\n').filter(l=>l.trim()),p=CL.py.split('\n').filter(l=>l.trim());document.getElementById('text-paired').innerHTML=z.map((zh,li)=>`<div class="il-pair"><div class="il-zh">${wrapC(zh,'zh'+li,'zh')}</div><div class="il-py">${p[li]||''}</div></div>`).join('')}
+function renderViB(){document.getElementById('text-vi').innerHTML=wrapC(CL.vi,'vi','vi')}
+function setMode(btn,m){document.querySelectorAll('.text-tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');document.getElementById('text-paired').style.display=(m==='paired'||m==='all')?'block':'none';document.getElementById('text-vi').style.display=(m==='vietnamese'||m==='all')?'block':'none';clearSel()}
+
+// ── SELECTION ──────────────────────────────────────
+function charClick(g,idx){const all=document.querySelectorAll(`[data-g="${g}"]`);if(selStart===-1||selTarget!==g){clearSelV();selTarget=g;selStart=idx;selEnd=-1;all[idx].classList.add('selecting');updSelBar()}else if(selEnd===-1){selEnd=idx;if(selEnd<selStart){const t=selStart;selStart=selEnd;selEnd=t}all.forEach((s,i)=>{if(i>=selStart&&i<=selEnd)s.classList.add('selecting');else s.classList.remove('selecting')});updSelBar()}else{clearSelV();selTarget=g;selStart=idx;selEnd=-1;all[idx].classList.add('selecting');updSelBar()}}
+function getSelT(){const all=document.querySelectorAll(`[data-g="${selTarget}"]`);const e=selEnd===-1?selStart:selEnd;let t='';for(let i=selStart;i<=e;i++)t+=all[i].textContent;return t}
+function updSelBar(){const t=getSelT(),b=document.getElementById('sel-bar');if(!t){b.classList.remove('show');return}document.getElementById('sel-word').textContent=t;b.classList.add('show')}
+function clearSelV(){document.querySelectorAll('.zh-char.selecting,.vi-char.selecting').forEach(s=>s.classList.remove('selecting'))}
+function clearSel(){selStart=-1;selEnd=-1;clearSelV();document.getElementById('sel-bar').classList.remove('show')}
+function doHL(cls){if(selStart===-1)return;const all=document.querySelectorAll(`[data-g="${selTarget}"]`);const e=selEnd===-1?selStart:selEnd;for(let i=selStart;i<=e;i++){all[i].classList.remove('hl-1','hl-2','hl-3','hl-4','selecting');all[i].classList.add(cls)}clearSel()}
+function removeHL(){if(selStart===-1)return;const all=document.querySelectorAll(`[data-g="${selTarget}"]`);const e=selEnd===-1?selStart:selEnd;for(let i=selStart;i<=e;i++)all[i].classList.remove('hl-1','hl-2','hl-3','hl-4','selecting');clearSel()}
+function addSelVocab(){const t=getSelT();if(!t)return;if(!CV.some(v=>v.char===t)){CV.push({char:t,pinyin:'',meaning:'(bạn thêm)',example:'',level:'',userAdded:true});renderVL(CV)}clearSel()}
+
+// ── VOCAB ──────────────────────────────────────────
+async function genVocab(){if(!CL)return;const btn=document.getElementById('gen-btn'),ld=document.getElementById('ai-ld'),lt=document.getElementById('ai-lt');btn.disabled=true;ld.classList.add('show');document.getElementById('vocab-list').innerHTML='';const ua=CV.filter(v=>v.userAdded);CV=[];lt.textContent='AI đang phân tích...';
+try{const raw=await callAI(`Bạn là giáo viên tiếng Trung cho người Việt. Trích xuất 10-12 từ vựng quan trọng.\nJSON thuần, KHÔNG markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa","example":"ví dụ trong bài","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa ví dụ","level":"cơ bản"}]\nlevel: "cơ bản"/"trung cấp"/"nâng cao". example phải là câu từ BÀI ĐỌC.`,`Đoạn văn:\n${CL.zh}\n\nPinyin:\n${CL.py}\n\nTiếng Việt:\n${CL.vi}\n\nJSON thuần.`);
+ld.classList.remove('show');if(!raw){CV=[...(DM[CL.id]||DM[1]),...ua];renderVL(CV);btn.textContent='✓ Demo';document.getElementById('csv-btn').style.display='inline-block';return}
+const parsed=JSON.parse(raw.trim().replace(/^```json\s*/,'').replace(/\s*```$/,''));CV=[...parsed,...ua];renderVL(CV);btn.textContent=`✓ ${parsed.length} từ`}catch(e){ld.classList.remove('show');console.error(e);CV=[...(DM[CL.id]||DM[1]),...ua];renderVL(CV);btn.textContent='⚠ '+e.message.slice(0,30)}
+document.getElementById('csv-btn').style.display='inline-block'}
+
+function renderVL(v){const lc={'cơ bản':'#e6f4f0','trung cấp':'#fdf6e3','nâng cao':'#fde8e6'},lt={'cơ bản':'#0f6e56','trung cấp':'#b8860b','nâng cao':'#c0392b'};document.getElementById('vocab-list').innerHTML=v.map((w,i)=>{const sv=FC.some(f=>f.char===w.char),bg=lc[w.level]||'#f3ede3',tx=lt[w.level]||'#7a6e60';return`<div class="vocab-item${w.userAdded?' user-added':''}"><div class="vocab-char" onclick="openHw('${esc(w.char)}','${esc(w.pinyin)}','${esc(w.meaning)}')">${w.char}</div><div class="vocab-details"><div class="vocab-pinyin">${w.pinyin||''}${w.level?` <span style="background:${bg};color:${tx};font-size:9px;padding:1px 5px;border-radius:3px">${w.level}</span>`:''}</div><div class="vocab-meaning">${w.meaning||''}</div>${w.example?`<div class="vocab-example">${w.example}</div>`:''}</div><div class="vocab-actions"><button class="vocab-btn write-btn" onclick="openHw('${esc(w.char)}','${esc(w.pinyin)}','${esc(w.meaning)}')">✏️</button><button class="vocab-btn${sv?' added':''}" id="fb${i}" onclick="addF(${i})">${sv?'✓':'+'}</button></div></div>`}).join('')}
+
+function exportCSV(){if(!CV.length)return;const h='Từ vựng,Pinyin,Nghĩa,Ví dụ,Pinyin ví dụ,Nghĩa ví dụ';const c=s=>`"${(s||'').replace(/"/g,'""')}"`;const rows=CV.map(v=>[c(v.char),c(v.pinyin),c(v.meaning),c(v.example),c(v.exPinyin),c(v.exMeaning)].join(','));const csv='\uFEFF'+h+'\n'+rows.join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`vocab_${CL.title.replace(/\s/g,'_')}.csv`;a.click()}
+
+const DM={1:[{char:'生活習慣',pinyin:'shēnghuó xíguàn',meaning:'thói quen sinh hoạt',example:'大學生的生活習慣普通不是很好',exPinyin:'dàxuéshēng de shēnghuó xíguàn pǔtōng bù shì hěn hǎo',exMeaning:'Thói quen SH của SV thường không tốt',level:'trung cấp'},{char:'上網',pinyin:'shàngwǎng',meaning:'lên mạng',example:'尤其是上網',exPinyin:'yóuqí shì shàngwǎng',exMeaning:'đặc biệt là lên mạng',level:'cơ bản'},{char:'深夜',pinyin:'shēnyè',meaning:'đêm khuya',example:'不知不覺就已經深夜了',exPinyin:'bùzhī bùjué jiù yǐjīng shēnyè le',exMeaning:'không hay biết đã khuya',level:'cơ bản'},{char:'期末考',pinyin:'qīmò kǎo',meaning:'thi cuối kỳ',example:'就又得準備期末考',exPinyin:'jiù yòu děi zhǔnbèi qīmò kǎo',exMeaning:'lại phải chuẩn bị thi cuối kỳ',level:'trung cấp'},{char:'健康',pinyin:'jiànkāng',meaning:'sức khỏe',example:'健康亮起了紅燈',exPinyin:'jiànkāng liàngqǐ le hóngdēng',exMeaning:'sức khỏe bật đèn đỏ',level:'cơ bản'},{char:'開夜車',pinyin:'kāi yèchē',meaning:'thức đêm',example:'不少大學生開夜車趕報告',exPinyin:'bùshǎo dàxuéshēng kāi yèchē gǎn bàogào',exMeaning:'nhiều SV thức đêm chạy báo cáo',level:'trung cấp'}],2:[{char:'獎學金',pinyin:'jiǎngxuéjīn',meaning:'học bổng',example:'申請獎學金來付學費',exPinyin:'shēnqǐng jiǎngxuéjīn lái fù xuéfèi',exMeaning:'xin học bổng trả học phí',level:'trung cấp'},{char:'申請',pinyin:'shēnqǐng',meaning:'nộp đơn',example:'申請獎學金',exPinyin:'shēnqǐng jiǎngxuéjīn',exMeaning:'xin học bổng',level:'cơ bản'},{char:'成績單',pinyin:'chéngjìdān',meaning:'bảng điểm',example:'準備一份成績單',exPinyin:'zhǔnbèi yī fèn chéngjìdān',exMeaning:'chuẩn bị bảng điểm',level:'trung cấp'},{char:'填寫',pinyin:'tiánxiě',meaning:'điền vào',example:'填寫一張申請表',exPinyin:'tiánxiě yī zhāng shēnqǐng biǎo',exMeaning:'điền đơn',level:'cơ bản'}],3:[{char:'吉他',pinyin:'jítā',meaning:'guitar',example:'學彈吉他',exPinyin:'xué tán jítā',exMeaning:'học đánh guitar',level:'cơ bản'},{char:'免費',pinyin:'miǎnfèi',meaning:'miễn phí',example:'免費借用',exPinyin:'miǎnfèi jièyòng',exMeaning:'mượn miễn phí',level:'cơ bản'},{char:'打折',pinyin:'dǎzhé',meaning:'giảm giá',example:'買吉他打折',exPinyin:'mǎi jítā dǎzhé',exMeaning:'mua guitar giảm giá',level:'trung cấp'}],4:[{char:'打工',pinyin:'dǎgōng',meaning:'làm thêm',example:'一心只想著打工賺錢',exPinyin:'yīxīn zhǐ xiǎngzhe dǎgōng zhuànqián',exMeaning:'chỉ nghĩ đi làm kiếm tiền',level:'cơ bản'},{char:'成就感',pinyin:'chéngjiùgǎn',meaning:'thành tựu',example:'覺得打工很有成就感',exPinyin:'juédé dǎgōng hěn yǒu chéngjiùgǎn',exMeaning:'thấy làm thêm có thành tựu',level:'trung cấp'},{char:'成熟',pinyin:'chéngshú',meaning:'chín chắn',example:'等更成熟了',exPinyin:'děng gèng chéngshú le',exMeaning:'khi chín chắn hơn',level:'trung cấp'},{char:'動力',pinyin:'dònglì',meaning:'động lực',example:'不同的學習動力',exPinyin:'bùtóng de xuéxí dònglì',exMeaning:'động lực học tập khác',level:'cơ bản'}]};
+
+// ── FLASHCARDS ─────────────────────────────────────
+function addF(i){const v=CV[i];if(!v||FC.some(f=>f.char===v.char))return;FC.push({char:v.char,pinyin:v.pinyin||'',meaning:v.meaning||''});localStorage.setItem('flashcards',JSON.stringify(FC));const b=document.getElementById('fb'+i);if(b){b.textContent='✓';b.classList.add('added')}}
+function renderFC(){const a=document.getElementById('fc-area');document.getElementById('fc-count').textContent=FC.length+' thẻ';if(!FC.length){a.innerHTML=`<div class="empty-state"><div class="big">學</div><p>Chưa có flashcard.</p></div>`;return}if(CI>=FC.length)CI=0;const c=FC[CI];a.innerHTML=`<div class="flashcard-wrap"><div class="flashcard" id="fc" onclick="document.getElementById('fc').classList.toggle('flipped')"><div class="flashcard-inner"><div class="flashcard-front"><div class="fc-char">${c.char}</div><div class="fc-hint">Nhấn để xem</div></div><div class="flashcard-back"><div class="fc-pinyin-back">${c.pinyin}</div><div class="fc-meaning-back">${c.meaning}</div><div class="fc-char-back">${c.char}</div></div></div></div><button class="vocab-btn write-btn" style="font-size:11px;padding:5px 14px" onclick="openHw('${esc(c.char)}','${esc(c.pinyin)}','${esc(c.meaning)}')">✏️ Viết</button><div class="fc-nav"><button class="fc-nav-btn" onclick="CI=(CI-1+FC.length)%FC.length;renderFC()">‹</button><span class="fc-progress">${CI+1}/${FC.length}</span><button class="fc-nav-btn" onclick="CI=(CI+1)%FC.length;renderFC()">›</button></div></div>`}
+function clearFlash(){if(!confirm('Xóa?'))return;FC=[];CI=0;localStorage.removeItem('flashcards');renderFC()}
+
+// ── CHATBOT ────────────────────────────────────────
+async function sendChat(){const inp=document.getElementById('chat-input'),msg=inp.value.trim();if(!msg)return;inp.value='';const ms=document.getElementById('chat-msgs');ms.innerHTML+=`<div class="chat-msg user">${msg}</div>`;ms.scrollTop=ms.scrollHeight;chatHistory.push({role:'user',content:msg});const k=getKey();if(!k){ms.innerHTML+=`<div class="chat-msg system">⚠ Chưa có API key.</div>`;ms.scrollTop=ms.scrollHeight;return}ms.innerHTML+=`<div class="chat-msg bot" id="cl">⏳ ...</div>`;ms.scrollTop=ms.scrollHeight;
+const sys=`Bạn là trợ lý dạy tiếng Trung cho người Việt. Trả lời dựa trên bài đọc. Ngắn gọn.\n\nBÀI ĐỌC:\n${CL.zh}\n\nPINYIN:\n${CL.py}\n\nTIẾNG VIỆT:\n${CL.vi}`;
+try{const reply=await callAI(sys,null,800,chatHistory);chatHistory.push({role:'assistant',content:reply});document.getElementById('cl').outerHTML=`<div class="chat-msg bot">${reply}</div>`}catch(e){document.getElementById('cl').outerHTML=`<div class="chat-msg system">❌ ${e.message}</div>`}ms.scrollTop=ms.scrollHeight}
+
+// ── HANZI WRITER ───────────────────────────────────
+function openHw(w,py,mg){hwCs=[...w];hwI=0;hwDone=hwCs.map(()=>false);hwM='a';document.getElementById('hw-title').textContent=w;document.getElementById('hw-py').textContent=py;document.getElementById('hw-mg').textContent=mg;document.getElementById('hw-sc').textContent='';document.getElementById('mt-a').classList.add('active');document.getElementById('mt-q').classList.remove('active');document.getElementById('hw-ca').style.display='flex';document.getElementById('hw-cq').style.display='none';renderHN();document.getElementById('hw-overlay').classList.add('open');document.body.style.overflow='hidden';loadHC(0)}
+function renderHN(){document.getElementById('hw-nav').innerHTML=hwCs.map((c,i)=>`<div class="hw-pip${i===hwI?' active':''}${hwDone[i]?' done':''}" onclick="hwI=${i};renderHN();loadHC(${i})">${c}</div>`).join('')}
+function loadHC(i){const t=document.getElementById('hw-target');Array.from(t.children).forEach(c=>{if(!c.classList.contains('hw-grid'))c.remove()});if(hwW){try{hwW.cancelQuiz()}catch(e){}hwW=null}setTimeout(()=>{hwW=HanziWriter.create('hw-target',hwCs[i],{width:200,height:200,padding:12,showOutline:true,strokeColor:'#1a1208',outlineColor:'#ddd5c8',drawingColor:'#c0392b',drawingWidth:5,highlightColor:'#1a6b5a',radicalColor:'#b8860b',strokeAnimationSpeed:1,delayBetweenStrokes:350,showHintAfterMisses:3,markStrokeCorrectAfterMisses:5,highlightOnComplete:true});if(hwM==='q')hwQuiz()},50)}
+function hwSetMode(m){hwM=m;document.getElementById('mt-a').classList.toggle('active',m==='a');document.getElementById('mt-q').classList.toggle('active',m==='q');document.getElementById('hw-ca').style.display=m==='a'?'flex':'none';document.getElementById('hw-cq').style.display=m==='q'?'flex':'none';document.getElementById('hw-sc').textContent='';if(hwW){try{hwW.cancelQuiz();hwW.showCharacter({duration:0})}catch(e){}}}
+function hwAnim(){if(hwW){hwW.showCharacter({duration:0});hwW.animateCharacter()}}
+function hwLoop(){if(hwW)hwW.loopCharacterAnimation()}
+function hwQuiz(){if(!hwW)return;hwW.hideCharacter({duration:0});hwW.showOutline({duration:0});document.getElementById('hw-sc').textContent=`Viết: ${hwCs[hwI]} (${hwI+1}/${hwCs.length})`;hwW.quiz({showHintAfterMisses:3,markStrokeCorrectAfterMisses:5,onMistake:d=>{document.getElementById('hw-sc').textContent=`❌ ${d.totalMistakes} lỗi — còn ${d.strokesRemaining} nét`;document.getElementById('hw-sc').className='hw-score bad'},onCorrectStroke:d=>{document.getElementById('hw-sc').textContent=`✓ Còn ${d.strokesRemaining} nét`;document.getElementById('hw-sc').className='hw-score good'},onComplete:d=>{hwDone[hwI]=true;renderHN();if(hwI<hwCs.length-1){document.getElementById('hw-sc').textContent=`✓ Xong "${hwCs[hwI]}"!`;setTimeout(()=>{hwI++;renderHN();loadHC(hwI)},700)}else{document.getElementById('hw-sc').textContent=hwCs.length>1?`🎉 Xong "${hwCs.join('')}"!`:(d.totalMistakes===0?'🎉!!':`✅ ${d.totalMistakes} lỗi`);document.getElementById('hw-sc').className='hw-score good'}}})}
+function hwReset(){hwDone=hwCs.map(()=>false);hwI=0;renderHN();loadHC(0);document.getElementById('hw-sc').textContent=''}
+function closeHw(){if(hwW){try{hwW.cancelQuiz()}catch(e){}}document.getElementById('hw-overlay').classList.remove('open');document.body.style.overflow=''}
+
+function addLesson(){const t=document.getElementById('up-title').value.trim(),z=document.getElementById('up-zh').value.trim(),p=document.getElementById('up-py').value.trim(),v=document.getElementById('up-vi').value.trim();if(!t||!z){alert('Nhập tiêu đề và tiếng Trung.');return}const nl={id:Date.now(),title:t,desc:z.slice(0,40)+'...',zh:z,py:p,vi:v};const ul=JSON.parse(localStorage.getItem('user_lessons')||'[]');ul.push(nl);localStorage.setItem('user_lessons',JSON.stringify(ul));lessons.push(nl);renderGrid();['up-title','up-zh','up-py','up-vi'].forEach(id=>document.getElementById(id).value='');alert('✓ '+t);showView('lessons')}
+
+init();
+</script>
+</body>
+</html>
