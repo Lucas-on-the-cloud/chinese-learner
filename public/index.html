@@ -147,6 +147,24 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
 .submit-btn{background:var(--red);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;padding:9px 24px;border-radius:7px;cursor:pointer;margin-top:.75rem}.submit-btn:hover{opacity:.88}
 .provider-badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:600;margin-left:6px}
 .provider-badge.anthropic{background:#d4a574;color:#fff}.provider-badge.openai{background:#10a37f;color:#fff}
+.ws-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,18,8,.6);align-items:center;justify-content:center}
+.ws-overlay.open{display:flex}
+.ws-modal{background:var(--paper);border-radius:14px;padding:1.5rem;width:92%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.ws-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.ws-modal-header h3{font-size:15px;font-weight:600}
+.ws-top-actions{display:flex;gap:6px;margin-bottom:.75rem}
+.ws-sm-btn{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;padding:4px 12px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s}
+.ws-sm-btn:hover{background:var(--paper2);color:var(--ink)}
+.ws-row{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);cursor:pointer}
+.ws-row:last-child{border-bottom:none}
+.ws-row input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;flex-shrink:0;cursor:pointer}
+.ws-zh{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--red);min-width:56px}
+.ws-py{font-size:11px;color:var(--muted);font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-vn{font-size:11px;color:var(--ink);min-width:110px;text-align:right}
+.ws-footer{margin-top:1rem;display:flex;justify-content:center}
+.ws-gen-btn{background:var(--red);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;padding:9px 28px;border-radius:7px;cursor:pointer;transition:opacity .15s}
+.ws-gen-btn:hover{opacity:.88}
+.ai-btn.ws-btn{background:#6b4c9a}
 </style>
 </head>
 <body>
@@ -193,6 +211,7 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
         <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
+          <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">📝 Bài tập</button>
           <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
         </div>
       </div>
@@ -270,6 +289,23 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
   </div>
 </div>
 
+<div class="ws-overlay" id="ws-overlay">
+  <div class="ws-modal">
+    <div class="ws-modal-header">
+      <h3>📝 Tạo bài tập viết</h3>
+      <button class="hw-close" onclick="app.worksheet.close()">&#215;</button>
+    </div>
+    <div class="ws-top-actions">
+      <button class="ws-sm-btn" onclick="app.worksheet.selectAll()">Chọn tất cả</button>
+      <button class="ws-sm-btn" onclick="app.worksheet.selectNone()">Bỏ chọn</button>
+    </div>
+    <div id="ws-list"></div>
+    <div class="ws-footer">
+      <button class="ws-gen-btn" onclick="app.worksheet.generate()">📄 Tạo &amp; In</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/utils.js"></script>
 <script src="js/database.js"></script>
 <script src="js/config.js"></script>
@@ -281,6 +317,7 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
 <script src="js/flashcard.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/handwriting.js"></script>
+<script src="js/worksheet.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

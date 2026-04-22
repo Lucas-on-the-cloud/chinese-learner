@@ -70,6 +70,7 @@ class VocabManager {
       this.render(); btn.textContent = '⚠ ' + e.message.slice(0, 30);
     }
     document.getElementById('csv-btn').style.display = 'inline-block';
+    document.getElementById('ws-btn').style.display  = 'inline-block';
   }
 
   render() {
