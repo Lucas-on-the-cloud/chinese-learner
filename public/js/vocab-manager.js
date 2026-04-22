@@ -49,10 +49,28 @@ class VocabManager {
     this.items = [];
     document.getElementById('ai-lt').textContent = 'AI đang phân tích...';
 
+    const SYSTEM_PROMPT = `Bạn là giáo viên tiếng Trung chuyên giúp người Việt đọc hiểu. Nhiệm vụ: phân tích bài đọc và tạo danh sách 15-25 từ/cụm từ THIẾT YẾU để học viên nắm được ngữ cảnh, nhân vật, tình huống và thông điệp của bài TRƯỚC KHI đọc.
+
+Tiêu chí chọn từ (theo thứ tự ưu tiên):
+1. THÀNH NGỮ và CỤM TỪ (2-4 chữ) mang ý nghĩa ngữ cảnh: hành động chủ đạo, trạng thái quan trọng, chủ đề bài
+2. Từ đơn có vai trò then chốt trong câu chuyện mà bỏ qua sẽ không hiểu được nội dung
+3. KHÔNG chọn từ cơ bản quá phổ biến (我、你、是、的、了、在) trừ khi xuất hiện trong cụm có nghĩa đặc biệt
+4. KHÔNG chọn từ mà người học trung cấp chắc chắn đã biết (大學、學生、學習...)
+
+Yêu cầu bắt buộc:
+- Số lượng: 15-25 từ/cụm từ
+- example PHẢI là câu/cụm từ NGUYÊN VĂN lấy trực tiếp từ bài đọc
+- exMeaning phải giải thích đủ nghĩa trong ngữ cảnh đó, không chỉ dịch từng chữ
+
+Trả về JSON thuần (KHÔNG markdown, KHÔNG giải thích):
+[{"char":"生活習慣","pinyin":"shēnghuó xíguàn","meaning":"thói quen sinh hoạt","example":"大學生的生活習慣普通不是很好","exPinyin":"dàxuéshēng de shēnghuó xíguàn pǔtōng bù shì hěn hǎo","exMeaning":"Thói quen sinh hoạt của sinh viên thường không tốt","level":"trung cấp"}]
+level: "cơ bản" / "trung cấp" / "nâng cao"`;
+
     try {
       const raw = await this.ai.call(
-        `Bạn là giáo viên tiếng Trung cho người Việt. Dựa vào phần nội dung tiếng trung Tạo danh sách những từ vựng quan trọng trong bài để hiểu hiểu ngữ cảnh của bài đọc.\nJSON thuần, KHÔNG markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa","example":"ví dụ trong bài","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa ví dụ","level":"cơ bản"}]\nlevel: "cơ bản"/"trung cấp"/"nâng cao". example phải là câu từ BÀI ĐỌC.`,
-        `Đoạn văn:\n${lesson.zh}\n\nPinyin:\n${lesson.py}\n\nTiếng Việt:\n${lesson.vi}\n\nJSON thuần.`
+        SYSTEM_PROMPT,
+        `Bài đọc tiếng Trung:\n${lesson.zh}\n\nPinyin:\n${lesson.py}\n\nDịch tiếng Việt:\n${lesson.vi}\n\nHãy tạo 15-25 từ/cụm từ THIẾT YẾU giúp hiểu ngữ cảnh bài. JSON thuần.`,
+        3500
       );
       ld.classList.remove('show');
       if (!raw) {
