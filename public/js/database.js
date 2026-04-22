@@ -24,4 +24,13 @@ class Database {
   async clearFlashcards() {
     return await this.client.from('flashcards').delete().neq('id', 0);
   }
+
+  async getVocab(lessonId) {
+    const { data } = await this.client.from('vocab_cache').select('items').eq('lesson_id', lessonId).single();
+    return data?.items || null;
+  }
+
+  async saveVocab(lessonId, items) {
+    await this.client.from('vocab_cache').upsert({ lesson_id: lessonId, items }, { onConflict: 'lesson_id' });
+  }
 }

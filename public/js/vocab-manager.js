@@ -1,6 +1,7 @@
 class VocabManager {
-  constructor(ai) {
+  constructor(ai, db) {
     this.ai    = ai;
+    this.db    = db;
     this.items = [];
     this.DEMO  = {
       1: [
@@ -31,6 +32,18 @@ class VocabManager {
     };
   }
 
+  async load(lesson) {
+    if (!this.db || !lesson) return;
+    const cached = await this.db.getVocab(lesson.id);
+    if (!cached || !cached.length) return;
+    this.items = cached;
+    this.render();
+    const btn = document.getElementById('gen-btn');
+    btn.textContent = '↺ Tạo lại';
+    document.getElementById('csv-btn').style.display = 'inline-block';
+    document.getElementById('ws-btn').style.display  = 'inline-block';
+  }
+
   addUserEntry(char) {
     if (this.items.some(v => v.char === char)) return;
     this.items.push({ char, pinyin: '', meaning: '(bạn thêm)', example: '', level: '', userAdded: true });
@@ -40,6 +53,7 @@ class VocabManager {
   async generate() {
     const lesson = app.currentLesson;
     if (!lesson) return;
+    if (this.items.length > 0 && !confirm('Bài này đã có từ vựng. Tạo lại bằng AI?')) return;
     const btn = document.getElementById('gen-btn');
     const ld  = document.getElementById('ai-ld');
     btn.disabled = true;
@@ -82,7 +96,12 @@ level: "cơ bản" / "trung cấp" / "nâng cao"`;
       } else {
         const parsed = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
         this.items = [...parsed, ...userAdded];
-        this.render(); btn.textContent = `✓ ${parsed.length} từ`;
+        this.render();
+        btn.textContent = `✓ ${parsed.length} từ`;
+        if (this.db) {
+          await this.db.saveVocab(lesson.id, parsed);
+          setTimeout(() => { btn.textContent = '↺ Tạo lại'; btn.disabled = false; }, 1500);
+        }
       }
     } catch (e) {
       ld.classList.remove('show');

@@ -9,7 +9,7 @@ class ChineseApp {
     this.lessons     = new LessonManager(db);
     this.reading     = new ReadingView();
     this.selection   = new SelectionManager();
-    this.vocab       = new VocabManager(this.ai);
+    this.vocab       = new VocabManager(this.ai, db);
     this.flashcards  = new FlashcardManager(db);
     this.chat        = new ChatManager(this.ai);
     this.handwriting = new HandwritingModal();
@@ -43,15 +43,15 @@ class ChineseApp {
     document.getElementById('csv-btn').style.display  = 'none';
     document.getElementById('ws-btn').style.display   = 'none';
     const btn = document.getElementById('gen-btn');
-    btn.disabled   = false;
+    btn.disabled    = false;
     btn.textContent = 'Phân tích & tạo từ vựng';
     this.reading.open(this.currentLesson);
-    // Reading is a sub-view; keep lessons nav tab active
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('view-reading').classList.add('active');
     document.querySelectorAll('.nav-tab')[0].classList.add('active');
     this.config.updateUI();
+    this.vocab.load(this.currentLesson);
   }
 
   async submitLesson() {
