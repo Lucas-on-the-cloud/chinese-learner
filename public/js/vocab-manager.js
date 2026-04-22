@@ -51,7 +51,7 @@ class VocabManager {
 
     try {
       const raw = await this.ai.call(
-        `Bạn là giáo viên tiếng Trung cho người Việt. Từ vựng quan trọng trong bài để hiểu hiểu ngữ cảnh của bài đọc.\nJSON thuần, KHÔNG markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa","example":"ví dụ trong bài","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa ví dụ","level":"cơ bản"}]\nlevel: "cơ bản"/"trung cấp"/"nâng cao". example phải là câu từ BÀI ĐỌC.`,
+        `Bạn là giáo viên tiếng Trung cho người Việt. Dựa vào phần nội dung tiếng trung Tạo danh sách những từ vựng quan trọng trong bài để hiểu hiểu ngữ cảnh của bài đọc.\nJSON thuần, KHÔNG markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa","example":"ví dụ trong bài","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa ví dụ","level":"cơ bản"}]\nlevel: "cơ bản"/"trung cấp"/"nâng cao". example phải là câu từ BÀI ĐỌC.`,
         `Đoạn văn:\n${lesson.zh}\n\nPinyin:\n${lesson.py}\n\nTiếng Việt:\n${lesson.vi}\n\nJSON thuần.`
       );
       ld.classList.remove('show');
