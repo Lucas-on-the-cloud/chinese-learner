@@ -172,6 +172,20 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
 .book-lessons{border:1px solid var(--border);border-top:none;border-radius:0 0 9px 9px;overflow:hidden;margin-bottom:6px}
 .book-lessons .lesson-card{border-radius:0;border-left:none;border-right:none;border-top:none}
 .book-lessons .lesson-card:last-child{border-bottom:none}
+.fc-book-section{margin-bottom:.5rem}
+.fc-book-hd{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fc-book-name{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;flex:1}
+.fc-cnt{font-size:11px;color:var(--muted);font-family:'Be Vietnam Pro';font-weight:400}
+.fc-lesson-list{border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;background:#fff;margin-bottom:.5rem}
+.fc-lesson-row{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)}
+.fc-lesson-row:last-child{border-bottom:none}
+.fc-lesson-name{font-size:13px}
+.fc-lesson-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.fc-study-btn{background:var(--teal);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.fc-study-btn:hover{opacity:.85}.fc-study-btn.fc-study-all{font-size:12px;padding:7px 18px}
+.fc-browse-footer{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.fc-study-hd{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.fc-study-lbl{font-size:13px;color:var(--muted);font-weight:500}
 </style>
 </head>
 <body>
@@ -219,6 +233,7 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
           <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">📝 Bài tập</button>
+          <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--teal)">＋ Flash tất cả</button>
           <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
         </div>
       </div>
@@ -238,8 +253,7 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
   <div class="view" id="view-flashcards">
     <div class="page-title">Flashcard</div>
     <div class="flashcard-controls">
-      <span class="fc-count" id="fc-count">0</span>
-      <button class="clear-btn" onclick="app.flashcards.clear()">Xóa tất cả</button>
+      <span class="fc-count" id="fc-count">0 thẻ</span>
     </div>
     <div id="fc-area"></div>
   </div>

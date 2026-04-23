@@ -40,8 +40,9 @@ class ChineseApp {
     this.selection.clear();
     this.chat.reset();
     document.getElementById('vocab-list').innerHTML    = '';
-    document.getElementById('csv-btn').style.display  = 'none';
-    document.getElementById('ws-btn').style.display   = 'none';
+    document.getElementById('csv-btn').style.display    = 'none';
+    document.getElementById('ws-btn').style.display     = 'none';
+    document.getElementById('addall-btn').style.display = 'none';
     const btn = document.getElementById('gen-btn');
     btn.disabled    = false;
     btn.textContent = 'Phân tích & tạo từ vựng';

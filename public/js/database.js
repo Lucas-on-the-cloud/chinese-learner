@@ -21,6 +21,10 @@ class Database {
     return await this.client.from('flashcards').insert([row]);
   }
 
+  async addFlashcards(rows) {
+    return await this.client.from('flashcards').insert(rows);
+  }
+
   async clearFlashcards() {
     return await this.client.from('flashcards').delete().neq('id', 0);
   }

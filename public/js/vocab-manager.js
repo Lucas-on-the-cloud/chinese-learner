@@ -40,8 +40,18 @@ class VocabManager {
     this.render();
     const btn = document.getElementById('gen-btn');
     btn.textContent = '↺ Tạo lại';
-    document.getElementById('csv-btn').style.display = 'inline-block';
-    document.getElementById('ws-btn').style.display  = 'inline-block';
+    document.getElementById('csv-btn').style.display    = 'inline-block';
+    document.getElementById('ws-btn').style.display     = 'inline-block';
+    document.getElementById('addall-btn').style.display = 'inline-block';
+  }
+
+  async addAll() {
+    const btn = document.getElementById('addall-btn');
+    btn.disabled = true;
+    await app.flashcards.addBulk();
+    btn.disabled = false;
+    btn.textContent = '✓ Đã thêm';
+    setTimeout(() => { btn.textContent = '＋ Flash tất cả'; }, 2000);
   }
 
   addUserEntry(char) {
@@ -109,8 +119,9 @@ level: "cơ bản" / "trung cấp" / "nâng cao"`;
       this.items = [...(this.DEMO[lesson.id] || this.DEMO[1]), ...userAdded];
       this.render(); btn.textContent = '⚠ ' + e.message.slice(0, 30);
     }
-    document.getElementById('csv-btn').style.display = 'inline-block';
-    document.getElementById('ws-btn').style.display  = 'inline-block';
+    document.getElementById('csv-btn').style.display    = 'inline-block';
+    document.getElementById('ws-btn').style.display     = 'inline-block';
+    document.getElementById('addall-btn').style.display = 'inline-block';
   }
 
   render() {
