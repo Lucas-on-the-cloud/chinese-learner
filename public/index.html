@@ -165,6 +165,8 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
 .ws-gen-btn{background:var(--red);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;padding:9px 28px;border-radius:7px;cursor:pointer;transition:opacity .15s}
 .ws-gen-btn:hover{opacity:.88}
 .ai-btn.ws-btn{background:#6b4c9a}
+.book-header{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;color:var(--muted);padding:4px 0;margin-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.book-header+.book-header{margin-top:1.25rem}
 </style>
 </head>
 <body>
@@ -251,11 +253,8 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
     </div>
     <div class="upload-section">
       <h3>Thêm bài mới</h3>
-      <h3>Tiêu đề</h3><input type="text" id="up-title" placeholder="VD: Thói quen sinh viên">
-      <h3>Tiếng Trung</h3><textarea id="up-zh"></textarea>
-      <h3>Pinyin</h3><textarea id="up-py"></textarea>
-      <h3>Tiếng Việt</h3><textarea id="up-vi"></textarea>
-      <button class="submit-btn" onclick="app.submitLesson()">Lưu bài học</button>
+      <p style="font-size:12px;color:var(--muted);margin:5px 0 12px;line-height:1.5">Thêm bài đọc mới vào thư viện. Sau khi lưu, bạn có thể tiếp tục thêm bài khác.</p>
+      <a href="add-lesson.html" class="submit-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
     </div>
   </div>
 </main>

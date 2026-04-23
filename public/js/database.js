@@ -25,6 +25,12 @@ class Database {
     return await this.client.from('flashcards').delete().neq('id', 0);
   }
 
+  async getBooks() {
+    const { data } = await this.client.from('lessons').select('book').order('book');
+    if (!data || !data.length) return ['B1'];
+    return [...new Set(data.map(r => r.book || 'B1'))].sort();
+  }
+
   async getVocab(lessonId) {
     const { data } = await this.client.from('vocab_cache').select('items').eq('lesson_id', lessonId).single();
     return data?.items || null;

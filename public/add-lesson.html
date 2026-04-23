@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thêm bài mới · 學中文</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Be+Vietnam+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#1a1208;--paper:#faf7f2;--paper2:#f3ede3;--red:#c0392b;--red-light:#fde8e6;--teal:#1a6b5a;--teal-light:#e6f4f0;--muted:#7a6e60;--border:#e0d8cc;--shadow:0 2px 16px rgba(26,18,8,.09)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+nav{background:var(--ink);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'Noto Serif TC',serif;color:#fff;font-size:18px;letter-spacing:2px}.nav-logo span{color:#e8c97a}
+.back-link{color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;border:1px solid rgba(255,255,255,.2);padding:5px 14px;border-radius:6px;transition:all .2s}
+.back-link:hover{color:#fff;border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.08)}
+main{max-width:640px;margin:0 auto;padding:1.5rem}
+.page-title{font-family:'Noto Serif TC',serif;font-size:24px;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem}
+.upload-section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.5rem}
+.upload-section h3{font-size:13px;font-weight:600;margin-bottom:6px;margin-top:.85rem}.upload-section h3:first-child{margin-top:0}
+textarea{width:100%;min-height:100px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:10px;resize:vertical;background:var(--paper);color:var(--ink);outline:none;line-height:1.7}
+textarea:focus{border-color:var(--red)}
+input[type="text"],select{width:100%;height:36px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;padding:0 10px;background:var(--paper);color:var(--ink);outline:none}
+input[type="text"]:focus,select:focus{border-color:var(--red)}
+select{cursor:pointer}
+.new-book-row{margin-top:6px;display:none}
+.submit-btn{background:var(--red);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;padding:9px 24px;border-radius:7px;cursor:pointer;margin-top:.85rem;transition:opacity .15s}
+.submit-btn:hover{opacity:.88}.submit-btn:disabled{opacity:.45;cursor:not-allowed}
+.msg{margin-top:.85rem;font-size:13px;padding:9px 14px;border-radius:7px;display:none;line-height:1.5}
+.msg.ok{display:block;background:var(--teal-light);color:var(--teal);border:1px solid #b0d8cf}
+.msg.err{display:block;background:var(--red-light);color:var(--red);border:1px solid #e8b0a8}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">學中文<span>·</span>Học Tiếng Trung</div>
+  <a href="index.html" class="back-link">← Trang chủ</a>
+</nav>
+<main>
+  <div class="page-title">Thêm bài mới</div>
+  <div class="page-sub">Thêm bài đọc mới vào thư viện bài học.</div>
+  <div class="upload-section">
+    <h3>Quyển sách</h3>
+    <select id="up-book" onchange="onBookChange(this)">
+      <option value="B1">📘 Quyển sách B1</option>
+    </select>
+    <div class="new-book-row" id="new-book-row">
+      <input type="text" id="up-book-new" placeholder="Tên quyển sách mới, VD: B3">
+    </div>
+    <h3>Tiêu đề</h3>
+    <input type="text" id="up-title" placeholder="VD: Thói quen sinh viên">
+    <h3>Tiếng Trung</h3>
+    <textarea id="up-zh" placeholder="Nhập văn bản tiếng Trung..."></textarea>
+    <h3>Pinyin</h3>
+    <textarea id="up-py" placeholder="Nhập phiên âm Pinyin..."></textarea>
+    <h3>Tiếng Việt</h3>
+    <textarea id="up-vi" placeholder="Nhập bản dịch tiếng Việt..."></textarea>
+    <div class="msg" id="msg"></div>
+    <button class="submit-btn" id="submit-btn" onclick="submitLesson()">Lưu bài học</button>
+  </div>
+</main>
+
+<script src="js/database.js"></script>
+<script>
+const EMOJIS = ['📘', '📗', '📒', '📕', '📙'];
+
+const db = new Database(
+  'https://prctmferugkxabyizslx.supabase.co',
+  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+);
+
+async function loadBooks() {
+  const books = await db.getBooks();
+  const sel = document.getElementById('up-book');
+  sel.innerHTML = books.map((b, i) =>
+    `<option value="${b}">${EMOJIS[i % EMOJIS.length]} Quyển sách ${b}</option>`
+  ).join('') + `<option value="__new__">＋ Quyển sách mới...</option>`;
+}
+
+function onBookChange(sel) {
+  document.getElementById('new-book-row').style.display =
+    sel.value === '__new__' ? 'block' : 'none';
+}
+
+function getBook() {
+  const sel = document.getElementById('up-book').value;
+  if (sel === '__new__') {
+    const name = document.getElementById('up-book-new').value.trim().toUpperCase();
+    if (!name) { showMsg('Nhập tên quyển sách mới.', 'err'); return null; }
+    return name;
+  }
+  return sel;
+}
+
+async function submitLesson() {
+  const book  = getBook();
+  if (!book) return;
+  const title = document.getElementById('up-title').value.trim();
+  const zh    = document.getElementById('up-zh').value.trim();
+  const py    = document.getElementById('up-py').value.trim();
+  const vi    = document.getElementById('up-vi').value.trim();
+
+  if (!title || !zh) { showMsg('Nhập tiêu đề và tiếng Trung.', 'err'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Đang lưu...';
+
+  const { error } = await db.addLesson({
+    book, title,
+    description: zh.slice(0, 40) + '...',
+    chinese: zh, pinyin: py, vietnamese: vi
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Lưu bài học';
+
+  if (error) { showMsg('Lỗi: ' + error.message, 'err'); return; }
+
+  ['up-title', 'up-zh', 'up-py', 'up-vi'].forEach(id => document.getElementById(id).value = '');
+  showMsg('✓ Đã lưu: ' + title, 'ok');
+  await loadBooks();
+  document.getElementById('new-book-row').style.display = 'none';
+}
+
+loadBooks();
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  if (type === 'ok') setTimeout(() => { el.className = 'msg'; el.textContent = ''; }, 5000);
+}
+</script>
+</body>
+</html>

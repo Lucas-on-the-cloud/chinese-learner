@@ -54,10 +54,7 @@ class ChineseApp {
     this.vocab.load(this.currentLesson);
   }
 
-  async submitLesson() {
-    const ok = await this.lessons.addLesson();
-    if (ok) { await this.init(); this.showView('lessons'); }
-  }
+
 }
 
 const app = new ChineseApp();

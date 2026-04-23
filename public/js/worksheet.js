@@ -28,12 +28,13 @@ class WorksheetManager {
       .filter(Boolean);
     if (!selected.length) { alert('Chọn ít nhất 1 từ.'); return; }
     this.close();
+    const lessonTitle = app.currentLesson ? app.currentLesson.title : '';
     const win = window.open('', '_blank');
-    win.document.write(this._buildHTML(selected));
+    win.document.write(this._buildHTML(selected, lessonTitle));
     win.document.close();
   }
 
-  _buildHTML(vocab) {
+  _buildHTML(vocab, lessonTitle) {
     const SZ = 58;  // box size in px
     const N  = 10;  // practice columns
 
@@ -103,7 +104,7 @@ h1 { font-family: 'Noto Serif TC', serif; font-size: 15px; color: #333; margin-b
   <button class="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>
   <span class="print-hint">Chọn "Save as PDF" trong hộp thoại in để lưu file</span>
 </div>
-<h1>漢字練習 · Bài tập viết chữ Hán</h1>
+<h1>${lessonTitle ? lessonTitle + ' · ' : ''}漢字練習</h1>
 ${rowsHTML}
 <script>
 window.onload = function() {
