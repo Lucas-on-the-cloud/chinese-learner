@@ -1,11 +1,24 @@
 class FlashcardManager {
   constructor(db) {
-    this.db       = db;
-    this.cards    = [];
-    this.studying = [];
-    this.studyIdx = 0;
-    this.mode     = 'browse';
-    this.studyLbl = '';
+    this.db         = db;
+    this.cards      = [];
+    this.studying   = [];
+    this.studyIdx   = 0;
+    this.mode       = 'browse';
+    this.studyLbl   = '';
+    this._keyHandler = this._handleKey.bind(this);
+  }
+
+  _handleKey(e) {
+    if (this.mode !== 'study') return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      document.getElementById('fc')?.classList.toggle('flipped');
+    } else if (e.code === 'ArrowLeft') {
+      this.navigate(-1);
+    } else if (e.code === 'ArrowRight') {
+      this.navigate(1);
+    }
   }
 
   async load() {
@@ -69,6 +82,7 @@ class FlashcardManager {
     this.studying = cards;
     this.studyIdx = 0;
     this.mode = 'study';
+    document.addEventListener('keydown', this._keyHandler);
     this.render();
   }
 
@@ -77,7 +91,11 @@ class FlashcardManager {
     this.render();
   }
 
-  backToBrowse() { this.mode = 'browse'; this.render(); }
+  backToBrowse() {
+    document.removeEventListener('keydown', this._keyHandler);
+    this.mode = 'browse';
+    this.render();
+  }
 
   render() {
     if (this.mode === 'study') this._renderStudy();
@@ -170,6 +188,7 @@ class FlashcardManager {
 
   async clear() {
     if (!confirm('Xóa tất cả flashcard?')) return;
+    document.removeEventListener('keydown', this._keyHandler);
     await this.db.clearFlashcards();
     this.cards = []; this.studying = []; this.studyIdx = 0; this.mode = 'browse';
     this.render();
