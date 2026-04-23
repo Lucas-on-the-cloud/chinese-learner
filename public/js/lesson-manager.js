@@ -51,11 +51,26 @@ class LessonManager {
     const html = books.map((book, bi) => {
       const group = entries.filter(({ l }) => (l.book || 'B1') === book);
       const emoji = EMOJIS[bi % EMOJIS.length];
-      const mt = bi > 0 ? ' style="margin-top:1.25rem"' : '';
-      return `<div class="book-header"${mt}>${emoji} Quyển sách ${book}</div>` + group.map(card).join('');
+      const open = bi === 0;
+      return `
+        <div class="book-header" data-open="${open}" onclick="app.lessons.toggleBook(this)">
+          <span>${emoji} Quyển sách ${book} <span style="font-family:'Be Vietnam Pro';font-size:11px;font-weight:400">(${group.length} bài)</span></span>
+          <span class="book-arrow">${open ? '▾' : '▸'}</span>
+        </div>
+        <div class="book-lessons"${open ? '' : ' style="display:none"'}>
+          ${group.map(card).join('')}
+        </div>`;
     }).join('');
 
     document.getElementById('lesson-grid').innerHTML = html;
+  }
+
+  toggleBook(header) {
+    const isOpen = header.dataset.open === 'true';
+    const lessons = header.nextElementSibling;
+    header.dataset.open = String(!isOpen);
+    header.querySelector('.book-arrow').textContent = isOpen ? '▸' : '▾';
+    lessons.style.display = isOpen ? 'none' : 'block';
   }
 
   get(index) { return this.lessons[index]; }
