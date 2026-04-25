@@ -14,6 +14,7 @@ class ChineseApp {
     this.chat        = new ChatManager(this.ai);
     this.handwriting = new HandwritingModal();
     this.worksheet   = new WorksheetManager();
+    this.importer    = new FileImporter();
     this.currentLesson = null;
   }
 
