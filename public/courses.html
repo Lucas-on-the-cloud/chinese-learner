@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chương trình học — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ── BASE ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 15px;
+  color: #1f2937;
+  background: #f4f5f7;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ── TOKENS ──────────────────────────────────── */
+:root {
+  --blue:      #1a56db;
+  --blue-dark: #1544b8;
+  --blue-lt:   #eff6ff;
+  --orange:    #f47b20;
+  --navy:      #0d1b4b;
+  --text:      #1f2937;
+  --text-2:    #6b7280;
+  --text-3:    #9ca3af;
+  --bg:        #f4f5f7;
+  --surface:   #ffffff;
+  --border:    #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow:    0 4px 16px rgba(0,0,0,.08);
+  --r:         8px;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── NAVBAR ──────────────────────────────────── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 62px;
+  display: flex; align-items: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.navbar .container { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.nav-brand { display: flex; align-items: center; gap: 10px; }
+.nav-brand img { height: 32px; border-radius: 5px; }
+.nav-brand-text {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 18px; font-weight: 700; color: var(--navy);
+}
+.nav-brand-text em { color: var(--orange); font-style: normal; }
+.nav-menu { display: flex; align-items: center; gap: 2px; }
+.nav-link {
+  font-size: 14px; font-weight: 500;
+  color: var(--text-2); padding: 6px 12px;
+  border-radius: 6px; transition: all .15s;
+  white-space: nowrap;
+}
+.nav-link:hover { color: var(--text); background: #f3f4f6; }
+.nav-link.active { color: var(--blue); font-weight: 600; }
+.nav-btn {
+  font-size: 13px; font-weight: 600;
+  color: #fff; background: var(--blue);
+  padding: 7px 18px; border-radius: 7px;
+  margin-left: 8px; transition: background .15s;
+  white-space: nowrap;
+}
+.nav-btn:hover { background: var(--blue-dark); }
+
+/* ── CONTENT HEADER ──────────────────────────── */
+.content-header {
+  background: linear-gradient(135deg, var(--navy) 0%, #1e3a8a 100%);
+  padding: 48px 1.5rem 56px;
+}
+.content-header .container {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 3rem; align-items: center;
+}
+.ch-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.8);
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 4px 12px; border-radius: 50px;
+  margin-bottom: 1rem;
+}
+.content-header h1 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 700; color: #fff;
+  margin-bottom: .85rem; line-height: 1.3;
+}
+.content-header p {
+  font-size: 14px; color: rgba(255,255,255,.7);
+  line-height: 1.8; max-width: 520px;
+}
+.ch-cta-box {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+.ch-cta-box h3 {
+  font-size: 15px; font-weight: 700;
+  color: #fff; margin-bottom: 1rem;
+}
+.ch-cta-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.25rem; }
+.ch-cta-list li {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: rgba(255,255,255,.8);
+}
+.ch-cta-list li i { color: #34d399; font-size: 12px; }
+.ch-cta-btn {
+  display: block; text-align: center;
+  background: var(--orange); color: #fff;
+  font-size: 14px; font-weight: 700;
+  padding: 11px 20px; border-radius: 8px;
+  transition: opacity .15s;
+}
+.ch-cta-btn:hover { opacity: .9; }
+
+/* ── CONTENT BODY ────────────────────────────── */
+.content-body { padding: 40px 1.5rem 60px; }
+
+/* ── SUBJECT TABS ────────────────────────────── */
+.subject-row {
+  display: flex; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 2.5rem;
+}
+.subject-pill {
+  display: flex; flex-direction: column; align-items: center;
+  padding: .75rem 1rem;
+  min-width: 110px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  background: #fff;
+  font-size: 13px; font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer; transition: all .15s;
+}
+.subject-pill span.pill-icon { font-size: 22px; margin-bottom: 4px; }
+.subject-pill:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+.subject-pill.active  { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+
+/* ── SECTION ANCHOR ──────────────────────────── */
+.section-anchor { scroll-margin-top: 80px; }
+.course-section-title {
+  font-size: 20px; font-weight: 700;
+  color: var(--text); margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.course-section-title .zh-tag {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 13px; font-weight: 600;
+  background: var(--navy); color: rgba(255,255,255,.8);
+  padding: 2px 10px; border-radius: 4px;
+}
+.coming-soon-badge {
+  font-size: 11px; font-weight: 600;
+  background: #fef3c7; color: #92400e;
+  padding: 2px 8px; border-radius: 20px;
+  border: 1px solid #fde68a;
+}
+
+/* ── COURSE GRID ─────────────────────────────── */
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 3rem;
+}
+.course-card {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+  display: flex; flex-direction: column;
+}
+.course-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+.course-card a { display: flex; flex-direction: column; flex: 1; color: inherit; }
+.course-thumb {
+  height: 152px;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.course-thumb-char {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 72px; font-weight: 700;
+  color: rgba(255,255,255,.18);
+  user-select: none; line-height: 1;
+}
+.course-thumb-label {
+  position: absolute; bottom: 10px; left: 12px;
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,.9);
+  background: rgba(0,0,0,.25);
+  padding: 3px 8px; border-radius: 4px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.course-body { padding: 14px 14px 0; flex: 1; }
+.course-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--text); line-height: 1.45;
+  margin-bottom: .6rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.course-meta {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--text-2);
+  margin-bottom: .5rem;
+}
+.stars { color: #f59e0b; font-size: 11px; }
+.course-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: .75rem; }
+.c-tag {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px;
+  border: 1px solid var(--border);
+  background: #f9fafb; color: var(--text-2);
+}
+.c-tag.free { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
+.c-tag.soon { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+.course-footer {
+  padding: 10px 14px 14px;
+  border-top: 1px solid #f3f4f6;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.course-price-free {
+  font-size: 16px; font-weight: 800;
+  color: #15803d;
+}
+.course-price-soon {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-3);
+}
+.course-cta {
+  font-size: 12px; font-weight: 600;
+  color: #fff; background: var(--blue);
+  padding: 5px 14px; border-radius: 6px;
+  transition: background .15s;
+}
+.course-cta:hover { background: var(--blue-dark); }
+.course-cta.disabled {
+  background: #e5e7eb; color: var(--text-3);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  background: #111827; color: rgba(255,255,255,.6); font-size: 13px;
+}
+.footer-main {
+  padding: 48px 1.5rem;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1.4fr;
+  gap: 3rem;
+}
+.footer-brand-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.footer-brand-name {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 17px; font-weight: 700; color: #fff;
+}
+.footer-brand-name em { color: var(--orange); font-style: normal; }
+.footer-desc { font-size: 13px; line-height: 1.7; margin-bottom: 1.25rem; max-width: 300px; }
+.footer-socials { display: flex; gap: 8px; }
+.footer-social {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(255,255,255,.6);
+  transition: all .15s;
+}
+.footer-social:hover { background: var(--blue); color: #fff; }
+.footer-col-title {
+  font-size: 12px; font-weight: 700;
+  color: #fff; margin-bottom: .85rem;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.footer-links a { color: rgba(255,255,255,.5); transition: color .15s; }
+.footer-links a:hover { color: rgba(255,255,255,.85); }
+.footer-info-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  color: rgba(255,255,255,.5); margin-bottom: .5rem;
+}
+.footer-info-item i { width: 16px; flex-shrink: 0; margin-top: 2px; color: rgba(255,255,255,.3); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: 16px 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .5rem;
+}
+.footer-bottom-links { display: flex; gap: 1.5rem; }
+.footer-bottom-links a { color: rgba(255,255,255,.4); transition: color .15s; }
+.footer-bottom-links a:hover { color: rgba(255,255,255,.7); }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .content-header .container { grid-template-columns: 1fr; }
+  .ch-cta-box { display: none; }
+  .courses-grid { grid-template-columns: 1fr 1fr; }
+  .footer-main { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .courses-grid { grid-template-columns: 1fr; }
+  .nav-link { display: none; }
+  .footer-main { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ─────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link active" href="/courses.html">Chương trình học</a>
+      <a class="nav-link" href="/">Luyện đọc</a>
+      <a class="nav-link" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Blog</a>
+      <a class="nav-btn" href="/">Bắt đầu học</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── CONTENT HEADER ──────────────────────────── -->
+<div class="content-header">
+  <div class="container">
+    <div>
+      <div class="ch-eyebrow">🎓 TOCFL · 繁體中文 · A1 → C1</div>
+      <h1>Chương trình luyện thi TOCFL</h1>
+      <p>
+        Các chương trình luyện thi TOCFL Reading và Listening chất lượng cao của TOCFL FAFA
+        được thiết kế sát format thi thật, theo chương trình chuẩn CEFR (A1–C1) với
+        bài đọc thực từ đề thi và công cụ AI hỗ trợ từ vựng cá nhân hóa.
+      </p>
+    </div>
+    <div class="ch-cta-box">
+      <h3>Bắt đầu học ngay</h3>
+      <ul class="ch-cta-list">
+        <li><i class="fas fa-check-circle"></i> Hoàn toàn miễn phí</li>
+        <li><i class="fas fa-check-circle"></i> Không cần đăng ký tài khoản</li>
+        <li><i class="fas fa-check-circle"></i> AI phân tích từ vựng tự động</li>
+        <li><i class="fas fa-check-circle"></i> Luyện viết chữ Hán có animation</li>
+        <li><i class="fas fa-check-circle"></i> Flashcard + bài tập in được</li>
+      </ul>
+      <a class="ch-cta-btn" href="/">Vào học ngay →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENT BODY ───────────────────────────── -->
+<div class="content-body">
+  <div class="container">
+
+    <!-- Subject filter -->
+    <div class="subject-row">
+      <a class="subject-pill active" href="#tocfl-reading">
+        <span class="pill-icon">📖</span>
+        TOCFL Reading
+      </a>
+      <a class="subject-pill" href="#tocfl-listening">
+        <span class="pill-icon">🎧</span>
+        TOCFL Listening
+      </a>
+    </div>
+
+    <!-- ── TOCFL READING ──────────────────────── -->
+    <div id="tocfl-reading" class="section-anchor">
+      <div class="course-section-title">
+        <span>TOCFL Reading</span>
+        <span class="zh-tag">閱讀測驗</span>
+      </div>
+      <div class="courses-grid">
+
+        <!-- Card 1 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#1a237e,#283593)">
+              <span class="course-thumb-char">入</span>
+              <span class="course-thumb-label">A1 – A2</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Reading A1-A2] Nhập môn — Từ vựng & Bài đọc cơ bản</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ A1–A2</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#1565c0,#0288d1)">
+              <span class="course-thumb-char">基</span>
+              <span class="course-thumb-label">B1</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Reading B1] Cơ bản — Đọc hiểu văn bản nhật dụng & xã hội</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ B1</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#00695c,#00897b)">
+              <span class="course-thumb-char">進</span>
+              <span class="course-thumb-label">B2</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Reading B2] Trung cấp — Đọc hiểu bài báo & văn bản học thuật</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ B2</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa)">
+              <span class="course-thumb-char">高</span>
+              <span class="course-thumb-label">C1</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Reading C1] Cao cấp — Đọc hiểu văn bản chuyên ngành & nghị luận</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ C1</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#c62828,#e53935)">
+              <span class="course-thumb-char">報</span>
+              <span class="course-thumb-label">B2 – C1</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[Đọc báo Đài Loan] Tin tức & Thời sự bằng tiếng Trung phồn thể thực tế</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ B2–C1</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">Thực chiến</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="course-card">
+          <a href="/">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#e65100,#f57c00)">
+              <span class="course-thumb-char">詞</span>
+              <span class="course-thumb-label">A1 – C1</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[Từ vựng TOCFL] 6,000+ từ vựng cần thiết từ A1 đến C1 với AI flashcard</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Mọi cấp độ</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag free">Miễn phí</span>
+                <span class="c-tag">AI Flashcard</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-free">Miễn phí</span>
+              <span class="course-cta">Học ngay</span>
+            </div>
+          </a>
+        </div>
+
+      </div><!-- /courses-grid -->
+    </div><!-- /section reading -->
+
+    <!-- ── TOCFL LISTENING ────────────────────── -->
+    <div id="tocfl-listening" class="section-anchor">
+      <div class="course-section-title">
+        <span>TOCFL Listening</span>
+        <span class="zh-tag">聽力測驗</span>
+        <span class="coming-soon-badge">Sắp ra mắt</span>
+      </div>
+      <div class="courses-grid">
+
+        <!-- Listening Card 1 -->
+        <div class="course-card" style="opacity:.75">
+          <a href="#tocfl-listening">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#37474f,#546e7a)">
+              <span class="course-thumb-char">聽</span>
+              <span class="course-thumb-label">A1 – A2</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Listening A1-A2] Nhập môn — Luyện nghe hội thoại đời thường</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ A1–A2</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag soon">Sắp ra mắt</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-soon">Sắp ra mắt</span>
+              <span class="course-cta disabled">Chờ ra mắt</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Listening Card 2 -->
+        <div class="course-card" style="opacity:.75">
+          <a href="#tocfl-listening">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#4a148c,#6a1b9a)">
+              <span class="course-thumb-char">聞</span>
+              <span class="course-thumb-label">B1 – B2</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Listening B1-B2] Trung cấp — Luyện nghe bản tin & phỏng vấn</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ B1–B2</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag soon">Sắp ra mắt</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-soon">Sắp ra mắt</span>
+              <span class="course-cta disabled">Chờ ra mắt</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Listening Card 3 -->
+        <div class="course-card" style="opacity:.75">
+          <a href="#tocfl-listening">
+            <div class="course-thumb" style="background:linear-gradient(135deg,#1b5e20,#2e7d32)">
+              <span class="course-thumb-char">音</span>
+              <span class="course-thumb-label">C1</span>
+            </div>
+            <div class="course-body">
+              <div class="course-title">[TOCFL Listening C1] Cao cấp — Luyện nghe diễn văn & chương trình học thuật</div>
+              <div class="course-meta">
+                <span class="stars">★★★★★</span>
+                <span>Cấp độ C1</span>
+              </div>
+              <div class="course-tags">
+                <span class="c-tag soon">Sắp ra mắt</span>
+                <span class="c-tag">Luyện thi TOCFL</span>
+              </div>
+            </div>
+            <div class="course-footer">
+              <span class="course-price-soon">Sắp ra mắt</span>
+              <span class="course-cta disabled">Chờ ra mắt</span>
+            </div>
+          </a>
+        </div>
+
+      </div><!-- /courses-grid listening -->
+    </div><!-- /section listening -->
+
+  </div><!-- /container -->
+</div><!-- /content-body -->
+
+<!-- ── FOOTER ─────────────────────────────────── -->
+<footer>
+  <div class="footer-main container">
+    <div>
+      <div class="footer-brand-wrap">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — kết hợp AI, bài đọc thực từ đề thi và công cụ học tập cá nhân hóa.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a class="footer-social" href="/" title="Trang học">
+          <i class="fas fa-graduation-cap"></i>
+        </a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/">Trang học</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+        <li><a href="/courses.html">Chương trình học</a></li>
+        <li><a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-item"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-item"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="footer-info-item"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/">Trang học</a>
+      <a href="/about.html">Giới thiệu</a>
+      <a href="/courses.html">Chương trình</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
