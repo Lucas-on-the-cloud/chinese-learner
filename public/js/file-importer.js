@@ -6,40 +6,62 @@ class FileImporter {
     this.currentIdx = 0;
   }
 
-  handleFile(file) {
-    if (!file) return;
-    const nameMatch = file.name.match(/(\d+\.\d+)/);
-    this.lessonName = nameMatch ? `Bài ${nameMatch[1]}` : file.name.replace(/\.txt$/i, '');
+  // ── Entry point (supports multiple files) ─────
+  handleFiles(fileList) {
+    const files = [...fileList];
+    if (!files.length) return;
 
+    this.sections   = [];
+    this.currentIdx = 0;
+    this.lessonName = files.length === 1
+      ? this._nameFromFile(files[0])
+      : '';
+
+    this._resetSaveBtn();
     this._showLoading();
-
-    const reader = new FileReader();
-    reader.onload = async e => {
-      document.getElementById('import-file').value = '';
-      const text = e.target.result.replace(/^﻿/, '');
-
-      let sections = [];
-      if (app.config.getKey()) {
-        sections = await this._parseWithAI(text);
-      }
-      if (!sections.length) {
-        sections = this._parseWithRegex(text);
-      }
-      this.sections   = sections;
-      this.currentIdx = 0;
-
-      if (!this.sections.length) {
-        document.getElementById('import-cards').innerHTML =
-          `<div class="imp-empty">❌ Không tìm thấy bài đọc nào.<br>Kiểm tra lại file hoặc đảm bảo có API key để dùng AI phân tích.</div>`;
-        return;
-      }
-      await this._loadBooks();
-      this._renderCard();
-    };
-    reader.readAsText(file, 'UTF-8');
+    this._processFiles(files);
   }
 
-  // ── AI parser (primary) ───────────────────────
+  async _processFiles(files) {
+    const allSections = [];
+
+    for (let fi = 0; fi < files.length; fi++) {
+      const file   = files[fi];
+      const prefix = this._nameFromFile(file);
+      this._updateLoadingMsg(
+        files.length > 1
+          ? `📄 ${fi + 1}/${files.length}: ${file.name}`
+          : (app.config.getKey() ? '✨ AI đang phân tích file...' : 'Đang đọc file...')
+      );
+
+      const text = await this._readFile(file);
+      let sections = [];
+      if (app.config.getKey()) sections = await this._parseWithAI(text);
+      if (!sections.length)    sections = this._parseWithRegex(text);
+
+      // For multi-file, prefix each section title with its file name
+      if (files.length > 1) {
+        sections.forEach(s => { s.title = `${prefix} · ${s.title}`; });
+      }
+      allSections.push(...sections);
+    }
+
+    document.getElementById('import-file').value = '';
+    this.sections = allSections;
+    this.currentIdx = 0;
+
+    if (!this.sections.length) {
+      document.getElementById('import-cards').innerHTML =
+        `<div class="imp-empty">❌ Không tìm thấy bài đọc nào.<br>Kiểm tra lại file hoặc đảm bảo có API key.</div>`;
+      return;
+    }
+
+    document.getElementById('import-lesson-name').value = this.lessonName;
+    await this._loadBooks();
+    this._renderCard();
+  }
+
+  // ── AI parser ─────────────────────────────────
   async _parseWithAI(text) {
     try {
       const raw = await app.ai.call(
@@ -56,7 +78,7 @@ QUY TẮC BẮT BUỘC:
 - "zh" và "py" là MẢNG (array), KHÔNG phải chuỗi.
 - zh[i] và py[i] phải là cùng một câu — tương ứng tuyệt đối.
 - Số phần tử zh và py phải BẰNG NHAU.
-- Mỗi phần tử trong mảng là một câu hoặc đoạn ngắn, KHÔNG chứa ký tự xuống dòng.
+- Mỗi phần tử là một câu/đoạn, KHÔNG chứa ký tự xuống dòng.
 - Giữ nguyên 100% nội dung, không rút gọn.`,
         `Nội dung file:\n${text}`,
         8000
@@ -78,10 +100,10 @@ QUY TẮC BẮT BUỘC:
 
   // ── Regex parser (fallback) ───────────────────
   _parseWithRegex(text) {
-    const lines  = text.split('\n').map(l => l.trim());
-    const isSep  = l => /^_{4,}$/.test(l);
-    const raw    = [];
-    let cur      = null;
+    const lines = text.split('\n').map(l => l.trim());
+    const isSep = l => /^_{4,}$/.test(l);
+    const raw   = [];
+    let cur     = null;
 
     for (const line of lines) {
       if (/Hình\s+\d+/i.test(line)) {
@@ -127,18 +149,22 @@ QUY TẮC BẮT BUỘC:
 
   // ── Render ────────────────────────────────────
   _showLoading() {
-    const hasKey = !!app.config.getKey();
     document.getElementById('import-lesson-name').value = this.lessonName;
     document.getElementById('import-count').textContent = '';
-    document.getElementById('import-prev').disabled = true;
-    document.getElementById('import-next').disabled = true;
-    document.getElementById('import-cards').innerHTML = `
-      <div class="imp-loading">
+    document.getElementById('import-prev').disabled     = true;
+    document.getElementById('import-next').disabled     = true;
+    document.getElementById('import-cards').innerHTML   =
+      `<div class="imp-loading">
         <div class="spinner" style="width:28px;height:28px;border-width:3px;border-color:#e8d5a0;border-top-color:var(--gold)"></div>
-        <div style="font-size:13px;color:var(--muted)">${hasKey ? '✨ AI đang phân tích file...' : 'Đang đọc file...'}</div>
+        <div id="imp-load-msg" style="font-size:13px;color:var(--muted)">Đang chuẩn bị...</div>
       </div>`;
     document.getElementById('import-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+  }
+
+  _updateLoadingMsg(msg) {
+    const el = document.getElementById('imp-load-msg');
+    if (el) el.textContent = msg;
   }
 
   _renderCard() {
@@ -146,9 +172,9 @@ QUY TẮC BẮT BUỘC:
     const i     = this.currentIdx;
     const s     = this.sections[i];
 
-    document.getElementById('import-count').textContent  = `${i + 1} / ${total}`;
-    document.getElementById('import-prev').disabled      = i === 0;
-    document.getElementById('import-next').disabled      = i === total - 1;
+    document.getElementById('import-count').textContent = `${i + 1} / ${total}`;
+    document.getElementById('import-prev').disabled     = i === 0;
+    document.getElementById('import-next').disabled     = i === total - 1;
 
     document.getElementById('import-cards').innerHTML = `
       <div class="imp-card">
@@ -176,7 +202,7 @@ QUY TẮC BẮT BUỘC:
   // ── Save ──────────────────────────────────────
   async saveAll() {
     const book   = document.getElementById('import-book').value || 'B1';
-    const prefix = this.lessonName.trim();
+    const prefix = (document.getElementById('import-lesson-name').value || '').trim();
     const toSave = this.sections.filter(s => s.zh.trim());
     if (!toSave.length) return;
 
@@ -199,10 +225,32 @@ QUY TẮC BẮT BUỘC:
 
     btn.textContent = `✓ Đã lưu ${saved}/${toSave.length} bài`;
     await app.init();
-    setTimeout(() => { this.close(); app.showView('lessons'); }, 900);
+    setTimeout(() => {
+      this.close();
+      app.showView('lessons');
+    }, 900);
   }
 
   // ── Helpers ───────────────────────────────────
+  _nameFromFile(file) {
+    const m = file.name.match(/(\d+\.\d+)/);
+    return m ? `Bài ${m[1]}` : file.name.replace(/\.txt$/i, '');
+  }
+
+  _readFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = e => resolve(e.target.result.replace(/^﻿/, ''));
+      reader.onerror = reject;
+      reader.readAsText(file, 'UTF-8');
+    });
+  }
+
+  _resetSaveBtn() {
+    const btn = document.getElementById('import-save-btn');
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu tất cả vào Supabase'; }
+  }
+
   async _loadBooks() {
     const books = await app.lessons.db.getBooks();
     const sel   = document.getElementById('import-book');
@@ -216,6 +264,7 @@ QUY TẮC BẮT BUỘC:
   }
 
   close() {
+    this._resetSaveBtn();
     document.getElementById('import-overlay').classList.remove('open');
     document.body.style.overflow = '';
   }
