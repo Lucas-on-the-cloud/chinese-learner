@@ -41,10 +41,7 @@ img{display:block;max-width:100%}
 .nav-btn:hover{background:var(--blue-dark)}
 
 /* READING PAGE */
-.reading-page{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:28px 1.5rem 60px}
-.rp-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
-@media(max-width:900px){.rp-grid{grid-template-columns:1fr}}
-.rp-right .ai-panel{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow-y:auto}
+.reading-page{flex:1;max-width:740px;width:100%;margin:0 auto;padding:28px 1.5rem 60px}
 
 /* BACK BUTTON & READING HEADER */
 .back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text-2);padding:6px 14px;border-radius:7px;margin-bottom:1.25rem;transition:all .15s}
@@ -231,37 +228,31 @@ img{display:block;max-width:100%}
 
 <div class="reading-page">
   <a id="back-btn" href="/lessons.html" class="back-btn"><i class="fas fa-arrow-left"></i> &nbsp;Quay lại</a>
-  <div class="rp-grid">
-    <div class="rp-left">
-      <div class="reading-header"><h2 id="r-title"></h2><p id="r-desc"></p></div>
-      <div class="text-tabs">
-        <button class="text-tab active" onclick="app.reading.setMode(this,'paired')">漢字 + Pinyin</button>
-        <button class="text-tab" onclick="app.reading.setMode(this,'vietnamese')">Tiếng Việt</button>
-        <button class="text-tab" onclick="app.reading.setMode(this,'all')">Tất cả</button>
-      </div>
-      <div id="sec-nav" class="sec-nav" style="display:none">
-        <button class="sec-nav-btn" id="sec-prev" onclick="app.reading.navigateSection(-1)">‹</button>
-        <span id="sec-label" class="sec-nav-label"></span>
-        <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
-      </div>
-      <div id="text-paired" class="il-block"></div>
-      <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
-    </div>
-    <div class="rp-right">
-      <div class="ai-panel">
-        <div class="ai-panel-header">
-          <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
-            <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">🖊 In chữ viết tay</button>
-            <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--success)">＋ Flash tất cả</button>
-            <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
-          </div>
-        </div>
-        <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
-        <div class="vocab-list" id="vocab-list"></div>
+  <div class="reading-header"><h2 id="r-title"></h2><p id="r-desc"></p></div>
+  <div class="text-tabs">
+    <button class="text-tab active" onclick="app.reading.setMode(this,'paired')">漢字 + Pinyin</button>
+    <button class="text-tab" onclick="app.reading.setMode(this,'vietnamese')">Tiếng Việt</button>
+    <button class="text-tab" onclick="app.reading.setMode(this,'all')">Tất cả</button>
+  </div>
+  <div id="sec-nav" class="sec-nav" style="display:none">
+    <button class="sec-nav-btn" id="sec-prev" onclick="app.reading.navigateSection(-1)">‹</button>
+    <span id="sec-label" class="sec-nav-label"></span>
+    <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
+  </div>
+  <div id="text-paired" class="il-block"></div>
+  <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
+  <div class="ai-panel">
+    <div class="ai-panel-header">
+      <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
+        <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">🖊 In chữ viết tay</button>
+        <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--success)">＋ Flash tất cả</button>
+        <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
       </div>
     </div>
+    <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
+    <div class="vocab-list" id="vocab-list"></div>
   </div>
 </div>
 
