@@ -14,14 +14,18 @@ class ConfigManager {
 
   updateUI() {
     const p = this.getProvider(), k = this.getKey();
-    const el = document.getElementById('key-status');
-    el.textContent = k ? `✓ ${p} key OK` : 'Chưa có key';
-    el.className = 'key-status ' + (k ? 'ok' : 'miss');
-    document.getElementById('api-provider').value = p;
-    if (k) document.getElementById('api-key-input').value = k.slice(0, 16) + '...';
+    const statusEl  = document.getElementById('key-status');
+    const provEl    = document.getElementById('api-provider');
+    const keyEl     = document.getElementById('api-key-input');
+    if (statusEl) {
+      statusEl.textContent = k ? `✓ ${p} key OK` : 'Chưa có key';
+      statusEl.className   = 'key-status ' + (k ? 'ok' : 'miss');
+    }
+    if (provEl) provEl.value = p;
+    if (keyEl && k) keyEl.value = k.slice(0, 16) + '...';
     document.querySelectorAll('.provider-badge').forEach(b => {
       b.textContent = p === 'openai' ? 'OpenAI' : 'Claude';
-      b.className = 'provider-badge ' + p;
+      b.className   = 'provider-badge ' + p;
     });
   }
 }

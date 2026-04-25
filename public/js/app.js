@@ -21,19 +21,22 @@ class ChineseApp {
   async init() {
     await this.lessons.load();
     await this.flashcards.load();
-    this.lessons.renderGrid();
-    this.flashcards.render();
+    if (document.getElementById('lesson-grid')) this.lessons.renderGrid();
+    if (document.getElementById('fc-area'))     this.flashcards.render();
     this.config.updateUI();
   }
 
   showView(name) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('view-' + name).classList.add('active');
-    document.querySelectorAll('.nav-tab')[{ lessons: 0, flashcards: 1, upload: 2 }[name]].classList.add('active');
-    if (name === 'flashcards') this.flashcards.render();
+    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+    const viewEl = document.getElementById('view-' + name);
+    if (viewEl) viewEl.classList.add('active');
+    const tabMap = { lessons: 0, reading: 0, upload: 1 };
+    const tabs = document.querySelectorAll('.app-tab');
+    const idx = tabMap[name];
+    if (idx !== undefined && tabs[idx]) tabs[idx].classList.add('active');
+    if (name !== 'reading') this.chat.hide();
     this.selection.clear();
-    this.chat.hide();
   }
 
   openLesson(index) {
@@ -51,14 +54,13 @@ class ChineseApp {
     this.reading.open(this.currentLesson);
     this.chat.show();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('view-reading').classList.add('active');
-    document.querySelectorAll('.nav-tab')[0].classList.add('active');
+    document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+    const tabs = document.querySelectorAll('.app-tab');
+    if (tabs[0]) tabs[0].classList.add('active');
     this.config.updateUI();
     this.vocab.load(this.currentLesson);
   }
-
-
 }
 
 const app = new ChineseApp();
