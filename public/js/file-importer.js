@@ -15,6 +15,7 @@ class FileImporter {
         return;
       }
       this._renderPreview();
+      this._loadBooks();
       document.getElementById('import-overlay').classList.add('open');
       document.body.style.overflow = 'hidden';
     };
@@ -53,6 +54,14 @@ class FileImporter {
 
       return { title: sec.title, zh, py, vi };
     }).filter(Boolean);
+  }
+
+  async _loadBooks() {
+    const books = await app.lessons.db.getBooks();
+    const sel = document.getElementById('import-book');
+    sel.innerHTML = books.map(b => `<option value="${b}">${b}</option>`).join('');
+    if (books.includes(this.book)) sel.value = this.book;
+    else { this.book = books[0]; sel.value = this.book; }
   }
 
   _h(s) {
