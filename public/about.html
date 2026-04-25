@@ -3,399 +3,464 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Về chúng tôi — TOCFL FAFA</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>Giới thiệu — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-/* ── TOKENS ──────────────────────────────────── */
-:root {
-  --navy:     #0d1b4b;
-  --navy-mid: #1a3080;
-  --orange:   #f47b20;
-  --orange-lt:#fff3e8;
-  --bg:       #f7f8fc;
-  --surface:  #ffffff;
-  --text:     #0d1b4b;
-  --text-2:   #5c6b8a;
-  --text-3:   #9ba8c0;
-  --border:   #e2e8f0;
-  --shadow:   0 2px 20px rgba(13,27,75,.06);
-  --shadow-lg:0 8px 48px rgba(13,27,75,.11);
-  --r:        14px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── RESET & BASE ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 15px;
+  color: #1f2937;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
 a { text-decoration: none; color: inherit; }
 img { display: block; }
 
-/* ── NAV ─────────────────────────────────────── */
-nav {
+/* ── TOKENS ──────────────────────────────────── */
+:root {
+  --blue:      #1a56db;
+  --blue-dark: #1544b8;
+  --blue-lt:   #eff6ff;
+  --orange:    #f47b20;
+  --navy:      #0d1b4b;
+  --text:      #1f2937;
+  --text-2:    #6b7280;
+  --text-3:    #9ca3af;
+  --bg:        #f9fafb;
+  --border:    #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow:    0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.10);
+  --r:         10px;
+}
+
+/* ── CONTAINER ───────────────────────────────── */
+.container { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── NAVBAR ──────────────────────────────────── */
+.navbar {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(13,27,75,.96);
-  backdrop-filter: blur(12px);
-  height: 58px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 62px;
+  display: flex; align-items: center;
+}
+.navbar .container {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 2rem;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  width: 100%;
 }
 .nav-brand {
+  display: flex; align-items: center; gap: 10px;
   font-family: 'Noto Serif TC', serif;
-  font-size: 16px; font-weight: 700;
-  color: #fff; letter-spacing: .5px;
+  font-size: 18px; font-weight: 700;
+  color: var(--navy);
 }
+.nav-brand img { height: 32px; border-radius: 5px; }
 .nav-brand em { color: var(--orange); font-style: normal; }
-.nav-links { display: flex; gap: 4px; }
+.nav-links { display: flex; align-items: center; gap: 4px; }
 .nav-link {
-  color: rgba(255,255,255,.6);
-  font-size: 12px; font-weight: 500;
-  padding: 5px 12px; border-radius: 7px;
+  font-size: 14px; font-weight: 500;
+  color: var(--text-2);
+  padding: 6px 14px; border-radius: 7px;
   transition: all .15s;
 }
-.nav-link:hover { color: #fff; background: rgba(255,255,255,.1); }
-.nav-link.home { background: var(--orange); color: #fff; }
-.nav-link.home:hover { opacity: .9; background: var(--orange); }
+.nav-link:hover, .nav-link.active { color: var(--text); background: var(--bg); }
+.nav-btn {
+  font-size: 13px; font-weight: 600;
+  color: #fff; background: var(--blue);
+  padding: 7px 18px; border-radius: 7px;
+  margin-left: 8px;
+  transition: background .15s;
+}
+.nav-btn:hover { background: var(--blue-dark); }
 
-/* ── HERO ────────────────────────────────────── */
-.hero {
-  background: var(--navy);
-  min-height: 88vh;
-  display: flex; align-items: center;
-  padding: 80px 2rem;
+/* ── PAGE HERO ───────────────────────────────── */
+.page-hero {
+  background: linear-gradient(120deg, var(--navy) 0%, #1e3a8a 100%);
+  padding: 64px 1.5rem 80px;
+  text-align: center;
   position: relative; overflow: hidden;
 }
-.hero-bg-ring {
+.page-hero::after {
+  content: '學';
   position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.05);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 320px; font-weight: 700;
+  color: rgba(255,255,255,.03);
+  bottom: -80px; right: 5%;
   pointer-events: none;
 }
-.hero-bg-ring:nth-child(1) { width: 600px; height: 600px; top: -200px; right: -100px; }
-.hero-bg-ring:nth-child(2) { width: 900px; height: 900px; top: -350px; right: -280px; }
-.hero-bg-ring:nth-child(3) { width: 300px; height: 300px; bottom: -100px; left: -80px; }
-.hero-inner {
-  max-width: 1060px; margin: 0 auto; width: 100%;
-  display: grid; grid-template-columns: 1fr auto;
-  gap: 4rem; align-items: center;
-}
-.hero-tag {
+.hero-eyebrow {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(244,123,32,.15);
-  border: 1px solid rgba(244,123,32,.3);
-  color: #fba45a; font-size: 11px; font-weight: 600;
-  padding: 5px 12px; border-radius: 50px;
-  letter-spacing: .5px; text-transform: uppercase;
-  margin-bottom: 1.5rem;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.8);
+  font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  padding: 5px 14px; border-radius: 50px;
+  margin-bottom: 1.25rem;
 }
-.hero h1 {
+.page-hero h1 {
   font-family: 'Noto Serif TC', serif;
-  font-size: clamp(32px, 5vw, 56px);
+  font-size: clamp(28px, 4.5vw, 44px);
   font-weight: 700; color: #fff;
-  line-height: 1.2; margin-bottom: 1.25rem;
+  line-height: 1.25; margin-bottom: 1rem;
 }
-.hero h1 span { color: var(--orange); }
-.hero-sub {
-  font-size: clamp(14px, 1.8vw, 17px);
-  color: rgba(255,255,255,.65);
-  line-height: 1.8; max-width: 480px;
-  margin-bottom: 2.5rem;
+.page-hero h1 span { color: #fbbf24; }
+.page-hero p {
+  font-size: 16px; color: rgba(255,255,255,.7);
+  max-width: 540px; margin: 0 auto 2rem;
+  line-height: 1.75;
 }
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn-primary {
-  background: var(--orange); color: #fff;
-  font-size: 14px; font-weight: 600;
-  padding: 12px 28px; border-radius: 50px;
-  box-shadow: 0 4px 20px rgba(244,123,32,.35);
+.hero-logo-img {
+  width: 180px; border-radius: 14px;
+  box-shadow: 0 12px 48px rgba(0,0,0,.35);
+  margin: 0 auto 2rem;
+}
+.btn-white {
+  display: inline-block;
+  background: #fff; color: var(--blue);
+  font-size: 14px; font-weight: 700;
+  padding: 11px 28px; border-radius: 8px;
+  box-shadow: var(--shadow);
   transition: transform .15s, box-shadow .15s;
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(244,123,32,.45); }
-.btn-ghost {
-  color: rgba(255,255,255,.75); font-size: 14px; font-weight: 500;
-  padding: 12px 24px; border-radius: 50px;
-  border: 1px solid rgba(255,255,255,.2);
-  transition: all .15s;
-}
-.btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.06); }
-.hero-logo-wrap {
-  flex-shrink: 0;
-}
-.hero-logo-wrap img {
-  width: 240px; max-width: 44vw;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.08);
-}
+.btn-white:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
-/* ── SECTION COMMONS ─────────────────────────── */
-.section { padding: 88px 2rem; }
-.section-inner { max-width: 1060px; margin: 0 auto; }
-.tag {
-  display: inline-block;
-  font-size: 11px; font-weight: 700;
+/* ── SECTIONS ────────────────────────────────── */
+.section { padding: 72px 1.5rem; }
+.section-bg { background: var(--bg); }
+.section-dark { background: var(--navy); }
+
+.section-label {
+  font-size: 12px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 1.5px;
-  color: var(--orange);
-  margin-bottom: 14px;
+  color: var(--blue); margin-bottom: 10px;
 }
-.heading {
+.section-title {
   font-family: 'Noto Serif TC', serif;
-  font-size: clamp(24px, 3.5vw, 38px);
-  font-weight: 700; line-height: 1.25;
-  margin-bottom: 1rem;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700; line-height: 1.3;
+  margin-bottom: .85rem;
 }
-.lead {
-  font-size: 16px; color: var(--text-2); line-height: 1.85;
-  max-width: 600px;
+.section-desc {
+  font-size: 15px; color: var(--text-2);
+  line-height: 1.8; max-width: 560px;
 }
 
 /* ── MISSION ─────────────────────────────────── */
-.section-mission { background: var(--surface); }
-.mission-grid {
+.mission-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 5rem; align-items: center;
+  gap: 4rem; align-items: center;
 }
 .mission-quote {
-  font-family: 'Noto Serif TC', serif;
-  font-size: clamp(22px, 3vw, 32px);
-  font-weight: 600; line-height: 1.5;
-  color: var(--navy);
-  padding-left: 1.75rem;
-  border-left: 4px solid var(--orange);
+  background: var(--bg);
+  border-left: 4px solid var(--blue);
+  border-radius: 0 var(--r) var(--r) 0;
+  padding: 1.75rem 1.75rem 1.75rem 1.5rem;
+}
+.mission-quote p {
+  font-size: 17px; font-weight: 600;
+  font-style: italic; color: var(--navy);
+  line-height: 1.65;
+}
+.mission-quote footer {
+  margin-top: .75rem;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-2);
+  background: none; padding: 0;
+  border: none;
 }
 
 /* ── STATS ───────────────────────────────────── */
-.section-stats { background: var(--navy); }
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px; background: rgba(255,255,255,.08);
-  border-radius: var(--r); overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08);
+  gap: 1.5rem;
 }
-.stat-cell {
-  background: rgba(255,255,255,.03);
-  padding: 3rem 2.5rem; text-align: center;
+.stat-card {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r);
+  padding: 2.5rem 2rem;
+  text-align: center;
   transition: background .2s;
 }
-.stat-cell:hover { background: rgba(255,255,255,.06); }
+.stat-card:hover { background: rgba(255,255,255,.08); }
 .stat-n {
   font-family: 'Noto Serif TC', serif;
-  font-size: clamp(44px, 6vw, 64px);
-  font-weight: 700; color: var(--orange);
+  font-size: clamp(40px, 5vw, 56px);
+  font-weight: 700; color: #fbbf24;
   line-height: 1; margin-bottom: .5rem;
 }
-.stat-l { font-size: 13px; color: rgba(255,255,255,.55); font-weight: 500; letter-spacing: .5px; }
+.stat-l { font-size: 13px; color: rgba(255,255,255,.55); font-weight: 500; }
 
 /* ── FEATURES ────────────────────────────────── */
-.section-features { background: var(--bg); }
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem; margin-top: 3rem;
+  gap: 1rem; margin-top: 2.5rem;
 }
-.feat {
-  background: var(--surface);
+.feat-card {
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 1.75rem;
-  transition: transform .2s, box-shadow .2s, border-color .2s;
+  padding: 1.5rem;
+  transition: box-shadow .2s, border-color .2s, transform .2s;
 }
-.feat:hover {
+.feat-card:hover {
+  box-shadow: var(--shadow);
+  border-color: #c7d7fd;
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--orange);
 }
-.feat-icon {
-  width: 44px; height: 44px; border-radius: 10px;
-  background: var(--orange-lt);
+.feat-icon-wrap {
+  width: 42px; height: 42px;
+  background: var(--blue-lt);
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; margin-bottom: 1rem;
+  font-size: 20px; margin-bottom: .85rem;
 }
-.feat-title { font-size: 14px; font-weight: 700; margin-bottom: .4rem; }
-.feat-desc  { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+.feat-title { font-size: 14px; font-weight: 700; margin-bottom: .35rem; }
+.feat-desc  { font-size: 13px; color: var(--text-2); line-height: 1.65; }
 
 /* ── STORY ───────────────────────────────────── */
-.section-story { background: var(--surface); }
-.story-grid {
+.story-row {
   display: grid;
-  grid-template-columns: 1fr 480px;
-  gap: 5rem; align-items: start; margin-top: 3.5rem;
+  grid-template-columns: 1fr 400px;
+  gap: 4rem; align-items: start;
 }
-.story-body p {
+.story-text p {
   font-size: 15px; color: var(--text-2);
-  line-height: 1.9; margin-bottom: 1.1rem;
+  line-height: 1.9; margin-bottom: 1rem;
 }
-.story-body p strong { color: var(--text); font-weight: 600; }
-.story-card {
-  background: var(--bg);
+.story-text p strong { color: var(--text); font-weight: 600; }
+.founder-card {
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.founder-card-top {
+  background: linear-gradient(135deg, var(--navy), #1e3a8a);
   padding: 2rem;
-}
-.founder-avatar {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; margin-bottom: 1rem;
-}
-.founder-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
-.founder-role { font-size: 12px; color: var(--text-3); margin-bottom: 1.25rem; font-weight: 500; }
-.founder-location {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; color: var(--text-2);
-  padding: 8px 12px;
-  background: var(--surface);
-  border-radius: 8px; border: 1px solid var(--border);
-  margin-bottom: .65rem;
-}
-.founder-fb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; color: #1877f2; font-weight: 500;
-  padding: 8px 12px;
-  background: #f0f5ff;
-  border-radius: 8px; border: 1px solid #d0dfff;
-  transition: background .15s;
-}
-.founder-fb:hover { background: #dce9ff; }
-
-/* ── STEPS ───────────────────────────────────── */
-.section-steps { background: var(--bg); }
-.steps-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0; margin-top: 3rem;
-  position: relative;
-}
-.steps-row::before {
-  content: '';
-  position: absolute;
-  top: 24px; left: 12.5%; right: 12.5%;
-  height: 1px; background: var(--border);
-  z-index: 0;
-}
-.step { text-align: center; padding: 0 1rem; position: relative; z-index: 1; }
-.step-dot {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: var(--surface); border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: var(--navy);
-  margin: 0 auto 1rem;
-  transition: all .2s;
-}
-.step:hover .step-dot { background: var(--orange); color: #fff; border-color: var(--orange); }
-.step-t { font-size: 13px; font-weight: 700; margin-bottom: .35rem; }
-.step-d { font-size: 12px; color: var(--text-2); line-height: 1.6; }
-
-/* ── CTA ─────────────────────────────────────── */
-.section-cta {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-  padding: 88px 2rem;
+  display: flex; flex-direction: column; align-items: center;
   text-align: center;
 }
-.section-cta .heading { color: #fff; margin-bottom: .75rem; }
-.section-cta .lead { color: rgba(255,255,255,.6); margin: 0 auto 2.5rem; }
+.founder-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 3px solid rgba(255,255,255,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; margin-bottom: 1rem;
+}
+.founder-name { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.founder-role { font-size: 12px; color: rgba(255,255,255,.6); font-weight: 500; }
+.founder-card-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: .6rem; }
+.founder-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--text-2);
+  padding: 9px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  transition: background .15s;
+}
+.founder-row:hover { background: #eff6ff; color: var(--blue); }
+.founder-row i { width: 16px; text-align: center; color: var(--blue); flex-shrink: 0; }
+.founder-row span { font-weight: 500; }
+
+/* ── HOW IT WORKS ────────────────────────────── */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem; margin-top: 2.5rem;
+}
+.step-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  position: relative;
+}
+.step-card::after {
+  content: '→';
+  position: absolute;
+  right: -1rem; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3); font-size: 16px;
+}
+.step-card:last-child::after { display: none; }
+.step-num {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--blue); color: #fff;
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto .85rem;
+}
+.step-t { font-size: 13px; font-weight: 700; margin-bottom: .3rem; }
+.step-d { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+/* ── CTA SECTION ─────────────────────────────── */
+.section-cta {
+  background: var(--blue);
+  padding: 72px 1.5rem;
+  text-align: center;
+}
+.section-cta h2 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(22px, 3.5vw, 34px);
+  font-weight: 700; color: #fff;
+  margin-bottom: .75rem;
+}
+.section-cta p { color: rgba(255,255,255,.75); font-size: 15px; margin-bottom: 2rem; }
+.btn-white-outline {
+  display: inline-block;
+  background: transparent; color: #fff;
+  border: 2px solid rgba(255,255,255,.5);
+  font-size: 14px; font-weight: 600;
+  padding: 10px 26px; border-radius: 8px;
+  margin-left: 10px;
+  transition: all .15s;
+}
+.btn-white-outline:hover { border-color: #fff; background: rgba(255,255,255,.1); }
 
 /* ── FOOTER ──────────────────────────────────── */
 footer {
-  background: #060f29;
-  padding: 36px 2rem;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-wrap: wrap; gap: 1rem;
+  background: #111827;
+  color: rgba(255,255,255,.6);
+  font-size: 13px;
 }
-.footer-copy { font-size: 13px; color: rgba(255,255,255,.35); }
-.footer-nav  { display: flex; gap: 1.5rem; }
-.footer-nav a { font-size: 13px; color: rgba(255,255,255,.45); transition: color .15s; }
-.footer-nav a:hover { color: rgba(255,255,255,.85); }
+.footer-main {
+  padding: 52px 1.5rem;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1.4fr;
+  gap: 3rem;
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.footer-brand-name {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 17px; font-weight: 700; color: #fff;
+}
+.footer-brand-name em { color: var(--orange); font-style: normal; }
+.footer-desc { font-size: 13px; line-height: 1.7; margin-bottom: 1.25rem; max-width: 320px; }
+.footer-socials { display: flex; gap: 8px; }
+.footer-social {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(255,255,255,.6);
+  transition: all .15s;
+}
+.footer-social:hover { background: var(--blue); color: #fff; }
+.footer-col-title {
+  font-size: 13px; font-weight: 700;
+  color: #fff; margin-bottom: .85rem;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.footer-links a { color: rgba(255,255,255,.55); transition: color .15s; }
+.footer-links a:hover { color: rgba(255,255,255,.9); }
+.footer-info-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  color: rgba(255,255,255,.5); margin-bottom: .5rem;
+}
+.footer-info-row i { width: 16px; flex-shrink: 0; margin-top: 2px; color: rgba(255,255,255,.3); }
+.footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding: 16px 1.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: .5rem;
+}
+.footer-bottom-links { display: flex; gap: 1.5rem; }
+.footer-bottom-links a { color: rgba(255,255,255,.4); transition: color .15s; }
+.footer-bottom-links a:hover { color: rgba(255,255,255,.7); }
 
 /* ── RESPONSIVE ──────────────────────────────── */
-@media (max-width: 860px) {
-  .hero-inner    { grid-template-columns: 1fr; text-align: center; }
-  .hero-logo-wrap { display: flex; justify-content: center; order: -1; }
-  .hero-actions  { justify-content: center; }
-  .hero-sub      { margin: 0 auto 2.5rem; }
-  .mission-grid  { grid-template-columns: 1fr; gap: 2.5rem; }
+@media (max-width: 900px) {
+  .mission-row { grid-template-columns: 1fr; gap: 2rem; }
+  .story-row   { grid-template-columns: 1fr; }
+  .footer-main { grid-template-columns: 1fr 1fr; }
   .features-grid { grid-template-columns: 1fr 1fr; }
-  .story-grid    { grid-template-columns: 1fr; }
-  .stats-row     { grid-template-columns: 1fr; }
-  .steps-row     { grid-template-columns: 1fr 1fr; gap: 2rem; }
-  .steps-row::before { display: none; }
-  footer         { flex-direction: column; text-align: center; }
-  .footer-nav    { justify-content: center; }
 }
-@media (max-width: 540px) {
+@media (max-width: 640px) {
+  .stats-row     { grid-template-columns: 1fr; }
   .features-grid { grid-template-columns: 1fr; }
-  .steps-row     { grid-template-columns: 1fr; }
-  .section       { padding: 60px 1.25rem; }
+  .steps-grid    { grid-template-columns: 1fr 1fr; }
+  .step-card::after { display: none; }
+  .footer-main   { grid-template-columns: 1fr; gap: 2rem; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+  .footer-bottom-links { justify-content: center; }
+  .nav-link      { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-brand">TOCFL <em>FAFA</em></div>
-  <div class="nav-links">
-    <a class="nav-link home" href="/">← Trang học</a>
-    <a class="nav-link" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a>
+<!-- ── NAVBAR ─────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      TOCFL <em>FAFA</em>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/">Trang học</a>
+      <a class="nav-link active" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Blog</a>
+      <a class="nav-btn" href="/">Bắt đầu học</a>
+    </div>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg-ring"></div>
-  <div class="hero-bg-ring"></div>
-  <div class="hero-bg-ring"></div>
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="hero-tag">🎓 Since 2026 · Taoyuan, Taiwan</div>
-      <h1>Học tiếng Trung<br><span>dành cho người Việt</span></h1>
-      <p class="hero-sub">
-        Nền tảng luyện thi TOCFL phồn thể (繁體中文) kết hợp AI —
-        được xây dựng bởi người học, dành cho người học.
-      </p>
-      <div class="hero-actions">
-        <a class="btn-primary" href="/">Bắt đầu học ngay →</a>
-        <a class="btn-ghost" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook của chúng tôi</a>
-      </div>
-    </div>
-    <div class="hero-logo-wrap">
-      <img src="images/logo.jpg" alt="TOCFL FAFA">
-    </div>
-  </div>
+<!-- ── PAGE HERO ──────────────────────────────── -->
+<section class="page-hero">
+  <img class="hero-logo-img" src="images/logo.jpg" alt="TOCFL FAFA Logo">
+  <div class="hero-eyebrow">🎓 Since 2026 · Taoyuan, Taiwan</div>
+  <h1>Nền tảng luyện thi TOCFL<br><span>dành riêng cho người Việt</span></h1>
+  <p>Học tiếng Trung phồn thể (繁體中文) hiệu quả, nhanh chóng và tiện lợi với công nghệ AI cá nhân hóa.</p>
+  <a class="btn-white" href="/">Bắt đầu học ngay →</a>
 </section>
 
-<!-- MISSION -->
-<section class="section section-mission">
-  <div class="section-inner">
-    <div class="mission-grid">
+<!-- ── MISSION ────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="mission-row">
       <div>
-        <div class="tag">Sứ mệnh</div>
-        <h2 class="heading">Chúng tôi muốn làm gì?</h2>
-        <p class="lead">
-          Giúp sinh viên Việt Nam ôn thi TOCFL
-          <strong style="color:var(--navy)">hiệu quả, nhanh chóng và tiện lợi</strong> —
-          với nền tảng học tập hiện đại kết hợp AI, bài đọc thực từ đề thi và
-          công cụ luyện từ vựng cá nhân hóa dành riêng cho tiếng Trung phồn thể.
+        <div class="section-label">Sứ mệnh</div>
+        <h2 class="section-title">Chúng tôi muốn làm gì?</h2>
+        <p class="section-desc">
+          Giúp sinh viên Việt Nam ôn thi TOCFL <strong>hiệu quả, nhanh chóng và tiện lợi</strong> —
+          với nền tảng học tập hiện đại kết hợp AI, bài đọc thực từ đề thi và công cụ
+          luyện từ vựng cá nhân hóa dành riêng cho tiếng Trung phồn thể phục vụ
+          mục tiêu du học và làm việc tại Đài Loan.
         </p>
       </div>
       <div class="mission-quote">
-        "Trong lúc bạn còn hoài nghi có nên thử hay không thì đối thủ đã bắt đầu."
+        <p>"Trong lúc bạn còn hoài nghi có nên thử hay không thì đối thủ đã bắt đầu."</p>
+        <footer>— Lucas Hwang, Founder TOCFL FAFA</footer>
       </div>
     </div>
   </div>
 </section>
 
-<!-- STATS -->
-<section class="section section-stats">
-  <div class="section-inner">
+<!-- ── STATS ──────────────────────────────────── -->
+<section class="section section-dark">
+  <div class="container">
     <div class="stats-row">
-      <div class="stat-cell">
+      <div class="stat-card">
         <div class="stat-n">5+</div>
-        <div class="stat-l">Giáo trình</div>
+        <div class="stat-l">Giáo trình khác nhau</div>
       </div>
-      <div class="stat-cell">
+      <div class="stat-card">
         <div class="stat-n">6,000+</div>
-        <div class="stat-l">Từ vựng A1 – C1</div>
+        <div class="stat-l">Từ vựng cấp độ A1 – C1</div>
       </div>
-      <div class="stat-cell">
+      <div class="stat-card">
         <div class="stat-n">2026</div>
         <div class="stat-l">Năm thành lập</div>
       </div>
@@ -403,107 +468,120 @@ footer {
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="section section-features">
-  <div class="section-inner">
-    <div class="tag">Tính năng</div>
-    <h2 class="heading">Tất cả công cụ bạn cần</h2>
+<!-- ── FEATURES ───────────────────────────────── -->
+<section class="section section-bg">
+  <div class="container">
+    <div class="section-label">Tính năng</div>
+    <h2 class="section-title">Tất cả công cụ bạn cần</h2>
+    <p class="section-desc">Từ đọc hiểu đến luyện viết, TOCFL FAFA tích hợp đầy đủ trong một nền tảng.</p>
     <div class="features-grid">
-      <div class="feat">
-        <div class="feat-icon">📖</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">📖</div>
         <div class="feat-title">Bài đọc tương tác</div>
-        <div class="feat-desc">Đọc song ngữ Hán–Pinyin, highlight và ghi chú từng câu trực tiếp.</div>
+        <div class="feat-desc">Đọc song ngữ Hán–Pinyin, highlight và ghi chú từng câu trực tiếp trên văn bản.</div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">✨</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">✨</div>
         <div class="feat-title">AI Phân tích từ vựng</div>
-        <div class="feat-desc">Trích xuất từ vựng quan trọng, dịch nghĩa tiếng Việt tự động bằng AI.</div>
+        <div class="feat-desc">Trích xuất từ vựng quan trọng, dịch nghĩa tiếng Việt tự động chỉ trong vài giây.</div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">🃏</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">🃏</div>
         <div class="feat-title">Flashcard thông minh</div>
-        <div class="feat-desc">Ôn từ vựng theo bài học, phím tắt Space / ← → để lật thẻ nhanh.</div>
+        <div class="feat-desc">Ôn từ vựng theo bài học, dùng phím tắt Space / mũi tên để học nhanh.</div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">✏️</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">✏️</div>
         <div class="feat-title">Luyện viết chữ Hán</div>
-        <div class="feat-desc">Animation từng nét bút, chế độ quiz chấm điểm tự động chính xác.</div>
+        <div class="feat-desc">Hướng dẫn animation từng nét bút, chế độ quiz chấm điểm tự động chính xác.</div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">💬</div>
-        <div class="feat-title">Chat AI với bài đọc</div>
-        <div class="feat-desc">Hỏi đáp bằng tiếng Việt về nội dung bài, streaming realtime.</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">💬</div>
+        <div class="feat-title">Chat AI theo ngữ cảnh</div>
+        <div class="feat-desc">Hỏi đáp bằng tiếng Việt về nội dung bài đọc, phản hồi streaming realtime.</div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">📄</div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap">📄</div>
         <div class="feat-title">Import bài học</div>
-        <div class="feat-desc">Upload file .txt, AI tự phân tích cấu trúc và thêm bài đọc mới.</div>
+        <div class="feat-desc">Upload file .txt, AI tự nhận dạng cấu trúc và thêm bài đọc mới tức thì.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- STORY -->
-<section class="section section-story">
-  <div class="section-inner">
-    <div class="tag">Câu chuyện</div>
-    <h2 class="heading">Tại sao có TOCFL FAFA?</h2>
-    <div class="story-grid">
-      <div class="story-body">
+<!-- ── STORY ──────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="story-row">
+      <div class="story-text">
+        <div class="section-label">Câu chuyện</div>
+        <h2 class="section-title">Tại sao có TOCFL FAFA?</h2>
         <p>
           <strong>Lucas Hwang</strong> — Founder của TOCFL FAFA — là một người self-study tiếng Trung.
-          Trong quá trình tự học, anh nhận ra rằng tài liệu tiếng Trung phồn thể dành cho
-          người Việt còn rất thiếu: chưa được số hóa đầy đủ, công cụ thô sơ, chưa bài bản —
-          khiến hành trình học tập khó khăn hơn nhiều so với thực tế.
+          Trong quá trình tự học, anh nhận ra rằng tài liệu tiếng Trung phồn thể dành cho người Việt
+          còn rất thiếu: chưa được số hóa đầy đủ, công cụ thô sơ, chưa bài bản — khiến hành trình
+          học tập trở nên khó khăn hơn nhiều so với thực tế.
         </p>
         <p>
-          Nhận ra thách thức đó, Lucas bắt đầu xây dựng một công cụ luyện thi cá nhân hóa
-          cho chính mình. Từ đó, dần dần lan tỏa đến cộng đồng học và luyện thi tiếng Trung
-          phồn thể, phục vụ các bạn có mục tiêu du học và làm việc tại Đài Loan.
+          Nhận ra thách thức đó, Lucas bắt đầu xây dựng một công cụ luyện thi cá nhân hóa cho chính mình.
+          Từ đó, dần dần lan tỏa đến cộng đồng học và luyện thi tiếng Trung phồn thể, phục vụ các bạn
+          có mục tiêu du học và làm việc tại Đài Loan.
         </p>
         <p>
-          TOCFL FAFA hiện đang phát triển liên tục với mong muốn trở thành nền tảng học
+          TOCFL FAFA hiện đang được phát triển liên tục với mong muốn trở thành nền tảng học
           tiếng Trung phồn thể toàn diện và thân thiện nhất dành cho người Việt.
         </p>
       </div>
-      <div class="story-card">
-        <div class="founder-avatar">👨‍💻</div>
-        <div class="founder-name">Lucas Hwang</div>
-        <div class="founder-role">Founder &amp; Developer · TOCFL FAFA</div>
-        <a class="founder-location" href="https://maps.google.com/?q=Taoyuan+Taiwan" target="_blank" rel="noopener">
-          <span>📍</span> Taoyuan, Taiwan
-        </a>
-        <a class="founder-fb" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">
-          <span>📘</span> facebook.com/tocflfafa
-        </a>
+      <div>
+        <div class="founder-card">
+          <div class="founder-card-top">
+            <div class="founder-avatar">👨‍💻</div>
+            <div class="founder-name">Lucas Hwang</div>
+            <div class="founder-role">Founder &amp; Developer</div>
+          </div>
+          <div class="founder-card-body">
+            <div class="founder-row">
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Taoyuan, Taiwan</span>
+            </div>
+            <a class="founder-row" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">
+              <i class="fa-brands fa-facebook"></i>
+              <span>facebook.com/tocflfafa</span>
+            </a>
+            <div class="founder-row">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <span>TOCFL Learner → Builder</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="section section-steps">
-  <div class="section-inner" style="text-align:center">
-    <div class="tag">Cách sử dụng</div>
-    <h2 class="heading">Chỉ 4 bước để bắt đầu</h2>
-    <div class="steps-row">
-      <div class="step">
-        <div class="step-dot">1</div>
+<!-- ── HOW IT WORKS ───────────────────────────── -->
+<section class="section section-bg">
+  <div class="container">
+    <div class="section-label">Cách sử dụng</div>
+    <h2 class="section-title">Bắt đầu trong 4 bước</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
         <div class="step-t">Chọn bài đọc</div>
         <div class="step-d">Duyệt danh sách bài theo cấp độ và chủ đề TOCFL.</div>
       </div>
-      <div class="step">
-        <div class="step-dot">2</div>
+      <div class="step-card">
+        <div class="step-num">2</div>
         <div class="step-t">Đọc &amp; Highlight</div>
         <div class="step-d">Đọc song ngữ, bôi màu từ quan trọng trực tiếp trên văn bản.</div>
       </div>
-      <div class="step">
-        <div class="step-dot">3</div>
-        <div class="step-t">Tạo từ vựng AI</div>
-        <div class="step-d">AI trích xuất và dịch nghĩa toàn bộ từ vựng chỉ trong vài giây.</div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-t">AI Từ vựng</div>
+        <div class="step-d">AI trích xuất và dịch nghĩa toàn bộ từ vựng quan trọng.</div>
       </div>
-      <div class="step">
-        <div class="step-dot">4</div>
+      <div class="step-card">
+        <div class="step-num">4</div>
         <div class="step-t">Luyện tập</div>
         <div class="step-d">Flashcard, viết chữ Hán và in bài tập luyện viết PDF.</div>
       </div>
@@ -511,20 +589,63 @@ footer {
   </div>
 </section>
 
-<!-- CTA -->
+<!-- ── CTA ────────────────────────────────────── -->
 <section class="section-cta">
-  <h2 class="heading">Sẵn sàng bắt đầu hành trình?</h2>
-  <p class="lead">Miễn phí · Không cần đăng ký · Bắt đầu học ngay hôm nay</p>
-  <a class="btn-primary" href="/" style="font-size:15px;padding:14px 40px">Vào học ngay →</a>
+  <h2>Sẵn sàng bắt đầu hành trình?</h2>
+  <p>Miễn phí · Không cần đăng ký · Bắt đầu học ngay hôm nay</p>
+  <a class="btn-white" href="/">Vào học ngay →</a>
+  <a class="btn-white-outline" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Theo dõi Facebook</a>
 </section>
 
-<!-- FOOTER -->
+<!-- ── FOOTER ─────────────────────────────────── -->
 <footer>
-  <div class="footer-copy">© 2026 TOCFL FAFA · Taoyuan, Taiwan</div>
-  <nav class="footer-nav">
-    <a href="/">Trang học</a>
-    <a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a>
-  </nav>
+  <div class="footer-main container">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — kết hợp AI, bài đọc thực từ đề thi và công cụ học tập cá nhân hóa.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a class="footer-social" href="/" title="Trang học">
+          <i class="fas fa-graduation-cap"></i>
+        </a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/">Trang học</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+        <li><a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row">
+        <i class="fas fa-location-dot"></i>
+        <span>Taoyuan, Taiwan</span>
+      </div>
+      <div class="footer-info-row">
+        <i class="fab fa-facebook"></i>
+        <span>facebook.com/tocflfafa</span>
+      </div>
+      <div class="footer-info-row">
+        <i class="fas fa-calendar"></i>
+        <span>Since 2026</span>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom container">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/">Trang học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
 </footer>
 
 </body>
