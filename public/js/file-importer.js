@@ -30,10 +30,15 @@ class FileImporter {
     // Group lines under each "Hình X" heading
     const raw = [];
     let cur = null;
+    const isSep = l => /^_{4,}$/.test(l); // filter out ________ lines
+
     for (const line of lines) {
-      if (/^Hình\s+\d+/i.test(line)) {
+      // match anywhere in line — handles "🔵 Hình 3 — Phần..." prefix
+      if (/Hình\s+\d+/i.test(line)) {
         if (cur) raw.push(cur);
-        cur = { title: line, lines: [] };
+        // clean title: strip leading emoji/symbols, keep from "Hình" onward
+        const clean = line.replace(/^[^\wĂăÂâĐđÊêÔôƠơƯư]*/, '').trim();
+        cur = { title: clean, lines: [] };
       } else if (cur) {
         cur.lines.push(line);
       }
@@ -47,9 +52,10 @@ class FileImporter {
       const viIdx = ls.findIndex(l => /bản dịch tiếng việt/i.test(l));
       if (zhIdx === -1 || pyIdx === -1 || viIdx === -1) return null;
 
-      const zh = ls.slice(zhIdx + 1, pyIdx).filter(Boolean).join('\n').trim();
-      const py = ls.slice(pyIdx + 1, viIdx).filter(Boolean).join('\n').trim();
-      const vi = ls.slice(viIdx + 1).filter(Boolean).join('\n').trim();
+      const clean = ls => ls.filter(l => l && !isSep(l)).join('\n').trim();
+      const zh = clean(ls.slice(zhIdx + 1, pyIdx));
+      const py = clean(ls.slice(pyIdx + 1, viIdx));
+      const vi = clean(ls.slice(viIdx + 1));
       if (!zh) return null;
 
       return { title: sec.title, zh, py, vi };
