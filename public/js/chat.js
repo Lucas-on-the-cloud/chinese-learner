@@ -10,7 +10,7 @@ class ChatManager {
     this.isOpen  = false;
     document.getElementById('chat-float-panel').classList.remove('open');
     document.getElementById('chat-msgs').innerHTML =
-      '<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.</div>';
+      '<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.<br><span style="font-size:10px;opacity:.7">Gõ "add 漢字" để thêm từ vào danh sách từ vựng.</span></div>';
   }
 
   show() { document.getElementById('chat-widget').classList.add('active'); }
@@ -38,6 +38,17 @@ class ChatManager {
     const msgs = document.getElementById('chat-msgs');
     msgs.innerHTML += `<div class="chat-msg user">${msg}</div>`;
     msgs.scrollTop = msgs.scrollHeight;
+
+    // "add 漢字" command — add to vocab without AI chat
+    const addMatch = msg.match(/^add\s+([一-鿿㐀-䶿]+)/i);
+    if (addMatch) {
+      const word = addMatch[1];
+      app.vocab.addUserEntry(word);
+      msgs.innerHTML += `<div class="chat-msg system">✓ Đã thêm「${word}」vào từ vựng.</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+      return;
+    }
+
     this.history.push({ role: 'user', content: msg });
 
     if (!app.config.getKey()) {
@@ -50,52 +61,16 @@ class ChatManager {
     msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ ...</div>`;
     msgs.scrollTop = msgs.scrollHeight;
 
-    const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho người Việt. Trả lời dựa trên bài đọc. Khi viết chữ Hán phải dùng phồn thể. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
+    const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho người Việt. Trả lời dựa trên ngữ cảnh bài đọc. Khi viết chữ Hán phải dùng phồn thể. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
     try {
       const reply = await this.ai.call(sys, null, 800, this.history);
       this.history.push({ role: 'assistant', content: reply });
       const el = document.getElementById(loadId);
-      if (el) el.innerHTML = reply +
-        `<div class="msg-actions"><button class="msg-add-btn" onclick="app.chat.addVocabFromMsg(this)">📚 Lưu từ vựng</button></div>`;
+      if (el) el.textContent = reply;
     } catch (e) {
       const el = document.getElementById(loadId);
       if (el) el.outerHTML = `<div class="chat-msg system">❌ ${e.message}</div>`;
     }
     msgs.scrollTop = msgs.scrollHeight;
-  }
-
-  async addVocabFromMsg(btn) {
-    const msgEl  = btn.closest('.chat-msg');
-    // grab only text nodes (skip the msg-actions div)
-    const msgText = [...msgEl.childNodes]
-      .filter(n => n.nodeType === Node.TEXT_NODE || (n.nodeType === Node.ELEMENT_NODE && !n.classList.contains('msg-actions')))
-      .map(n => n.textContent)
-      .join('').trim();
-    if (!msgText) return;
-
-    btn.disabled    = true;
-    btn.textContent = '...';
-    try {
-      const raw = await app.ai.call(
-        `Trích xuất 1-3 từ vựng tiếng Trung phồn thể Đài Loan (繁體中文) quan trọng nhất. Dùng chữ phồn thể. JSON thuần, không markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa tiếng Việt","example":"câu ví dụ phồn thể","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}]`,
-        `Đoạn: ${msgText}`,
-        600
-      );
-      const parsed = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
-      let added = 0;
-      parsed.forEach(v => {
-        if (!app.vocab.items.some(i => i.char === v.char)) {
-          app.vocab.items.push({ ...v, userAdded: true });
-          added++;
-        }
-      });
-      app.vocab.render();
-      document.getElementById('ws-btn').style.display  = app.vocab.items.length ? 'inline-block' : 'none';
-      document.getElementById('csv-btn').style.display = app.vocab.items.length ? 'inline-block' : 'none';
-      btn.textContent = added ? `✓ Lưu ${added} từ` : '✓ Đã có';
-    } catch (e) {
-      btn.textContent = '❌';
-      btn.disabled    = false;
-    }
   }
 }
