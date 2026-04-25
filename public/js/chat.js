@@ -72,7 +72,7 @@ class ChatManager {
       const reply = await this.ai.call(sys, null, 800, this.history);
       this.history.push({ role: 'assistant', content: reply });
       const el = document.getElementById(loadId);
-      if (el) el.textContent = reply;
+      if (el) el.innerHTML = renderMarkdown(reply);
     } catch (e) {
       const el = document.getElementById(loadId);
       if (el) el.outerHTML = `<div class="chat-msg system">❌ ${e.message}</div>`;
