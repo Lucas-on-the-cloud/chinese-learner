@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--orange:#f47b20;--navy:#0d1b4b;--text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;--bg:#f4f5f7;--surface:#fff;--border:#e5e7eb;--shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.08)}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;transition:background .15s}
+.nav-btn:hover{background:var(--blue-dark)}
+
+/* CONTENT HEADER */
+.content-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:44px 1.5rem 52px;position:relative;overflow:hidden}
+.content-header::after{content:'文';position:absolute;font-family:'Noto Serif TC',serif;font-size:280px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none}
+.ch-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:50px;margin-bottom:1rem}
+.content-header h1{font-family:'Noto Serif TC',serif;font-size:clamp(24px,3.5vw,36px);font-weight:700;color:#fff;margin-bottom:.6rem;line-height:1.3}
+.content-header p{font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;max-width:560px}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.blog-wrap{flex:1;padding:40px 0 60px}
+.blog-grid{display:grid;grid-template-columns:1fr 300px;gap:32px;align-items:start}
+@media(max-width:900px){.blog-grid{grid-template-columns:1fr}}
+
+/* POST CARDS */
+.section-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title::before{content:'';width:4px;height:20px;background:var(--blue);border-radius:2px;flex-shrink:0}
+.featured-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:40px}
+.featured-main .post-card{height:100%}
+.featured-side{display:flex;flex-direction:column;gap:16px}
+.post-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s;cursor:pointer}
+.post-card:hover{box-shadow:var(--shadow);transform:translateY(-3px);border-color:#c7d7fd}
+.post-cover{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.post-cover-placeholder{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,var(--navy),#1e3a8a);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:48px;color:rgba(255,255,255,.15)}
+.post-body{padding:16px}
+.post-cat{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);background:var(--blue-lt);padding:2px 10px;border-radius:10px;margin-bottom:8px}
+.post-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-excerpt{font-size:13px;color:var(--text-2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px}
+.post-meta{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:8px}
+.post-meta i{font-size:10px}
+
+/* small card (sidebar-style) */
+.post-card-sm{background:#fff;border:1px solid var(--border);border-radius:10px;display:flex;gap:12px;padding:12px;transition:all .2s}
+.post-card-sm:hover{box-shadow:var(--shadow-sm);border-color:#c7d7fd}
+.post-card-sm .sm-cover{width:72px;height:60px;border-radius:7px;object-fit:cover;flex-shrink:0}
+.post-card-sm .sm-cover-ph{width:72px;height:60px;border-radius:7px;background:linear-gradient(135deg,var(--navy),#1e3a8a);display:flex;align-items:center;justify-content:center;font-size:20px;color:rgba(255,255,255,.25);flex-shrink:0;font-family:'Noto Serif TC',serif}
+.post-card-sm .sm-body{flex:1;min-width:0}
+.post-card-sm .sm-title{font-size:13px;font-weight:600;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;margin-bottom:4px}
+.post-card-sm .sm-meta{font-size:11px;color:var(--text-3)}
+
+/* all posts grid */
+.all-posts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:40px}
+@media(max-width:600px){.featured-grid{grid-template-columns:1fr}.all-posts-grid{grid-template-columns:1fr}}
+
+/* sidebar */
+.sidebar{position:sticky;top:80px}
+.sidebar-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px}
+.sidebar-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+.search-box{display:flex;gap:8px}
+.search-box input{flex:1;height:36px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-family:inherit;font-size:13px;outline:none}
+.search-box input:focus{border-color:var(--blue)}
+.search-box button{height:36px;width:36px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer}
+.cat-list{display:flex;flex-direction:column;gap:4px}
+.cat-item{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--text-2);transition:all .15s}
+.cat-item:hover,.cat-item.active{background:var(--blue-lt);color:var(--blue)}
+.cat-count{font-size:11px;font-weight:600;background:var(--border);color:var(--text-3);padding:1px 7px;border-radius:8px}
+.cat-item.active .cat-count{background:var(--blue);color:#fff}
+.recent-list{display:flex;flex-direction:column;gap:10px}
+
+/* pagination */
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:24px}
+.page-btn{width:34px;height:34px;border:1px solid var(--border);border-radius:7px;background:#fff;cursor:pointer;font-size:13px;color:var(--text-2);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.page-btn:hover,.page-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* empty state */
+.empty-state{text-align:center;padding:3rem;color:var(--text-2);background:#fff;border-radius:12px;border:1px solid var(--border)}
+.empty-state .big{font-family:'Noto Serif TC',serif;font-size:48px;color:var(--blue);opacity:.2;margin-bottom:1rem}
+
+/* FOOTER */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s}
+.footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
+@media(max-width:640px){.nav-link{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/lessons.html">Bài học</a>
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link active" href="/blog.html">Blog</a>
+      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content-header">
+  <div class="container">
+    <div class="ch-eyebrow">📝 TOCFL FAFA · Kiến thức tiếng Trung</div>
+    <h1>Blog học tiếng Trung</h1>
+    <p>Bài viết về TOCFL, phương pháp học, kinh nghiệm thi và tài liệu phồn thể từ đội ngũ FAFA.</p>
+  </div>
+</div>
+
+<div class="blog-wrap">
+  <div class="container">
+    <div class="blog-grid">
+
+      <!-- MAIN -->
+      <div class="blog-main-col">
+        <!-- Featured -->
+        <div class="section-title">Bài viết nổi bật</div>
+        <div class="featured-grid" id="featured-grid">
+          <div style="color:var(--text-3);padding:2rem;text-align:center">Đang tải…</div>
+        </div>
+
+        <!-- All posts -->
+        <div class="section-title" id="section-label">Tất cả bài viết</div>
+        <div class="all-posts-grid" id="all-posts"></div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-title">Tìm kiếm</div>
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="Nhập từ khóa…" oninput="onSearch(this.value)">
+            <button><i class="fa-solid fa-magnifying-glass"></i></button>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-title">Chuyên mục</div>
+          <div class="cat-list" id="cat-list"></div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-title">Bài viết mới nhất</div>
+          <div class="recent-list" id="recent-list"></div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026</span>
+    <div class="footer-bottom-links">
+      <a href="/lessons.html">Bài học</a>
+      <a href="/blog.html">Blog</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/database.js"></script>
+<script>
+const db = new (class extends Object {
+  constructor() {
+    super();
+    this.client = supabase.createClient(
+      'https://prctmferugkxabyizslx.supabase.co',
+      'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+    );
+  }
+  async getPosts({ category, limit, search } = {}) {
+    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at')
+      .eq('published', true).order('created_at', { ascending: false });
+    if (category) q = q.eq('category', category);
+    if (limit)    q = q.limit(limit);
+    if (search)   q = q.ilike('title', `%${search}%`);
+    const { data } = await q;
+    return data || [];
+  }
+})();
+
+let allPosts = [], filtered = [], currentCat = null, PAGE = 8, page = 1;
+
+const GRADIENTS = ['#0d1b4b,#1e3a8a','#064e3b,#065f46','#4c1d95,#5b21b6','#7f1d1d,#991b1b','#0c4a6e,#075985'];
+
+function postCover(p, cls = '') {
+  if (p.cover_url) return `<img class="post-cover ${cls}" src="${p.cover_url}" alt="${p.title}" onerror="this.parentNode.innerHTML=coverPh(${allPosts.indexOf(p)})">`;
+  const [c1,c2] = GRADIENTS[Math.abs(p.id||0) % GRADIENTS.length].split(',');
+  return `<div class="post-cover-placeholder ${cls}" style="background:linear-gradient(135deg,${c1},${c2})">文</div>`;
+}
+function coverPh(idx) { const [c1,c2] = GRADIENTS[idx%GRADIENTS.length].split(','); return `<div class="post-cover-placeholder" style="background:linear-gradient(135deg,${c1},${c2})">文</div>`; }
+function fmt(d) { return new Date(d).toLocaleDateString('vi-VN'); }
+
+function renderFeatured(posts) {
+  const feat = posts.slice(0, 3);
+  if (!feat.length) { document.getElementById('featured-grid').innerHTML = '<p style="color:var(--text-3)">Chưa có bài viết.</p>'; return; }
+  const main = feat[0];
+  const sides = feat.slice(1);
+  document.getElementById('featured-grid').innerHTML = `
+    <div class="featured-main">
+      <a class="post-card" href="/post.html?id=${main.id}" style="display:block">
+        ${postCover(main)}
+        <div class="post-body">
+          ${main.category ? `<span class="post-cat">${main.category}</span>` : ''}
+          <div class="post-title">${main.title}</div>
+          ${main.excerpt ? `<div class="post-excerpt">${main.excerpt}</div>` : ''}
+          <div class="post-meta"><i class="fa-regular fa-calendar"></i> ${fmt(main.created_at)} · ${main.author||'Admin'}</div>
+        </div>
+      </a>
+    </div>
+    <div class="featured-side">
+      ${sides.map(p => `
+        <a class="post-card" href="/post.html?id=${p.id}" style="display:block">
+          ${postCover(p)}
+          <div class="post-body">
+            ${p.category ? `<span class="post-cat">${p.category}</span>` : ''}
+            <div class="post-title">${p.title}</div>
+            <div class="post-meta"><i class="fa-regular fa-calendar"></i> ${fmt(p.created_at)}</div>
+          </div>
+        </a>`).join('')}
+    </div>`;
+}
+
+function renderAllPosts() {
+  const start = (page - 1) * PAGE;
+  const slice = filtered.slice(start, start + PAGE);
+  const grid  = document.getElementById('all-posts');
+  if (!slice.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="big">📝</div><p>Không tìm thấy bài viết nào.</p></div>';
+  } else {
+    grid.innerHTML = slice.map(p => `
+      <a class="post-card" href="/post.html?id=${p.id}" style="display:block">
+        ${postCover(p)}
+        <div class="post-body">
+          ${p.category ? `<span class="post-cat">${p.category}</span>` : ''}
+          <div class="post-title">${p.title}</div>
+          ${p.excerpt ? `<div class="post-excerpt">${p.excerpt}</div>` : ''}
+          <div class="post-meta"><i class="fa-regular fa-calendar"></i> ${fmt(p.created_at)} · ${p.author||'Admin'}</div>
+        </div>
+      </a>`).join('');
+  }
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PAGE);
+  const pg = document.getElementById('pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  pg.innerHTML = Array.from({length: total}, (_, i) =>
+    `<button class="page-btn ${i+1===page?'active':''}" onclick="goPage(${i+1})">${i+1}</button>`
+  ).join('');
+}
+
+function goPage(p) { page = p; renderAllPosts(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+function renderSidebar(posts) {
+  // categories
+  const cats = {};
+  posts.forEach(p => { if (p.category) cats[p.category] = (cats[p.category]||0)+1; });
+  const catEl = document.getElementById('cat-list');
+  catEl.innerHTML = `<div class="cat-item ${!currentCat?'active':''}" onclick="filterCat(null)">
+    <span>Tất cả</span><span class="cat-count">${posts.length}</span>
+  </div>` + Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+    `<div class="cat-item ${currentCat===k?'active':''}" onclick="filterCat('${k}')">
+      <span>${k}</span><span class="cat-count">${v}</span>
+    </div>`).join('');
+
+  // recent
+  document.getElementById('recent-list').innerHTML = posts.slice(0, 5).map(p => `
+    <a class="post-card-sm" href="/post.html?id=${p.id}">
+      ${p.cover_url ? `<img class="sm-cover" src="${p.cover_url}" alt="">` : `<div class="sm-cover-ph">文</div>`}
+      <div class="sm-body">
+        <div class="sm-title">${p.title}</div>
+        <div class="sm-meta">${fmt(p.created_at)}</div>
+      </div>
+    </a>`).join('');
+}
+
+function filterCat(cat) {
+  currentCat = cat;
+  page = 1;
+  filtered = cat ? allPosts.filter(p => p.category === cat) : [...allPosts];
+  document.getElementById('section-label').textContent = cat ? `Chuyên mục: ${cat}` : 'Tất cả bài viết';
+  document.getElementById('search-input').value = '';
+  renderAllPosts();
+  renderSidebar(allPosts);
+}
+
+function onSearch(q) {
+  currentCat = null;
+  page = 1;
+  const term = q.trim().toLowerCase();
+  filtered = term ? allPosts.filter(p => p.title.toLowerCase().includes(term) || (p.excerpt||'').toLowerCase().includes(term)) : [...allPosts];
+  document.getElementById('section-label').textContent = term ? `Kết quả: "${q}"` : 'Tất cả bài viết';
+  renderAllPosts();
+}
+
+async function init() {
+  allPosts = await db.getPosts();
+  filtered = [...allPosts];
+  renderFeatured(allPosts);
+  renderAllPosts();
+  renderSidebar(allPosts);
+}
+
+init();
+</script>
+</body>
+</html>

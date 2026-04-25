@@ -50,6 +50,31 @@ class Database {
     return await this.client.from('books').upsert([row], { onConflict: 'name' });
   }
 
+  async getPosts({ category, limit } = {}) {
+    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at')
+      .eq('published', true).order('created_at', { ascending: false });
+    if (category) q = q.eq('category', category);
+    if (limit)    q = q.limit(limit);
+    const { data } = await q;
+    return data || [];
+  }
+
+  async getPost(id) {
+    const { data } = await this.client.from('posts').select('*').eq('id', id).single();
+    return data;
+  }
+
+  async getAllPostsAdmin() {
+    const { data } = await this.client.from('posts').select('id,title,category,author,published,created_at').order('created_at', { ascending: false });
+    return data || [];
+  }
+
+  async addPost(row) { return await this.client.from('posts').insert([row]); }
+
+  async updatePost(id, row) { return await this.client.from('posts').update(row).eq('id', id); }
+
+  async deletePost(id) { return await this.client.from('posts').delete().eq('id', id); }
+
   async getVocab(lessonId) {
     const { data } = await this.client.from('vocab_cache').select('items').eq('lesson_id', lessonId).single();
     return data?.items || null;

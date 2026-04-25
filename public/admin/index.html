@@ -253,6 +253,10 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       <i class="fa-solid fa-users"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Người dùng</span><span class="nav-item-en">Users</span></span>
     </button>
+    <button class="nav-item" onclick="setNav(this,'blog')">
+      <i class="fa-solid fa-pen-nib"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
+    </button>
     <button class="nav-item" onclick="setNav(this,'imports')">
       <i class="fa-solid fa-file-import"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Import bài học</span><span class="nav-item-en">Import lessons</span></span>
@@ -524,6 +528,46 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   </div><!-- /section-dashboard -->
 
+  <!-- ── BLOG ─────────────────────────────────── -->
+  <div id="section-blog" style="display:none;width:100%">
+    <div style="display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start">
+
+      <!-- CREATE FORM -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-pen-nib" style="color:var(--blue)"></i> Tạo bài viết mới</div>
+        <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
+        <input type="text" id="bl-title" class="s-input" placeholder="Tiêu đề bài viết…">
+        <div class="s-label" style="margin-top:10px">Chuyên mục</div>
+        <input type="text" id="bl-cat" class="s-input" placeholder="VD: TOCFL, Từ vựng, Ngữ pháp…">
+        <div class="s-label" style="margin-top:10px">Tác giả</div>
+        <input type="text" id="bl-author" class="s-input" placeholder="Tên tác giả" value="Admin">
+        <div class="s-label" style="margin-top:10px">Ảnh bìa (URL)</div>
+        <input type="text" id="bl-cover" class="s-input" placeholder="https://… hoặc để trống">
+        <div class="s-label" style="margin-top:10px">Tóm tắt</div>
+        <textarea id="bl-excerpt" style="width:100%;min-height:60px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:10px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn bài viết…"></textarea>
+        <div class="s-label" style="margin-top:10px">Nội dung <span style="font-size:11px;font-weight:400;color:#6b7280">(hỗ trợ Markdown)</span></div>
+        <textarea id="bl-content" style="width:100%;min-height:200px;border:1px solid #e5e7eb;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7" placeholder="# Tiêu đề&#10;&#10;Nội dung bài viết...&#10;&#10;**In đậm**, *in nghiêng*, ## Mục"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+          <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="bl-published" checked style="accent-color:var(--blue)"> Xuất bản ngay
+          </label>
+        </div>
+        <div id="bl-msg" class="s-msg"></div>
+        <button class="s-btn" id="bl-save-btn" onclick="adminSavePost()" style="margin-top:12px;width:100%">💾 Đăng bài viết</button>
+      </div>
+
+      <!-- POST LIST -->
+      <div class="s-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="s-title" style="margin-bottom:0"><i class="fa-solid fa-list" style="color:var(--text-2)"></i> Danh sách bài viết</div>
+          <button class="s-btn" onclick="loadBlogPosts()" style="padding:6px 14px;font-size:12px">↺ Làm mới</button>
+        </div>
+        <div id="blog-post-list"><p style="color:#9ca3af;text-align:center;padding:2rem">Đang tải…</p></div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── IMPORT BÀI HỌC ───────────────────────── -->
   <div id="section-imports" style="display:none;width:100%">
     <div class="s-wrap">
@@ -689,7 +733,7 @@ function toggleSidebar() {
 }
 
 // All sections mapping
-const ALL_SECTIONS = ['dashboard','imports','import-book','ai'];
+const ALL_SECTIONS = ['dashboard','blog','imports','import-book','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -712,7 +756,8 @@ function setNav(btn, id) {
   });
   const active = document.getElementById('section-' + id);
   if (active) active.style.display = (id === 'dashboard') ? 'flex' : 'block';
-  if (id === 'ai') adminInitSettings();
+  if (id === 'ai')   adminInitSettings();
+  if (id === 'blog') loadBlogPosts();
 }
 
 // ── Settings functions ──────────────────────────
@@ -789,6 +834,61 @@ async function adminSaveBook() {
   adminMsg('bk-msg', '✓ Đã lưu: ' + (display || name), 'ok');
   ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
   adminBkClear();
+}
+
+// ── Blog functions ───────────────────────────────
+async function loadBlogPosts() {
+  const el = document.getElementById('blog-post-list');
+  const { data: posts } = await _adminDb.client.from('posts').select('id,title,category,author,published,created_at').order('created_at', { ascending: false });
+  if (!posts?.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem">Chưa có bài viết nào.</p>'; return; }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Tiêu đề</th>
+      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Chuyên mục</th>
+      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Trạng thái</th>
+      <th style="padding:8px;border-bottom:1px solid #e5e7eb"></th>
+    </tr></thead>
+    <tbody>${posts.map(p => `<tr style="border-top:1px solid #f3f4f6">
+      <td style="padding:10px 8px;font-weight:500">${p.title}</td>
+      <td style="padding:10px 8px;color:#6b7280">${p.category||'—'}</td>
+      <td style="padding:10px 8px">
+        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;${p.published?'background:#f0fdf4;color:#15803d':'background:#f3f4f6;color:#6b7280'}">
+          ${p.published?'Đã đăng':'Nháp'}
+        </span>
+      </td>
+      <td style="padding:10px 8px;text-align:right">
+        <a href="/post.html?id=${p.id}" target="_blank" class="table-btn" title="Xem"><i class="fa-solid fa-eye"></i></a>
+        <button class="table-btn" onclick="deletePost(${p.id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function adminSavePost() {
+  const title     = document.getElementById('bl-title').value.trim();
+  const category  = document.getElementById('bl-cat').value.trim();
+  const author    = document.getElementById('bl-author').value.trim() || 'Admin';
+  const cover_url = document.getElementById('bl-cover').value.trim() || null;
+  const excerpt   = document.getElementById('bl-excerpt').value.trim() || null;
+  const content   = document.getElementById('bl-content').value.trim() || null;
+  const published = document.getElementById('bl-published').checked;
+  if (!title) { adminMsg('bl-msg', 'Nhập tiêu đề bài viết.', 'err'); return; }
+  const btn = document.getElementById('bl-save-btn');
+  btn.disabled = true; btn.textContent = 'Đang đăng…';
+  const { error } = await _adminDb.client.from('posts').insert([{ title, category: category||null, author, cover_url, excerpt, content, published }]);
+  btn.disabled = false; btn.textContent = '💾 Đăng bài viết';
+  if (error) { adminMsg('bl-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  adminMsg('bl-msg', '✓ Đã đăng: ' + title, 'ok');
+  ['bl-title','bl-cat','bl-cover','bl-excerpt','bl-content'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('bl-author').value = 'Admin';
+  document.getElementById('bl-published').checked = true;
+  loadBlogPosts();
+}
+
+async function deletePost(id) {
+  if (!confirm('Xóa bài viết này?')) return;
+  await _adminDb.client.from('posts').delete().eq('id', id);
+  loadBlogPosts();
 }
 
 function adminMsg(elId, text, type) {
