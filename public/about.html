@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Về chúng tôi — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:    #1a1208;
+  --paper:  #faf7f2;
+  --paper2: #f3ede3;
+  --navy:   #1a237e;
+  --orange: #f57c00;
+  --red:    #c0392b;
+  --teal:   #1a6b5a;
+  --gold:   #b8860b;
+  --muted:  #7a6e60;
+  --border: #e0d8cc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Be Vietnam Pro', sans-serif; background: #fff; color: var(--ink); }
+a { text-decoration: none; color: inherit; }
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  background: var(--navy);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-back {
+  color: rgba(255,255,255,.75);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color .15s;
+}
+.nav-back:hover { color: #fff; }
+.nav-logo-text {
+  font-family: 'Noto Serif TC', serif;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.nav-logo-text span { color: var(--orange); }
+
+/* ── HERO ────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #283593 60%, #1a237e 100%);
+  padding: 80px 2rem 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '學';
+  position: absolute;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 400px;
+  color: rgba(255,255,255,.03);
+  top: -80px;
+  right: -60px;
+  pointer-events: none;
+}
+.hero-logo {
+  width: 220px;
+  max-width: 80%;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.35);
+  margin-bottom: 2rem;
+}
+.hero h1 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(28px, 5vw, 48px);
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
+}
+.hero h1 span { color: var(--orange); }
+.hero-desc {
+  font-size: clamp(14px, 2vw, 17px);
+  color: rgba(255,255,255,.8);
+  max-width: 560px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.75;
+}
+.hero-cta {
+  display: inline-block;
+  background: var(--orange);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 36px;
+  border-radius: 50px;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(245,124,0,.4);
+}
+.hero-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(245,124,0,.5); }
+
+/* ── CONTAINER ───────────────────────────────── */
+.container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* ── MISSION ─────────────────────────────────── */
+.section-mission {
+  background: var(--paper);
+  padding: 72px 1.5rem;
+  text-align: center;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(22px, 4vw, 34px);
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  line-height: 1.3;
+}
+.section-body {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.85;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ── STATS ───────────────────────────────────── */
+.section-stats {
+  background: var(--navy);
+  padding: 56px 1.5rem;
+}
+.stats-grid {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 700;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-size: 13px;
+  color: rgba(255,255,255,.7);
+  font-weight: 500;
+}
+
+/* ── FEATURES ────────────────────────────────── */
+.section-features {
+  padding: 80px 1.5rem;
+  background: #fff;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+.feature-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  transition: transform .2s, box-shadow .2s;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(26,18,8,.09); }
+.feature-icon { font-size: 36px; margin-bottom: 1rem; }
+.feature-title { font-size: 15px; font-weight: 700; margin-bottom: .5rem; }
+.feature-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+/* ── STORY ───────────────────────────────────── */
+.section-story {
+  background: var(--paper);
+  padding: 80px 1.5rem;
+}
+.story-inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.story-inner blockquote {
+  border-left: 4px solid var(--orange);
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--navy);
+  line-height: 1.75;
+  font-family: 'Noto Serif TC', serif;
+}
+.story-inner p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.9;
+  margin-bottom: 1rem;
+}
+
+/* ── HOW IT WORKS ────────────────────────────── */
+.section-how {
+  padding: 80px 1.5rem;
+  background: #fff;
+  text-align: center;
+}
+.steps {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 3rem;
+  position: relative;
+}
+.step {
+  flex: 1;
+  min-width: 160px;
+  max-width: 200px;
+  text-align: center;
+}
+.step-num {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.step-title { font-size: 14px; font-weight: 700; margin-bottom: .4rem; }
+.step-desc  { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* ── CTA SECTION ─────────────────────────────── */
+.section-cta {
+  background: linear-gradient(135deg, #e65100, var(--orange));
+  padding: 80px 1.5rem;
+  text-align: center;
+}
+.section-cta h2 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: clamp(24px, 4vw, 36px);
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.section-cta p { color: rgba(255,255,255,.85); font-size: 15px; margin-bottom: 2rem; }
+.cta-white {
+  display: inline-block;
+  background: #fff;
+  color: var(--orange);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 40px;
+  border-radius: 50px;
+  transition: transform .15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.cta-white:hover { transform: translateY(-2px); }
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  background: var(--ink);
+  padding: 32px 1.5rem;
+  text-align: center;
+}
+footer p { font-size: 13px; color: rgba(255,255,255,.5); }
+footer a { color: rgba(255,255,255,.7); transition: color .15s; }
+footer a:hover { color: #fff; }
+.footer-links { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 1rem; flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .steps { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-back" href="/">← Về trang học</a>
+  <div class="nav-logo-text">TOCFL <span>FAFA</span></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <img src="images/logo.jpg" alt="TOCFL FAFA Logo" class="hero-logo">
+  <h1>Học tiếng Trung<br><span>dành cho người Việt</span></h1>
+  <p class="hero-desc">
+    Nền tảng luyện đọc tiếng Trung phồn thể (繁體中文) kết hợp AI —
+    được xây dựng bởi người học, dành cho người học.
+  </p>
+  <a class="hero-cta" href="/">Bắt đầu học ngay →</a>
+</section>
+
+<!-- MISSION -->
+<section class="section-mission">
+  <div class="container">
+    <div class="section-label">Sứ mệnh</div>
+    <h2 class="section-title">Chúng tôi muốn làm gì?</h2>
+    <p class="section-body">
+      <!-- ✏️ CẦN SỬA: Điền sứ mệnh / mục tiêu của bạn vào đây -->
+      TOCFL FAFA ra đời với mong muốn giúp học sinh Việt Nam chinh phục kỳ thi TOCFL
+      một cách hiệu quả nhất. Chúng tôi tin rằng công nghệ AI có thể cá nhân hóa
+      việc học — từ từ vựng, phát âm đến kỹ năng đọc hiểu — giúp mỗi người học
+      tiến bộ theo đúng nhịp của mình.
+    </p>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section-stats">
+  <div class="stats-grid">
+    <div>
+      <!-- ✏️ CẦN SỬA: số liệu thực -->
+      <div class="stat-num">50+</div>
+      <div class="stat-label">Bài đọc</div>
+    </div>
+    <div>
+      <div class="stat-num">1,000+</div>
+      <div class="stat-label">Từ vựng</div>
+    </div>
+    <div>
+      <div class="stat-num">2026</div>
+      <div class="stat-label">Năm thành lập</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section-features">
+  <div class="container" style="text-align:center">
+    <div class="section-label">Tính năng</div>
+    <h2 class="section-title">Tất cả công cụ bạn cần</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📖</div>
+        <div class="feature-title">Bài đọc tương tác</div>
+        <div class="feature-desc">Đọc song ngữ Hán–Pinyin với khả năng highlight và ghi chú từng câu.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <div class="feature-title">AI Phân tích từ vựng</div>
+        <div class="feature-desc">AI tự động trích xuất từ vựng quan trọng và dịch nghĩa tiếng Việt.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🃏</div>
+        <div class="feature-title">Flashcard thông minh</div>
+        <div class="feature-desc">Ôn từ vựng theo bài học, dùng phím tắt để lật thẻ nhanh.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✏️</div>
+        <div class="feature-title">Luyện viết chữ Hán</div>
+        <div class="feature-desc">Viết từng nét với hướng dẫn animation và chấm điểm tự động.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title">Chat với AI</div>
+        <div class="feature-desc">Hỏi đáp về nội dung bài đọc bằng tiếng Việt, ngay trong trang học.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">Import bài học</div>
+        <div class="feature-desc">Tải file .txt lên, AI tự phân tích và thêm bài đọc mới trong vài giây.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section-how">
+  <div class="container">
+    <div class="section-label">Cách sử dụng</div>
+    <h2 class="section-title">Chỉ 4 bước để bắt đầu</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Chọn bài đọc</div>
+        <div class="step-desc">Duyệt danh sách bài theo cấp độ và chủ đề.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Đọc & Highlight</div>
+        <div class="step-desc">Đọc song ngữ, bôi vàng từ cần nhớ.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Tạo từ vựng</div>
+        <div class="step-desc">AI tự động tạo danh sách từ quan trọng.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Luyện tập</div>
+        <div class="step-desc">Flashcard, viết chữ Hán và bài tập in ra giấy.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section class="section-story">
+  <div class="story-inner">
+    <div class="section-label" style="text-align:center">Câu chuyện</div>
+    <h2 class="section-title" style="text-align:center">Tại sao có TOCFL FAFA?</h2>
+
+    <blockquote>
+      <!-- ✏️ CẦN SỬA: Câu quote của bạn -->
+      "Tôi muốn một công cụ thực sự hiểu người Việt học tiếng Trung —
+      không phải dịch qua tiếng Anh rồi mới hiểu."
+    </blockquote>
+
+    <p>
+      <!-- ✏️ CẦN SỬA: Câu chuyện thật của bạn -->
+      TOCFL FAFA bắt đầu từ hành trình ôn thi TOCFL của chính người tạo ra nó.
+      Nhận thấy thiếu vắng một nền tảng học tiếng Trung chất lượng dành riêng cho
+      người Việt, chúng tôi quyết định tự xây dựng một công cụ phù hợp hơn —
+      kết hợp bài đọc thật từ đề thi TOCFL với sức mạnh của AI.
+    </p>
+    <p>
+      <!-- ✏️ CẦN SỬA: Thêm thông tin về đội ngũ / cá nhân -->
+      Ra mắt năm 2026, TOCFL FAFA đang được phát triển liên tục với mong muốn
+      trở thành người bạn đồng hành tin cậy cho mỗi học viên trên hành trình
+      chinh phục tiếng Trung phồn thể.
+    </p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section-cta">
+  <h2>Sẵn sàng bắt đầu hành trình?</h2>
+  <p>Miễn phí · Không cần đăng ký · Bắt đầu học ngay hôm nay</p>
+  <a class="cta-white" href="/">Vào học ngay →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="/">Trang học</a>
+    <!-- ✏️ CẦN SỬA: Thêm link mạng xã hội nếu có -->
+    <!-- <a href="#">Facebook</a> -->
+    <!-- <a href="#">Email liên hệ</a> -->
+  </div>
+  <p>© 2026 TOCFL FAFA · Học tiếng Trung phồn thể dành cho người Việt</p>
+</footer>
+
+</body>
+</html>
