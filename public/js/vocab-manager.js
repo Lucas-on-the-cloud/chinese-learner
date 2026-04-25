@@ -69,7 +69,7 @@ class VocabManager {
     }
     try {
       const raw = await app.ai.call(
-        `Tra từ tiếng Trung, trả về JSON thuần (không markdown):\n{"pinyin":"...","meaning":"nghĩa tiếng Việt ngắn","example":"câu ví dụ ngắn","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}`,
+        `Tra từ tiếng Trung phồn thể Đài Loan (繁體中文). Trả về JSON thuần (không markdown):\n{"pinyin":"...","meaning":"nghĩa tiếng Việt ngắn","example":"câu ví dụ ngắn bằng phồn thể","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}`,
         `Từ: ${entry.char}`, 400
       );
       if (!raw) { entry.meaning = '(bạn thêm)'; entry.pinyin = ''; this.render(); return; }
@@ -95,7 +95,7 @@ class VocabManager {
     this.items = [];
     document.getElementById('ai-lt').textContent = 'AI đang phân tích...';
 
-    const SYSTEM_PROMPT = `Bạn là giáo viên tiếng Trung chuyên giúp người Việt đọc hiểu. Nhiệm vụ: phân tích bài đọc và tạo danh sách 15-25 từ/cụm từ THIẾT YẾU để học viên nắm được ngữ cảnh, nhân vật, tình huống và thông điệp của bài TRƯỚC KHI đọc.
+    const SYSTEM_PROMPT = `Bạn là giáo viên tiếng Trung phồn thể Đài Loan (繁體中文，台灣) chuyên giúp người Việt đọc hiểu. Nhiệm vụ: phân tích bài đọc và tạo danh sách 15-25 từ/cụm từ THIẾT YẾU để học viên nắm được ngữ cảnh, nhân vật, tình huống và thông điệp của bài TRƯỚC KHI đọc.
 
 NGUYÊN TẮC BẮT BUỘC:
 - Chỉ chọn từ/cụm từ có TỪ 2 CHỮ TRỞ LÊN. Tuyệt đối không chọn từ đơn 1 chữ.

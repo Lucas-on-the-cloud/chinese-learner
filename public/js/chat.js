@@ -50,7 +50,7 @@ class ChatManager {
     msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ ...</div>`;
     msgs.scrollTop = msgs.scrollHeight;
 
-    const sys = `Bạn là trợ lý dạy tiếng Trung cho người Việt. Trả lời dựa trên bài đọc. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
+    const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho người Việt. Trả lời dựa trên bài đọc. Khi viết chữ Hán phải dùng phồn thể. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
     try {
       const reply = await this.ai.call(sys, null, 800, this.history);
       this.history.push({ role: 'assistant', content: reply });
@@ -77,7 +77,7 @@ class ChatManager {
     btn.textContent = '...';
     try {
       const raw = await app.ai.call(
-        `Trích xuất 1-3 từ vựng tiếng Trung quan trọng nhất. JSON thuần, không markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa tiếng Việt","example":"câu ví dụ","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}]`,
+        `Trích xuất 1-3 từ vựng tiếng Trung phồn thể Đài Loan (繁體中文) quan trọng nhất. Dùng chữ phồn thể. JSON thuần, không markdown:\n[{"char":"字","pinyin":"zì","meaning":"nghĩa tiếng Việt","example":"câu ví dụ phồn thể","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}]`,
         `Đoạn: ${msgText}`,
         600
       );
