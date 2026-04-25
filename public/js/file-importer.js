@@ -1,42 +1,39 @@
 class FileImporter {
   constructor() {
-    this.sections = [];
-    this.book     = 'B1';
+    this.sections   = [];
+    this.book       = 'B1';
+    this.currentIdx = 0;
   }
 
   handleFile(file) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-      this.sections = this.parse(e.target.result);
+      this.sections   = this.parse(e.target.result);
+      this.currentIdx = 0;
       document.getElementById('import-file').value = '';
       if (!this.sections.length) {
         alert('Không tìm thấy bài đọc nào.\nKiểm tra file có dòng "Hình 3", "Hình 4"... không.');
         return;
       }
-      this._renderPreview();
       this._loadBooks();
+      this._renderCard();
       document.getElementById('import-overlay').classList.add('open');
       document.body.style.overflow = 'hidden';
     };
     reader.readAsText(file, 'UTF-8');
   }
 
-  // Split by "Hình X" lines — each Hình becomes one lesson
   parse(text) {
-    text = text.replace(/^﻿/, ''); // strip BOM
-    const lines = text.split('\n').map(l => l.trim());
-
-    // Group lines under each "Hình X" heading
-    const raw = [];
-    let cur = null;
-    const isSep = l => /^_{4,}$/.test(l); // filter out ________ lines
+    text = text.replace(/^﻿/, '');
+    const lines  = text.split('\n').map(l => l.trim());
+    const isSep  = l => /^_{4,}$/.test(l);
+    const raw    = [];
+    let cur      = null;
 
     for (const line of lines) {
-      // match anywhere in line — handles "🔵 Hình 3 — Phần..." prefix
       if (/Hình\s+\d+/i.test(line)) {
         if (cur) raw.push(cur);
-        // clean title: strip leading emoji/symbols, keep from "Hình" onward
         const clean = line.replace(/^[^\wĂăÂâĐđÊêÔôƠơƯư]*/, '').trim();
         cur = { title: clean, lines: [] };
       } else if (cur) {
@@ -46,68 +43,72 @@ class FileImporter {
     if (cur) raw.push(cur);
 
     return raw.map(sec => {
-      const ls = sec.lines;
+      const ls    = sec.lines;
       const zhIdx = ls.findIndex(l => /văn bản tiếng trung/i.test(l));
       const pyIdx = ls.findIndex(l => /^pinyin/i.test(l));
       const viIdx = ls.findIndex(l => /bản dịch tiếng việt/i.test(l));
       if (zhIdx === -1 || pyIdx === -1 || viIdx === -1) return null;
 
-      const clean = ls => ls.filter(l => l && !isSep(l)).join('\n').trim();
-      const zh = clean(ls.slice(zhIdx + 1, pyIdx));
-      const py = clean(ls.slice(pyIdx + 1, viIdx));
-      const vi = clean(ls.slice(viIdx + 1));
+      const pick = arr => arr.filter(l => l && !isSep(l)).join('\n').trim();
+      const zh   = pick(ls.slice(zhIdx + 1, pyIdx));
+      const py   = pick(ls.slice(pyIdx + 1, viIdx));
+      const vi   = pick(ls.slice(viIdx + 1));
       if (!zh) return null;
 
       return { title: sec.title, zh, py, vi };
     }).filter(Boolean);
   }
 
-  async _loadBooks() {
-    const books = await app.lessons.db.getBooks();
-    const sel = document.getElementById('import-book');
-    sel.innerHTML = books.map(b => `<option value="${b}">${b}</option>`).join('');
-    if (books.includes(this.book)) sel.value = this.book;
-    else { this.book = books[0]; sel.value = this.book; }
+  // ── Navigation ────────────────────────────────
+  prevCard() {
+    if (this.currentIdx > 0) { this.currentIdx--; this._renderCard(); }
   }
 
-  _h(s) {
-    // Escape HTML for safe insertion into innerHTML
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  nextCard() {
+    if (this.currentIdx < this.sections.length - 1) { this.currentIdx++; this._renderCard(); }
   }
 
-  _renderPreview() {
-    document.getElementById('import-book').value = this.book;
-    document.getElementById('import-count').textContent = `${this.sections.length} bài đọc`;
-    document.getElementById('import-cards').innerHTML = this.sections.map((s, i) => `
-      <div class="imp-card" id="icard-${i}">
+  removeCurrent() {
+    this.sections.splice(this.currentIdx, 1);
+    if (!this.sections.length) { this.close(); return; }
+    if (this.currentIdx >= this.sections.length) this.currentIdx = this.sections.length - 1;
+    this._renderCard();
+  }
+
+  // ── Render one card ───────────────────────────
+  _renderCard() {
+    const total = this.sections.length;
+    const i     = this.currentIdx;
+    const s     = this.sections[i];
+
+    document.getElementById('import-count').textContent  = `${i + 1} / ${total}`;
+    document.getElementById('import-prev').disabled      = i === 0;
+    document.getElementById('import-next').disabled      = i === total - 1;
+
+    document.getElementById('import-cards').innerHTML = `
+      <div class="imp-card">
         <div class="imp-card-hd">
           <span class="imp-num">${i + 1}</span>
           <input class="imp-title" value="${this._h(s.title)}" oninput="app.importer.sections[${i}].title=this.value">
-          <button class="imp-del" onclick="app.importer.removeSection(${i})" title="Xóa bài này">✕</button>
         </div>
         <div class="imp-fields">
           <div class="imp-field-zh">
             <label class="imp-lbl">漢字 (phồn thể)</label>
-            <textarea class="imp-ta zh" rows="5" oninput="app.importer.sections[${i}].zh=this.value">${this._h(s.zh)}</textarea>
+            <textarea class="imp-ta zh" oninput="app.importer.sections[${i}].zh=this.value">${this._h(s.zh)}</textarea>
           </div>
-          <div>
+          <div class="imp-field-py">
             <label class="imp-lbl py">Pinyin</label>
-            <textarea class="imp-ta" rows="5" oninput="app.importer.sections[${i}].py=this.value">${this._h(s.py)}</textarea>
+            <textarea class="imp-ta" oninput="app.importer.sections[${i}].py=this.value">${this._h(s.py)}</textarea>
           </div>
-          <div>
+          <div class="imp-field-vi">
             <label class="imp-lbl vi">Tiếng Việt</label>
-            <textarea class="imp-ta" rows="5" oninput="app.importer.sections[${i}].vi=this.value">${this._h(s.vi)}</textarea>
+            <textarea class="imp-ta" oninput="app.importer.sections[${i}].vi=this.value">${this._h(s.vi)}</textarea>
           </div>
         </div>
-      </div>`
-    ).join('');
+      </div>`;
   }
 
-  removeSection(i) {
-    this.sections.splice(i, 1);
-    this._renderPreview();
-  }
-
+  // ── Save all ──────────────────────────────────
   async saveAll() {
     const book   = document.getElementById('import-book').value || 'B1';
     const toSave = this.sections.filter(s => s.zh.trim());
@@ -132,6 +133,19 @@ class FileImporter {
     btn.textContent = `✓ Đã lưu ${saved}/${toSave.length} bài`;
     await app.init();
     setTimeout(() => { this.close(); app.showView('lessons'); }, 900);
+  }
+
+  // ── Helpers ───────────────────────────────────
+  async _loadBooks() {
+    const books = await app.lessons.db.getBooks();
+    const sel   = document.getElementById('import-book');
+    sel.innerHTML = books.map(b => `<option value="${b}">${b}</option>`).join('');
+    if (books.includes(this.book)) sel.value = this.book;
+    else { this.book = books[0]; sel.value = this.book; }
+  }
+
+  _h(s) {
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   close() {
