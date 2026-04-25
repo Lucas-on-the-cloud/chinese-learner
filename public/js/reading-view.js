@@ -123,7 +123,7 @@ class ReadingView {
     return [...text].map(c => {
       if (c === '\n') return '<br>';
       const id = i++;
-      return `<span class="${cls}-char" data-g="${prefix}" data-i="${id}" onclick="app.selection.charClick('${prefix}',${id})">${c}</span>`;
+      return `<span class="${cls}-char" data-g="${prefix}" data-i="${id}">${c}</span>`;
     }).join('');
   }
 }

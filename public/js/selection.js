@@ -1,97 +1,81 @@
 class SelectionManager {
   constructor() {
-    this.start  = -1;
-    this.end    = -1;
-    this.target = '';
+    this._text  = '';
+    this._spans = [];
+    document.addEventListener('mouseup',   e => this._onMouseUp(e));
+    document.addEventListener('mousedown', e => {
+      if (!e.target.closest('#sel-bar')) this.clear();
+    });
   }
 
-  charClick(group, idx) {
-    const all = document.querySelectorAll(`[data-g="${group}"]`);
-    if (this.start === -1 || this.target !== group) {
-      this._clearVisual();
-      this.target = group; this.start = idx; this.end = -1;
-      all[idx].classList.add('selecting');
-      this._updateBar();
-    } else if (this.end === -1) {
-      this.end = idx;
-      if (this.end < this.start) { const t = this.start; this.start = this.end; this.end = t; }
-      all.forEach((s, i) => s.classList.toggle('selecting', i >= this.start && i <= this.end));
-      this._updateBar();
-    } else {
-      this._clearVisual();
-      this.target = group; this.start = idx; this.end = -1;
-      all[idx].classList.add('selecting');
-      this._updateBar();
-    }
+  _onMouseUp(e) {
+    if (e.target.closest('#sel-bar')) return;
+    // delay so the browser finalises the selection before we read it
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+
+      const range    = sel.getRangeAt(0);
+      const allSpans = [...document.querySelectorAll('.zh-char, .vi-char')];
+      const selected = allSpans.filter(s => range.intersectsNode(s));
+      if (!selected.length) return;
+
+      this._text  = selected.map(s => s.textContent).join('');
+      this._spans = selected;
+      selected.forEach(s => s.classList.add('selecting'));
+
+      const rect = range.getBoundingClientRect();
+      this._showBar(rect);
+    }, 0);
   }
 
-  getText() {
-    const all = document.querySelectorAll(`[data-g="${this.target}"]`);
-    const end = this.end === -1 ? this.start : this.end;
-    let t = '';
-    for (let i = this.start; i <= end; i++) t += all[i].textContent;
-    return t;
-  }
+  getText() { return this._text; }
 
   highlight(cls) {
-    if (this.start === -1) return;
-    const all = document.querySelectorAll(`[data-g="${this.target}"]`);
-    const end = this.end === -1 ? this.start : this.end;
-    for (let i = this.start; i <= end; i++) {
-      all[i].classList.remove('hl-1', 'hl-2', 'hl-3', 'hl-4', 'selecting');
-      all[i].classList.add(cls);
-    }
+    this._spans.forEach(s => {
+      s.classList.remove('hl-1', 'hl-2', 'hl-3', 'hl-4', 'selecting');
+      s.classList.add(cls);
+    });
     this.clear();
   }
 
   removeHighlight() {
-    if (this.start === -1) return;
-    const all = document.querySelectorAll(`[data-g="${this.target}"]`);
-    const end = this.end === -1 ? this.start : this.end;
-    for (let i = this.start; i <= end; i++)
-      all[i].classList.remove('hl-1', 'hl-2', 'hl-3', 'hl-4', 'selecting');
+    this._spans.forEach(s =>
+      s.classList.remove('hl-1', 'hl-2', 'hl-3', 'hl-4', 'selecting')
+    );
     this.clear();
   }
 
   addToVocab() {
-    const t = this.getText();
-    if (!t) return;
-    app.vocab.addUserEntry(t);
+    if (!this._text) return;
+    app.vocab.addUserEntry(this._text);
     this.clear();
   }
 
   clear() {
-    this.start = -1; this.end = -1;
     this._clearVisual();
-    document.getElementById('sel-bar').classList.remove('show');
+    this._text  = '';
+    this._spans = [];
+    const bar = document.getElementById('sel-bar');
+    if (bar) bar.classList.remove('show');
+    window.getSelection()?.removeAllRanges();
   }
 
   _clearVisual() {
-    document.querySelectorAll('.zh-char.selecting,.vi-char.selecting')
+    document.querySelectorAll('.zh-char.selecting, .vi-char.selecting')
       .forEach(s => s.classList.remove('selecting'));
   }
 
-  _updateBar() {
-    const t = this.getText();
+  _showBar(rect) {
     const bar = document.getElementById('sel-bar');
-    if (!t) { bar.classList.remove('show'); return; }
-    document.getElementById('sel-word').textContent = t;
-
-    const els = [...document.querySelectorAll('.zh-char.selecting, .vi-char.selecting')];
-    if (els.length) {
-      const rects  = els.map(el => el.getBoundingClientRect());
-      const top    = Math.min(...rects.map(r => r.top));
-      const left   = Math.min(...rects.map(r => r.left));
-      const right  = Math.max(...rects.map(r => r.right));
-      const midX   = (left + right) / 2;
-      // clamp so bar stays within viewport horizontally (estimate 320px wide)
-      const hw = 160;
-      const clampedX = Math.max(hw + 8, Math.min(window.innerWidth - hw - 8, midX));
-      bar.style.left      = clampedX + 'px';
-      bar.style.top       = (top - 10) + 'px';
-      bar.style.transform = 'translate(-50%, -100%)';
-    }
-
+    if (!bar) return;
+    document.getElementById('sel-word').textContent = this._text;
+    const midX     = (rect.left + rect.right) / 2;
+    const hw       = 160;
+    const clampedX = Math.max(hw + 8, Math.min(window.innerWidth - hw - 8, midX));
+    bar.style.left      = clampedX + 'px';
+    bar.style.top       = (rect.top - 10) + 'px';
+    bar.style.transform = 'translate(-50%, -100%)';
     bar.classList.add('show');
   }
 }
