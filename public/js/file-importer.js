@@ -2,11 +2,16 @@ class FileImporter {
   constructor() {
     this.sections   = [];
     this.book       = 'B1';
+    this.lessonName = '';
     this.currentIdx = 0;
   }
 
   handleFile(file) {
     if (!file) return;
+    // Auto-detect lesson name from filename e.g. "8.2 Q2.txt" → "Bài 8.2"
+    const nameMatch = file.name.match(/(\d+\.\d+)/);
+    this.lessonName = nameMatch ? `Bài ${nameMatch[1]}` : file.name.replace(/\.txt$/i, '');
+
     const reader = new FileReader();
     reader.onload = e => {
       this.sections   = this.parse(e.target.result);
@@ -18,6 +23,7 @@ class FileImporter {
       }
       this._loadBooks();
       this._renderCard();
+      document.getElementById('import-lesson-name').value = this.lessonName;
       document.getElementById('import-overlay').classList.add('open');
       document.body.style.overflow = 'hidden';
     };
@@ -117,10 +123,12 @@ class FileImporter {
     const btn = document.getElementById('import-save-btn');
     btn.disabled = true; btn.textContent = 'Đang lưu...';
 
+    const prefix = this.lessonName.trim();
     let saved = 0;
     for (const s of toSave) {
+      const fullTitle = prefix ? `${prefix} · ${s.title}` : s.title;
       const { error } = await app.lessons.db.addLesson({
-        title:       s.title,
+        title:       fullTitle,
         description: s.zh.slice(0, 40) + '...',
         chinese:     s.zh,
         pinyin:      s.py,
