@@ -49,7 +49,7 @@ Trả về JSON thuần, KHÔNG markdown, KHÔNG giải thích:
 [{"title":"Hình 3 — Phần...","zh":"toàn bộ tiếng Trung phồn thể","py":"toàn bộ pinyin","vi":"toàn bộ bản dịch tiếng Việt"}]
 Giữ nguyên 100% nội dung từng trường, không rút gọn.`,
         `Nội dung file:\n${text}`,
-        4000
+        8000
       );
       if (!raw) return [];
       const parsed = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
