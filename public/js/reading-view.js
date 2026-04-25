@@ -31,6 +31,7 @@ class ReadingView {
       (mode === 'paired' || mode === 'all') ? 'block' : 'none';
     document.getElementById('text-vi').style.display =
       (mode === 'vietnamese' || mode === 'all') ? 'block' : 'none';
+    document.getElementById('rp-text-area')?.classList.toggle('split', mode === 'all');
     app.selection.clear();
   }
 

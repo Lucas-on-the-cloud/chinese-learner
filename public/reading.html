@@ -204,7 +204,18 @@ img{display:block;max-width:100%}
 .ws-gen-btn{background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;padding:10px 28px;border-radius:7px;cursor:pointer;transition:background .15s}
 .ws-gen-btn:hover{background:var(--blue-dark)}
 
-@media(max-width:640px){.nav-link{display:none}.chat-float-panel{width:calc(100vw - 24px)}}
+/* SPLIT MODE (Tất cả tab) */
+#rp-text-area.split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+#rp-text-area.split #text-paired,
+#rp-text-area.split #text-vi { margin-bottom: 0; }
+#rp-text-area.split .il-block,
+#rp-text-area.split .text-block { height: 100%; }
+
+@media(max-width:640px){
+  .nav-link{display:none}
+  .chat-float-panel{width:calc(100vw - 24px)}
+  #rp-text-area.split { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -239,8 +250,10 @@ img{display:block;max-width:100%}
     <span id="sec-label" class="sec-nav-label"></span>
     <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
   </div>
-  <div id="text-paired" class="il-block"></div>
-  <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
+  <div id="rp-text-area">
+    <div id="text-paired" class="il-block"></div>
+    <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
+  </div>
   <div class="ai-panel">
     <div class="ai-panel-header">
       <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
