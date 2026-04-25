@@ -255,7 +255,11 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     </button>
     <button class="nav-item" onclick="setNav(this,'imports')">
       <i class="fa-solid fa-file-import"></i>
-      <span class="nav-item-text"><span class="nav-item-vi">Import</span><span class="nav-item-en">Imports</span></span>
+      <span class="nav-item-text"><span class="nav-item-vi">Import bài học</span><span class="nav-item-en">Import lessons</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'import-book')">
+      <i class="fa-solid fa-book"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Import book</span><span class="nav-item-en">Manage books</span></span>
     </button>
     <button class="nav-item" onclick="setNav(this,'feedback')">
       <i class="fa-solid fa-comments"></i>
@@ -264,15 +268,11 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     </button>
     <button class="nav-item" onclick="setNav(this,'ai')">
       <i class="fa-solid fa-sparkles"></i>
-      <span class="nav-item-text"><span class="nav-item-vi">AI & API</span><span class="nav-item-en">AI usage</span></span>
+      <span class="nav-item-text"><span class="nav-item-vi">AI & API</span><span class="nav-item-en">AI & API key</span></span>
     </button>
     <button class="nav-item" onclick="setNav(this,'analytics')">
       <i class="fa-solid fa-chart-line"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Phân tích</span><span class="nav-item-en">Analytics</span></span>
-    </button>
-    <button class="nav-item" onclick="setNav(this,'settings')">
-      <i class="fa-solid fa-gear"></i>
-      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">Settings</span></span>
     </button>
   </nav>
 
@@ -524,26 +524,26 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   </div><!-- /section-dashboard -->
 
-  <!-- ── SETTINGS SECTION ───────────────────── -->
-  <div id="section-settings" style="display:none;width:100%">
+  <!-- ── IMPORT BÀI HỌC ───────────────────────── -->
+  <div id="section-imports" style="display:none;width:100%">
     <div class="s-wrap">
-
-      <!-- API KEY -->
       <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-key" style="color:#f47b20"></i> API Provider</div>
-        <div class="s-sub">Chọn nhà cung cấp AI và dán key. App gọi qua proxy server — key không bị lộ ra browser.</div>
-        <div class="s-row">
-          <select id="api-provider" class="s-select">
-            <option value="anthropic">Anthropic (Claude)</option>
-            <option value="openai">OpenAI (GPT)</option>
-          </select>
-          <input type="text" id="api-key-input" class="s-input" placeholder="Dán API key..." style="flex:2">
-          <button class="s-btn" onclick="adminSaveKey()">Lưu</button>
-        </div>
-        <div class="s-key-status" id="key-status"></div>
+        <div class="s-title"><i class="fa-solid fa-plus" style="color:#15803d"></i> Thêm bài học</div>
+        <div class="s-sub">Thêm bài đọc mới vào thư viện thủ công. Sau khi lưu bạn có thể tiếp tục thêm bài khác.</div>
+        <a href="/add-lesson.html" class="s-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
       </div>
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-file-import" style="color:#f47b20"></i> Import từ file .txt</div>
+        <div class="s-sub">File phân cách bởi <code style="background:#f4f5f7;padding:1px 6px;border-radius:4px">________________</code> với các đoạn: Tiếng Trung · Pinyin · Tiếng Việt.<br>Hỗ trợ nhiều file cùng lúc. AI tự động phân tích nếu có API key.</div>
+        <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
+        <button class="s-btn orange" onclick="document.getElementById('import-file').click()">📂 Chọn file .txt</button>
+      </div>
+    </div>
+  </div>
 
-      <!-- BOOK MANAGEMENT -->
+  <!-- ── IMPORT BOOK ────────────────────────────── -->
+  <div id="section-import-book" style="display:none;width:100%">
+    <div class="s-wrap">
       <div class="s-card">
         <div class="s-title"><i class="fa-solid fa-book" style="color:#1a56db"></i> Thêm / sửa quyển sách</div>
         <div class="s-sub">Tạo quyển sách với tên, mô tả và ảnh bìa. Mã sách phải khớp với trường <code>book</code> trong bảng lessons.</div>
@@ -572,22 +572,50 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
         <div id="bk-msg" class="s-msg"></div>
         <button class="s-btn" id="bk-save-btn" onclick="adminSaveBook()" style="margin-top:14px">💾 Lưu sách</button>
       </div>
+    </div>
+  </div>
 
-      <!-- ADD LESSON -->
+  <!-- ── AI & API ──────────────────────────────── -->
+  <div id="section-ai" style="display:none;width:100%">
+    <div class="s-wrap">
       <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-plus" style="color:#15803d"></i> Thêm bài học</div>
-        <div class="s-sub">Thêm bài đọc mới vào thư viện. Sau khi lưu bạn có thể tiếp tục thêm bài khác.</div>
-        <a href="/add-lesson.html" class="s-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
+        <div class="s-title"><i class="fa-solid fa-key" style="color:#f47b20"></i> API Provider</div>
+        <div class="s-sub">Chọn nhà cung cấp AI và dán key. App gọi qua proxy server — key không bị lộ ra browser.</div>
+        <div class="s-row">
+          <select id="api-provider" class="s-select">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI (GPT)</option>
+          </select>
+          <input type="text" id="api-key-input" class="s-input" placeholder="Dán API key..." style="flex:2">
+          <button class="s-btn" onclick="adminSaveKey()">Lưu</button>
+        </div>
+        <div class="s-key-status" id="key-status"></div>
       </div>
-
-      <!-- IMPORT -->
       <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-file-import" style="color:#f47b20"></i> Import từ file .txt</div>
-        <div class="s-sub">File phân cách bởi <code style="background:#f4f5f7;padding:1px 6px;border-radius:4px">________________</code> với các đoạn: Tiếng Trung · Pinyin · Tiếng Việt.<br>Hỗ trợ nhiều file cùng lúc. AI tự động phân tích nếu có API key.</div>
-        <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
-        <button class="s-btn orange" onclick="document.getElementById('import-file').click()">📂 Chọn file .txt</button>
+        <div class="s-title"><i class="fa-solid fa-chart-pie" style="color:#1a56db"></i> Chi phí AI · AI cost</div>
+        <div class="s-sub">Tháng 4, 2026 · April 2026</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+          <span style="font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700">$24.71</span>
+          <span style="font-size:13px;color:#6b7280">/ $50.00 ngân sách</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:49.4%"></div></div>
+        <div style="margin-top:18px">
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">Anthropic Claude</span><span class="pv-mono">claude-sonnet</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">1,284 calls</span><span class="pv-amt">$16.81</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:68%;background:#f47b20"></div></div>
+          </div>
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">OpenAI GPT-4o</span><span class="pv-mono">gpt-4o-mini</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">612 calls</span><span class="pv-amt">$7.90</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:32%;background:#10a37f"></div></div>
+          </div>
+        </div>
       </div>
-
     </div>
   </div>
 
@@ -660,22 +688,31 @@ function toggleSidebar() {
     ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
 }
 
-// Section switching
-const SECTIONS = { dashboard: 'section-dashboard', settings: 'section-settings' };
+// All sections mapping
+const ALL_SECTIONS = ['dashboard','imports','import-book','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const labels = {
-    dashboard:'Tổng quan / Dashboard', lessons:'Bài học / Lessons',
-    vocab:'Từ vựng / Vocabulary', users:'Người dùng / Users',
-    imports:'Import', feedback:'Phản hồi / Feedback',
-    ai:'AI & API', analytics:'Phân tích / Analytics', settings:'Cài đặt / Settings'
+    dashboard:     'Tổng quan / Dashboard',
+    lessons:       'Bài học / Lessons',
+    vocab:         'Từ vựng / Vocabulary',
+    users:         'Người dùng / Users',
+    imports:       'Import bài học',
+    'import-book': 'Import book',
+    feedback:      'Phản hồi / Feedback',
+    ai:            'AI & API',
+    analytics:     'Phân tích / Analytics',
   };
   document.getElementById('crumb-label').textContent = labels[id] || id;
   // show/hide sections
-  document.getElementById('section-dashboard').style.display = (id === 'dashboard') ? 'flex' : 'none';
-  document.getElementById('section-settings').style.display  = (id === 'settings')   ? 'block' : 'none';
-  if (id === 'settings') adminInitSettings();
+  ALL_SECTIONS.forEach(s => {
+    const el = document.getElementById('section-' + s);
+    if (el) el.style.display = 'none';
+  });
+  const active = document.getElementById('section-' + id);
+  if (active) active.style.display = (id === 'dashboard') ? 'flex' : 'block';
+  if (id === 'ai') adminInitSettings();
 }
 
 // ── Settings functions ──────────────────────────
