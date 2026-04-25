@@ -56,8 +56,30 @@ class VocabManager {
 
   addUserEntry(char) {
     if (this.items.some(v => v.char === char)) return;
-    this.items.push({ char, pinyin: '', meaning: '(bạn thêm)', example: '', level: '', userAdded: true });
+    const entry = { char, pinyin: '…', meaning: '(đang tra cứu...)', example: '', level: '', userAdded: true };
+    this.items.push(entry);
     this.render();
+    this._enrichEntry(entry);
+  }
+
+  async _enrichEntry(entry) {
+    if (!app.config.getKey()) {
+      entry.meaning = '(bạn thêm)'; entry.pinyin = '';
+      this.render(); return;
+    }
+    try {
+      const raw = await app.ai.call(
+        `Tra từ tiếng Trung, trả về JSON thuần (không markdown):\n{"pinyin":"...","meaning":"nghĩa tiếng Việt ngắn","example":"câu ví dụ ngắn","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}`,
+        `Từ: ${entry.char}`, 400
+      );
+      if (!raw) { entry.meaning = '(bạn thêm)'; entry.pinyin = ''; this.render(); return; }
+      const data = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
+      Object.assign(entry, data);
+      this.render();
+    } catch {
+      entry.meaning = '(bạn thêm)'; entry.pinyin = '';
+      this.render();
+    }
   }
 
   async generate() {

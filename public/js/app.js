@@ -32,6 +32,7 @@ class ChineseApp {
     document.querySelectorAll('.nav-tab')[{ lessons: 0, flashcards: 1, upload: 2 }[name]].classList.add('active');
     if (name === 'flashcards') this.flashcards.render();
     this.selection.clear();
+    this.chat.hide();
   }
 
   openLesson(index) {
@@ -47,6 +48,7 @@ class ChineseApp {
     btn.disabled    = false;
     btn.textContent = 'Phân tích & tạo từ vựng';
     this.reading.open(this.currentLesson);
+    this.chat.show();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('view-reading').classList.add('active');

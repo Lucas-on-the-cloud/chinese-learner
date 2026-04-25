@@ -98,17 +98,26 @@ main{max-width:920px;margin:0 auto;padding:1.5rem}
 .empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
 .empty-state .big{font-family:'Noto Serif TC',serif;font-size:44px;margin-bottom:.75rem;opacity:.25}
 .empty-state p{font-size:13px;line-height:1.7}
-.chat-panel{background:#fff;border:1px solid var(--border);border-radius:12px;margin-top:1.25rem;overflow:hidden}
-.chat-header{background:var(--ink);color:#fff;padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
-.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#5dca82}
-.chat-messages{height:260px;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:none;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-widget.active{display:flex}
+.chat-bubble-btn{width:50px;height:50px;border-radius:50%;background:var(--ink);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.chat-bubble-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.chat-float-panel{width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;max-height:460px}
+.chat-float-panel.open{display:flex}
+.chat-header{background:var(--ink);color:#fff;padding:10px 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#5dca82;flex-shrink:0}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.55);font-size:18px;cursor:pointer;line-height:1;padding:0 2px}.chat-close-btn:hover{color:#fff}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--paper)}
 .chat-msg{max-width:85%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.6;white-space:pre-wrap}
 .chat-msg.user{background:var(--ink);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
 .chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
 .chat-msg.system{background:var(--gold-light);border:1px solid #e8d5a0;align-self:center;font-size:11px;color:var(--gold);text-align:center}
-.chat-input-row{display:flex;border-top:1px solid var(--border)}
-.chat-input{flex:1;border:none;padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;outline:none;background:transparent}
-.chat-send{background:var(--red);color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;font-weight:500}
+.msg-actions{margin-top:5px}
+.msg-add-btn{background:none;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:10px;color:var(--teal);padding:2px 8px;border-radius:5px;cursor:pointer;transition:all .15s}
+.msg-add-btn:hover{background:var(--teal-light);border-color:var(--teal)}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;border:none;padding:10px 12px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;outline:none;background:transparent}
+.chat-send{background:var(--red);color:#fff;border:none;padding:0 16px;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;font-weight:500}
 .chat-send:hover{opacity:.85}
 .hw-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(26,18,8,.6);align-items:center;justify-content:center}
 .hw-overlay.open{display:flex}
@@ -240,14 +249,6 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
       <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
       <div class="vocab-list" id="vocab-list"></div>
     </div>
-    <div class="chat-panel">
-      <div class="chat-header"><div class="dot"></div>Chat với bài đọc<span class="provider-badge" id="cp" style="margin-left:auto"></span></div>
-      <div class="chat-messages" id="chat-msgs"><div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc.</div></div>
-      <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" placeholder="Hỏi về bài đọc..." onkeydown="if(event.key==='Enter')app.chat.send()">
-        <button class="chat-send" onclick="app.chat.send()">Gửi</button>
-      </div>
-    </div>
   </div>
 
   <div class="view" id="view-flashcards">
@@ -305,6 +306,22 @@ input[type="text"]{width:100%;height:36px;border:1px solid var(--border);border-
     </div>
     <div class="hw-score" id="hw-sc"></div>
   </div>
+</div>
+
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-float-panel" id="chat-float-panel">
+    <div class="chat-header">
+      <div class="dot"></div>Chat với bài đọc
+      <span class="provider-badge" id="cp" style="margin-left:auto"></span>
+      <button class="chat-close-btn" onclick="app.chat.toggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-msgs"><div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc.</div></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Hỏi về bài đọc..." onkeydown="if(event.key==='Enter')app.chat.send()">
+      <button class="chat-send" onclick="app.chat.send()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" onclick="app.chat.toggle()" title="Chat với AI">💬</button>
 </div>
 
 <div class="ws-overlay" id="ws-overlay">
