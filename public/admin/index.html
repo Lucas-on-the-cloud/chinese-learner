@@ -142,15 +142,83 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 .fb-time{margin-left:auto;font-size:11px;color:#9ca3af;white-space:nowrap}
 .fb-msg{font-size:13px;color:#1f2937;line-height:1.6;margin-left:40px}
 
+/* ── SETTINGS ────────────────────────────────── */
+.s-wrap{display:flex;flex-direction:column;gap:16px;max-width:720px}
+.s-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:22px}
+.s-title{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.s-sub{font-size:12px;color:#6b7280;margin-bottom:16px;line-height:1.6}
+.s-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.s-grid2{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+.s-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
+.s-input{width:100%;height:38px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:0 12px;outline:none;background:#fff}
+.s-input:focus{border-color:#1a56db}
+.s-select{height:38px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:0 10px;outline:none;background:#fff;cursor:pointer}
+.s-select:focus{border-color:#1a56db}
+.s-btn{background:#1a56db;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s}
+.s-btn:hover{background:#1544b8}
+.s-btn:disabled{opacity:.5;cursor:not-allowed}
+.s-btn.orange{background:#f47b20}.s-btn.orange:hover{background:#d96612}
+.s-key-status{font-size:11px;margin-top:6px}
+.s-key-status.ok{color:#15803d}.s-key-status.miss{color:#6b7280}
+.s-msg{font-size:12px;padding:8px 12px;border-radius:7px;margin-top:8px;display:none;line-height:1.5}
+.s-msg.ok{display:block;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.s-msg.err{display:block;background:#fde8e6;color:#c0392b;border:1px solid #fcc}
+.s-img-row{display:flex;gap:6px;align-items:center}
+.s-img-preview{display:none;align-items:center;gap:10px;margin-top:8px}
+.s-file-btn{background:#fff;border:1px solid #e5e7eb;color:#6b7280;font-family:inherit;font-size:12px;padding:0 12px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.s-file-btn:hover{background:#f4f5f7}
+
+/* import overlay (shared with file-importer.js) */
+.import-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.6);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.import-overlay.open{display:flex}
+.import-modal{background:#fff;border-radius:14px;width:95%;max-width:820px;height:90vh;box-shadow:0 12px 48px rgba(0,0,0,.3);display:flex;flex-direction:column;overflow:hidden}
+.import-modal-hd{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+.import-modal-hd h3{font-size:15px;font-weight:700}
+.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:#9ca3af;cursor:pointer;line-height:1}
+.hw-close:hover{color:#c0392b}
+.import-lesson-bar{display:flex;align-items:center;gap:10px;padding:.75rem 1.5rem;border-bottom:1px solid #e5e7eb;background:#fff;flex-shrink:0}
+.import-lesson-lbl{font-size:12px;font-weight:600;white-space:nowrap}
+.import-lesson-input{height:36px;border:1.5px solid #1a56db;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;padding:0 12px;outline:none;width:200px}
+.import-lesson-hint{font-size:11px;color:#6b7280;font-style:italic}
+.import-toolbar{display:flex;align-items:center;gap:12px;padding:.65rem 1.5rem;border-bottom:1px solid #e5e7eb;background:#f4f5f7;flex-shrink:0}
+.import-toolbar label{font-size:12px;color:#6b7280}
+.import-toolbar select{height:30px;border:1px solid #e5e7eb;border-radius:6px;font-family:inherit;font-size:12px;padding:0 8px;background:#fff}
+.import-nav{display:flex;align-items:center;gap:8px;margin-left:auto}
+.import-nav-btn{background:#1a56db;color:#fff;border:none;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.import-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.import-count{font-size:13px;font-weight:700;min-width:48px;text-align:center}
+.import-cards{flex:1;overflow:hidden;padding:1.25rem 1.5rem;display:flex;flex-direction:column}
+.imp-card{flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.imp-card-hd{display:flex;align-items:center;gap:10px;background:#f4f5f7;padding:11px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+.imp-num{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#1a56db;min-width:26px;text-align:center}
+.imp-title{flex:1;border:1px solid transparent;background:transparent;font-family:inherit;font-size:14px;font-weight:600;outline:none;padding:3px 8px;border-radius:5px}
+.imp-title:focus{border-color:#1a56db;background:#fff}
+.imp-fields{flex:1;padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px 14px;overflow:hidden}
+.imp-field-zh{grid-column:1/-1;display:flex;flex-direction:column}
+.imp-field-py,.imp-field-vi{display:flex;flex-direction:column}
+.imp-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;flex-shrink:0;color:#1a56db}
+.imp-lbl.vi{color:#f47b20}.imp-lbl.py{color:#6b7280}
+.imp-ta{width:100%;flex:1;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;padding:9px 11px;resize:none;background:#fff;outline:none;line-height:1.7;font-family:inherit}
+.imp-ta:focus{border-color:#1a56db}
+.imp-ta.zh{font-family:'Noto Serif TC',serif;font-size:15px}
+.import-footer{padding:.9rem 1.5rem;border-top:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#f4f5f7}
+.imp-del-cur{background:#fff;border:1px solid #fcc;color:#c0392b;font-family:inherit;font-size:12px;font-weight:500;padding:7px 14px;border-radius:6px;cursor:pointer}
+.import-save-btn{background:#1a56db;color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:600;padding:10px 28px;border-radius:7px;cursor:pointer}
+.import-save-btn:disabled{opacity:.5;cursor:not-allowed}
+.imp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px}
+.imp-empty{display:flex;align-items:center;justify-content:center;flex:1;font-size:13px;color:#6b7280;text-align:center;line-height:1.8}
+
 @media(max-width:1100px){
   .primary-actions{grid-template-columns:1fr 1fr}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
   .two-col{grid-template-columns:1fr}
+  .s-grid2{grid-template-columns:1fr}
 }
 @media(max-width:700px){
   .primary-actions{grid-template-columns:1fr}
   #sidebar{width:68px!important}
   .search-box{min-width:160px}
+  .imp-fields{grid-template-columns:1fr;grid-template-rows:auto auto auto}
 }
 </style>
 </head>
@@ -252,6 +320,7 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   <!-- CONTENT -->
   <div class="content">
+  <div id="section-dashboard" style="display:flex;flex-direction:column;gap:20px;width:100%">
 
     <!-- PRIMARY ACTIONS -->
     <div class="primary-actions">
@@ -453,14 +522,134 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       </div>
     </div>
 
+  </div><!-- /section-dashboard -->
+
+  <!-- ── SETTINGS SECTION ───────────────────── -->
+  <div id="section-settings" style="display:none;width:100%">
+    <div class="s-wrap">
+
+      <!-- API KEY -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-key" style="color:#f47b20"></i> API Provider</div>
+        <div class="s-sub">Chọn nhà cung cấp AI và dán key. App gọi qua proxy server — key không bị lộ ra browser.</div>
+        <div class="s-row">
+          <select id="api-provider" class="s-select">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI (GPT)</option>
+          </select>
+          <input type="text" id="api-key-input" class="s-input" placeholder="Dán API key..." style="flex:2">
+          <button class="s-btn" onclick="adminSaveKey()">Lưu</button>
+        </div>
+        <div class="s-key-status" id="key-status"></div>
+      </div>
+
+      <!-- BOOK MANAGEMENT -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-book" style="color:#1a56db"></i> Thêm / sửa quyển sách</div>
+        <div class="s-sub">Tạo quyển sách với tên, mô tả và ảnh bìa. Mã sách phải khớp với trường <code>book</code> trong bảng lessons.</div>
+        <div class="s-grid2">
+          <div>
+            <div class="s-label">Mã sách <span style="color:#c0392b">*</span></div>
+            <input type="text" id="bk-code" class="s-input" placeholder="B2, B3, Advanced…" style="text-transform:uppercase">
+          </div>
+          <div>
+            <div class="s-label">Tên hiển thị</div>
+            <input type="text" id="bk-title" class="s-input" placeholder="VD: Sơ trung cấp B2">
+          </div>
+        </div>
+        <div class="s-label" style="margin-top:12px">Mô tả</div>
+        <input type="text" id="bk-desc" class="s-input" placeholder="VD: Bài đọc TOCFL trình độ B2">
+        <div class="s-label" style="margin-top:12px">Ảnh bìa <span style="font-size:11px;font-weight:400;color:#6b7280">(tùy chọn)</span></div>
+        <div class="s-img-row">
+          <input type="text" id="bk-cover-url" class="s-input" placeholder="Dán URL ảnh hoặc chọn file…" oninput="adminBkPreview(this.value)" style="flex:1">
+          <input type="file" id="bk-cover-file" accept="image/*" style="display:none" onchange="adminBkFile(this)">
+          <button class="s-file-btn" onclick="document.getElementById('bk-cover-file').click()">📷 Chọn file</button>
+        </div>
+        <div class="s-img-preview" id="bk-preview">
+          <img id="bk-preview-img" src="" alt="preview" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+          <button onclick="adminBkClear()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer">✕</button>
+        </div>
+        <div id="bk-msg" class="s-msg"></div>
+        <button class="s-btn" id="bk-save-btn" onclick="adminSaveBook()" style="margin-top:14px">💾 Lưu sách</button>
+      </div>
+
+      <!-- ADD LESSON -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-plus" style="color:#15803d"></i> Thêm bài học</div>
+        <div class="s-sub">Thêm bài đọc mới vào thư viện. Sau khi lưu bạn có thể tiếp tục thêm bài khác.</div>
+        <a href="/add-lesson.html" class="s-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
+      </div>
+
+      <!-- IMPORT -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-file-import" style="color:#f47b20"></i> Import từ file .txt</div>
+        <div class="s-sub">File phân cách bởi <code style="background:#f4f5f7;padding:1px 6px;border-radius:4px">________________</code> với các đoạn: Tiếng Trung · Pinyin · Tiếng Việt.<br>Hỗ trợ nhiều file cùng lúc. AI tự động phân tích nếu có API key.</div>
+        <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
+        <button class="s-btn orange" onclick="document.getElementById('import-file').click()">📂 Chọn file .txt</button>
+      </div>
+
+    </div>
+  </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
+
+<!-- Import overlay (used by file-importer.js) -->
+<div class="import-overlay" id="import-overlay">
+  <div class="import-modal">
+    <div class="import-modal-hd">
+      <h3>📄 Xem trước — chỉnh sửa trước khi lưu</h3>
+      <button class="hw-close" style="position:static" onclick="app.importer.close()">&#215;</button>
+    </div>
+    <div class="import-lesson-bar">
+      <label class="import-lesson-lbl">Tên bài học:</label>
+      <input class="import-lesson-input" id="import-lesson-name" placeholder="VD: Bài 8.2" oninput="app.importer.lessonName=this.value">
+      <span class="import-lesson-hint">Sẽ được thêm vào trước tiêu đề mỗi bài đọc nhỏ</span>
+    </div>
+    <div class="import-toolbar">
+      <label>Quyển:</label>
+      <select id="import-book" onchange="app.importer.book=this.value"></select>
+      <div class="import-nav">
+        <button class="import-nav-btn" id="import-prev" onclick="app.importer.prevCard()">◀</button>
+        <span id="import-count" class="import-count"></span>
+        <button class="import-nav-btn" id="import-next" onclick="app.importer.nextCard()">▶</button>
+      </div>
+    </div>
+    <div class="import-cards" id="import-cards"></div>
+    <div class="import-footer">
+      <button class="imp-del-cur" onclick="app.importer.removeCurrent()">🗑 Xóa bài này</button>
+      <button class="import-save-btn" id="import-save-btn" onclick="app.importer.saveAll()">💾 Lưu tất cả vào Supabase</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/database.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/ai-service.js"></script>
+<script src="../js/lesson-manager.js"></script>
+<script src="../js/file-importer.js"></script>
 
 <script>
 const DB = supabase.createClient(
   'https://prctmferugkxabyizslx.supabase.co',
   'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
 );
+
+// Mini app object for file-importer.js compatibility
+const _adminDb = new Database(
+  'https://prctmferugkxabyizslx.supabase.co',
+  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+);
+window.app = {
+  config: new ConfigManager(),
+  lessons: new LessonManager(_adminDb),
+  selection: { clear() {} },
+  vocab: { items: [] },
+};
+window.app.ai       = new AIService(window.app.config);
+window.app.importer = new FileImporter();
+app.lessons.load();
 
 // Sidebar toggle
 let collapsed = false;
@@ -471,7 +660,8 @@ function toggleSidebar() {
     ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
 }
 
-// Nav
+// Section switching
+const SECTIONS = { dashboard: 'section-dashboard', settings: 'section-settings' };
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -482,6 +672,92 @@ function setNav(btn, id) {
     ai:'AI & API', analytics:'Phân tích / Analytics', settings:'Cài đặt / Settings'
   };
   document.getElementById('crumb-label').textContent = labels[id] || id;
+  // show/hide sections
+  document.getElementById('section-dashboard').style.display = (id === 'dashboard') ? 'flex' : 'none';
+  document.getElementById('section-settings').style.display  = (id === 'settings')   ? 'block' : 'none';
+  if (id === 'settings') adminInitSettings();
+}
+
+// ── Settings functions ──────────────────────────
+function adminInitSettings() {
+  const cfg = window.app.config;
+  const statusEl = document.getElementById('key-status');
+  const provEl   = document.getElementById('api-provider');
+  const keyEl    = document.getElementById('api-key-input');
+  if (provEl) provEl.value = cfg.getProvider();
+  const k = cfg.getKey();
+  if (keyEl && k) keyEl.value = k.slice(0, 16) + '…';
+  if (statusEl) {
+    statusEl.textContent = k ? '✓ Đã lưu API key' : 'Chưa có API key';
+    statusEl.className   = 's-key-status ' + (k ? 'ok' : 'miss');
+  }
+}
+
+function adminSaveKey() {
+  const p = document.getElementById('api-provider').value;
+  const k = document.getElementById('api-key-input').value.trim();
+  if (!k) return;
+  window.app.config.saveKey(p, k);
+  const statusEl = document.getElementById('key-status');
+  statusEl.textContent = '✓ Đã lưu';
+  statusEl.className = 's-key-status ok';
+}
+
+function adminBkPreview(url) {
+  const wrap = document.getElementById('bk-preview');
+  const img  = document.getElementById('bk-preview-img');
+  if (url) { img.src = url; wrap.style.display = 'flex'; }
+  else     { wrap.style.display = 'none'; }
+}
+
+function adminBkFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 480;
+      let w = orig.width, h = orig.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.82);
+      document.getElementById('bk-cover-url').value = dataUrl;
+      adminBkPreview(dataUrl);
+    };
+    orig.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function adminBkClear() {
+  document.getElementById('bk-cover-url').value = '';
+  document.getElementById('bk-cover-file').value = '';
+  document.getElementById('bk-preview').style.display = 'none';
+}
+
+async function adminSaveBook() {
+  const name    = document.getElementById('bk-code').value.trim().toUpperCase();
+  const display = document.getElementById('bk-title').value.trim();
+  const desc    = document.getElementById('bk-desc').value.trim();
+  const cover   = document.getElementById('bk-cover-url').value.trim();
+  if (!name) { adminMsg('bk-msg', 'Nhập mã sách.', 'err'); return; }
+  const btn = document.getElementById('bk-save-btn');
+  btn.disabled = true; btn.textContent = 'Đang lưu…';
+  const { error } = await _adminDb.upsertBook({ name, display_name: display||null, description: desc||null, cover_url: cover||null });
+  btn.disabled = false; btn.textContent = '💾 Lưu sách';
+  if (error) { adminMsg('bk-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  adminMsg('bk-msg', '✓ Đã lưu: ' + (display || name), 'ok');
+  ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
+  adminBkClear();
+}
+
+function adminMsg(elId, text, type) {
+  const el = document.getElementById(elId);
+  el.textContent = text; el.className = 's-msg ' + type;
+  if (type === 'ok') setTimeout(() => el.className = 's-msg', 5000);
 }
 
 // Chart

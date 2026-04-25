@@ -585,7 +585,7 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
 <div class="app-tabs-bar">
   <div class="app-tabs-inner">
     <button class="app-tab active" onclick="app.showView('lessons')"><i class="fas fa-book-open"></i> &nbsp;Bài học</button>
-    <button class="app-tab" onclick="app.showView('upload')"><i class="fas fa-gear"></i> &nbsp;Cài đặt &amp; Import</button>
+    <a class="app-tab" href="/admin/"><i class="fas fa-gear"></i> &nbsp;Quản trị</a>
   </div>
 </div>
 
@@ -598,70 +598,6 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
     <div class="books-grid" id="books-grid"></div>
   </div>
 
-  <div class="view" id="view-upload">
-    <div class="page-title">Cài đặt</div>
-    <div class="page-sub">Quản lý API key và import bài học mới vào thư viện.</div>
-    <div class="setting-card">
-      <h3>🔑 API Provider</h3>
-      <p>Chọn nhà cung cấp AI và dán key. App gọi qua proxy server (không lộ key, không bị CORS).</p>
-      <div class="key-row">
-        <select id="api-provider"><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI (GPT)</option></select>
-        <input type="text" id="api-key-input" placeholder="Dán API key...">
-        <button class="save-key-btn" onclick="app.config.saveKey()">Lưu</button>
-      </div>
-      <div class="key-status" id="key-status"></div>
-    </div>
-    <div class="upload-section">
-      <h3>📚 Thêm / sửa quyển sách</h3>
-      <p>Tạo quyển sách với tên, mô tả và ảnh bìa. Cần tạo bảng <code>books</code> trong Supabase trước bằng SQL bên dưới.</p>
-      <details style="margin-bottom:10px">
-        <summary style="font-size:11px;color:var(--text-2);cursor:pointer">▸ Xem SQL tạo bảng</summary>
-        <pre style="font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:6px;overflow-x:auto;line-height:1.6">create table if not exists books (
-  id           serial primary key,
-  name         text unique not null,
-  display_name text,
-  description  text,
-  cover_url    text,
-  created_at   timestamptz default now()
-);</pre>
-      </details>
-
-      <h3>Mã sách <span style="color:var(--danger)">*</span></h3>
-      <input type="text" id="bk-code" placeholder="VD: B2, B3, Advanced…" style="text-transform:uppercase">
-
-      <h3>Tên hiển thị</h3>
-      <input type="text" id="bk-title" placeholder="VD: Sơ trung cấp B2">
-
-      <h3>Mô tả</h3>
-      <input type="text" id="bk-desc" placeholder="VD: Bài đọc TOCFL trình độ B2">
-
-      <h3>Ảnh bìa <span style="font-size:11px;font-weight:400;color:var(--text-2)">(tùy chọn)</span></h3>
-      <div class="bk-img-row">
-        <input type="text" id="bk-cover-url" placeholder="Dán URL ảnh hoặc chọn file…" oninput="bkPreviewUrl(this.value)">
-        <input type="file" id="bk-cover-file" accept="image/*" style="display:none" onchange="bkFileChange(this)">
-        <button class="bk-file-btn" onclick="document.getElementById('bk-cover-file').click()">📷 Chọn file</button>
-      </div>
-      <div class="bk-preview" id="bk-preview">
-        <img id="bk-preview-img" src="" alt="preview">
-        <button class="bk-clear-btn" onclick="bkClearImg()" title="Xóa ảnh">✕</button>
-      </div>
-
-      <div id="bk-msg" class="form-msg"></div>
-      <button class="submit-btn" id="bk-save-btn" onclick="saveBook()">💾 Lưu sách</button>
-    </div>
-
-    <div class="upload-section">
-      <h3>Thêm bài mới</h3>
-      <p>Thêm bài đọc mới vào thư viện. Sau khi lưu, bạn có thể tiếp tục thêm bài khác.</p>
-      <a href="add-lesson.html" class="submit-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
-    </div>
-    <div class="upload-section">
-      <h3>📄 Import từ file .txt</h3>
-      <p>File có định dạng phân cách bởi <code>________________</code> với nhãn:<br><b>Văn bản tiếng Trung gốc</b> · <b>Pinyin</b> · <b>Bản dịch tiếng Việt</b></p>
-      <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
-      <button class="submit-btn" style="background:var(--orange)" onclick="document.getElementById('import-file').click()">📂 Chọn 1 hoặc nhiều file .txt</button>
-    </div>
-  </div>
 
 </main>
 
@@ -736,90 +672,6 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
 </div>
 
 
-<!-- ── BOOK FORM JS ──────────────────────────────── -->
-<script>
-function bkPreviewUrl(url) {
-  const wrap = document.getElementById('bk-preview');
-  const img  = document.getElementById('bk-preview-img');
-  if (url) { img.src = url; wrap.style.display = 'flex'; }
-  else     { wrap.style.display = 'none'; }
-}
-
-function bkFileChange(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 480;
-      let w = orig.width, h = orig.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.82);
-      document.getElementById('bk-cover-url').value = dataUrl;
-      bkPreviewUrl(dataUrl);
-    };
-    orig.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function bkClearImg() {
-  document.getElementById('bk-cover-url').value = '';
-  document.getElementById('bk-cover-file').value = '';
-  document.getElementById('bk-preview').style.display = 'none';
-}
-
-async function saveBook() {
-  const name    = document.getElementById('bk-code').value.trim().toUpperCase();
-  const display = document.getElementById('bk-title').value.trim();
-  const desc    = document.getElementById('bk-desc').value.trim();
-  const cover   = document.getElementById('bk-cover-url').value.trim();
-
-  if (!name) { bkMsg('Nhập mã sách.', 'err'); return; }
-
-  const btn = document.getElementById('bk-save-btn');
-  btn.disabled = true; btn.textContent = 'Đang lưu…';
-
-  const { error } = await app.lessons.db.upsertBook({
-    name,
-    display_name: display || null,
-    description:  desc    || null,
-    cover_url:    cover   || null,
-  });
-
-  btn.disabled = false; btn.textContent = '💾 Lưu sách';
-
-  if (error) {
-    if (error.message?.includes('schema cache') || error.message?.includes('books')) {
-      // table not created yet — open the SQL hint automatically
-      document.querySelector('#view-upload details')?.setAttribute('open', '');
-      bkMsg('Bảng "books" chưa tồn tại. Chạy SQL phía trên trong Supabase Dashboard → SQL Editor rồi thử lại.', 'err');
-    } else {
-      bkMsg('Lỗi: ' + error.message, 'err');
-    }
-    return;
-  }
-
-  // update local cache & re-render grid
-  app.lessons.booksMeta.set(name, { name, display_name: display, description: desc, cover_url: cover });
-  if (document.getElementById('books-grid')) app.lessons.renderBooksGrid(document.getElementById('books-grid'));
-
-  bkMsg('✓ Đã lưu: ' + (display || name), 'ok');
-  ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
-  bkClearImg();
-}
-
-function bkMsg(text, type) {
-  const el = document.getElementById('bk-msg');
-  el.textContent = text;
-  el.className = 'form-msg ' + type;
-  if (type === 'ok') setTimeout(() => el.className = 'form-msg', 5000);
-}
-</script>
 
 <!-- ── JS ──────────────────────────────────────── -->
 <script src="js/utils.js"></script>
