@@ -30,9 +30,14 @@ class Database {
   }
 
   async getBooks() {
-    const { data } = await this.client.from('lessons').select('book').order('book');
-    if (!data || !data.length) return ['B1'];
-    return [...new Set(data.map(r => r.book || 'B1'))].sort();
+    const [lr, br] = await Promise.all([
+      this.client.from('lessons').select('book'),
+      this.client.from('books').select('name'),
+    ]);
+    const fromLessons = (lr.data || []).map(r => r.book || 'B1');
+    const fromBooks   = (br.data || []).map(r => r.name);
+    const all = [...new Set([...fromLessons, ...fromBooks])].sort();
+    return all.length ? all : ['B1'];
   }
 
   async getBooksMeta() {
