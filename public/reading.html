@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bài đọc — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--surface:#ffffff;--border:#e5e7eb;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.08);--shadow-lg:0 10px 40px rgba(0,0,0,.10);
+  --r:10px;
+  --success:#15803d;--success-lt:#f0fdf4;
+  --warn:#92400e;--warn-lt:#fffbeb;--warn-bd:#fde68a;
+  --danger:#c0392b;--danger-lt:#fde8e6;
+}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;transition:background .15s}
+.nav-btn:hover{background:var(--blue-dark)}
+
+/* READING PAGE */
+.reading-page{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:28px 1.5rem 60px}
+.rp-grid{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+@media(max-width:900px){.rp-grid{grid-template-columns:1fr}}
+.rp-right .ai-panel{position:sticky;top:76px;max-height:calc(100vh - 96px);overflow-y:auto}
+
+/* BACK BUTTON & READING HEADER */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text-2);padding:6px 14px;border-radius:7px;margin-bottom:1.25rem;transition:all .15s}
+.back-btn:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-lt)}
+.reading-header{margin-bottom:1.25rem}
+.reading-header h2{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;margin-bottom:4px;color:var(--text)}
+.reading-header p{font-size:13px;color:var(--text-2)}
+
+/* TEXT TABS */
+.text-tabs{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap}
+.text-tab{background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:6px 14px;border-radius:16px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.text-tab:hover{color:var(--blue);border-color:var(--blue)}
+.text-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* SECTION NAV */
+.sec-nav{display:flex;align-items:center;gap:10px;background:var(--blue-lt);border:1px solid #c7d7fd;border-radius:10px;padding:8px 14px;margin-bottom:14px}
+.sec-nav-btn{background:var(--blue);color:#fff;border:none;width:30px;height:30px;border-radius:7px;font-size:17px;font-weight:700;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
+.sec-nav-btn:hover{opacity:.8}
+.sec-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.sec-nav-label{flex:1;text-align:center;font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy)}
+.sec-nav-count{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:500;color:var(--text-2)}
+
+/* IL BLOCKS */
+.il-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:.75rem;box-shadow:var(--shadow-sm)}
+.il-pair{margin-bottom:1rem}
+.il-pair:last-child{margin-bottom:0}
+.il-zh{font-family:'Noto Serif TC',serif;font-size:18px;letter-spacing:.03em;line-height:2.2;color:var(--text)}
+.il-py{font-size:12px;color:var(--text-2);font-style:italic;line-height:1.6;margin-top:4px}
+.text-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:.75rem;line-height:2;white-space:pre-wrap;box-shadow:var(--shadow-sm)}
+.text-block.vietnamese{font-size:14px;line-height:1.9;color:var(--text)}
+
+/* CHARS */
+.zh-char,.vi-char{cursor:text;border-radius:2px;transition:background .1s;padding:0 .5px}
+.zh-char.selecting,.vi-char.selecting{background:#c7d7fd}
+.zh-char.hl-1,.vi-char.hl-1{background:#C0E1D2}
+.zh-char.hl-2,.vi-char.hl-2{background:#FEF3C7}
+.zh-char.hl-3,.vi-char.hl-3{background:#DBEAFE}
+.zh-char.hl-4,.vi-char.hl-4{background:#FCA5A5}
+
+/* SELECTION POPUP */
+.sel-bar{position:fixed;display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 12px;align-items:center;gap:6px;box-shadow:0 8px 32px rgba(0,0,0,.18),0 2px 8px rgba(0,0,0,.08);z-index:9999;pointer-events:auto;white-space:nowrap}
+.sel-bar.show{display:flex}
+.sel-bar::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);pointer-events:none;border:7px solid transparent;border-top-color:var(--border)}
+.sel-bar::before{content:'';position:absolute;top:calc(100% - 1px);left:50%;transform:translateX(-50%);pointer-events:none;z-index:1;border:6px solid transparent;border-top-color:#fff}
+.sel-word{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:600;color:var(--blue);margin-right:4px}
+.sel-label{font-size:11px;color:var(--text-2)}
+.hl-color{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .12s;flex-shrink:0}
+.hl-color:hover{transform:scale(1.15);border-color:var(--text-2)}
+.sel-divider{width:1px;height:20px;background:var(--border);margin:0 2px}
+.sel-action{background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.sel-action.add{color:var(--success)}
+.sel-action.add:hover{background:var(--success-lt);border-color:#bbf7d0}
+.sel-action.clear{color:var(--text-2)}
+.sel-action.clear:hover{background:#f3f4f6}
+.sel-action.remove{color:var(--danger)}
+.sel-action.remove:hover{background:var(--danger-lt);border-color:#fcc}
+
+/* AI VOCAB PANEL */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;box-shadow:var(--shadow-sm)}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:8px}
+.ai-panel-header h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--text)}
+.ai-badge{background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.ai-btn{background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:8px 16px;border-radius:7px;cursor:pointer;transition:background .15s}
+.ai-btn:hover{background:var(--blue-dark)}
+.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-btn.csv-btn{background:var(--success)}
+.ai-btn.csv-btn:hover{background:#166534}
+.ai-btn.ws-btn{background:var(--orange)}
+.ai-btn.ws-btn:hover{background:#d96612}
+.ai-loading{font-size:12px;color:var(--blue);display:none;align-items:center;gap:8px;margin-bottom:.75rem}
+.ai-loading.show{display:flex}
+.spinner{width:14px;height:14px;border:2px solid var(--blue-lt);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.provider-badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700;margin-left:6px;text-transform:uppercase;letter-spacing:.3px}
+.provider-badge.anthropic{background:var(--orange);color:#fff}
+.provider-badge.openai{background:#10a37f;color:#fff}
+.vocab-list{display:grid;gap:8px}
+.vocab-item{background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:12px;transition:all .15s}
+.vocab-item:hover{border-color:#c7d7fd;box-shadow:var(--shadow-sm)}
+.vocab-item.user-added{border-left:3px solid var(--success)}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--danger);min-width:48px;text-align:center;cursor:pointer;border-radius:6px;padding:4px;transition:background .15s}
+.vocab-char:hover{background:var(--danger-lt)}
+.vocab-details{flex:1;min-width:0}
+.vocab-pinyin{font-size:11px;color:var(--text-2);font-style:italic}
+.vocab-meaning{font-size:13px;font-weight:500;margin-top:2px;color:var(--text)}
+.vocab-example{font-size:11px;color:var(--text-2);margin-top:3px;font-style:italic}
+.vocab-actions{display:flex;gap:5px;flex-shrink:0}
+.vocab-btn{background:#fff;border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text-2);padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Be Vietnam Pro',sans-serif}
+.vocab-btn:hover{background:var(--success-lt);border-color:#bbf7d0;color:var(--success)}
+.vocab-btn.added{background:var(--success-lt);border-color:#bbf7d0;color:var(--success)}
+.vocab-btn.write-btn:hover{background:var(--blue-lt);border-color:#c7d7fd;color:var(--blue)}
+
+/* CHAT WIDGET */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:none;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-widget.active{display:flex}
+.chat-bubble-btn{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.chat-bubble-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(26,86,219,.45)}
+.chat-float-panel{width:380px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;height:70vh;max-height:680px;min-height:400px}
+.chat-float-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,var(--navy),#1e3a8a);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1;padding:0 2px}
+.chat-close-btn:hover{color:#fff}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-msg.system{background:var(--warn-lt);border:1px solid var(--warn-bd);align-self:center;font-size:11px;color:var(--warn);text-align:center}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent}
+.chat-send{background:var(--blue);color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.chat-send:hover{background:var(--blue-dark)}
+
+/* HW OVERLAY */
+.hw-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.hw-overlay.open{display:flex}
+.hw-modal{background:#fff;border-radius:14px;padding:1.75rem;width:92%;max-width:480px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;max-height:92vh;overflow-y:auto}
+.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;line-height:1}
+.hw-close:hover{color:var(--danger)}
+.hw-word-title{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700;color:var(--blue);text-align:center;margin-bottom:4px}
+.hw-sub{font-size:13px;color:var(--text-2);text-align:center;font-style:italic;margin-bottom:4px}
+.hw-meaning{font-size:14px;font-weight:500;text-align:center;margin-bottom:1.25rem;color:var(--text)}
+.hw-char-nav{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.hw-pip{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;width:36px;height:36px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2);background:#fff;transition:all .15s}
+.hw-pip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.hw-pip.done{border-color:#bbf7d0;color:var(--success);background:var(--success-lt)}
+.hw-mode-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:1rem}
+.hw-mode-tab{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:6px 18px;border-radius:16px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.hw-mode-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.hw-canvas-wrap{display:flex;justify-content:center;margin-bottom:1rem}
+#hw-target{border-radius:10px;background:#fff;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden}
+.hw-grid{position:absolute;background:#e5e7eb}
+.hw-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.hw-btn{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text);padding:8px 18px;border-radius:7px;cursor:pointer;transition:all .15s}
+.hw-btn:hover{background:var(--bg)}
+.hw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.hw-btn.primary:hover{background:var(--blue-dark)}
+.hw-btn.danger{border-color:#fcc;color:var(--danger)}
+.hw-btn.danger:hover{background:var(--danger-lt)}
+.hw-score{text-align:center;font-size:12px;color:var(--text-2);margin-top:10px;min-height:18px}
+.hw-score.good{color:var(--success);font-weight:600}
+.hw-score.bad{color:var(--danger)}
+
+/* WORKSHEET */
+.ws-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ws-overlay.open{display:flex}
+.ws-modal{background:#fff;border-radius:14px;padding:1.5rem;width:92%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.ws-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.ws-modal-header h3{font-size:15px;font-weight:700;color:var(--text)}
+.ws-top-actions{display:flex;gap:6px;margin-bottom:.75rem}
+.ws-sm-btn{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.ws-sm-btn:hover{background:var(--bg);color:var(--text)}
+.ws-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);cursor:pointer}
+.ws-row:last-child{border-bottom:none}
+.ws-row input[type=checkbox]{accent-color:var(--blue);width:16px;height:16px;flex-shrink:0;cursor:pointer}
+.ws-zh{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;color:var(--blue);min-width:56px}
+.ws-py{font-size:11px;color:var(--text-2);font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-vn{font-size:12px;color:var(--text);min-width:110px;text-align:right}
+.ws-footer{margin-top:1rem;display:flex;justify-content:center}
+.ws-gen-btn{background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;padding:10px 28px;border-radius:7px;cursor:pointer;transition:background .15s}
+.ws-gen-btn:hover{background:var(--blue-dark)}
+
+@media(max-width:640px){.nav-link{display:none}.chat-float-panel{width:calc(100vw - 24px)}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link active" href="/lessons.html">Bài học</a>
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Blog</a>
+      <a class="nav-btn" href="/lessons.html">Bắt đầu học</a>
+    </div>
+  </div>
+</nav>
+
+<div class="reading-page">
+  <a id="back-btn" href="/lessons.html" class="back-btn"><i class="fas fa-arrow-left"></i> &nbsp;Quay lại</a>
+  <div class="rp-grid">
+    <div class="rp-left">
+      <div class="reading-header"><h2 id="r-title"></h2><p id="r-desc"></p></div>
+      <div class="text-tabs">
+        <button class="text-tab active" onclick="app.reading.setMode(this,'paired')">漢字 + Pinyin</button>
+        <button class="text-tab" onclick="app.reading.setMode(this,'vietnamese')">Tiếng Việt</button>
+        <button class="text-tab" onclick="app.reading.setMode(this,'all')">Tất cả</button>
+      </div>
+      <div id="sec-nav" class="sec-nav" style="display:none">
+        <button class="sec-nav-btn" id="sec-prev" onclick="app.reading.navigateSection(-1)">‹</button>
+        <span id="sec-label" class="sec-nav-label"></span>
+        <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
+      </div>
+      <div id="text-paired" class="il-block"></div>
+      <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
+    </div>
+    <div class="rp-right">
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
+            <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">🖊 In chữ viết tay</button>
+            <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--success)">＋ Flash tất cả</button>
+            <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
+          </div>
+        </div>
+        <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
+        <div class="vocab-list" id="vocab-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT WIDGET -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-float-panel" id="chat-float-panel">
+    <div class="chat-header">
+      <div class="dot"></div>Chat với bài đọc
+      <span class="provider-badge" id="cp" style="margin-left:auto"></span>
+      <button class="chat-close-btn" onclick="app.chat.toggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-msgs"><div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.<br><span style="font-size:10px;opacity:.7">Gõ "add 詞, 詞" để thêm từ vào danh sách.</span></div></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Hỏi về bài đọc..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();app.chat.send()}">
+      <button class="chat-send" onclick="app.chat.send()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" onclick="app.chat.toggle()" title="Chat với AI">💬</button>
+</div>
+
+<!-- HW OVERLAY -->
+<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)app.handwriting.close()">
+  <div class="hw-modal">
+    <button class="hw-close" onclick="app.handwriting.close()">&#215;</button>
+    <div class="hw-word-title" id="hw-title"></div>
+    <div class="hw-sub" id="hw-py"></div>
+    <div class="hw-meaning" id="hw-mg"></div>
+    <div class="hw-char-nav" id="hw-nav"></div>
+    <div class="hw-mode-tabs">
+      <button class="hw-mode-tab active" id="mt-a" onclick="app.handwriting.setMode('a')">▶ Xem nét</button>
+      <button class="hw-mode-tab" id="mt-q" onclick="app.handwriting.setMode('q')">✏️ Viết</button>
+    </div>
+    <div class="hw-canvas-wrap"><div id="hw-target">
+      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+    </div></div>
+    <div class="hw-controls" id="hw-ca">
+      <button class="hw-btn primary" onclick="app.handwriting.animate()">▶ Animate</button>
+      <button class="hw-btn" onclick="app.handwriting.loop()">↺ Loop</button>
+    </div>
+    <div class="hw-controls" id="hw-cq" style="display:none">
+      <button class="hw-btn primary" onclick="app.handwriting.quiz()">Bắt đầu viết</button>
+      <button class="hw-btn danger" onclick="app.handwriting.reset()">↺ Reset</button>
+    </div>
+    <div class="hw-score" id="hw-sc"></div>
+  </div>
+</div>
+
+<!-- WORKSHEET OVERLAY -->
+<div class="ws-overlay" id="ws-overlay">
+  <div class="ws-modal">
+    <div class="ws-modal-header">
+      <h3>📝 Tạo bài tập viết</h3>
+      <button class="hw-close" style="position:static" onclick="app.worksheet.close()">&#215;</button>
+    </div>
+    <div class="ws-top-actions">
+      <button class="ws-sm-btn" onclick="app.worksheet.selectAll()">Chọn tất cả</button>
+      <button class="ws-sm-btn" onclick="app.worksheet.selectNone()">Bỏ chọn</button>
+    </div>
+    <div id="ws-list"></div>
+    <div class="ws-footer">
+      <button class="ws-gen-btn" onclick="app.worksheet.generate()">📄 Tạo &amp; In</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELECTION POPUP -->
+<div class="sel-bar" id="sel-bar">
+  <span class="sel-word" id="sel-word"></span>
+  <span class="sel-label">Highlight:</span>
+  <div class="hl-color" style="background:#C0E1D2" onclick="app.selection.highlight('hl-1')"></div>
+  <div class="hl-color" style="background:#FEF3C7" onclick="app.selection.highlight('hl-2')"></div>
+  <div class="hl-color" style="background:#DBEAFE" onclick="app.selection.highlight('hl-3')"></div>
+  <div class="hl-color" style="background:#FCA5A5" onclick="app.selection.highlight('hl-4')"></div>
+  <div class="sel-divider"></div>
+  <button class="sel-action add" onclick="app.selection.addToVocab()">+ Từ vựng</button>
+  <button class="sel-action remove" onclick="app.selection.removeHighlight()">✕</button>
+  <button class="sel-action clear" onclick="app.selection.clear()">Bỏ</button>
+</div>
+
+<!-- JS -->
+<script src="js/utils.js"></script>
+<script src="js/database.js"></script>
+<script src="js/config.js"></script>
+<script src="js/ai-service.js"></script>
+<script src="js/lesson-manager.js"></script>
+<script src="js/reading-view.js"></script>
+<script src="js/selection.js"></script>
+<script src="js/vocab-manager.js"></script>
+<script src="js/flashcard.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/handwriting.js"></script>
+<script src="js/file-importer.js"></script>
+<script src="js/worksheet.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

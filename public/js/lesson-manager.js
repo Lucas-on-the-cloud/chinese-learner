@@ -146,5 +146,49 @@ class LessonManager {
     lessons.style.display = isOpen ? 'none' : 'block';
   }
 
+  renderBooksGrid(container) {
+    const GRADIENTS = [
+      ['#0d1b4b','#1e3a8a'], ['#064e3b','#065f46'],
+      ['#4c1d95','#5b21b6'], ['#7f1d1d','#991b1b'], ['#0c4a6e','#075985'],
+    ];
+    const EMOJIS = ['📘','📗','📒','📕','📙'];
+
+    const fromLessons = [...new Set(this.lessons.map(l => l.book || 'B1'))];
+    const fromMeta    = [...this.booksMeta.keys()];
+    const allCodes    = [...new Set([...fromLessons, ...fromMeta])].sort();
+
+    if (!allCodes.length) {
+      container.innerHTML = '<p style="color:var(--text-2);padding:3rem;text-align:center">Chưa có sách nào. Thêm sách trong Cài đặt.</p>';
+      return;
+    }
+
+    container.innerHTML = allCodes.map((code, bi) => {
+      const meta    = this.booksMeta.get(code) || {};
+      const title   = meta.display_name || `Quyển sách ${code}`;
+      const desc    = meta.description  || '';
+      const cover   = meta.cover_url    || '';
+      const [c1,c2] = GRADIENTS[bi % GRADIENTS.length];
+      const emoji   = EMOJIS[bi % EMOJIS.length];
+      const count   = this.lessons.filter(l => (l.book || 'B1') === code).length;
+      const wm      = (this.lessons.find(l => (l.book||'B1') === code)?.zh || '').match(/[一-鿿]/)?.[0] || '讀';
+
+      const coverHtml = cover
+        ? `<img src="${cover}" class="bk-card-img" alt="${title}">`
+        : `<div class="bk-card-img bk-card-grad" style="background:linear-gradient(150deg,${c1},${c2})">
+             <span class="bk-card-wm">${wm}</span>
+             <span class="bk-card-emoji">${emoji}</span>
+           </div>`;
+
+      return `<div class="bk-card" onclick="location.href='/book.html?b=${encodeURIComponent(code)}'">
+        ${coverHtml}
+        <div class="bk-card-body">
+          <div class="bk-card-title">${title}</div>
+          ${desc ? `<div class="bk-card-desc">${desc}</div>` : ''}
+          <div class="bk-card-count">${count > 0 ? count + ' bài học' : 'Chưa có bài'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   get(index) { return this.lessons[index]; }
 }

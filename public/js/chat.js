@@ -8,13 +8,15 @@ class ChatManager {
   reset() {
     this.history = [];
     this.isOpen  = false;
-    document.getElementById('chat-float-panel').classList.remove('open');
-    document.getElementById('chat-msgs').innerHTML =
+    document.getElementById('chat-float-panel')?.classList.remove('open');
+    const msgs = document.getElementById('chat-msgs');
+    if (!msgs) return;
+    msgs.innerHTML =
       '<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.<br><span style="font-size:10px;opacity:.7">Gõ "add 詞, 詞, 詞" để thêm từ vào danh sách từ vựng.</span></div>';
   }
 
-  show() { document.getElementById('chat-widget').classList.add('active'); }
-  hide() { document.getElementById('chat-widget').classList.remove('active'); }
+  show() { document.getElementById('chat-widget')?.classList.add('active'); }
+  hide() { document.getElementById('chat-widget')?.classList.remove('active'); }
 
   toggle() {
     this.isOpen = !this.isOpen;

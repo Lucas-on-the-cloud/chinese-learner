@@ -21,9 +21,32 @@ class ChineseApp {
   async init() {
     await this.lessons.load();
     await this.flashcards.load();
-    if (document.getElementById('lesson-grid')) this.lessons.renderGrid();
-    if (document.getElementById('fc-area'))     this.flashcards.render();
+
+    const booksEl = document.getElementById('books-grid');
+    if (booksEl) this.lessons.renderBooksGrid(booksEl);
+    if (document.getElementById('fc-area')) this.flashcards.render();
     this.config.updateUI();
+
+    // reading.html: open lesson from URL params
+    const params   = new URLSearchParams(location.search);
+    const idsParam = params.get('ids');
+    const idParam  = params.get('id');
+    const bParam   = params.get('b');
+
+    if (bParam) {
+      const backBtn = document.getElementById('back-btn');
+      if (backBtn) backBtn.href = `/book.html?b=${encodeURIComponent(bParam)}`;
+    }
+
+    if (idsParam) {
+      const ids   = idsParam.split(',').map(Number);
+      const parts = ids.map(id => this.lessons.lessons.find(l => l.id === id)).filter(Boolean);
+      if (parts.length === 1)    this._openWith(parts[0]);
+      else if (parts.length > 1) this._openWithGroup(parts);
+    } else if (idParam) {
+      const lesson = this.lessons.lessons.find(l => l.id === Number(idParam));
+      if (lesson) this._openWith(lesson);
+    }
   }
 
   showView(name) {
@@ -31,9 +54,9 @@ class ChineseApp {
     document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
     const viewEl = document.getElementById('view-' + name);
     if (viewEl) viewEl.classList.add('active');
-    const tabMap = { lessons: 0, reading: 0, upload: 1 };
-    const tabs = document.querySelectorAll('.app-tab');
-    const idx = tabMap[name];
+    const tabMap = { lessons: 0, upload: 1 };
+    const tabs   = document.querySelectorAll('.app-tab');
+    const idx    = tabMap[name];
     if (idx !== undefined && tabs[idx]) tabs[idx].classList.add('active');
     if (name !== 'reading') this.chat.hide();
     this.selection.clear();
@@ -46,40 +69,21 @@ class ChineseApp {
   openGroup(indices) {
     if (!Array.isArray(indices)) indices = [indices];
     if (indices.length === 1) { this.openLesson(indices[0]); return; }
+    this._openWithGroup(indices.map(i => this.lessons.get(i)));
+  }
 
-    const parts = indices.map(i => this.lessons.get(i));
-
-    const getGroupTitle = (title) => {
-      const sep = title.indexOf(' · ');
-      return sep > -1 ? title.slice(0, sep) : title;
-    };
-    const getSubLabel = (title) => {
-      const sep = title.indexOf(' · ');
-      return sep > -1 ? title.slice(sep + 3) : title;
-    };
-
-    // Each section keeps its own DB id so vocab caches independently
-    const sections = parts.map(l => ({
-      id:    l.id,
-      title: getSubLabel(l.title),
-      zh:    l.zh,
-      py:    l.py,
-      vi:    l.vi,
-    }));
-
-    const combined = {
-      id:       sections[0].id,
-      book:     parts[0].book,
-      title:    getGroupTitle(parts[0].title),
-      desc:     `${parts.length} bài đọc`,
+  _openWithGroup(parts) {
+    const sep      = s => s.indexOf(' · ');
+    const getTitle = s => sep(s) > -1 ? s.slice(0, sep(s)) : s;
+    const getSub   = s => sep(s) > -1 ? s.slice(sep(s) + 3) : s;
+    const sections = parts.map(l => ({ id: l.id, title: getSub(l.title), zh: l.zh, py: l.py, vi: l.vi }));
+    this._openWith({
+      id: sections[0].id, book: parts[0].book,
+      title: getTitle(parts[0].title),
+      desc:  `${parts.length} bài đọc`,
       sections,
-      // Active text starts at section 0 — reading-view updates these on navigation
-      zh: sections[0].zh,
-      py: sections[0].py,
-      vi: sections[0].vi,
-    };
-
-    this._openWith(combined);
+      zh: sections[0].zh, py: sections[0].py, vi: sections[0].vi,
+    });
   }
 
   _openWith(lesson) {
@@ -87,20 +91,27 @@ class ChineseApp {
     this.vocab.items   = [];
     this.selection.clear();
     this.chat.reset();
-    document.getElementById('vocab-list').innerHTML    = '';
-    document.getElementById('csv-btn').style.display    = 'none';
-    document.getElementById('ws-btn').style.display     = 'none';
-    document.getElementById('addall-btn').style.display = 'none';
+
+    const vl = document.getElementById('vocab-list');
+    if (vl) vl.innerHTML = '';
+    ['csv-btn','ws-btn','addall-btn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     const btn = document.getElementById('gen-btn');
-    btn.disabled    = false;
-    btn.textContent = 'Phân tích & tạo từ vựng';
+    if (btn) { btn.disabled = false; btn.textContent = 'Phân tích & tạo từ vựng'; }
+
     this.reading.open(lesson);
     this.chat.show();
+
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-reading').classList.add('active');
+    const vr = document.getElementById('view-reading');
+    if (vr) vr.classList.add('active');
     document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
     const tabs = document.querySelectorAll('.app-tab');
     if (tabs[0]) tabs[0].classList.add('active');
+
+    document.title = (lesson.title || 'Bài đọc') + ' — TOCFL FAFA';
     this.config.updateUI();
     this.vocab.load(lesson);
   }

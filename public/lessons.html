@@ -148,7 +148,20 @@ img { display: block; max-width: 100%; }
 .page-title { font-family: 'Noto Serif TC', serif; font-size: 24px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
 .page-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.5rem; }
 
-/* ── LESSON GRID ─────────────────────────────── */
+/* ── BOOKS GRID ──────────────────────────────── */
+.books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 200px)); gap: 20px; padding: .5rem 0 2rem; }
+.bk-card { border-radius: 14px; overflow: hidden; cursor: pointer; box-shadow: var(--shadow); border: 1px solid var(--border); background: var(--surface); transition: transform .2s, box-shadow .2s; }
+.bk-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.bk-card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+.bk-card-grad { width: 100%; aspect-ratio: 2/3; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+.bk-card-wm { position: absolute; font-family: 'Noto Serif TC', serif; font-size: 100px; font-weight: 700; color: rgba(255,255,255,.07); right: -10px; bottom: -16px; line-height: 1; pointer-events: none; }
+.bk-card-emoji { font-size: 40px; position: relative; z-index: 1; }
+.bk-card-body { padding: 12px 14px 14px; }
+.bk-card-title { font-family: 'Noto Serif TC', serif; font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.35; }
+.bk-card-desc { font-size: 11px; color: var(--text-2); margin-top: 4px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bk-card-count { font-size: 11px; color: var(--blue); margin-top: 6px; font-weight: 600; }
+
+/* ── LESSON GRID (kept for book.html via legacy) ─ */
 .lesson-grid { display: grid; gap: 10px; }
 
 .book-header {
@@ -580,41 +593,9 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
 <main class="app-main">
 
   <div class="view active" id="view-lessons">
-    <div class="page-title">Bài học</div>
-    <div class="page-sub">Chọn bài để đọc, highlight, chat AI và tạo từ vựng.</div>
-    <div class="lesson-grid" id="lesson-grid"></div>
-  </div>
-
-  <div class="view" id="view-reading">
-    <button class="back-btn" onclick="app.showView('lessons')"><i class="fas fa-arrow-left"></i> &nbsp;Danh sách</button>
-    <div class="reading-header"><h2 id="r-title"></h2><p id="r-desc"></p></div>
-    <div class="text-tabs">
-      <button class="text-tab active" onclick="app.reading.setMode(this,'paired')">漢字 + Pinyin</button>
-      <button class="text-tab" onclick="app.reading.setMode(this,'vietnamese')">Tiếng Việt</button>
-      <button class="text-tab" onclick="app.reading.setMode(this,'all')">Tất cả</button>
-    </div>
-    <!-- Section navigator — visible only for grouped lessons -->
-    <div id="sec-nav" class="sec-nav" style="display:none">
-      <button class="sec-nav-btn" id="sec-prev" onclick="app.reading.navigateSection(-1)">‹</button>
-      <span id="sec-label" class="sec-nav-label"></span>
-      <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
-    </div>
-
-    <div id="text-paired" class="il-block"></div>
-    <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
-    <div class="ai-panel">
-      <div class="ai-panel-header">
-        <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
-          <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">🖊 In chữ viết tay</button>
-          <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--success)">＋ Flash tất cả</button>
-          <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
-        </div>
-      </div>
-      <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
-      <div class="vocab-list" id="vocab-list"></div>
-    </div>
+    <div class="page-title">Thư viện sách</div>
+    <div class="page-sub">Chọn quyển sách để xem các bài đọc bên trong.</div>
+    <div class="books-grid" id="books-grid"></div>
   </div>
 
   <div class="view" id="view-upload">
@@ -754,65 +735,6 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
   </div>
 </div>
 
-<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)app.handwriting.close()">
-  <div class="hw-modal">
-    <button class="hw-close" onclick="app.handwriting.close()">&#215;</button>
-    <div class="hw-word-title" id="hw-title"></div>
-    <div class="hw-sub" id="hw-py"></div>
-    <div class="hw-meaning" id="hw-mg"></div>
-    <div class="hw-char-nav" id="hw-nav"></div>
-    <div class="hw-mode-tabs">
-      <button class="hw-mode-tab active" id="mt-a" onclick="app.handwriting.setMode('a')">▶ Xem nét</button>
-      <button class="hw-mode-tab" id="mt-q" onclick="app.handwriting.setMode('q')">✏️ Viết</button>
-    </div>
-    <div class="hw-canvas-wrap"><div id="hw-target">
-      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
-      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
-    </div></div>
-    <div class="hw-controls" id="hw-ca">
-      <button class="hw-btn primary" onclick="app.handwriting.animate()">▶ Animate</button>
-      <button class="hw-btn" onclick="app.handwriting.loop()">↺ Loop</button>
-    </div>
-    <div class="hw-controls" id="hw-cq" style="display:none">
-      <button class="hw-btn primary" onclick="app.handwriting.quiz()">Bắt đầu viết</button>
-      <button class="hw-btn danger" onclick="app.handwriting.reset()">↺ Reset</button>
-    </div>
-    <div class="hw-score" id="hw-sc"></div>
-  </div>
-</div>
-
-<div class="chat-widget" id="chat-widget">
-  <div class="chat-float-panel" id="chat-float-panel">
-    <div class="chat-header">
-      <div class="dot"></div>Chat với bài đọc
-      <span class="provider-badge" id="cp" style="margin-left:auto"></span>
-      <button class="chat-close-btn" onclick="app.chat.toggle()">✕</button>
-    </div>
-    <div class="chat-messages" id="chat-msgs"><div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc.</div></div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="chat-input" placeholder="Hỏi về bài đọc..." onkeydown="if(event.key==='Enter')app.chat.send()">
-      <button class="chat-send" onclick="app.chat.send()">Gửi</button>
-    </div>
-  </div>
-  <button class="chat-bubble-btn" onclick="app.chat.toggle()" title="Chat với AI">💬</button>
-</div>
-
-<div class="ws-overlay" id="ws-overlay">
-  <div class="ws-modal">
-    <div class="ws-modal-header">
-      <h3>📝 Tạo bài tập viết</h3>
-      <button class="hw-close" style="position:static" onclick="app.worksheet.close()">&#215;</button>
-    </div>
-    <div class="ws-top-actions">
-      <button class="ws-sm-btn" onclick="app.worksheet.selectAll()">Chọn tất cả</button>
-      <button class="ws-sm-btn" onclick="app.worksheet.selectNone()">Bỏ chọn</button>
-    </div>
-    <div id="ws-list"></div>
-    <div class="ws-footer">
-      <button class="ws-gen-btn" onclick="app.worksheet.generate()">📄 Tạo &amp; In</button>
-    </div>
-  </div>
-</div>
 
 <!-- ── BOOK FORM JS ──────────────────────────────── -->
 <script>
@@ -884,7 +806,7 @@ async function saveBook() {
 
   // update local cache & re-render grid
   app.lessons.booksMeta.set(name, { name, display_name: display, description: desc, cover_url: cover });
-  if (document.getElementById('lesson-grid')) app.lessons.renderGrid();
+  if (document.getElementById('books-grid')) app.lessons.renderBooksGrid(document.getElementById('books-grid'));
 
   bkMsg('✓ Đã lưu: ' + (display || name), 'ok');
   ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
@@ -898,20 +820,6 @@ function bkMsg(text, type) {
   if (type === 'ok') setTimeout(() => el.className = 'form-msg', 5000);
 }
 </script>
-
-<!-- ── SELECTION POPUP ──────────────────────────── -->
-<div class="sel-bar" id="sel-bar">
-  <span class="sel-word" id="sel-word"></span>
-  <span class="sel-label">Highlight:</span>
-  <div class="hl-color" style="background:#C0E1D2" onclick="app.selection.highlight('hl-1')"></div>
-  <div class="hl-color" style="background:#FEF3C7" onclick="app.selection.highlight('hl-2')"></div>
-  <div class="hl-color" style="background:#DBEAFE" onclick="app.selection.highlight('hl-3')"></div>
-  <div class="hl-color" style="background:#FCA5A5" onclick="app.selection.highlight('hl-4')"></div>
-  <div class="sel-divider"></div>
-  <button class="sel-action add" onclick="app.selection.addToVocab()">+ Từ vựng</button>
-  <button class="sel-action remove" onclick="app.selection.removeHighlight()">✕</button>
-  <button class="sel-action clear" onclick="app.selection.clear()">Bỏ</button>
-</div>
 
 <!-- ── JS ──────────────────────────────────────── -->
 <script src="js/utils.js"></script>
