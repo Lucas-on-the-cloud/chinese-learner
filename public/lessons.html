@@ -148,36 +148,12 @@ img { display: block; max-width: 100%; }
 .page-title { font-family: 'Noto Serif TC', serif; font-size: 24px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
 .page-sub { font-size: 13px; color: var(--text-2); margin-bottom: 1.5rem; }
 
-/* ── LESSON LIST ─────────────────────────────── */
+/* ── LESSON GRID ─────────────────────────────── */
 .lesson-grid { display: grid; gap: 10px; }
-.lesson-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 1rem 1.25rem;
-  cursor: pointer;
-  transition: box-shadow .2s, transform .2s, border-color .2s;
-  display: flex; align-items: center; gap: 1rem;
-}
-.lesson-card:hover { border-color: #c7d7fd; box-shadow: var(--shadow); transform: translateY(-2px); }
-.lesson-num {
-  font-family: 'Noto Serif TC', serif;
-  font-size: 24px; font-weight: 700;
-  color: var(--blue);
-  min-width: 44px; height: 44px;
-  border-radius: 9px;
-  background: var(--blue-lt);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.lesson-info h3 { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
-.lesson-info p { font-size: 12px; color: var(--text-2); }
-.lesson-arrow { margin-left: auto; color: var(--text-3); font-size: 14px; }
 
 .book-header {
   font-family: 'Noto Serif TC', serif;
-  font-size: 14px; font-weight: 600;
-  color: var(--text);
+  font-size: 14px; font-weight: 600; color: var(--text);
   padding: 12px 16px; margin-bottom: 8px;
   border: 1px solid var(--border); border-radius: var(--r);
   background: var(--surface);
@@ -187,10 +163,63 @@ img { display: block; max-width: 100%; }
 .book-header:hover { border-color: #c7d7fd; background: var(--blue-lt); }
 .book-header[data-open="true"] { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; margin-bottom: 0; }
 .book-arrow { font-size: 12px; color: var(--text-3); flex-shrink: 0; }
-.book-lessons { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--r) var(--r); overflow: hidden; margin-bottom: 8px; background: var(--surface); }
-.book-lessons .lesson-card { border-radius: 0; border-left: none; border-right: none; border-top: none; }
-.book-lessons .lesson-card:last-child { border-bottom: none; }
-.book-lessons .lesson-card:hover { transform: none; box-shadow: none; background: #f9fafb; }
+.book-lessons {
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+  background: var(--bg); padding: 16px; margin-bottom: 8px;
+}
+
+/* ── LESSON GROUP CARDS (grid) ───────────────── */
+.lesson-group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.lgc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  cursor: pointer; transition: all .2s;
+}
+.lgc:hover { border-color: #c7d7fd; box-shadow: var(--shadow); transform: translateY(-3px); }
+.lgc-thumb {
+  height: 76px; position: relative; overflow: hidden;
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  padding: 10px 12px;
+}
+.lgc-wm {
+  position: absolute;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 88px; font-weight: 700;
+  color: rgba(255,255,255,.07);
+  top: -14px; right: 6px; line-height: 1;
+  pointer-events: none;
+}
+.lgc-badge {
+  font-size: 10px; font-weight: 600;
+  color: rgba(255,255,255,.9);
+  background: rgba(255,255,255,.15);
+  padding: 3px 8px; border-radius: 4px;
+  letter-spacing: .3px; position: relative; z-index: 1;
+}
+.lgc-body { padding: 10px 13px 12px; }
+.lgc-title { font-family: 'Noto Serif TC', serif; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lgc-sub { font-size: 11px; color: var(--text-2); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lgc-zh { font-family: 'Noto Serif TC', serif; font-size: 11px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── SECTION HEADERS (grouped reading) ───────── */
+.sec-header {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px; font-weight: 700; color: var(--navy);
+  padding: 20px 0 10px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border); margin-bottom: 14px;
+}
+.sec-header::before { content: ''; width: 4px; height: 18px; background: var(--blue); border-radius: 2px; flex-shrink: 0; }
+.sec-header-vi {
+  font-size: 13px; font-weight: 700; color: var(--navy);
+  padding: 12px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+}
 
 /* ── READING ─────────────────────────────────── */
 .back-btn {

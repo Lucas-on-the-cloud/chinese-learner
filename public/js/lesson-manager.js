@@ -37,28 +37,85 @@ class LessonManager {
       : [...this.BUILTIN];
   }
 
+  // Returns the group key (prefix before " · ") for a title
+  _groupKey(title) {
+    const sep = title.indexOf(' · ');
+    return sep > -1 ? title.slice(0, sep) : title;
+  }
+
   renderGrid() {
+    const GRADIENTS = [
+      ['#0d1b4b', '#1e3a8a'],
+      ['#064e3b', '#065f46'],
+      ['#4c1d95', '#5b21b6'],
+      ['#7f1d1d', '#991b1b'],
+      ['#0c4a6e', '#075985'],
+    ];
     const EMOJIS = ['📘', '📗', '📒', '📕', '📙'];
-    const entries = this.lessons.map((l, i) => ({ l, i }));
     const books = [...new Set(this.lessons.map(l => l.book || 'B1'))].sort();
 
-    const card = ({ l, i }) => `<div class="lesson-card" onclick="app.openLesson(${i})">
-      <div class="lesson-num">${i + 1}</div>
-      <div class="lesson-info"><h3>${l.title}</h3><p>${l.desc || ''}</p></div>
-      <div class="lesson-arrow">›</div>
-    </div>`;
-
     const html = books.map((book, bi) => {
-      const group = entries.filter(({ l }) => (l.book || 'B1') === book);
+      // All lessons in this book with their global index
+      const bookEntries = this.lessons
+        .map((l, i) => ({ l, i }))
+        .filter(({ l }) => (l.book || 'B1') === book);
+
+      // Group by prefix
+      const groupMap = new Map();
+      bookEntries.forEach(({ l, i }) => {
+        const key = this._groupKey(l.title);
+        if (!groupMap.has(key)) groupMap.set(key, []);
+        groupMap.get(key).push(i);
+      });
+
       const emoji = EMOJIS[bi % EMOJIS.length];
-      const open = bi === 0;
+      const open  = bi === 0;
+
+      const cardsHTML = [...groupMap.entries()].map(([groupKey, indices], gi) => {
+        const first = this.lessons[indices[0]];
+        const wm    = (first.zh || '').match(/[一-鿿]/)?.[0] || '讀';
+        const [c1, c2] = GRADIENTS[gi % GRADIENTS.length];
+
+        // Sub-reading labels ("Hình 1", "Hình 2", …)
+        const subs = indices
+          .map(i => {
+            const t   = this.lessons[i].title;
+            const sep = t.indexOf(' · ');
+            if (sep < 0) return '';
+            const rest = t.slice(sep + 3);
+            const dash = rest.indexOf(' — ');
+            return dash > -1 ? rest.slice(0, dash) : rest;
+          })
+          .filter(Boolean);
+
+        const subLine = subs.length
+          ? subs.join(', ')
+          : (first.desc || '');
+
+        const preview = (first.zh || '').replace(/\n/g, '').slice(0, 36);
+        const indicesJSON = JSON.stringify(indices);
+        const countLabel  = indices.length > 1 ? `${indices.length} bài đọc` : 'Bài đọc';
+
+        return `<div class="lgc" onclick="app.openGroup(${indicesJSON})">
+          <div class="lgc-thumb" style="background:linear-gradient(135deg,${c1},${c2})">
+            <span class="lgc-wm">${wm}</span>
+            <span class="lgc-badge">${countLabel}</span>
+          </div>
+          <div class="lgc-body">
+            <div class="lgc-title">${groupKey}</div>
+            ${subLine ? `<div class="lgc-sub">${subLine}</div>` : ''}
+            <div class="lgc-zh">${preview}</div>
+          </div>
+        </div>`;
+      }).join('');
+
       return `
         <div class="book-header" data-open="${open}" onclick="app.lessons.toggleBook(this)">
-          <span>${emoji} Quyển sách ${book} <span style="font-family:'Be Vietnam Pro';font-size:11px;font-weight:400">(${group.length} bài)</span></span>
+          <span>${emoji} Quyển sách ${book} <span style="font-family:'Be Vietnam Pro';font-size:11px;font-weight:400">(${bookEntries.length} bài)</span></span>
           <span class="book-arrow">${open ? '▾' : '▸'}</span>
         </div>
         <div class="book-lessons"${open ? '' : ' style="display:none"'}>
-          ${group.map(card).join('')}
+          <div class="lesson-group-grid">${cardsHTML}</div>
         </div>`;
     }).join('');
 

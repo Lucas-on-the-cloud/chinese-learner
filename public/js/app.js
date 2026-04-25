@@ -39,8 +39,47 @@ class ChineseApp {
     this.selection.clear();
   }
 
+  // Opens a single lesson by global index
   openLesson(index) {
-    this.currentLesson = this.lessons.get(index);
+    this._openWith(this.lessons.get(index));
+  }
+
+  // Opens a group of lessons by their global indices — merges into one reading
+  openGroup(indices) {
+    if (!Array.isArray(indices)) indices = [indices];
+    if (indices.length === 1) { this.openLesson(indices[0]); return; }
+
+    const parts = indices.map(i => this.lessons.get(i));
+
+    const getGroupTitle = (title) => {
+      const sep = title.indexOf(' · ');
+      return sep > -1 ? title.slice(0, sep) : title;
+    };
+    const getSubLabel = (title) => {
+      const sep = title.indexOf(' · ');
+      return sep > -1 ? title.slice(sep + 3) : title;
+    };
+
+    const combined = {
+      id:    parts[0].id,
+      book:  parts[0].book,
+      title: getGroupTitle(parts[0].title),
+      desc:  `${parts.length} bài đọc`,
+      sections: parts.map(l => ({
+        title: getSubLabel(l.title),
+        zh: l.zh, py: l.py, vi: l.vi
+      })),
+      // Flat combined text used by vocab AI and chat
+      zh: parts.map(l => l.zh).join('\n\n'),
+      py: parts.map(l => l.py).join('\n\n'),
+      vi: parts.map(l => l.vi).join('\n\n'),
+    };
+
+    this._openWith(combined);
+  }
+
+  _openWith(lesson) {
+    this.currentLesson = lesson;
     this.vocab.items   = [];
     this.selection.clear();
     this.chat.reset();
@@ -51,7 +90,7 @@ class ChineseApp {
     const btn = document.getElementById('gen-btn');
     btn.disabled    = false;
     btn.textContent = 'Phân tích & tạo từ vựng';
-    this.reading.open(this.currentLesson);
+    this.reading.open(lesson);
     this.chat.show();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-reading').classList.add('active');
@@ -59,7 +98,7 @@ class ChineseApp {
     const tabs = document.querySelectorAll('.app-tab');
     if (tabs[0]) tabs[0].classList.add('active');
     this.config.updateUI();
-    this.vocab.load(this.currentLesson);
+    this.vocab.load(lesson);
   }
 }
 
