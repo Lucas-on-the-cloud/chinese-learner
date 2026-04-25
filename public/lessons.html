@@ -871,7 +871,16 @@ async function saveBook() {
 
   btn.disabled = false; btn.textContent = '💾 Lưu sách';
 
-  if (error) { bkMsg('Lỗi: ' + error.message, 'err'); return; }
+  if (error) {
+    if (error.message?.includes('schema cache') || error.message?.includes('books')) {
+      // table not created yet — open the SQL hint automatically
+      document.querySelector('#view-upload details')?.setAttribute('open', '');
+      bkMsg('Bảng "books" chưa tồn tại. Chạy SQL phía trên trong Supabase Dashboard → SQL Editor rồi thử lại.', 'err');
+    } else {
+      bkMsg('Lỗi: ' + error.message, 'err');
+    }
+    return;
+  }
 
   // update local cache & re-render grid
   app.lessons.booksMeta.set(name, { name, display_name: display, description: desc, cover_url: cover });
