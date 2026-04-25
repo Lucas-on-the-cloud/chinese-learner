@@ -332,8 +332,8 @@ img { display: block; max-width: 100%; }
 .vocab-item { background: #fff; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; display: flex; align-items: center; gap: 12px; transition: all .15s; }
 .vocab-item:hover { border-color: #c7d7fd; box-shadow: var(--shadow-sm); }
 .vocab-item.user-added { border-left: 3px solid var(--success); }
-.vocab-char { font-family: 'Noto Serif TC', serif; font-size: 22px; font-weight: 600; color: var(--blue); min-width: 48px; text-align: center; cursor: pointer; border-radius: 6px; padding: 4px; transition: background .15s; }
-.vocab-char:hover { background: var(--blue-lt); }
+.vocab-char { font-family: 'Noto Serif TC', serif; font-size: 22px; font-weight: 600; color: var(--danger); min-width: 48px; text-align: center; cursor: pointer; border-radius: 6px; padding: 4px; transition: background .15s; }
+.vocab-char:hover { background: var(--danger-lt); }
 .vocab-details { flex: 1; min-width: 0; }
 .vocab-pinyin { font-size: 11px; color: var(--text-2); font-style: italic; }
 .vocab-meaning { font-size: 13px; font-weight: 500; margin-top: 2px; color: var(--text); }
@@ -590,7 +590,7 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
         <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="ai-btn csv-btn" id="csv-btn" onclick="app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
-          <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">📝 Bài tập</button>
+          <button class="ai-btn ws-btn" id="ws-btn" onclick="app.worksheet.open()" style="display:none">🖊 In chữ viết tay</button>
           <button class="ai-btn" id="addall-btn" onclick="app.vocab.addAll()" style="display:none;background:var(--success)">＋ Flash tất cả</button>
           <button class="ai-btn" id="gen-btn" onclick="app.vocab.generate()">Phân tích &amp; tạo từ vựng</button>
         </div>
