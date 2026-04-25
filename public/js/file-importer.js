@@ -11,7 +11,7 @@ class FileImporter {
       this.sections = this.parse(e.target.result);
       document.getElementById('import-file').value = '';
       if (!this.sections.length) {
-        alert('Không tìm thấy bài đọc nào.\nKiểm tra file có nhãn "Văn bản tiếng Trung gốc", "Pinyin", "Bản dịch tiếng Việt" không.');
+        alert('Không tìm thấy bài đọc nào.\nKiểm tra file có dòng "Hình 3", "Hình 4"... không.');
         return;
       }
       this._renderPreview();
@@ -21,35 +21,43 @@ class FileImporter {
     reader.readAsText(file, 'UTF-8');
   }
 
+  // Split by "Hình X" lines — each Hình becomes one lesson
   parse(text) {
-    text = text.replace(/^﻿/, '');               // strip BOM
-    const blocks = text.split(/_{6,}/).map(b => b.trim()).filter(Boolean);
-    const results = [];
+    text = text.replace(/^﻿/, ''); // strip BOM
+    const lines = text.split('\n').map(l => l.trim());
 
-    blocks.forEach(block => {
-      const lines = block.split('\n').map(l => l.trim());
-      const nz    = lines.filter(Boolean);
-      if (nz.length < 4) return;
+    // Group lines under each "Hình X" heading
+    const raw = [];
+    let cur = null;
+    for (const line of lines) {
+      if (/^Hình\s+\d+/i.test(line)) {
+        if (cur) raw.push(cur);
+        cur = { title: line, lines: [] };
+      } else if (cur) {
+        cur.lines.push(line);
+      }
+    }
+    if (cur) raw.push(cur);
 
-      const zhIdx = nz.findIndex(l => /văn bản tiếng trung/i.test(l));
-      const pyIdx = nz.findIndex(l => /^pinyin$/i.test(l));
-      const viIdx = nz.findIndex(l => /bản dịch tiếng việt/i.test(l));
-      if (zhIdx === -1 || pyIdx === -1 || viIdx === -1) return;
+    return raw.map(sec => {
+      const ls = sec.lines;
+      const zhIdx = ls.findIndex(l => /văn bản tiếng trung/i.test(l));
+      const pyIdx = ls.findIndex(l => /^pinyin/i.test(l));
+      const viIdx = ls.findIndex(l => /bản dịch tiếng việt/i.test(l));
+      if (zhIdx === -1 || pyIdx === -1 || viIdx === -1) return null;
 
-      // title = first non-empty line before the first label
-      const title = nz.slice(0, zhIdx)
-        .map(l => l.replace(/^[🔵🔴🟡🟢🔷▶#*\-\s]+/, '').trim())
-        .find(Boolean) || nz[0];
+      const zh = ls.slice(zhIdx + 1, pyIdx).filter(Boolean).join('\n').trim();
+      const py = ls.slice(pyIdx + 1, viIdx).filter(Boolean).join('\n').trim();
+      const vi = ls.slice(viIdx + 1).filter(Boolean).join('\n').trim();
+      if (!zh) return null;
 
-      const zh = nz.slice(zhIdx + 1, pyIdx).join('\n').trim();
-      const py = nz.slice(pyIdx + 1, viIdx).join('\n').trim();
-      const vi = nz.slice(viIdx + 1).join('\n').trim();
+      return { title: sec.title, zh, py, vi };
+    }).filter(Boolean);
+  }
 
-      if (!zh) return;
-      results.push({ title, zh, py, vi });
-    });
-
-    return results;
+  _h(s) {
+    // Escape HTML for safe insertion into innerHTML
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   _renderPreview() {
@@ -59,16 +67,16 @@ class FileImporter {
       <div class="imp-card" id="icard-${i}">
         <div class="imp-card-hd">
           <span class="imp-num">${i + 1}</span>
-          <input class="imp-title" value="${esc(s.title)}" oninput="app.importer.sections[${i}].title=this.value">
+          <input class="imp-title" value="${this._h(s.title)}" oninput="app.importer.sections[${i}].title=this.value">
           <button class="imp-del" onclick="app.importer.removeSection(${i})">✕</button>
         </div>
         <div class="imp-fields">
           <label class="imp-lbl">漢字 (phồn thể)</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].zh=this.value">${s.zh}</textarea>
+          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].zh=this.value">${this._h(s.zh)}</textarea>
           <label class="imp-lbl">Pinyin</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].py=this.value">${s.py}</textarea>
+          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].py=this.value">${this._h(s.py)}</textarea>
           <label class="imp-lbl">Tiếng Việt</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].vi=this.value">${s.vi}</textarea>
+          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].vi=this.value">${this._h(s.vi)}</textarea>
         </div>
       </div>`
     ).join('');
@@ -80,7 +88,7 @@ class FileImporter {
   }
 
   async saveAll() {
-    const book = document.getElementById('import-book').value || 'B1';
+    const book   = document.getElementById('import-book').value || 'B1';
     const toSave = this.sections.filter(s => s.zh.trim());
     if (!toSave.length) return;
 
