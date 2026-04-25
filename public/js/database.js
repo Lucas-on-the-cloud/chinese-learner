@@ -51,8 +51,10 @@ class Database {
   }
 
   async getPosts({ category, limit } = {}) {
-    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at')
-      .eq('published', true).order('created_at', { ascending: false });
+    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at,sort_order')
+      .eq('published', true)
+      .order('sort_order', { ascending: false })
+      .order('created_at', { ascending: false });
     if (category) q = q.eq('category', category);
     if (limit)    q = q.limit(limit);
     const { data } = await q;

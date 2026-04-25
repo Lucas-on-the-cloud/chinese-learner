@@ -208,6 +208,15 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 .imp-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px}
 .imp-empty{display:flex;align-items:center;justify-content:center;flex:1;font-size:13px;color:#6b7280;text-align:center;line-height:1.8}
 
+/* ── BLOG EDITOR TOOLBAR ─────────────────────── */
+.bl-toolbar{display:flex;align-items:center;gap:3px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:8px 8px 0 0;padding:6px 8px;flex-wrap:wrap}
+.bl-tb-btn{background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;color:#1f2937;transition:all .12s;line-height:1.5}
+.bl-tb-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.bl-tb-sep{width:1px;height:18px;background:#e5e7eb;margin:0 3px;flex-shrink:0}
+#bl-content{border-top:none!important;border-radius:0 0 8px 8px!important}
+.bl-drag-row.drag-over{background:#eff6ff;outline:2px dashed #1a56db}
+.bl-drag-row.dragging{opacity:.4;background:#f4f5f7}
+
 @media(max-width:1100px){
   .primary-actions{grid-template-columns:1fr 1fr}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
@@ -530,36 +539,68 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   <!-- ── BLOG ─────────────────────────────────── -->
   <div id="section-blog" style="display:none;width:100%">
-    <div style="display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start">
+    <div style="display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start">
 
-      <!-- CREATE FORM -->
+      <!-- CREATE / EDIT FORM -->
       <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-pen-nib" style="color:var(--blue)"></i> Tạo bài viết mới</div>
+        <div class="s-title"><i class="fa-solid fa-pen-nib" style="color:#1a56db"></i> <span id="bl-form-mode-title">Tạo bài viết mới</span></div>
+
         <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
-        <input type="text" id="bl-title" class="s-input" placeholder="Tiêu đề bài viết…">
+        <textarea id="bl-title" class="s-input" rows="2" style="height:auto;padding:8px 12px;resize:none;line-height:1.5" placeholder="Tiêu đề bài viết…"></textarea>
+
         <div class="s-label" style="margin-top:10px">Chuyên mục</div>
-        <input type="text" id="bl-cat" class="s-input" placeholder="VD: TOCFL, Từ vựng, Ngữ pháp…">
+        <input type="text" id="bl-cat" class="s-input" list="bl-cat-suggestions" placeholder="VD: TOCFL, Từ vựng, Ngữ pháp…">
+        <datalist id="bl-cat-suggestions"></datalist>
+
         <div class="s-label" style="margin-top:10px">Tác giả</div>
         <input type="text" id="bl-author" class="s-input" placeholder="Tên tác giả" value="Admin">
-        <div class="s-label" style="margin-top:10px">Ảnh bìa (URL)</div>
-        <input type="text" id="bl-cover" class="s-input" placeholder="https://… hoặc để trống">
+
+        <div class="s-label" style="margin-top:10px">Ảnh bìa</div>
+        <div class="s-img-row">
+          <input type="text" id="bl-cover" class="s-input" placeholder="Dán URL ảnh hoặc chọn file…" oninput="blPreviewUrl(this.value)" style="flex:1">
+          <input type="file" id="bl-cover-file" accept="image/*" style="display:none" onchange="blFileChange(this)">
+          <button class="s-file-btn" onclick="document.getElementById('bl-cover-file').click()">📷 Chọn file</button>
+        </div>
+        <div class="s-img-preview" id="bl-cover-preview">
+          <img id="bl-cover-preview-img" src="" alt="preview" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+          <button onclick="blClearCover()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer">✕</button>
+        </div>
+
         <div class="s-label" style="margin-top:10px">Tóm tắt</div>
         <textarea id="bl-excerpt" style="width:100%;min-height:60px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:10px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn bài viết…"></textarea>
+
         <div class="s-label" style="margin-top:10px">Nội dung <span style="font-size:11px;font-weight:400;color:#6b7280">(hỗ trợ Markdown)</span></div>
-        <textarea id="bl-content" style="width:100%;min-height:200px;border:1px solid #e5e7eb;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7" placeholder="# Tiêu đề&#10;&#10;Nội dung bài viết...&#10;&#10;**In đậm**, *in nghiêng*, ## Mục"></textarea>
+        <div class="bl-toolbar">
+          <button class="bl-tb-btn" onclick="blInsertLine('# ')">H1</button>
+          <button class="bl-tb-btn" onclick="blInsertLine('## ')">H2</button>
+          <button class="bl-tb-btn" onclick="blInsertLine('### ')">H3</button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="blWrap('**','**')" title="Đậm"><b>B</b></button>
+          <button class="bl-tb-btn" onclick="blWrap('*','*')" title="Nghiêng"><i>I</i></button>
+          <button class="bl-tb-btn" onclick="blWrap('__','__')" title="Gạch chân"><u>U</u></button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="blInsertLine('- ')" title="Danh sách">• List</button>
+          <button class="bl-tb-btn" onclick="blInsertLine('> ')" title="Trích dẫn">❝ Quote</button>
+        </div>
+        <textarea id="bl-content" style="width:100%;min-height:200px;border:1px solid #e5e7eb;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7" placeholder="# Tiêu đề&#10;&#10;Nội dung bài viết...&#10;&#10;**In đậm**, *in nghiêng*, __gạch chân__"></textarea>
+
         <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
           <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
-            <input type="checkbox" id="bl-published" checked style="accent-color:var(--blue)"> Xuất bản ngay
+            <input type="checkbox" id="bl-published" checked style="accent-color:#1a56db"> Xuất bản ngay
           </label>
         </div>
+        <input type="hidden" id="bl-edit-id">
         <div id="bl-msg" class="s-msg"></div>
-        <button class="s-btn" id="bl-save-btn" onclick="adminSavePost()" style="margin-top:12px;width:100%">💾 Đăng bài viết</button>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="s-btn" id="bl-save-btn" onclick="adminSavePost()" style="flex:1">💾 Đăng bài viết</button>
+          <button class="s-btn" id="bl-cancel-btn" onclick="blCancelEdit()" style="background:#6b7280;display:none">✕ Hủy</button>
+        </div>
       </div>
 
       <!-- POST LIST -->
       <div class="s-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="s-title" style="margin-bottom:0"><i class="fa-solid fa-list" style="color:var(--text-2)"></i> Danh sách bài viết</div>
+          <div class="s-title" style="margin-bottom:0"><i class="fa-solid fa-list" style="color:#6b7280"></i> Danh sách bài viết <span style="font-size:11px;font-weight:400;color:#9ca3af">— kéo ☰ để sắp xếp ưu tiên</span></div>
           <button class="s-btn" onclick="loadBlogPosts()" style="padding:6px 14px;font-size:12px">↺ Làm mới</button>
         </div>
         <div id="blog-post-list"><p style="color:#9ca3af;text-align:center;padding:2rem">Đang tải…</p></div>
@@ -742,6 +783,7 @@ function setNav(btn, id) {
     lessons:       'Bài học / Lessons',
     vocab:         'Từ vựng / Vocabulary',
     users:         'Người dùng / Users',
+    blog:          'Blog / Bài viết',
     imports:       'Import bài học',
     'import-book': 'Import book',
     feedback:      'Phản hồi / Feedback',
@@ -836,35 +878,145 @@ async function adminSaveBook() {
   adminBkClear();
 }
 
-// ── Blog functions ───────────────────────────────
+// ── Blog helpers ─────────────────────────────────
+function escHtml(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function blWrap(before, after) {
+  const ta = document.getElementById('bl-content');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s, e);
+  ta.setRangeText(before + (sel || 'văn bản') + after, s, e, 'select');
+  ta.focus();
+}
+
+function blInsertLine(prefix) {
+  const ta = document.getElementById('bl-content');
+  const pos = ta.selectionStart;
+  const lineStart = ta.value.lastIndexOf('\n', pos - 1) + 1;
+  const before = ta.value.slice(0, lineStart);
+  const after  = ta.value.slice(lineStart);
+  ta.value = before + prefix + after;
+  const cur = lineStart + prefix.length;
+  ta.setSelectionRange(cur, cur);
+  ta.focus();
+}
+
+function blPreviewUrl(url) {
+  const wrap = document.getElementById('bl-cover-preview');
+  const img  = document.getElementById('bl-cover-preview-img');
+  if (url) { img.src = url; wrap.style.display = 'flex'; }
+  else     { wrap.style.display = 'none'; }
+}
+
+function blFileChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 900;
+      let w = orig.width, h = orig.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      document.getElementById('bl-cover').value = dataUrl;
+      blPreviewUrl(dataUrl);
+    };
+    orig.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function blClearCover() {
+  document.getElementById('bl-cover').value = '';
+  document.getElementById('bl-cover-file').value = '';
+  document.getElementById('bl-cover-preview').style.display = 'none';
+}
+
+function blCancelEdit() {
+  document.getElementById('bl-edit-id').value = '';
+  document.getElementById('bl-form-mode-title').textContent = 'Tạo bài viết mới';
+  document.getElementById('bl-save-btn').textContent = '💾 Đăng bài viết';
+  document.getElementById('bl-cancel-btn').style.display = 'none';
+  ['bl-title','bl-cat','bl-excerpt','bl-content'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('bl-author').value = 'Admin';
+  document.getElementById('bl-published').checked = true;
+  blClearCover();
+  document.getElementById('bl-msg').className = 's-msg';
+}
+
+// ── Blog functions ─────────────────────────────
 async function loadBlogPosts() {
   const el = document.getElementById('blog-post-list');
-  const { data: posts } = await _adminDb.client.from('posts').select('id,title,category,author,published,created_at').order('created_at', { ascending: false });
+  const { data: posts } = await _adminDb.client.from('posts')
+    .select('id,title,category,author,published,created_at,sort_order')
+    .order('sort_order', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  // Populate category datalist
+  const cats = [...new Set((posts || []).map(p => p.category).filter(Boolean))];
+  document.getElementById('bl-cat-suggestions').innerHTML = cats.map(c => `<option value="${escHtml(c)}">`).join('');
+
   if (!posts?.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem">Chưa có bài viết nào.</p>'; return; }
+
   el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
     <thead><tr>
+      <th style="width:24px;padding:8px 4px;border-bottom:1px solid #e5e7eb"></th>
       <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Tiêu đề</th>
-      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Chuyên mục</th>
-      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Trạng thái</th>
+      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap">Chuyên mục</th>
+      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap">Trạng thái</th>
       <th style="padding:8px;border-bottom:1px solid #e5e7eb"></th>
     </tr></thead>
-    <tbody>${posts.map(p => `<tr style="border-top:1px solid #f3f4f6">
-      <td style="padding:10px 8px;font-weight:500">${p.title}</td>
-      <td style="padding:10px 8px;color:#6b7280">${p.category||'—'}</td>
-      <td style="padding:10px 8px">
+    <tbody>${posts.map(p => `<tr class="bl-drag-row" data-id="${p.id}"
+        draggable="true"
+        ondragstart="blDragStart(event,${p.id})"
+        ondragover="blDragOver(event)"
+        ondragleave="blDragLeave(event)"
+        ondrop="blDrop(event,${p.id})"
+        ondragend="blDragEnd()"
+        style="border-top:1px solid #f3f4f6">
+      <td style="padding:10px 4px;color:#c0bfbf;cursor:grab;font-size:15px;user-select:none;text-align:center" title="Kéo để sắp xếp">☰</td>
+      <td style="padding:10px 8px;font-weight:500;word-break:break-word">${escHtml(p.title)}</td>
+      <td style="padding:10px 8px;color:#6b7280;white-space:nowrap">${escHtml(p.category||'—')}</td>
+      <td style="padding:10px 8px;white-space:nowrap">
         <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;${p.published?'background:#f0fdf4;color:#15803d':'background:#f3f4f6;color:#6b7280'}">
           ${p.published?'Đã đăng':'Nháp'}
         </span>
       </td>
-      <td style="padding:10px 8px;text-align:right">
+      <td style="padding:10px 8px;text-align:right;white-space:nowrap">
         <a href="/post.html?id=${p.id}" target="_blank" class="table-btn" title="Xem"><i class="fa-solid fa-eye"></i></a>
+        <button class="table-btn" onclick="blEditPost(${p.id})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
         <button class="table-btn" onclick="deletePost(${p.id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
       </td>
     </tr>`).join('')}</tbody>
   </table>`;
 }
 
+async function blEditPost(id) {
+  const { data: post } = await _adminDb.client.from('posts').select('*').eq('id', id).single();
+  if (!post) return;
+  document.getElementById('bl-edit-id').value   = id;
+  document.getElementById('bl-title').value      = post.title || '';
+  document.getElementById('bl-cat').value        = post.category || '';
+  document.getElementById('bl-author').value     = post.author || 'Admin';
+  document.getElementById('bl-cover').value      = post.cover_url || '';
+  document.getElementById('bl-excerpt').value    = post.excerpt || '';
+  document.getElementById('bl-content').value    = post.content || '';
+  document.getElementById('bl-published').checked = !!post.published;
+  blPreviewUrl(post.cover_url || '');
+  document.getElementById('bl-form-mode-title').textContent = 'Chỉnh sửa bài viết';
+  document.getElementById('bl-save-btn').textContent = '💾 Cập nhật';
+  document.getElementById('bl-cancel-btn').style.display = '';
+  document.getElementById('section-blog').closest('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 async function adminSavePost() {
+  const editId    = document.getElementById('bl-edit-id').value;
   const title     = document.getElementById('bl-title').value.trim();
   const category  = document.getElementById('bl-cat').value.trim();
   const author    = document.getElementById('bl-author').value.trim() || 'Admin';
@@ -874,14 +1026,17 @@ async function adminSavePost() {
   const published = document.getElementById('bl-published').checked;
   if (!title) { adminMsg('bl-msg', 'Nhập tiêu đề bài viết.', 'err'); return; }
   const btn = document.getElementById('bl-save-btn');
-  btn.disabled = true; btn.textContent = 'Đang đăng…';
-  const { error } = await _adminDb.client.from('posts').insert([{ title, category: category||null, author, cover_url, excerpt, content, published }]);
-  btn.disabled = false; btn.textContent = '💾 Đăng bài viết';
-  if (error) { adminMsg('bl-msg', 'Lỗi: ' + error.message, 'err'); return; }
-  adminMsg('bl-msg', '✓ Đã đăng: ' + title, 'ok');
-  ['bl-title','bl-cat','bl-cover','bl-excerpt','bl-content'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('bl-author').value = 'Admin';
-  document.getElementById('bl-published').checked = true;
+  btn.disabled = true; btn.textContent = 'Đang lưu…';
+  let error;
+  if (editId) {
+    ({ error } = await _adminDb.client.from('posts').update({ title, category: category||null, author, cover_url, excerpt, content, published }).eq('id', editId));
+  } else {
+    ({ error } = await _adminDb.client.from('posts').insert([{ title, category: category||null, author, cover_url, excerpt, content, published }]));
+  }
+  btn.disabled = false;
+  if (error) { adminMsg('bl-msg', 'Lỗi: ' + error.message, 'err'); btn.textContent = editId ? '💾 Cập nhật' : '💾 Đăng bài viết'; return; }
+  adminMsg('bl-msg', (editId ? '✓ Đã cập nhật: ' : '✓ Đã đăng: ') + title, 'ok');
+  blCancelEdit();
   loadBlogPosts();
 }
 
@@ -889,6 +1044,52 @@ async function deletePost(id) {
   if (!confirm('Xóa bài viết này?')) return;
   await _adminDb.client.from('posts').delete().eq('id', id);
   loadBlogPosts();
+}
+
+// Drag-and-drop ordering
+let _blDragId = null;
+function blDragStart(e, id) {
+  _blDragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.currentTarget.closest('tr')?.classList.add('dragging'), 0);
+}
+function blDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.bl-drag-row').forEach(r => r.classList.remove('drag-over'));
+  e.currentTarget.closest('tr')?.classList.add('drag-over');
+}
+function blDragLeave(e) {
+  if (!e.currentTarget.closest('tr')?.contains(e.relatedTarget)) {
+    e.currentTarget.closest('tr')?.classList.remove('drag-over');
+  }
+}
+function blDragEnd() {
+  document.querySelectorAll('.bl-drag-row').forEach(r => { r.classList.remove('drag-over'); r.classList.remove('dragging'); });
+}
+async function blDrop(e, targetId) {
+  e.preventDefault();
+  blDragEnd();
+  if (_blDragId === targetId) return;
+  const tbody = document.querySelector('#blog-post-list tbody');
+  if (!tbody) return;
+  const rows = [...tbody.querySelectorAll('tr')];
+  const srcRow = rows.find(r => r.dataset.id == _blDragId);
+  const tgtRow = rows.find(r => r.dataset.id == targetId);
+  if (!srcRow || !tgtRow) return;
+  const srcIdx = rows.indexOf(srcRow);
+  const tgtIdx = rows.indexOf(tgtRow);
+  if (srcIdx < tgtIdx) tbody.insertBefore(srcRow, tgtRow.nextSibling);
+  else tbody.insertBefore(srcRow, tgtRow);
+  await savePostOrder();
+}
+async function savePostOrder() {
+  const rows = [...document.querySelectorAll('#blog-post-list tbody tr')];
+  const total = rows.length;
+  for (let i = 0; i < rows.length; i++) {
+    const id = parseInt(rows[i].dataset.id);
+    await _adminDb.client.from('posts').update({ sort_order: total - i }).eq('id', id);
+  }
 }
 
 function adminMsg(elId, text, type) {
