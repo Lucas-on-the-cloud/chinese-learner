@@ -64,15 +64,16 @@ class ChatManager {
     }
 
     const loadId = 'cl-' + Date.now();
-    msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ ...</div>`;
+    msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}"></div>`;
     msgs.scrollTop = msgs.scrollHeight;
 
     const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho người Việt. Trả lời dựa trên ngữ cảnh bài đọc. Khi viết chữ Hán phải dùng phồn thể. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
     try {
-      const reply = await this.ai.call(sys, null, 800, this.history);
-      this.history.push({ role: 'assistant', content: reply });
       const el = document.getElementById(loadId);
-      if (el) el.textContent = reply;
+      const reply = await this.ai.callStream(sys, null, 800, this.history, chunk => {
+        if (el) { el.textContent += chunk; msgs.scrollTop = msgs.scrollHeight; }
+      });
+      this.history.push({ role: 'assistant', content: reply });
     } catch (e) {
       const el = document.getElementById(loadId);
       if (el) el.outerHTML = `<div class="chat-msg system">❌ ${e.message}</div>`;
