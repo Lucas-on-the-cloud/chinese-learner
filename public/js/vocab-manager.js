@@ -65,14 +65,14 @@ class VocabManager {
   async _enrichEntry(entry) {
     if (!app.config.getKey()) {
       entry.meaning = '(bạn thêm)'; entry.pinyin = '';
-      this.render(); return;
+      this.render(); this._saveToDb(); return;
     }
     try {
       const raw = await app.ai.call(
         `Tra từ tiếng Trung phồn thể Đài Loan (繁體中文). Trả về JSON thuần (không markdown):\n{"pinyin":"...","meaning":"nghĩa tiếng Việt ngắn","example":"câu ví dụ ngắn bằng phồn thể","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}`,
         `Từ: ${entry.char}`, 400
       );
-      if (!raw) { entry.meaning = '(bạn thêm)'; entry.pinyin = ''; this.render(); return; }
+      if (!raw) { entry.meaning = '(bạn thêm)'; entry.pinyin = ''; this.render(); this._saveToDb(); return; }
       const data = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
       Object.assign(entry, data);
       this.render();
@@ -80,6 +80,13 @@ class VocabManager {
       entry.meaning = '(bạn thêm)'; entry.pinyin = '';
       this.render();
     }
+    this._saveToDb();
+  }
+
+  async _saveToDb() {
+    const lessonId = app.currentLesson?.id;
+    if (!lessonId || !this.items.length) return;
+    await this.db.saveVocab(lessonId, this.items);
   }
 
   async generate() {
