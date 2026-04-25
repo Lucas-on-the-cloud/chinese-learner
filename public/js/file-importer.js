@@ -44,10 +44,14 @@ class FileImporter {
     try {
       const raw = await app.ai.call(
         `Bạn là trợ lý xử lý dữ liệu tiếng Trung phồn thể (繁體中文, Đài Loan).
-Từ nội dung file dưới đây, hãy trích xuất TẤT CẢ các bài đọc (mỗi Hình/phần là một bài).
-Trả về JSON thuần, KHÔNG markdown, KHÔNG giải thích:
-[{"title":"Hình 3 — Phần...","zh":"toàn bộ tiếng Trung phồn thể","py":"toàn bộ pinyin","vi":"toàn bộ bản dịch tiếng Việt"}]
-Giữ nguyên 100% nội dung từng trường, không rút gọn.`,
+Từ nội dung file, trích xuất TẤT CẢ bài đọc. Trả về JSON thuần, KHÔNG markdown:
+[{"title":"Hình X — ...","zh":"...","py":"...","vi":"..."}]
+
+QUAN TRỌNG về cấu trúc dòng:
+- "zh" và "py" phải có CÙNG số dòng, mỗi dòng zh tương ứng 1-1 với dòng py cùng vị trí.
+- Tách đoạn bằng ký tự xuống dòng \\n — mỗi câu/đoạn là một dòng riêng.
+- Ví dụ nếu zh có 3 câu thì py cũng phải có đúng 3 dòng pinyin tương ứng.
+- Giữ nguyên 100% nội dung, không rút gọn, không bỏ sót.`,
         `Nội dung file:\n${text}`,
         8000
       );
