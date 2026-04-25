@@ -8,30 +8,60 @@ class FileImporter {
 
   handleFile(file) {
     if (!file) return;
-    // Auto-detect lesson name from filename e.g. "8.2 Q2.txt" → "Bài 8.2"
     const nameMatch = file.name.match(/(\d+\.\d+)/);
     this.lessonName = nameMatch ? `Bài ${nameMatch[1]}` : file.name.replace(/\.txt$/i, '');
 
+    this._showLoading();
+
     const reader = new FileReader();
-    reader.onload = e => {
-      this.sections   = this.parse(e.target.result);
-      this.currentIdx = 0;
+    reader.onload = async e => {
       document.getElementById('import-file').value = '';
+      const text = e.target.result.replace(/^﻿/, '');
+
+      let sections = [];
+      if (app.config.getKey()) {
+        sections = await this._parseWithAI(text);
+      }
+      if (!sections.length) {
+        sections = this._parseWithRegex(text);
+      }
+      this.sections   = sections;
+      this.currentIdx = 0;
+
       if (!this.sections.length) {
-        alert('Không tìm thấy bài đọc nào.\nKiểm tra file có dòng "Hình 3", "Hình 4"... không.');
+        document.getElementById('import-cards').innerHTML =
+          `<div class="imp-empty">❌ Không tìm thấy bài đọc nào.<br>Kiểm tra lại file hoặc đảm bảo có API key để dùng AI phân tích.</div>`;
         return;
       }
-      this._loadBooks();
+      await this._loadBooks();
       this._renderCard();
-      document.getElementById('import-lesson-name').value = this.lessonName;
-      document.getElementById('import-overlay').classList.add('open');
-      document.body.style.overflow = 'hidden';
     };
     reader.readAsText(file, 'UTF-8');
   }
 
-  parse(text) {
-    text = text.replace(/^﻿/, '');
+  // ── AI parser (primary) ───────────────────────
+  async _parseWithAI(text) {
+    try {
+      const raw = await app.ai.call(
+        `Bạn là trợ lý xử lý dữ liệu tiếng Trung phồn thể (繁體中文, Đài Loan).
+Từ nội dung file dưới đây, hãy trích xuất TẤT CẢ các bài đọc (mỗi Hình/phần là một bài).
+Trả về JSON thuần, KHÔNG markdown, KHÔNG giải thích:
+[{"title":"Hình 3 — Phần...","zh":"toàn bộ tiếng Trung phồn thể","py":"toàn bộ pinyin","vi":"toàn bộ bản dịch tiếng Việt"}]
+Giữ nguyên 100% nội dung từng trường, không rút gọn.`,
+        `Nội dung file:\n${text}`,
+        4000
+      );
+      if (!raw) return [];
+      const parsed = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
+      return Array.isArray(parsed) ? parsed.filter(s => s.zh && s.title) : [];
+    } catch (e) {
+      console.warn('AI parse failed, falling back to regex:', e.message);
+      return [];
+    }
+  }
+
+  // ── Regex parser (fallback) ───────────────────
+  _parseWithRegex(text) {
     const lines  = text.split('\n').map(l => l.trim());
     const isSep  = l => /^_{4,}$/.test(l);
     const raw    = [];
@@ -54,13 +84,11 @@ class FileImporter {
       const pyIdx = ls.findIndex(l => /^pinyin/i.test(l));
       const viIdx = ls.findIndex(l => /bản dịch tiếng việt/i.test(l));
       if (zhIdx === -1 || pyIdx === -1 || viIdx === -1) return null;
-
       const pick = arr => arr.filter(l => l && !isSep(l)).join('\n').trim();
-      const zh   = pick(ls.slice(zhIdx + 1, pyIdx));
-      const py   = pick(ls.slice(pyIdx + 1, viIdx));
-      const vi   = pick(ls.slice(viIdx + 1));
+      const zh = pick(ls.slice(zhIdx + 1, pyIdx));
+      const py = pick(ls.slice(pyIdx + 1, viIdx));
+      const vi = pick(ls.slice(viIdx + 1));
       if (!zh) return null;
-
       return { title: sec.title, zh, py, vi };
     }).filter(Boolean);
   }
@@ -81,7 +109,22 @@ class FileImporter {
     this._renderCard();
   }
 
-  // ── Render one card ───────────────────────────
+  // ── Render ────────────────────────────────────
+  _showLoading() {
+    const hasKey = !!app.config.getKey();
+    document.getElementById('import-lesson-name').value = this.lessonName;
+    document.getElementById('import-count').textContent = '';
+    document.getElementById('import-prev').disabled = true;
+    document.getElementById('import-next').disabled = true;
+    document.getElementById('import-cards').innerHTML = `
+      <div class="imp-loading">
+        <div class="spinner" style="width:28px;height:28px;border-width:3px;border-color:#e8d5a0;border-top-color:var(--gold)"></div>
+        <div style="font-size:13px;color:var(--muted)">${hasKey ? '✨ AI đang phân tích file...' : 'Đang đọc file...'}</div>
+      </div>`;
+    document.getElementById('import-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
   _renderCard() {
     const total = this.sections.length;
     const i     = this.currentIdx;
@@ -114,16 +157,16 @@ class FileImporter {
       </div>`;
   }
 
-  // ── Save all ──────────────────────────────────
+  // ── Save ──────────────────────────────────────
   async saveAll() {
     const book   = document.getElementById('import-book').value || 'B1';
+    const prefix = this.lessonName.trim();
     const toSave = this.sections.filter(s => s.zh.trim());
     if (!toSave.length) return;
 
     const btn = document.getElementById('import-save-btn');
     btn.disabled = true; btn.textContent = 'Đang lưu...';
 
-    const prefix = this.lessonName.trim();
     let saved = 0;
     for (const s of toSave) {
       const fullTitle = prefix ? `${prefix} · ${s.title}` : s.title;
