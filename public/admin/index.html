@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#f4f5f7;color:#1f2937;display:flex;min-height:100vh;font-size:15px}
+a{text-decoration:none;color:inherit}
+
+/* ── SIDEBAR ─────────────────────────────────── */
+#sidebar{background:#0d1b4b;color:#fff;display:flex;flex-direction:column;width:240px;flex-shrink:0;transition:width .2s;position:sticky;top:0;height:100vh;overflow:hidden}
+#sidebar.collapsed{width:68px}
+.sb-brand{display:flex;align-items:center;gap:12px;padding:18px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden;white-space:nowrap}
+.sb-brand-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#1a56db,#3b82f6);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-brand-name{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:#fff;line-height:1.2}
+.sb-brand-name em{color:#f47b20;font-style:normal}
+.sb-brand-sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.5px}
+nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
+.nav-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;padding:12px 12px 8px;white-space:nowrap}
+#sidebar.collapsed .nav-label{display:none}
+.nav-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.75);margin-bottom:2px;transition:all .15s;white-space:nowrap;overflow:hidden;border:none;background:none;width:100%;font-family:inherit;font-size:13px}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(26,86,219,.25);color:#fff;box-shadow:inset 3px 0 0 #3b82f6}
+.nav-item i{width:16px;font-size:13px;flex-shrink:0;text-align:center}
+.nav-item.active i{color:#fff}
+.nav-item-text{flex:1;display:flex;flex-direction:column;line-height:1.15}
+.nav-item-vi{font-size:13px;font-weight:500}
+.nav-item-en{font-size:10px;color:rgba(255,255,255,.4)}
+.nav-item.active .nav-item-en{color:rgba(255,255,255,.5)}
+#sidebar.collapsed .nav-item-text,.nav-count,.nav-badge{display:none}
+#sidebar:not(.collapsed) .nav-count{display:block;font-size:10px;font-weight:600;color:rgba(255,255,255,.5);background:rgba(255,255,255,.06);padding:2px 7px;border-radius:10px}
+#sidebar:not(.collapsed) .nav-badge{display:block;font-size:10px;font-weight:700;color:#fff;background:#f47b20;padding:2px 7px;border-radius:10px}
+.sb-footer{border-top:1px solid rgba(255,255,255,.08);padding:10px;display:flex;align-items:center;gap:8px}
+.user-chip{flex:1;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.04);overflow:hidden}
+.user-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#f47b20,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{overflow:hidden;white-space:nowrap}
+.user-name{font-size:12px;font-weight:600;color:#fff}
+.user-role{font-size:10px;color:rgba(255,255,255,.5)}
+#sidebar.collapsed .user-info{display:none}
+.collapse-btn{background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.6);width:30px;height:30px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:background .15s}
+.collapse-btn:hover{background:rgba(255,255,255,.12)}
+
+/* ── MAIN ────────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* topbar */
+.topbar{background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.crumbs{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b7280;margin-bottom:4px}
+.crumbs .active{color:#1a56db;font-weight:600}
+.page-title{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:#1f2937}
+.page-title span{color:#9ca3af;font-weight:400;font-size:18px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.search-box{display:flex;align-items:center;gap:8px;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:8px;padding:7px 12px;min-width:280px}
+.search-box input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;flex:1;color:#1f2937}
+.search-box input::placeholder{color:#9ca3af}
+.kbd{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6b7280;background:#fff;padding:2px 6px;border-radius:4px;border:1px solid #e5e7eb}
+.icon-btn{width:38px;height:38px;border:1px solid #e5e7eb;background:#fff;border-radius:8px;color:#6b7280;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:#f4f5f7}
+.dot-red{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:#c0392b;border:2px solid #fff}
+.primary-btn{background:#1a56db;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s}
+.primary-btn:hover{background:#1544b8}
+
+/* content */
+.content{padding:24px 32px 40px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+
+/* primary actions */
+.primary-actions{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:16px}
+.action-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:22px;position:relative;overflow:hidden}
+.action-card.dark{background:linear-gradient(135deg,#0d1b4b 0%,#1e3a8a 100%);color:#fff;border:none}
+.action-glyph{position:absolute;right:-20px;bottom:-60px;font-family:'Noto Serif TC',serif;font-size:220px;font-weight:700;color:rgba(255,255,255,.05);line-height:1;pointer-events:none}
+.action-eyebrow{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
+.action-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.3;margin-bottom:16px}
+.action-sub{font-size:14px;color:rgba(255,255,255,.65)}
+.action-btns{display:flex;gap:8px;margin-top:16px}
+.btn-light{background:#fff;color:#1a56db;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-ghost-light{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+.icon-chip{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.link-arrow{font-size:12px;font-weight:600;color:#1a56db;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.link-arrow:hover{text-decoration:underline}
+
+/* kpi */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+.kpi-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.kpi-label{font-size:12px;color:#6b7280;font-weight:500}
+.kpi-en{font-size:11px;color:#9ca3af}
+.kpi-value{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700;margin-top:6px}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+.kpi-delta.pos{color:#15803d}
+.kpi-delta.neg{color:#c0392b}
+
+/* two col */
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:22px}
+.card-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:12px}
+.card-title{font-size:15px;font-weight:700;color:#1f2937}
+.card-sub{font-size:11px;color:#9ca3af;margin-top:2px}
+.chip{background:#fff;border:1px solid #e5e7eb;padding:4px 10px;border-radius:16px;font-size:11px;font-weight:600;color:#6b7280;cursor:pointer;font-family:inherit}
+.chip.active{background:#0d1b4b;color:#fff;border-color:#0d1b4b}
+
+/* chart */
+.chart-wrap{height:180px;margin-top:14px;display:flex;align-items:flex-end;gap:4px}
+.chart-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
+.chart-bar-blue{background:linear-gradient(180deg,#1a56db,#3b82f6);border-radius:3px 3px 0 0}
+.chart-bar-orange{background:#f47b20;opacity:.8;border-radius:3px 3px 0 0}
+.legend-row{display:flex;gap:18px;margin-top:12px;font-size:11px;color:#6b7280}
+.legend-dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px}
+
+/* progress */
+.progress-track{margin-top:10px;height:8px;background:#f3f4f6;border-radius:4px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1a56db,#3b82f6);border-radius:4px}
+.provider-row{margin-bottom:14px}
+.pv-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.pv-name{font-size:13px;font-weight:600}
+.pv-mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:#9ca3af;margin-left:6px}
+.pv-calls{font-size:11px;color:#6b7280}
+.pv-amt{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.pv-track{height:6px;background:#f3f4f6;border-radius:3px;margin-top:5px}
+.pv-fill{height:100%;border-radius:3px}
+
+/* table */
+.data-table{width:100%;border-collapse:collapse;margin-top:12px}
+.data-table th{text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.8px;padding:8px 8px;border-bottom:1px solid #e5e7eb}
+.data-table td{padding:12px 8px;font-size:13px;border-top:1px solid #f3f4f6}
+.lesson-zh{font-family:'Noto Serif TC',serif;font-size:18px;color:#1a56db;font-weight:600;margin-right:10px}
+.lvl-badge,.status-badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px}
+.mono{font-family:'JetBrains Mono',monospace;color:#6b7280}
+.table-btn{background:transparent;border:none;color:#9ca3af;width:28px;height:28px;border-radius:6px;cursor:pointer}
+.table-btn:hover{background:#f4f5f7;color:#1f2937}
+
+/* feedback */
+.fb-item{padding:14px 0;border-top:1px solid #f3f4f6}
+.fb-hd{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.fb-av{width:30px;height:30px;border-radius:50%;background:#eff6ff;color:#1a56db;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.fb-who{font-size:13px;font-weight:600}
+.fb-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px}
+.fb-time{margin-left:auto;font-size:11px;color:#9ca3af;white-space:nowrap}
+.fb-msg{font-size:13px;color:#1f2937;line-height:1.6;margin-left:40px}
+
+@media(max-width:1100px){
+  .primary-actions{grid-template-columns:1fr 1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .primary-actions{grid-template-columns:1fr}
+  #sidebar{width:68px!important}
+  .search-box{min-width:160px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ──────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">學</div>
+    <div>
+      <div class="sb-brand-name">TOCFL <em>FAFA</em></div>
+      <div class="sb-brand-sub">Admin · 管理面板</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-label">Quản lý · Manage</div>
+    <button class="nav-item active" onclick="setNav(this,'dashboard')">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Tổng quan</span><span class="nav-item-en">Dashboard</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'lessons')">
+      <i class="fa-solid fa-book-open"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Bài học</span><span class="nav-item-en">Lessons</span></span>
+      <span class="nav-count" id="sb-lesson-count">…</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'vocab')">
+      <i class="fa-solid fa-spell-check"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Từ vựng</span><span class="nav-item-en">Vocabulary</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'users')">
+      <i class="fa-solid fa-users"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Người dùng</span><span class="nav-item-en">Users</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'imports')">
+      <i class="fa-solid fa-file-import"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Import</span><span class="nav-item-en">Imports</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'feedback')">
+      <i class="fa-solid fa-comments"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Phản hồi</span><span class="nav-item-en">Feedback</span></span>
+      <span class="nav-badge">7</span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'ai')">
+      <i class="fa-solid fa-sparkles"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">AI & API</span><span class="nav-item-en">AI usage</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'analytics')">
+      <i class="fa-solid fa-chart-line"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Phân tích</span><span class="nav-item-en">Analytics</span></span>
+    </button>
+    <button class="nav-item" onclick="setNav(this,'settings')">
+      <i class="fa-solid fa-gear"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">Settings</span></span>
+    </button>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="user-chip">
+      <div class="user-av">L</div>
+      <div class="user-info">
+        <div class="user-name">Lucas Hwang</div>
+        <div class="user-role">Founder · Admin</div>
+      </div>
+    </div>
+    <button class="collapse-btn" onclick="toggleSidebar()" title="Thu gọn">
+      <i class="fa-solid fa-angles-left" id="collapse-icon"></i>
+    </button>
+  </div>
+</aside>
+
+<!-- ── MAIN ─────────────────────────────────── -->
+<div id="main">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div>
+      <div class="crumbs">
+        <span>Admin</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;opacity:.5"></i>
+        <span class="active" id="crumb-label">Tổng quan / Dashboard</span>
+      </div>
+      <h1 class="page-title">Chào, Lucas <span>· Welcome back</span></h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px"></i>
+        <input placeholder="Tìm bài học, từ vựng…">
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="icon-btn">
+        <i class="fa-regular fa-bell"></i>
+        <span class="dot-red"></span>
+      </button>
+      <a href="/lessons.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+      <button class="primary-btn" onclick="location.href='/add-lesson.html'"><i class="fa-solid fa-plus"></i> &nbsp;Thêm bài học</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- PRIMARY ACTIONS -->
+    <div class="primary-actions">
+      <div class="action-card dark">
+        <div style="position:relative;z-index:1">
+          <div class="action-eyebrow">Việc cần làm hôm nay · Today</div>
+          <div class="action-title">Thư viện bài học của bạn<br><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.65)">Quản lý, chỉnh sửa và thêm nội dung mới</span></div>
+          <div class="action-btns">
+            <a href="/lessons.html" class="btn-light">Xem bài học →</a>
+            <a href="/add-lesson.html" class="btn-ghost-light">Thêm bài mới</a>
+          </div>
+        </div>
+        <div class="action-glyph">學</div>
+      </div>
+      <div class="action-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="icon-chip" style="background:#fef3c7;color:#92400e"><i class="fa-solid fa-comments"></i></div>
+          <div style="font-size:13px;font-weight:600">Phản hồi mới</div>
+        </div>
+        <div style="font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700">7</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:12px">4 báo lỗi · 3 góp ý</div>
+        <a class="link-arrow">Xem phản hồi <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
+      </div>
+      <div class="action-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="icon-chip" style="background:#eff6ff;color:#1a56db"><i class="fa-solid fa-sparkles"></i></div>
+          <div style="font-size:13px;font-weight:600">Chi phí AI tháng này</div>
+        </div>
+        <div style="font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700">$24.71</div>
+        <div style="font-size:12px;color:#15803d;margin-bottom:12px">↓ 12% so với tháng trước</div>
+        <a class="link-arrow">Xem chi tiết <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
+      </div>
+    </div>
+
+    <!-- KPI ROW -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="icon-chip" style="background:#eff6ff;color:#1a56db"><i class="fa-solid fa-book-open"></i></div>
+          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+        </div>
+        <div class="kpi-label">Tổng bài học</div>
+        <div class="kpi-en">Total lessons</div>
+        <div class="kpi-value" id="kpi-lessons">…</div>
+        <div class="kpi-delta pos" id="kpi-lessons-delta">Đang tải…</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="icon-chip" style="background:#f0fdf4;color:#15803d"><i class="fa-solid fa-spell-check"></i></div>
+          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+        </div>
+        <div class="kpi-label">Từ vựng đã lưu</div>
+        <div class="kpi-en">Saved flashcards</div>
+        <div class="kpi-value" id="kpi-vocab">…</div>
+        <div class="kpi-delta pos" id="kpi-vocab-delta">Đang tải…</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="icon-chip" style="background:#fef3c7;color:#92400e"><i class="fa-solid fa-users"></i></div>
+          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+        </div>
+        <div class="kpi-label">Người dùng tháng</div>
+        <div class="kpi-en">Monthly users</div>
+        <div class="kpi-value">2,841</div>
+        <div class="kpi-delta pos">+18.4%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="icon-chip" style="background:#fde8e6;color:#c0392b"><i class="fa-solid fa-eye"></i></div>
+          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+        </div>
+        <div class="kpi-label">Lượt xem hôm nay</div>
+        <div class="kpi-en">Views today</div>
+        <div class="kpi-value">9,127</div>
+        <div class="kpi-delta neg">−2.1%</div>
+      </div>
+    </div>
+
+    <!-- CHART + AI COST -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Lượt truy cập 30 ngày</div>
+            <div class="card-sub">Daily visits · last 30 days</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="chip active">30D</button>
+            <button class="chip">90D</button>
+            <button class="chip">1Y</button>
+          </div>
+        </div>
+        <div class="chart-wrap" id="chart"></div>
+        <div class="legend-row">
+          <span><span class="legend-dot" style="background:#1a56db"></span>Lượt xem · Views</span>
+          <span><span class="legend-dot" style="background:#f47b20"></span>Người dùng mới · New users</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Chi phí AI · AI cost</div>
+            <div class="card-sub">Tháng 4, 2026 · April 2026</div>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:#15803d;background:#f0fdf4;padding:3px 10px;border-radius:12px;border:1px solid #bbf7d0">Trong ngân sách</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+          <span style="font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700">$24.71</span>
+          <span style="font-size:13px;color:#6b7280">/ $50.00 ngân sách</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:49.4%"></div></div>
+        <div style="margin-top:18px">
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">Anthropic Claude</span><span class="pv-mono">claude-sonnet</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">1,284 calls</span><span class="pv-amt">$16.81</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:68%;background:#f47b20"></div></div>
+          </div>
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">OpenAI GPT-4o</span><span class="pv-mono">gpt-4o-mini</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">612 calls</span><span class="pv-amt">$7.90</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:32%;background:#10a37f"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE + FEEDBACK -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Bài học gần đây · Recent lessons</div>
+            <div class="card-sub">Mới được thêm vào thư viện</div>
+          </div>
+          <a class="link-arrow" href="/lessons.html">Xem tất cả →</a>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Bài / Lesson</th>
+              <th>Quyển</th>
+              <th>Trạng thái</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="lessons-table-body">
+            <tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:24px">Đang tải…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Phản hồi mới nhất</div>
+            <div class="card-sub">7 chưa đọc</div>
+          </div>
+          <a class="link-arrow">Hộp thư →</a>
+        </div>
+        <div class="fb-item">
+          <div class="fb-hd">
+            <div class="fb-av">M</div>
+            <div class="fb-who">Minh Anh</div>
+            <span class="fb-badge" style="background:#fde8e6;color:#c0392b">Báo lỗi</span>
+            <span class="fb-time">2 phút trước</span>
+          </div>
+          <div class="fb-msg">Pinyin của chữ 行 ở Bài 8 hiển thị 'xíng' nhưng phải là 'háng' trong ngữ cảnh này.</div>
+        </div>
+        <div class="fb-item">
+          <div class="fb-hd">
+            <div class="fb-av">Q</div>
+            <div class="fb-who">Quang Vinh</div>
+            <span class="fb-badge" style="background:#fef3c7;color:#92400e">Góp ý</span>
+            <span class="fb-time">1 giờ trước</span>
+          </div>
+          <div class="fb-msg">Có thể thêm phím tắt số 1-4 để chọn màu highlight nhanh hơn không ạ?</div>
+        </div>
+        <div class="fb-item">
+          <div class="fb-hd">
+            <div class="fb-av">L</div>
+            <div class="fb-who">Linh Chi</div>
+            <span class="fb-badge" style="background:#f0fdf4;color:#15803d">Khen</span>
+            <span class="fb-time">Hôm qua</span>
+          </div>
+          <div class="fb-msg">Tính năng AI tạo từ vựng tự động cực kỳ hữu ích, em đã thi đậu B2!</div>
+        </div>
+        <div class="fb-item">
+          <div class="fb-hd">
+            <div class="fb-av">H</div>
+            <div class="fb-who">Hoàng Long</div>
+            <span class="fb-badge" style="background:#fde8e6;color:#c0392b">Báo lỗi</span>
+            <span class="fb-time">2 ngày trước</span>
+          </div>
+          <div class="fb-msg">Trên iPhone, modal flashcard bị tràn ra ngoài viền màn hình.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const DB = supabase.createClient(
+  'https://prctmferugkxabyizslx.supabase.co',
+  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+);
+
+// Sidebar toggle
+let collapsed = false;
+function toggleSidebar() {
+  collapsed = !collapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed', collapsed);
+  document.getElementById('collapse-icon').className = collapsed
+    ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+}
+
+// Nav
+function setNav(btn, id) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const labels = {
+    dashboard:'Tổng quan / Dashboard', lessons:'Bài học / Lessons',
+    vocab:'Từ vựng / Vocabulary', users:'Người dùng / Users',
+    imports:'Import', feedback:'Phản hồi / Feedback',
+    ai:'AI & API', analytics:'Phân tích / Analytics', settings:'Cài đặt / Settings'
+  };
+  document.getElementById('crumb-label').textContent = labels[id] || id;
+}
+
+// Chart
+const chartData = [42,48,51,46,58,72,80,65,70,75,82,88,76,84,92,98,89,94,102,108,96,103,112,118,107,114,124,131,121,128];
+const max = Math.max(...chartData);
+document.getElementById('chart').innerHTML = chartData.map(v =>
+  `<div class="chart-col">
+    <div class="chart-bar-blue" style="height:${v/max*80}%"></div>
+    <div class="chart-bar-orange" style="height:${v/max*30}%"></div>
+  </div>`
+).join('');
+
+// Load real data
+async function loadData() {
+  const [{ data: lessons }, { data: flashcards }] = await Promise.all([
+    DB.from('lessons').select('id,title,book,created_at').order('created_at', { ascending: false }),
+    DB.from('flashcards').select('id', { count: 'exact', head: true }),
+  ]);
+
+  // KPI
+  const count = lessons?.length || 0;
+  document.getElementById('kpi-lessons').textContent = count.toLocaleString();
+  document.getElementById('kpi-lessons-delta').textContent = count > 0 ? `${count} bài trong thư viện` : 'Chưa có bài';
+  document.getElementById('sb-lesson-count').textContent = count;
+
+  const { count: fcCount } = await DB.from('flashcards').select('*', { count: 'exact', head: true });
+  document.getElementById('kpi-vocab').textContent = (fcCount || 0).toLocaleString();
+  document.getElementById('kpi-vocab-delta').textContent = `${fcCount || 0} flashcard đã lưu`;
+
+  // Lessons table (latest 8)
+  const tbody = document.getElementById('lessons-table-body');
+  if (!lessons?.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:24px">Chưa có bài học nào</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lessons.slice(0, 8).map(l => {
+    const title = l.title || '—';
+    const zh = (title.match(/[一-鿿㐀-䶿]/g) || []).slice(0,2).join('') || '讀';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="lesson-zh">${zh}</span>
+          <span style="font-weight:500">${title.slice(0,32)}${title.length>32?'…':''}</span>
+        </div>
+      </td>
+      <td><span class="lvl-badge" style="background:#dbeafe;color:#1e40af">${l.book||'B1'}</span></td>
+      <td><span class="status-badge" style="background:#f0fdf4;color:#15803d">Đã xuất bản</span></td>
+      <td style="text-align:right">
+        <button class="table-btn" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button class="table-btn"><i class="fa-solid fa-ellipsis"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
