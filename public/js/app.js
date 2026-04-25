@@ -39,12 +39,10 @@ class ChineseApp {
     this.selection.clear();
   }
 
-  // Opens a single lesson by global index
   openLesson(index) {
     this._openWith(this.lessons.get(index));
   }
 
-  // Opens a group of lessons by their global indices — merges into one reading
   openGroup(indices) {
     if (!Array.isArray(indices)) indices = [indices];
     if (indices.length === 1) { this.openLesson(indices[0]); return; }
@@ -60,19 +58,25 @@ class ChineseApp {
       return sep > -1 ? title.slice(sep + 3) : title;
     };
 
+    // Each section keeps its own DB id so vocab caches independently
+    const sections = parts.map(l => ({
+      id:    l.id,
+      title: getSubLabel(l.title),
+      zh:    l.zh,
+      py:    l.py,
+      vi:    l.vi,
+    }));
+
     const combined = {
-      id:    parts[0].id,
-      book:  parts[0].book,
-      title: getGroupTitle(parts[0].title),
-      desc:  `${parts.length} bài đọc`,
-      sections: parts.map(l => ({
-        title: getSubLabel(l.title),
-        zh: l.zh, py: l.py, vi: l.vi
-      })),
-      // Flat combined text used by vocab AI and chat
-      zh: parts.map(l => l.zh).join('\n\n'),
-      py: parts.map(l => l.py).join('\n\n'),
-      vi: parts.map(l => l.vi).join('\n\n'),
+      id:       sections[0].id,
+      book:     parts[0].book,
+      title:    getGroupTitle(parts[0].title),
+      desc:     `${parts.length} bài đọc`,
+      sections,
+      // Active text starts at section 0 — reading-view updates these on navigation
+      zh: sections[0].zh,
+      py: sections[0].py,
+      vi: sections[0].vi,
     };
 
     this._openWith(combined);

@@ -221,6 +221,32 @@ img { display: block; max-width: 100%; }
   padding: 12px 0 6px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
 }
 
+/* ── SECTION NAV ─────────────────────────────── */
+.sec-nav {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--blue-lt);
+  border: 1px solid #c7d7fd;
+  border-radius: 10px;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+}
+.sec-nav-btn {
+  background: var(--blue); color: #fff; border: none;
+  width: 30px; height: 30px; border-radius: 7px;
+  font-size: 17px; font-weight: 700;
+  cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .15s;
+}
+.sec-nav-btn:hover { opacity: .8; }
+.sec-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.sec-nav-label {
+  flex: 1; text-align: center;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px; font-weight: 700; color: var(--navy);
+}
+.sec-nav-count { font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; font-weight: 500; color: var(--text-2); }
+
 /* ── READING ─────────────────────────────────── */
 .back-btn {
   display: inline-flex; align-items: center; gap: 6px;
@@ -537,6 +563,13 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
       <button class="text-tab" onclick="app.reading.setMode(this,'vietnamese')">Tiếng Việt</button>
       <button class="text-tab" onclick="app.reading.setMode(this,'all')">Tất cả</button>
     </div>
+    <!-- Section navigator — visible only for grouped lessons -->
+    <div id="sec-nav" class="sec-nav" style="display:none">
+      <button class="sec-nav-btn" id="sec-prev" onclick="app.reading.navigateSection(-1)">‹</button>
+      <span id="sec-label" class="sec-nav-label"></span>
+      <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
+    </div>
+
     <div class="sel-bar" id="sel-bar">
       <span class="sel-word" id="sel-word"></span>
       <span class="sel-label">Highlight:</span>
