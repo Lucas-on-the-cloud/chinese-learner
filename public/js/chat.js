@@ -10,7 +10,7 @@ class ChatManager {
     this.isOpen  = false;
     document.getElementById('chat-float-panel').classList.remove('open');
     document.getElementById('chat-msgs').innerHTML =
-      '<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.<br><span style="font-size:10px;opacity:.7">Gõ "add 漢字" để thêm từ vào danh sách từ vựng.</span></div>';
+      '<div class="chat-msg system">Hỏi bất kỳ điều gì về bài đọc này.<br><span style="font-size:10px;opacity:.7">Gõ "add 詞, 詞, 詞" để thêm từ vào danh sách từ vựng.</span></div>';
   }
 
   show() { document.getElementById('chat-widget').classList.add('active'); }
@@ -39,14 +39,20 @@ class ChatManager {
     msgs.innerHTML += `<div class="chat-msg user">${msg}</div>`;
     msgs.scrollTop = msgs.scrollHeight;
 
-    // "add 漢字" command — add to vocab without AI chat
-    const addMatch = msg.match(/^add\s+([一-鿿㐀-䶿]+)/i);
+    // "add 漢字, 漢字, ..." command — add one or many words to vocab
+    const addMatch = msg.match(/^add\s+(.+)/i);
     if (addMatch) {
-      const word = addMatch[1];
-      app.vocab.addUserEntry(word);
-      msgs.innerHTML += `<div class="chat-msg system">✓ Đã thêm「${word}」vào từ vựng.</div>`;
-      msgs.scrollTop = msgs.scrollHeight;
-      return;
+      const words = addMatch[1]
+        .split(/[,，、]/)
+        .map(w => w.trim())
+        .filter(w => /[一-鿿㐀-䶿]/.test(w));
+      if (words.length) {
+        words.forEach(w => app.vocab.addUserEntry(w));
+        const labels = words.map(w => `「${w}」`).join(' ');
+        msgs.innerHTML += `<div class="chat-msg system">✓ Đã thêm ${words.length} từ: ${labels}</div>`;
+        msgs.scrollTop = msgs.scrollHeight;
+        return;
+      }
     }
 
     this.history.push({ role: 'user', content: msg });
