@@ -2,6 +2,7 @@ class LessonManager {
   constructor(db) {
     this.db = db;
     this.lessons = [];
+    this.booksMeta = new Map(); // book code → { display_name, description, cover_url }
     this.BUILTIN = [
       {
         id: 1, book: 'B1', title: 'Thói quen sinh viên', desc: 'Cuộc sống đại học',
@@ -31,10 +32,12 @@ class LessonManager {
   }
 
   async load() {
-    const data = await this.db.getLessons();
+    const [data, meta] = await Promise.all([this.db.getLessons(), this.db.getBooksMeta()]);
     this.lessons = (data && data.length)
       ? data.map(l => ({ id: l.id, book: l.book || 'B1', title: l.title, desc: l.description, zh: l.chinese, py: l.pinyin, vi: l.vietnamese }))
       : [...this.BUILTIN];
+    this.booksMeta.clear();
+    meta.forEach(b => this.booksMeta.set(b.name, b));
   }
 
   // Returns the group key (prefix before " · ") for a title
@@ -68,8 +71,15 @@ class LessonManager {
         groupMap.get(key).push(i);
       });
 
-      const emoji = EMOJIS[bi % EMOJIS.length];
-      const open  = bi === 0;
+      const emoji   = EMOJIS[bi % EMOJIS.length];
+      const open    = bi === 0;
+      const bMeta   = this.booksMeta.get(book) || {};
+      const bTitle  = bMeta.display_name || `Quyển sách ${book}`;
+      const bDesc   = bMeta.description  || '';
+      const bCover  = bMeta.cover_url    || '';
+      const bThumb  = bCover
+        ? `<img src="${bCover}" class="bk-hdr-thumb" alt="">`
+        : `<span>${emoji}</span>`;
 
       const cardsHTML = [...groupMap.entries()].map(([groupKey, indices], gi) => {
         const first = this.lessons[indices[0]];
@@ -111,7 +121,13 @@ class LessonManager {
 
       return `
         <div class="book-header" data-open="${open}" onclick="app.lessons.toggleBook(this)">
-          <span>${emoji} Quyển sách ${book} <span style="font-family:'Be Vietnam Pro';font-size:11px;font-weight:400">(${bookEntries.length} bài)</span></span>
+          <span class="bk-hdr-left">
+            ${bThumb}
+            <span>
+              <span class="bk-hdr-name">${bTitle} <span class="bk-hdr-count">(${bookEntries.length} bài)</span></span>
+              ${bDesc ? `<span class="bk-hdr-desc">${bDesc}</span>` : ''}
+            </span>
+          </span>
           <span class="book-arrow">${open ? '▾' : '▸'}</span>
         </div>
         <div class="book-lessons"${open ? '' : ' style="display:none"'}>

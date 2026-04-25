@@ -35,6 +35,16 @@ class Database {
     return [...new Set(data.map(r => r.book || 'B1'))].sort();
   }
 
+  async getBooksMeta() {
+    const { data, error } = await this.client.from('books').select('*').order('name');
+    if (error) return [];
+    return data || [];
+  }
+
+  async upsertBook(row) {
+    return await this.client.from('books').upsert([row], { onConflict: 'name' });
+  }
+
   async getVocab(lessonId) {
     const { data } = await this.client.from('vocab_cache').select('items').eq('lesson_id', lessonId).single();
     return data?.items || null;
