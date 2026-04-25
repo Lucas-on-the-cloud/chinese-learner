@@ -83,15 +83,21 @@ class FileImporter {
         <div class="imp-card-hd">
           <span class="imp-num">${i + 1}</span>
           <input class="imp-title" value="${this._h(s.title)}" oninput="app.importer.sections[${i}].title=this.value">
-          <button class="imp-del" onclick="app.importer.removeSection(${i})">✕</button>
+          <button class="imp-del" onclick="app.importer.removeSection(${i})" title="Xóa bài này">✕</button>
         </div>
         <div class="imp-fields">
-          <label class="imp-lbl">漢字 (phồn thể)</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].zh=this.value">${this._h(s.zh)}</textarea>
-          <label class="imp-lbl">Pinyin</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].py=this.value">${this._h(s.py)}</textarea>
-          <label class="imp-lbl">Tiếng Việt</label>
-          <textarea class="imp-ta" rows="4" oninput="app.importer.sections[${i}].vi=this.value">${this._h(s.vi)}</textarea>
+          <div class="imp-field-zh">
+            <label class="imp-lbl">漢字 (phồn thể)</label>
+            <textarea class="imp-ta zh" rows="5" oninput="app.importer.sections[${i}].zh=this.value">${this._h(s.zh)}</textarea>
+          </div>
+          <div>
+            <label class="imp-lbl py">Pinyin</label>
+            <textarea class="imp-ta" rows="5" oninput="app.importer.sections[${i}].py=this.value">${this._h(s.py)}</textarea>
+          </div>
+          <div>
+            <label class="imp-lbl vi">Tiếng Việt</label>
+            <textarea class="imp-ta" rows="5" oninput="app.importer.sections[${i}].vi=this.value">${this._h(s.vi)}</textarea>
+          </div>
         </div>
       </div>`
     ).join('');
