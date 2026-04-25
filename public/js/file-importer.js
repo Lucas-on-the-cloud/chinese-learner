@@ -44,20 +44,32 @@ class FileImporter {
     try {
       const raw = await app.ai.call(
         `Bạn là trợ lý xử lý dữ liệu tiếng Trung phồn thể (繁體中文, Đài Loan).
-Từ nội dung file, trích xuất TẤT CẢ bài đọc. Trả về JSON thuần, KHÔNG markdown:
-[{"title":"Hình X — ...","zh":"...","py":"...","vi":"..."}]
+Trích xuất TẤT CẢ bài đọc từ file. Trả về JSON thuần, KHÔNG markdown:
+[{
+  "title": "Hình X — ...",
+  "zh": ["câu/đoạn tiếng Trung 1", "câu/đoạn tiếng Trung 2", "..."],
+  "py": ["pinyin tương ứng câu 1", "pinyin tương ứng câu 2", "..."],
+  "vi": "toàn bộ bản dịch tiếng Việt"
+}]
 
-QUAN TRỌNG về cấu trúc dòng:
-- "zh" và "py" phải có CÙNG số dòng, mỗi dòng zh tương ứng 1-1 với dòng py cùng vị trí.
-- Tách đoạn bằng ký tự xuống dòng \\n — mỗi câu/đoạn là một dòng riêng.
-- Ví dụ nếu zh có 3 câu thì py cũng phải có đúng 3 dòng pinyin tương ứng.
-- Giữ nguyên 100% nội dung, không rút gọn, không bỏ sót.`,
+QUY TẮC BẮT BUỘC:
+- "zh" và "py" là MẢNG (array), KHÔNG phải chuỗi.
+- zh[i] và py[i] phải là cùng một câu — tương ứng tuyệt đối.
+- Số phần tử zh và py phải BẰNG NHAU.
+- Mỗi phần tử trong mảng là một câu hoặc đoạn ngắn, KHÔNG chứa ký tự xuống dòng.
+- Giữ nguyên 100% nội dung, không rút gọn.`,
         `Nội dung file:\n${text}`,
         8000
       );
       if (!raw) return [];
       const parsed = JSON.parse(raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
-      return Array.isArray(parsed) ? parsed.filter(s => s.zh && s.title) : [];
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map(s => ({
+        title: s.title || '',
+        zh: Array.isArray(s.zh) ? s.zh.join('\n') : (s.zh || ''),
+        py: Array.isArray(s.py) ? s.py.join('\n') : (s.py || ''),
+        vi: Array.isArray(s.vi) ? s.vi.join('\n') : (s.vi || '')
+      })).filter(s => s.zh && s.title);
     } catch (e) {
       console.warn('AI parse failed, falling back to regex:', e.message);
       return [];
