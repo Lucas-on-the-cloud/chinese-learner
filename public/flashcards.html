@@ -6,6 +6,7 @@
 <title>Flashcard — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── BASE ─────────────────────────────────────── */
@@ -136,6 +137,38 @@ img { display: block; max-width: 100%; }
 .empty-state a { display: inline-block; margin-top: 1.25rem; background: var(--blue); color: #fff; font-size: 13px; font-weight: 600; padding: 9px 20px; border-radius: 7px; transition: background .15s; }
 .empty-state a:hover { background: var(--blue-dark); }
 
+/* ── HW OVERLAY ──────────────────────────────── */
+.hw-overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(13,27,75,.55); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.hw-overlay.open { display: flex; }
+.hw-modal { background: #fff; border-radius: 14px; padding: 1.75rem; width: 92%; max-width: 480px; box-shadow: 0 12px 48px rgba(0,0,0,.3); position: relative; max-height: 92vh; overflow-y: auto; }
+.hw-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 22px; color: var(--text-3); cursor: pointer; line-height: 1; }
+.hw-close:hover { color: var(--danger); }
+.hw-word-title { font-family: 'Noto Serif TC', serif; font-size: 28px; font-weight: 700; color: var(--blue); text-align: center; margin-bottom: 4px; }
+.hw-sub { font-size: 13px; color: var(--text-2); text-align: center; font-style: italic; margin-bottom: 4px; }
+.hw-meaning { font-size: 14px; font-weight: 500; text-align: center; margin-bottom: 1.25rem; color: var(--text); }
+.hw-char-nav { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+.hw-pip { font-family: 'Noto Serif TC', serif; font-size: 16px; font-weight: 600; width: 36px; height: 36px; border-radius: 7px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); background: #fff; transition: all .15s; }
+.hw-pip.active { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+.hw-pip.done { border-color: #bbf7d0; color: var(--success); background: var(--success-lt); }
+.hw-mode-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 1rem; }
+.hw-mode-tab { background: #fff; border: 1px solid var(--border); font-family: 'Be Vietnam Pro', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 18px; border-radius: 16px; cursor: pointer; color: var(--text-2); transition: all .15s; }
+.hw-mode-tab.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.hw-canvas-wrap { display: flex; justify-content: center; margin-bottom: 1rem; }
+#hw-target { border-radius: 10px; background: #fff; border: 1px solid var(--border); position: relative; width: 200px; height: 200px; overflow: hidden; }
+.hw-grid { position: absolute; background: #e5e7eb; }
+.hw-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.hw-btn { background: #fff; border: 1px solid var(--border); font-family: 'Be Vietnam Pro', sans-serif; font-size: 12px; font-weight: 500; color: var(--text); padding: 8px 18px; border-radius: 7px; cursor: pointer; transition: all .15s; }
+.hw-btn:hover { background: var(--bg); }
+.hw-btn.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.hw-btn.primary:hover { background: var(--blue-dark); }
+.hw-btn.danger { border-color: #fcc; color: var(--danger); }
+.hw-btn.danger:hover { background: var(--danger-lt); }
+.hw-score { text-align: center; font-size: 12px; color: var(--text-2); margin-top: 10px; min-height: 18px; }
+.hw-score.good { color: var(--success); font-weight: 600; }
+.hw-score.bad { color: var(--danger); }
+.vocab-btn { background: #fff; border: 1px solid var(--border); font-size: 11px; font-weight: 500; color: var(--text-2); padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: all .15s; white-space: nowrap; font-family: 'Be Vietnam Pro', sans-serif; }
+.vocab-btn.write-btn:hover { background: var(--blue-lt); border-color: #c7d7fd; color: var(--blue); }
+
 /* ── FOOTER ──────────────────────────────────── */
 footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
 .footer-main { padding: 48px 1.5rem; display: grid; grid-template-columns: 1.8fr 1fr 1.4fr; gap: 3rem; max-width: 1100px; margin: 0 auto; }
@@ -198,8 +231,13 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
 
 <!-- ── FLASHCARD VIEW ─────────────────────────── -->
 <main class="app-main">
-  <div class="page-title">Bộ flashcard của bạn</div>
-  <div class="page-sub">Chọn bài học để bắt đầu ôn từ vựng đã lưu.</div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem">
+    <div>
+      <div class="page-title">Bộ flashcard của bạn</div>
+      <div class="page-sub" style="margin-bottom:0">Chọn bài học để bắt đầu ôn từ vựng đã lưu.</div>
+    </div>
+    <span id="fc-count" style="font-size:13px;font-weight:500;color:var(--text-2);margin-top:6px;white-space:nowrap"></span>
+  </div>
   <div id="fc-area"></div>
 </main>
 
@@ -243,6 +281,34 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
     </div>
   </div>
 </footer>
+
+<!-- ── HW OVERLAY ──────────────────────────────── -->
+<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)app.handwriting.close()">
+  <div class="hw-modal">
+    <button class="hw-close" onclick="app.handwriting.close()">&#215;</button>
+    <div class="hw-word-title" id="hw-title"></div>
+    <div class="hw-sub" id="hw-py"></div>
+    <div class="hw-meaning" id="hw-mg"></div>
+    <div class="hw-char-nav" id="hw-nav"></div>
+    <div class="hw-mode-tabs">
+      <button class="hw-mode-tab active" id="mt-a" onclick="app.handwriting.setMode('a')">▶ Xem nét</button>
+      <button class="hw-mode-tab" id="mt-q" onclick="app.handwriting.setMode('q')">✏️ Viết</button>
+    </div>
+    <div class="hw-canvas-wrap"><div id="hw-target">
+      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+    </div></div>
+    <div class="hw-controls" id="hw-ca">
+      <button class="hw-btn primary" onclick="app.handwriting.animate()">▶ Animate</button>
+      <button class="hw-btn" onclick="app.handwriting.loop()">↺ Loop</button>
+    </div>
+    <div class="hw-controls" id="hw-cq" style="display:none">
+      <button class="hw-btn primary" onclick="app.handwriting.quiz()">Bắt đầu viết</button>
+      <button class="hw-btn danger" onclick="app.handwriting.reset()">↺ Reset</button>
+    </div>
+    <div class="hw-score" id="hw-sc"></div>
+  </div>
+</div>
 
 <!-- ── JS ──────────────────────────────────────── -->
 <script src="js/utils.js"></script>
