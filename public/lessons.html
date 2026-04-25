@@ -289,17 +289,30 @@ img { display: block; max-width: 100%; }
 .zh-char.hl-4, .vi-char.hl-4 { background: #FCA5A5; }
 
 .sel-bar {
-  display: none; background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r); padding: 8px 12px; margin-bottom: 8px;
-  align-items: center; gap: 8px; flex-wrap: wrap; box-shadow: var(--shadow);
+  position: fixed; display: none; background: #fff;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; align-items: center; gap: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
+  z-index: 9999; pointer-events: auto; white-space: nowrap;
 }
 .sel-bar.show { display: flex; }
+/* downward arrow */
+.sel-bar::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); pointer-events: none;
+  border: 7px solid transparent; border-top-color: var(--border);
+}
+.sel-bar::before {
+  content: ''; position: absolute; top: calc(100% - 1px); left: 50%;
+  transform: translateX(-50%); pointer-events: none; z-index: 1;
+  border: 6px solid transparent; border-top-color: #fff;
+}
 .sel-word { font-family: 'Noto Serif TC', serif; font-size: 18px; font-weight: 600; color: var(--blue); margin-right: 4px; }
-.sel-label { font-size: 11px; color: var(--text-2); margin-right: auto; }
+.sel-label { font-size: 11px; color: var(--text-2); }
 .hl-color { width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: all .12s; flex-shrink: 0; }
 .hl-color:hover { transform: scale(1.15); border-color: var(--text-2); }
-.sel-divider { width: 1px; height: 20px; background: var(--border); margin: 0 3px; }
-.sel-action { background: var(--surface); border: 1px solid var(--border); font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; font-weight: 500; padding: 5px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+.sel-divider { width: 1px; height: 20px; background: var(--border); margin: 0 2px; }
+.sel-action { background: var(--surface); border: 1px solid var(--border); font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; transition: all .15s; }
 .sel-action.add { color: var(--success); }
 .sel-action.add:hover { background: var(--success-lt); border-color: #bbf7d0; }
 .sel-action.clear { color: var(--text-2); }
@@ -570,21 +583,8 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
       <button class="sec-nav-btn" id="sec-next" onclick="app.reading.navigateSection(1)">›</button>
     </div>
 
-    <div class="sel-bar" id="sel-bar">
-      <span class="sel-word" id="sel-word"></span>
-      <span class="sel-label">Highlight:</span>
-      <div class="hl-color" style="background:#C0E1D2" onclick="app.selection.highlight('hl-1')"></div>
-      <div class="hl-color" style="background:#FEF3C7" onclick="app.selection.highlight('hl-2')"></div>
-      <div class="hl-color" style="background:#DBEAFE" onclick="app.selection.highlight('hl-3')"></div>
-      <div class="hl-color" style="background:#FCA5A5" onclick="app.selection.highlight('hl-4')"></div>
-      <div class="sel-divider"></div>
-      <button class="sel-action add" onclick="app.selection.addToVocab()">+ Từ vựng</button>
-      <button class="sel-action remove" onclick="app.selection.removeHighlight()">✕</button>
-      <button class="sel-action clear" onclick="app.selection.clear()">Bỏ</button>
-    </div>
     <div id="text-paired" class="il-block"></div>
     <div id="text-vi" class="text-block vietnamese" style="display:none"></div>
-    <div class="sel-hint">💡 Nhấn chữ đầu → nhấn chữ cuối để chọn vùng highlight</div>
     <div class="ai-panel">
       <div class="ai-panel-header">
         <h3>✨ Từ vựng <span class="ai-badge">AI</span><span class="provider-badge" id="vp"></span></h3>
@@ -756,6 +756,20 @@ footer { background: #111827; color: rgba(255,255,255,.6); font-size: 13px; }
       <button class="ws-gen-btn" onclick="app.worksheet.generate()">📄 Tạo &amp; In</button>
     </div>
   </div>
+</div>
+
+<!-- ── SELECTION POPUP ──────────────────────────── -->
+<div class="sel-bar" id="sel-bar">
+  <span class="sel-word" id="sel-word"></span>
+  <span class="sel-label">Highlight:</span>
+  <div class="hl-color" style="background:#C0E1D2" onclick="app.selection.highlight('hl-1')"></div>
+  <div class="hl-color" style="background:#FEF3C7" onclick="app.selection.highlight('hl-2')"></div>
+  <div class="hl-color" style="background:#DBEAFE" onclick="app.selection.highlight('hl-3')"></div>
+  <div class="hl-color" style="background:#FCA5A5" onclick="app.selection.highlight('hl-4')"></div>
+  <div class="sel-divider"></div>
+  <button class="sel-action add" onclick="app.selection.addToVocab()">+ Từ vựng</button>
+  <button class="sel-action remove" onclick="app.selection.removeHighlight()">✕</button>
+  <button class="sel-action clear" onclick="app.selection.clear()">Bỏ</button>
 </div>
 
 <!-- ── JS ──────────────────────────────────────── -->

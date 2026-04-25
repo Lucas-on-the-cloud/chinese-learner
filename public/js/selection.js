@@ -76,6 +76,22 @@ class SelectionManager {
     const bar = document.getElementById('sel-bar');
     if (!t) { bar.classList.remove('show'); return; }
     document.getElementById('sel-word').textContent = t;
+
+    const els = [...document.querySelectorAll('.zh-char.selecting, .vi-char.selecting')];
+    if (els.length) {
+      const rects  = els.map(el => el.getBoundingClientRect());
+      const top    = Math.min(...rects.map(r => r.top));
+      const left   = Math.min(...rects.map(r => r.left));
+      const right  = Math.max(...rects.map(r => r.right));
+      const midX   = (left + right) / 2;
+      // clamp so bar stays within viewport horizontally (estimate 320px wide)
+      const hw = 160;
+      const clampedX = Math.max(hw + 8, Math.min(window.innerWidth - hw - 8, midX));
+      bar.style.left      = clampedX + 'px';
+      bar.style.top       = (top - 10) + 'px';
+      bar.style.transform = 'translate(-50%, -100%)';
+    }
+
     bar.classList.add('show');
   }
 }
