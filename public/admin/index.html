@@ -1393,7 +1393,11 @@ async function subSaveLesson(id) {
 
 async function subDeleteLesson(id) {
   if (!confirm('Xóa bài học này?')) return;
-  await _adminDb.client.from('lessons').delete().eq('id', id);
+  const { error } = await _adminDb.client.from('lessons').delete().eq('id', id);
+  if (error) {
+    alert('Không thể xóa: ' + error.message + '\n\nChạy SQL trong Supabase:\nalter table lessons disable row level security;');
+    return;
+  }
   if (_subCurrentBook) subLoadLessons(_subCurrentBook);
 }
 
