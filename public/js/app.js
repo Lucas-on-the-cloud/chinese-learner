@@ -41,6 +41,13 @@ class ChineseApp {
     if (idsParam) {
       const ids   = idsParam.split(',').map(Number);
       const parts = ids.map(id => this.lessons.lessons.find(l => l.id === id)).filter(Boolean);
+      // Save progress to localStorage
+      if (bParam && ids.length) {
+        const key  = `tocfl_progress_${bParam}`;
+        const done = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+        ids.forEach(id => done.add(id));
+        localStorage.setItem(key, JSON.stringify([...done]));
+      }
       if (parts.length === 1)    this._openWith(parts[0]);
       else if (parts.length > 1) this._openWithGroup(parts);
     } else if (idParam) {

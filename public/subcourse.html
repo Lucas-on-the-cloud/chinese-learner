@@ -103,6 +103,21 @@ img{display:block;max-width:100%}
 .sc-btn.outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue);margin-top:6px}
 .sc-btn.outline:hover{background:var(--blue-lt)}
 
+/* PROGRESS BAR */
+.sc-prog-wrap{margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6}
+.sc-prog-label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:7px}
+.sc-prog-pct{font-weight:700;color:var(--blue)}
+.sc-prog-bar{height:9px;background:#f3f4f6;border-radius:100px;overflow:hidden}
+.sc-prog-fill{height:100%;background:linear-gradient(90deg,#1a56db,#4f96ff);border-radius:100px;transition:width .5s ease;min-width:0}
+.sc-prog-fill.done{background:linear-gradient(90deg,#16a34a,#4ade80)}
+
+/* LESSON DONE INDICATORS */
+.lr-status{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px}
+.lr-status.done{background:#dcfce7;color:#16a34a}
+.lr-status.started{background:#fef9c3;color:#ca8a04}
+.lpr-dot.done{background:#16a34a}
+.lpr-dot.started{background:#f59e0b}
+
 /* FOOTER */
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
 .footer-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
@@ -189,8 +204,21 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <span class="sc-stat-val" id="stat-parts">—</span>
       </div>
       <div class="sc-stat">
+        <span class="sc-stat-label">Đã hoàn thành</span>
+        <span class="sc-stat-val" id="stat-done">0</span>
+      </div>
+      <div class="sc-stat">
         <span class="sc-stat-label">Ngôn ngữ</span>
         <span class="sc-stat-val">繁體中文</span>
+      </div>
+      <div class="sc-prog-wrap">
+        <div class="sc-prog-label">
+          <span>Tiến độ học</span>
+          <span class="sc-prog-pct" id="prog-pct">0%</span>
+        </div>
+        <div class="sc-prog-bar">
+          <div class="sc-prog-fill" id="prog-fill" style="width:0%"></div>
+        </div>
       </div>
       <button class="sc-btn" id="start-btn">
         <i class="fa-solid fa-play"></i> Bắt đầu học ngay
@@ -321,6 +349,24 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   document.getElementById('stat-total').textContent = totalGroups;
   document.getElementById('stat-parts').textContent = totalParts;
 
+  // Load progress from localStorage
+  const progressKey  = `tocfl_progress_${book}`;
+  const doneIds      = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
+  let   doneGroups   = 0;
+  const groupStatus  = new Map(); // groupKey → 'done'|'started'|''
+  [...groupMap.entries()].forEach(([key, grp]) => {
+    const readCount = grp.filter(l => doneIds.has(l.id)).length;
+    if (readCount === grp.length) { groupStatus.set(key, 'done');    doneGroups++; }
+    else if (readCount > 0)       { groupStatus.set(key, 'started'); }
+    else                          { groupStatus.set(key, ''); }
+  });
+  const pct = totalGroups ? Math.round(doneGroups / totalGroups * 100) : 0;
+  document.getElementById('stat-done').textContent = doneGroups;
+  document.getElementById('prog-pct').textContent  = pct + '%';
+  const fill = document.getElementById('prog-fill');
+  fill.style.width = pct + '%';
+  if (pct === 100) fill.classList.add('done');
+
   if (!totalGroups) {
     document.getElementById('lesson-grid').innerHTML =
       '<p style="padding:3rem;text-align:center;color:#9ca3af;font-size:13px">Chưa có bài học nào trong khóa học này.</p>';
@@ -342,8 +388,15 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     const allIds   = grpLessons.map(l => l.id);
     const href     = `/reading.html?ids=${allIds.join(',')}&b=${encodeURIComponent(book)}`;
     const isMulti  = grpLessons.length > 1;
+    const status   = groupStatus.get(groupKey) || '';
 
     const toggle = isMulti ? `toggleGroup(this,'${href}')` : `location.href='${href}'`;
+
+    const statusIcon = status === 'done'
+      ? `<span class="lr-status done"><i class="fa-solid fa-check"></i></span>`
+      : status === 'started'
+      ? `<span class="lr-status started"><i class="fa-solid fa-ellipsis"></i></span>`
+      : '';
 
     // Group header row
     let html = `<div class="lesson-row" onclick="${toggle}">
@@ -355,6 +408,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <div class="lr-title">${groupKey}</div>
         ${zhFirst ? `<div class="lr-zh">${zhFirst}…</div>` : ''}
       </div>
+      ${statusIcon}
       <span class="lr-badge${isMulti ? '' : ' single'}">${isMulti ? grpLessons.length + ' đoạn' : '1 đoạn'}</span>
       <i class="fa-solid fa-chevron-right lr-arrow"></i>
     </div>`;
@@ -373,11 +427,12 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         const label = dash > -1 ? part.slice(0, dash) : part;
         const zhPrev = (l.zh || '').replace(/\s+/g,' ').slice(0, 28);
         const subHref = `/reading.html?ids=${l.id}&b=${encodeURIComponent(book)}`;
+        const partDone = doneIds.has(l.id);
         return `<div class="lesson-part-row" onclick="location.href='${subHref}'">
-          <span class="lpr-dot"></span>
+          <span class="lpr-dot${partDone ? ' done' : ''}"></span>
           <div class="lpr-title">${label}</div>
           ${zhPrev ? `<div class="lpr-zh">${zhPrev}…</div>` : ''}
-          <i class="fa-solid fa-chevron-right lpr-arrow"></i>
+          ${partDone ? '<i class="fa-solid fa-check" style="font-size:10px;color:#16a34a;flex-shrink:0"></i>' : '<i class="fa-solid fa-chevron-right lpr-arrow"></i>'}
         </div>`;
       }).join('');
       html += `<div class="lesson-parts">${readAllRow}${subRows}</div>`;
