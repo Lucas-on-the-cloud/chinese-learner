@@ -148,7 +148,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
 <div class="content-header">
   <div class="container">
-    <a href="/courses.html" class="ch-back"><i class="fas fa-arrow-left"></i> &nbsp;Khóa học</a>
+    <a id="ch-back" href="/courses.html" class="ch-back"><i class="fas fa-arrow-left"></i> &nbsp;Khóa học</a>
     <div class="ch-inner">
       <img id="ch-cover" class="ch-cover" src="" alt="" style="display:none">
       <div class="ch-text">
@@ -262,12 +262,13 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   // Resolve back button → course.html?id=X (find which course this book belongs to)
   const { data: courseLink } = await db.client
     .from('course_books').select('course_id').eq('book_name', book).limit(1).maybeSingle();
-  const backBtn = document.getElementById('back-btn');
-  if (backBtn) {
-    backBtn.href = courseLink?.course_id
-      ? `/course.html?id=${courseLink.course_id}`
-      : '/courses.html';
-  }
+  const backHref = courseLink?.course_id
+    ? `/course.html?id=${courseLink.course_id}`
+    : '/courses.html';
+  const backBtn  = document.getElementById('back-btn');
+  const chBack   = document.getElementById('ch-back');
+  if (backBtn) backBtn.href = backHref;
+  if (chBack)  chBack.href  = backHref;
 
   const [rawLessons, metaList] = await Promise.all([db.getLessons(), db.getBooksMeta()]);
 
