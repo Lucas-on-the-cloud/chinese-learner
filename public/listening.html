@@ -474,7 +474,7 @@ function playCurrentSegment() {
   if (audioEl.src !== seg.audio_url) { audioEl.src = seg.audio_url; audioEl.load(); }
   audioEl.playbackRate = audioSpeed;
   audioEl.currentTime = seg.start_sec;
-  audioEl.play();
+  audioEl.play().catch(() => {}); // ignore autoplay policy error — user can press play manually
 
   const playIcon = document.getElementById('play-icon');
   if (playIcon) { playIcon.className = 'fas fa-pause'; }

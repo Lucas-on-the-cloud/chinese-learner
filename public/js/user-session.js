@@ -105,7 +105,18 @@ class UserSession {
 
   async addUserFlashcardsBulk(cards) {
     if (!this.uid || !cards.length) return;
-    const rows = cards.map(c => ({ ...c, user_id: this.uid }));
+    const rows = cards.map(c => ({
+      user_id:      this.uid,
+      char:         c.char,
+      pinyin:       c.pinyin       || null,
+      meaning:      c.meaning      || null,
+      example_zh:   c.example_zh   || null,
+      example_vi:   c.example_vi   || null,
+      book_name:    c.book_name    || c.book || null,
+      lesson_title: c.lesson_title || null,
+      from_reading: c.from_reading || false,
+      custom:       c.custom       || false,
+    }));
     await this.client.from('user_flashcards').upsert(rows, { onConflict: 'user_id,char' });
   }
 
@@ -136,7 +147,9 @@ class UserSession {
 
     // User flashcards
     const localFC = JSON.parse(localStorage.getItem('tocfl_user_flashcards') || '[]');
-    if (localFC.length) await this.addUserFlashcardsBulk(localFC);
+    if (localFC.length) {
+      try { await this.addUserFlashcardsBulk(localFC); } catch(e) { console.warn('[UserSession] FC migration error:', e); }
+    }
 
     localStorage.setItem('tocfl_migrated_v1', '1');
     console.log('[UserSession] Migration từ localStorage hoàn thành.');
