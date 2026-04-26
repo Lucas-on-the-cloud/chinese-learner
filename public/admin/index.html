@@ -2443,11 +2443,12 @@ function escHtml(s) {
   return String(s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
-// ── LISTENING ADMIN ────────────────────────────
+// ── LISTENING ADMIN (v2) ───────────────────────
 let lsSelectedBook   = null;
 let lsSelectedLesson = null;
 let lsAudioUrl       = null;
-let lsPendingSegs    = [];   // segments from transcription, not yet saved
+let lsPendingSegs    = [];
+let lsItemLabel      = '';       // e.g. "Audio 1.1"
 
 function lsGetGcpKey() { return localStorage.getItem('gcp_stt_key') || ''; }
 function lsSaveGcpKey(k) { localStorage.setItem('gcp_stt_key', k); }
@@ -2459,10 +2460,13 @@ async function loadListeningAdmin() {
     _adminDb.getAudioSegmentSummary(),
   ]);
   const countByBook = {};
-  (summary || []).forEach(r => { countByBook[r.book_name] = (countByBook[r.book_name]||0)+1; });
+  (summary||[]).forEach(r => { countByBook[r.book_name] = (countByBook[r.book_name]||0)+1; });
   const total = Object.values(countByBook).reduce((a,b)=>a+b,0);
   const sbEl = document.getElementById('sb-ls-count');
   if (sbEl) sbEl.textContent = total;
+
+  window._lsAllLessons = lessons || [];
+  window._lsAllBooks   = books   || [];
 
   const bookNames = [...new Set([
     ...(books||[]).map(b=>b.name),
@@ -2474,15 +2478,14 @@ async function loadListeningAdmin() {
     const label = meta.display_name || name;
     const cnt   = countByBook[name] || 0;
     return `<button onclick="lsSelectBook('${name}')" id="lsb-${name}"
-      style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;width:100%;text-align:left;transition:all .15s"
-      onmouseover="this.style.borderColor='#1a56db'" onmouseout="if(lsSelectedBook!=='${name}')this.style.borderColor='#e5e7eb'">
-      <span style="font-weight:500">${label}</span>
-      <span style="font-size:11px;font-weight:600;color:#6b7280;background:#f3f4f6;padding:2px 8px;border-radius:8px">${cnt} đoạn</span>
+      style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;width:100%;text-align:left;transition:all .15s">
+      <div>
+        <div style="font-weight:600;color:#1f2937;font-size:13px">${label}</div>
+        <div style="font-size:10px;color:#9ca3af">${name}</div>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:#6b7280;background:#f3f4f6;padding:2px 8px;border-radius:8px;flex-shrink:0">${cnt} đoạn</span>
     </button>`;
   }).join('');
-
-  window._lsAllLessons = lessons || [];
-  window._lsAllBooks   = books   || [];
 }
 
 function lsSelectBook(bookName) {
@@ -2533,15 +2536,20 @@ async function lsRenderRight(bookName) {
       </div>
 
       <!-- Upload area -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
         <div>
-          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Bài học</label>
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Bài học *</label>
           <select id="ls-lesson-sel" style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-family:inherit;font-size:13px">
             ${lessonOpts||'<option>Không có bài học</option>'}
           </select>
         </div>
         <div>
-          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">File MP3</label>
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">Tên audio *</label>
+          <input id="ls-item-label" placeholder="VD: Audio 1.1" value="Audio 1.1"
+            style="width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-family:inherit;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:6px">File MP3 *</label>
           <input type="file" accept="audio/*" id="ls-file-input" onchange="lsPreviewAudio(this)"
             style="width:100%;font-size:12px;padding:6px">
         </div>
@@ -2581,13 +2589,34 @@ function lsRenderSavedSegs(segsByLesson, lessons) {
 
   return entries.map(([lessonId, segs]) => {
     const lesson = lessons.find(l=>l.id==lessonId)||{};
-    const segRows = segs.map(s => lsSegRow(s)).join('');
+
+    // Group within lesson by item_label
+    const byLabel = new Map();
+    segs.forEach(s => {
+      const lbl = s.item_label || 'Audio';
+      if (!byLabel.has(lbl)) byLabel.set(lbl, []);
+      byLabel.get(lbl).push(s);
+    });
+
+    const itemsHTML = [...byLabel.entries()].map(([lbl, ss]) => {
+      const url = ss[0]?.audio_url || '';
+      const safeId = lbl.replace(/[^a-zA-Z0-9]/g,'_');
+      const segRows = ss.map(s => lsSegRow(s)).join('');
+      return `<div style="margin-bottom:10px;border:1px solid #e5e7eb;border-radius:9px;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#f9fafb;border-bottom:1px solid #f3f4f6">
+          <div style="font-size:13px;font-weight:700;color:#374151;display:flex;align-items:center;gap:8px">
+            <i class="fa-solid fa-headphones" style="color:#7c3aed;font-size:11px"></i> ${lbl}
+            <span style="font-size:11px;font-weight:400;color:#9ca3af">${ss.length} đoạn</span>
+          </div>
+          <audio id="ls-aud-${lessonId}-${safeId}" src="${url}" style="display:none"></audio>
+        </div>
+        <div style="padding:10px">${segRows}</div>
+      </div>`;
+    }).join('');
+
     return `<div class="s-card" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="s-title" style="font-size:14px"><i class="fa-solid fa-book-open" style="color:#1a56db"></i> ${lesson.title||'Bài học'} · ${segs.length} đoạn</div>
-        <audio id="ls-saved-audio-${lessonId}" src="${segs[0]?.audio_url||''}" style="display:none"></audio>
-      </div>
-      <div id="ls-segs-${lessonId}">${segRows}</div>
+      <div class="s-title" style="font-size:14px;margin-bottom:12px"><i class="fa-solid fa-book-open" style="color:#1a56db"></i> ${lesson.title||'Bài học'}</div>
+      ${itemsHTML}
     </div>`;
   }).join('');
 }
@@ -2860,11 +2889,13 @@ async function lsSaveAllPending() {
   const lesson    = (window._lsAllLessons||[]).find(l=>l.id==lessonId)||{};
   if (!lsAudioUrl) { lsMsg('Chưa upload audio URL.','err'); return; }
 
+  const itemLabel = document.getElementById('ls-item-label')?.value.trim() || 'Audio 1';
   const rows = lsPendingSegs.map((s, i) => ({
     book_name:    lsSelectedBook,
     lesson_id:    parseInt(lessonId),
     lesson_title: lesson.title || '',
     audio_url:    lsAudioUrl,
+    item_label:   itemLabel,
     start_sec:    s.start_sec,
     end_sec:      s.end_sec,
     transcript:   document.getElementById('ls-pt-' + i)?.value.trim() || s.text,

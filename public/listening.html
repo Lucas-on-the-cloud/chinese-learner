@@ -203,6 +203,8 @@ if (isNaN(lessonId)) lessonId = null;
 let startSegId   = params.get('seg') ? parseInt(params.get('seg')) : null;
 if (isNaN(startSegId)) startSegId = null;
 
+const labelFilter = params.get('label') ? decodeURIComponent(params.get('label')) : null;
+
 let allSegments  = [];
 let currentIdx   = 0;
 let sessionScore = { correct: 0, total: 0 };
@@ -345,6 +347,10 @@ async function loadDictation(book, lid) {
     }
 
     allSegments = segs || [];
+    // Filter by item_label if provided
+    if (labelFilter) {
+      allSegments = allSegments.filter(s => s.item_label === labelFilter);
+    }
   } catch(e) {
     document.getElementById('app-main').innerHTML =
       `<div style="padding:3rem;text-align:center;color:#dc2626;font-size:13px">Lỗi: ${e.message}</div>`;
@@ -365,7 +371,8 @@ async function loadDictation(book, lid) {
 
   const meta  = allBooks.find(b => b.name === book) || {};
   const label = meta.display_name || book;
-  document.getElementById('page-h1').textContent   = (segs[0]?.lesson_title || 'Bài học') + ' · Chép chính tả';
+  const lessonTitle = segs[0]?.lesson_title || 'Bài học';
+  document.getElementById('page-h1').textContent   = (labelFilter ? labelFilter + ' · ' : '') + lessonTitle + ' · Chép chính tả';
   document.getElementById('page-desc').textContent = `${allSegments.length} đoạn · ${label}`;
   document.title = 'Luyện nghe — TOCFL FAFA';
 

@@ -381,26 +381,48 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       ? `<span style="width:22px;height:22px;border-radius:50%;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-ellipsis" style="font-size:10px;color:#ca8a04"></i></span>`
       : '';
 
-    // Individual segment rows
-    const segRows = group.segs.map((s, si) => {
-      const dur     = s.end_sec > 0 ? ((s.end_sec - s.start_sec).toFixed(1) + 's') : '';
-      const segDone = doneSegIds.has(s.id);
-      const preview = (s.transcript || '').slice(0, 36);
-      return `<div class="seg-row" id="segrow-${s.id}">
-        <span class="seg-dot${segDone?' done':''}"></span>
-        <div class="seg-info">
-          <div class="seg-label">Đoạn ${si + 1}</div>
-          ${preview ? `<div class="seg-transcript">「${preview}${s.transcript.length>36?'…':''}」</div>` : ''}
-        </div>
-        <span class="seg-dur">${dur}</span>
-        <div class="seg-actions">
-          <button class="seg-btn preview" onclick="previewSegment(event,${s.id},'${encodeURIComponent(s.audio_url)}',${s.start_sec},${s.end_sec},'${encodeURIComponent(s.transcript||'')}')">
-            <i class="fas fa-play" style="font-size:9px"></i> Nghe
+    // Group segments by item_label within this lesson
+    const byLabel = new Map();
+    group.segs.forEach(s => {
+      const lbl = s.item_label || 'Audio';
+      if (!byLabel.has(lbl)) byLabel.set(lbl, []);
+      byLabel.get(lbl).push(s);
+    });
+
+    const segRows = [...byLabel.entries()].map(([lbl, lblSegs]) => {
+      const url = lblSegs[0]?.audio_url || '';
+      const rows = lblSegs.map((s, si) => {
+        const dur     = s.end_sec > 0 ? ((s.end_sec - s.start_sec).toFixed(1) + 's') : '';
+        const segDone = doneSegIds.has(s.id);
+        const preview = (s.transcript || '').slice(0, 36);
+        return `<div class="seg-row" id="segrow-${s.id}">
+          <span class="seg-dot${segDone?' done':''}"></span>
+          <div class="seg-info">
+            <div class="seg-label">Đoạn ${si + 1}</div>
+            ${preview ? `<div class="seg-transcript">「${preview}${s.transcript.length>36?'…':''}」</div>` : ''}
+          </div>
+          <span class="seg-dur">${dur}</span>
+          <div class="seg-actions">
+            <button class="seg-btn preview" onclick="previewSegment(event,${s.id},'${encodeURIComponent(s.audio_url)}',${s.start_sec},${s.end_sec},'${encodeURIComponent(s.transcript||'')}')">
+              <i class="fas fa-play" style="font-size:9px"></i> Nghe
+            </button>
+            <button class="seg-btn play" onclick="goStudySegment('${book}',${lessonId},${s.id})">
+              <i class="fas fa-pen" style="font-size:9px"></i> Chép
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+      return `<div style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#f3f0ff;border-radius:7px;margin-bottom:4px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:#6d28d9">
+            <i class="fa-solid fa-headphones" style="font-size:10px"></i> ${lbl}
+            <span style="font-size:11px;font-weight:400;color:#9ca3af">${lblSegs.length} đoạn</span>
+          </div>
+          <button class="seg-btn preview" onclick="goStudyLabel('${book}',${lessonId},'${encodeURIComponent(lbl)}')" style="font-size:11px">
+            <i class="fas fa-headphones" style="font-size:9px"></i> Luyện
           </button>
-          <button class="seg-btn play" onclick="goStudySegment('${book}',${lessonId},${s.id})">
-            <i class="fas fa-pen" style="font-size:9px"></i> Chép
-          </button>
         </div>
+        ${rows}
       </div>`;
     }).join('');
 
@@ -440,6 +462,10 @@ function goStudy(book, lessonId) {
 
 function goStudySegment(book, lessonId, segId) {
   location.href = `/listening.html?b=${encodeURIComponent(book)}&lesson=${lessonId}&seg=${segId}`;
+}
+
+function goStudyLabel(book, lessonId, labelEnc) {
+  location.href = `/listening.html?b=${encodeURIComponent(book)}&lesson=${lessonId}&label=${labelEnc}`;
 }
 
 // ── Accordion ──────────────────────────────────────
