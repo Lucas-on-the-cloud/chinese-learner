@@ -434,32 +434,38 @@ function renderLessons(bookName) {
 
     const grpCardsJson = JSON.stringify(allGrpCards).replace(/"/g, '&quot;');
 
+    // Fork button shared by both single and multi-part groups
+    const grpAllForked = allGrpCards.every(c => isForked(c.char));
+    const forkGrpBtn   = `<button id="fgrp-${gi}" onclick="event.stopPropagation();forkGroup('${bookName}','${encodeURIComponent(grpKey)}',this)"
+      style="font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;white-space:nowrap;border:1px solid;flex-shrink:0;transition:all .15s;${grpAllForked?'background:#dcfce7;color:#16a34a;border-color:#bbf7d0;cursor:default':'background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;cursor:pointer'}"
+      ${grpAllForked ? 'disabled' : ''}>
+      ${grpAllForked ? '<i class="fas fa-check" style="font-size:9px"></i> Đã fork' : '<i class="fas fa-download" style="font-size:9px"></i> Fork bài này'}
+    </button>`;
+
     if (!isMulti) {
-      // Single part → clickable row
-      const partCards = allGrpCards;
-      const pJson     = JSON.stringify(partCards).replace(/"/g, '&quot;');
+      // Single part → click row to study, fork on row
+      const pJson = JSON.stringify(allGrpCards).replace(/"/g, '&quot;');
       return `<div class="lesson-row" onclick="startStudy('${pJson}')">
         <div class="lr-icon" style="background:linear-gradient(135deg,${c1},${c2})">${wm}</div>
         <div class="lr-info">
           <div class="lr-title">${grpKey}</div>
-          <div class="lr-sub">${partCards.length} thẻ từ vựng</div>
+          <div class="lr-sub">${allGrpCards.length} thẻ từ vựng</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <button class="part-btn list" onclick="event.stopPropagation();renderCards('${bookName}','${encodeURIComponent(grpKey)}')" style="font-size:10px">
             <i class="fas fa-list" style="font-size:9px"></i> Xem
           </button>
-          <span class="lr-badge">${partCards.length} thẻ</span>
+          ${forkGrpBtn}
           <i class="fas fa-play lr-arrow" style="font-size:10px;color:#1a56db"></i>
         </div>
       </div>`;
     }
 
-    // Multi-part → accordion
+    // Multi-part → accordion (no Fork on sub-rows)
     const subHTML = [...partsMap.entries()].map(([partTitle, partCards]) => {
       const sep   = partTitle.indexOf(' · ');
-      const pName     = sep > -1 ? partTitle.slice(sep + 3).trim() : partTitle;
-      const pJson     = JSON.stringify(partCards).replace(/"/g, '&quot;');
-      const allForked = partCards.every(c => isForked(c.char));
+      const pName = sep > -1 ? partTitle.slice(sep + 3).trim() : partTitle;
+      const pJson = JSON.stringify(partCards).replace(/"/g, '&quot;');
       return `<div class="part-row">
         <span class="part-dot"></span>
         <span class="part-label">${pName}</span>
@@ -470,12 +476,6 @@ function renderLessons(bookName) {
           </button>
           <button class="part-btn play" onclick="startStudy('${pJson}')">
             <i class="fas fa-play" style="font-size:9px"></i> Học
-          </button>
-          <button id="fork-part-${encodeURIComponent(partTitle)}"
-            style="font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 11px;border-radius:6px;white-space:nowrap;border:1px solid;${allForked?'background:#dcfce7;color:#16a34a;border-color:#bbf7d0;cursor:default':'background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;cursor:pointer'}"
-            onclick="${allForked ? '' : `forkPart('${bookName}','${encodeURIComponent(partTitle)}',this)`}"
-            ${allForked ? 'disabled' : ''}>
-            ${allForked ? '<i class="fas fa-check" style="font-size:9px"></i> Đã fork' : '<i class="fas fa-download" style="font-size:9px"></i> Fork'}
           </button>
         </div>
       </div>`;
@@ -493,7 +493,10 @@ function renderLessons(bookName) {
         <div class="lr-title">${grpKey}</div>
         <div class="lr-sub">${partsMap.size} phần · ${allGrpCards.length} thẻ</div>
       </div>
-      <span class="lr-badge">${allGrpCards.length} thẻ</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0" onclick="event.stopPropagation()">
+        ${forkGrpBtn}
+        <span class="lr-badge">${allGrpCards.length} thẻ</span>
+      </div>
       <i class="fas fa-chevron-right lr-arrow"></i>
     </div>
     <div class="lesson-parts">
@@ -629,6 +632,32 @@ function forkAll(bookName, lessonTitleEncoded) {
   saveUserCards(user);
   updateMineBadge();
   renderCards(bookName, lessonTitleEncoded);
+}
+
+// Fork ALL cards from an entire lesson group (all parts) — called from group header
+function forkGroup(bookName, grpKeyEncoded, btn) {
+  const grpKey = decodeURIComponent(grpKeyEncoded);
+  // Match all templates whose lesson_title starts with grpKey
+  const cards = allTemplates.filter(t => {
+    if (t.book_name !== bookName) return false;
+    const title  = t.lesson_title || '';
+    const sep    = title.indexOf(' · ');
+    const prefix = sep > -1 ? title.slice(0, sep).trim() : title.trim();
+    return prefix === grpKey || title === grpKey;
+  });
+  const user = getUserCards();
+  cards.forEach(c => {
+    if (!user.some(u => u.char === c.char)) {
+      user.push({ ...c, forked_from_book: bookName, forked_from_lesson: c.lesson_title, custom: false });
+    }
+  });
+  saveUserCards(user);
+  updateMineBadge();
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-check" style="font-size:9px"></i> Đã fork';
+    btn.style.background = '#dcfce7'; btn.style.color = '#16a34a'; btn.style.cursor = 'default';
+  }
 }
 
 // Fork all cards from one part (called from accordion part-row button)
