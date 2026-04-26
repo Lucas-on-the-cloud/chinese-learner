@@ -216,6 +216,33 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 #bl-content{border-top:none!important;border-radius:0 0 8px 8px!important}
 .bl-drag-row.drag-over{background:#eff6ff;outline:2px dashed #1a56db}
 .bl-drag-row.dragging{opacity:.4;background:#f4f5f7}
+/* Blog editor tabs */
+.bl-tabs{display:flex;border-bottom:2px solid #e5e7eb;margin-top:10px}
+.bl-tab{background:none;border:none;border-bottom:2px solid transparent;padding:7px 16px;font-family:inherit;font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;margin-bottom:-2px;transition:all .12s;white-space:nowrap}
+.bl-tab.active{color:#1a56db;border-bottom-color:#1a56db}
+.bl-tab:hover:not(.active){color:#1f2937}
+/* Blog preview pane */
+.bl-preview{background:#fafafa;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;padding:1.5rem 2rem;min-height:260px;line-height:1.9;font-size:14px;color:#1f2937}
+.bl-preview h1,.bl-preview h2,.bl-preview h3{font-family:'Noto Serif TC',serif;color:#0d1b4b;margin:1.4rem 0 .6rem}
+.bl-preview h1{font-size:24px}.bl-preview h2{font-size:19px}.bl-preview h3{font-size:16px}
+.bl-preview blockquote{border-left:3px solid #1a56db;padding-left:.8rem;color:#6b7280;font-style:italic;margin:.8rem 0}
+.bl-preview hr{border:none;border-top:1px solid #e5e7eb;margin:1.2rem 0}
+.bl-preview strong{color:#0d1b4b}
+.bl-preview u{text-decoration:underline}
+.bl-preview s{text-decoration:line-through;color:#9ca3af}
+/* Highlight color buttons in toolbar */
+.bl-hl-btn{width:20px;height:20px;border-radius:4px;border:1px solid rgba(0,0,0,.14);cursor:pointer;flex-shrink:0;padding:0;vertical-align:middle;display:inline-block}
+/* Compact post card list */
+.bl-post-item{display:flex;align-items:flex-start;gap:8px;padding:10px 6px;border-bottom:1px solid #f3f4f6;border-radius:6px;transition:background .1s}
+.bl-post-item:last-child{border-bottom:none}
+.bl-post-item.drag-over{background:#eff6ff;outline:2px dashed #1a56db}
+.bl-post-item.dragging{opacity:.35}
+.bl-post-drag{color:#d1d5db;font-size:15px;cursor:grab;flex-shrink:0;user-select:none;padding-top:1px}
+.bl-post-info{flex:1;min-width:0}
+.bl-post-title{font-size:13px;font-weight:500;color:#1f2937;line-height:1.4;word-break:break-word}
+.bl-post-meta{font-size:11px;color:#9ca3af;margin-top:3px;display:flex;align-items:center;gap:5px}
+.bl-post-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block}
+.bl-post-actions{display:flex;flex-shrink:0}
 
 @media(max-width:1100px){
   .primary-actions{grid-template-columns:1fr 1fr}
@@ -539,25 +566,29 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   <!-- ── BLOG ─────────────────────────────────── -->
   <div id="section-blog" style="display:none;width:100%">
-    <div style="display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
       <!-- CREATE / EDIT FORM -->
       <div class="s-card">
         <div class="s-title"><i class="fa-solid fa-pen-nib" style="color:#1a56db"></i> <span id="bl-form-mode-title">Tạo bài viết mới</span></div>
 
-        <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
-        <textarea id="bl-title" class="s-input" rows="2" style="height:auto;padding:8px 12px;resize:none;line-height:1.5" placeholder="Tiêu đề bài viết…"></textarea>
-
-        <div class="s-label" style="margin-top:10px">Chuyên mục</div>
-        <input type="text" id="bl-cat" class="s-input" list="bl-cat-suggestions" placeholder="VD: TOCFL, Từ vựng, Ngữ pháp…">
-        <datalist id="bl-cat-suggestions"></datalist>
-
-        <div class="s-label" style="margin-top:10px">Tác giả</div>
-        <input type="text" id="bl-author" class="s-input" placeholder="Tên tác giả" value="Admin">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
+          <div>
+            <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
+            <textarea id="bl-title" class="s-input" rows="2" style="height:auto;padding:8px 12px;resize:none;line-height:1.5" placeholder="Tiêu đề bài viết…"></textarea>
+          </div>
+          <div>
+            <div class="s-label">Chuyên mục</div>
+            <input type="text" id="bl-cat" class="s-input" list="bl-cat-suggestions" placeholder="VD: TOCFL, Từ vựng…">
+            <datalist id="bl-cat-suggestions"></datalist>
+            <div class="s-label" style="margin-top:8px">Tác giả</div>
+            <input type="text" id="bl-author" class="s-input" placeholder="Tên tác giả" value="Admin">
+          </div>
+        </div>
 
         <div class="s-label" style="margin-top:10px">Ảnh bìa</div>
         <div class="s-img-row">
-          <input type="text" id="bl-cover" class="s-input" placeholder="Dán URL ảnh hoặc chọn file…" oninput="blPreviewUrl(this.value)" style="flex:1">
+          <input type="text" id="bl-cover" class="s-input" placeholder="Dán URL ảnh hoặc chọn file…" oninput="blPreviewUrl(this.value);blUpdatePreview()" style="flex:1">
           <input type="file" id="bl-cover-file" accept="image/*" style="display:none" onchange="blFileChange(this)">
           <button class="s-file-btn" onclick="document.getElementById('bl-cover-file').click()">📷 Chọn file</button>
         </div>
@@ -567,22 +598,46 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
         </div>
 
         <div class="s-label" style="margin-top:10px">Tóm tắt</div>
-        <textarea id="bl-excerpt" style="width:100%;min-height:60px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:10px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn bài viết…"></textarea>
+        <textarea id="bl-excerpt" style="width:100%;min-height:56px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn…"></textarea>
 
-        <div class="s-label" style="margin-top:10px">Nội dung <span style="font-size:11px;font-weight:400;color:#6b7280">(hỗ trợ Markdown)</span></div>
-        <div class="bl-toolbar">
-          <button class="bl-tb-btn" onclick="blInsertLine('# ')">H1</button>
-          <button class="bl-tb-btn" onclick="blInsertLine('## ')">H2</button>
-          <button class="bl-tb-btn" onclick="blInsertLine('### ')">H3</button>
-          <span class="bl-tb-sep"></span>
-          <button class="bl-tb-btn" onclick="blWrap('**','**')" title="Đậm"><b>B</b></button>
-          <button class="bl-tb-btn" onclick="blWrap('*','*')" title="Nghiêng"><i>I</i></button>
-          <button class="bl-tb-btn" onclick="blWrap('__','__')" title="Gạch chân"><u>U</u></button>
-          <span class="bl-tb-sep"></span>
-          <button class="bl-tb-btn" onclick="blInsertLine('- ')" title="Danh sách">• List</button>
-          <button class="bl-tb-btn" onclick="blInsertLine('> ')" title="Trích dẫn">❝ Quote</button>
+        <!-- Tabbed content editor -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:10px">
+          <div class="s-label" style="margin-bottom:0">Nội dung</div>
+          <span style="font-size:11px;color:#9ca3af">==vàng== ==r:đỏ== ==g:xanh== ==b:lam== ~~gạch~~</span>
         </div>
-        <textarea id="bl-content" style="width:100%;min-height:200px;border:1px solid #e5e7eb;font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px;resize:vertical;outline:none;line-height:1.7" placeholder="# Tiêu đề&#10;&#10;Nội dung bài viết...&#10;&#10;**In đậm**, *in nghiêng*, __gạch chân__"></textarea>
+        <div class="bl-tabs">
+          <button class="bl-tab active" id="bl-tab-edit" onclick="blSetTab('edit')">✏️ Soạn thảo</button>
+          <button class="bl-tab" id="bl-tab-preview" onclick="blSetTab('preview')">👁 Xem trước</button>
+        </div>
+
+        <div id="bl-edit-wrap">
+          <div class="bl-toolbar">
+            <button class="bl-tb-btn" onclick="blInsertLine('# ')">H1</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('## ')">H2</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('### ')">H3</button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="blWrap('**','**')" title="Đậm"><b>B</b></button>
+            <button class="bl-tb-btn" onclick="blWrap('*','*')" title="Nghiêng"><i>I</i></button>
+            <button class="bl-tb-btn" onclick="blWrap('__','__')" title="Gạch chân"><u>U</u></button>
+            <button class="bl-tb-btn" onclick="blWrap('~~','~~')" title="Gạch ngang"><s>S</s></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-hl-btn" style="background:#fef08a" onclick="blWrap('==','==')" title="Highlight vàng"></button>
+            <button class="bl-hl-btn" style="background:#bbf7d0" onclick="blWrap('==g:','==')" title="Highlight xanh lá"></button>
+            <button class="bl-hl-btn" style="background:#fecaca" onclick="blWrap('==r:','==')" title="Highlight đỏ"></button>
+            <button class="bl-hl-btn" style="background:#bfdbfe" onclick="blWrap('==b:','==')" title="Highlight xanh lam"></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="blInsertLine('- ')" title="Danh sách">• List</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('> ')" title="Trích dẫn">❝ Quote</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('>>c ')" title="Căn giữa">⊟c</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('>>r ')" title="Căn phải">⊟→</button>
+            <button class="bl-tb-btn" onclick="blInsertLine('---')" title="Kẻ ngang">───</button>
+          </div>
+          <textarea id="bl-content" style="width:100%;min-height:300px;border:1px solid #e5e7eb;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="# Tiêu đề&#10;&#10;Nội dung bài viết...&#10;&#10;**In đậm**, *in nghiêng*, __gạch chân__, ~~gạch~~&#10;==highlight vàng==, ==r:đỏ==, ==g:xanh==, ==b:lam==&#10;>>c Căn giữa  /  >>r Căn phải" oninput="blUpdatePreview()"></textarea>
+        </div>
+
+        <div id="bl-preview-wrap" style="display:none">
+          <div class="bl-preview" id="bl-preview-content"></div>
+        </div>
 
         <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
           <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
@@ -597,13 +652,14 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
         </div>
       </div>
 
-      <!-- POST LIST -->
-      <div class="s-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="s-title" style="margin-bottom:0"><i class="fa-solid fa-list" style="color:#6b7280"></i> Danh sách bài viết <span style="font-size:11px;font-weight:400;color:#9ca3af">— kéo ☰ để sắp xếp ưu tiên</span></div>
-          <button class="s-btn" onclick="loadBlogPosts()" style="padding:6px 14px;font-size:12px">↺ Làm mới</button>
+      <!-- POST LIST (compact sidebar) -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="s-title" style="margin-bottom:0;font-size:14px"><i class="fa-solid fa-list" style="color:#6b7280"></i> Bài viết</div>
+          <button class="s-btn" onclick="loadBlogPosts()" style="padding:5px 12px;font-size:11px">↺</button>
         </div>
-        <div id="blog-post-list"><p style="color:#9ca3af;text-align:center;padding:2rem">Đang tải…</p></div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:8px">Kéo ☰ để sắp xếp thứ tự hiển thị</div>
+        <div id="blog-post-list"><p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Đang tải…</p></div>
       </div>
 
     </div>
@@ -883,12 +939,65 @@ function escHtml(t) {
   return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function renderMarkdownAdmin(text) {
+  return (text || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^>>r (.+)$/gm,'<p style="text-align:right">$1</p>')
+    .replace(/^>>c (.+)$/gm,'<p style="text-align:center">$1</p>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^[-•] (.+)$/gm,'&bull; $1<br>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g,'<em>$1</em>')
+    .replace(/__([^_\n]+?)__/g,'<u>$1</u>')
+    .replace(/~~([^~\n]+?)~~/g,'<s>$1</s>')
+    .replace(/==r:([^=\n]+)==/g,'<mark style="background:#fecaca;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/==g:([^=\n]+)==/g,'<mark style="background:#bbf7d0;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/==b:([^=\n]+)==/g,'<mark style="background:#bfdbfe;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/==([^=\n:][^=\n]*)==/g,'<mark style="background:#fef08a;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/\n{2,}/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+}
+
+let _blPreviewActive = false;
+function blSetTab(tab) {
+  _blPreviewActive = (tab === 'preview');
+  document.getElementById('bl-tab-edit').classList.toggle('active', !_blPreviewActive);
+  document.getElementById('bl-tab-preview').classList.toggle('active', _blPreviewActive);
+  document.getElementById('bl-edit-wrap').style.display = _blPreviewActive ? 'none' : '';
+  document.getElementById('bl-preview-wrap').style.display = _blPreviewActive ? '' : 'none';
+  if (_blPreviewActive) blUpdatePreview();
+}
+
+function blUpdatePreview() {
+  if (!_blPreviewActive) return;
+  const title   = document.getElementById('bl-title').value.trim();
+  const cover   = document.getElementById('bl-cover').value.trim();
+  const cat     = document.getElementById('bl-cat').value.trim();
+  const content = document.getElementById('bl-content').value;
+  const coverHtml = cover
+    ? `<img src="${escHtml(cover)}" style="width:100%;max-height:280px;object-fit:cover;border-radius:10px;margin-bottom:20px;display:block">`
+    : '';
+  const catHtml = cat
+    ? `<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#1a56db;background:#eff6ff;padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:10px">${escHtml(cat)}</span><br>`
+    : '';
+  const titleHtml = title
+    ? `<div style="font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:#0d1b4b;line-height:1.3;margin-bottom:16px">${escHtml(title)}</div>`
+    : '';
+  document.getElementById('bl-preview-content').innerHTML =
+    `${coverHtml}${catHtml}${titleHtml}<p>${renderMarkdownAdmin(content)}</p>`;
+}
+
 function blWrap(before, after) {
   const ta = document.getElementById('bl-content');
   const s = ta.selectionStart, e = ta.selectionEnd;
   const sel = ta.value.slice(s, e);
   ta.setRangeText(before + (sel || 'văn bản') + after, s, e, 'select');
   ta.focus();
+  blUpdatePreview();
 }
 
 function blInsertLine(prefix) {
@@ -901,6 +1010,7 @@ function blInsertLine(prefix) {
   const cur = lineStart + prefix.length;
   ta.setSelectionRange(cur, cur);
   ta.focus();
+  blUpdatePreview();
 }
 
 function blPreviewUrl(url) {
@@ -926,6 +1036,7 @@ function blFileChange(input) {
       const dataUrl = c.toDataURL('image/jpeg', 0.85);
       document.getElementById('bl-cover').value = dataUrl;
       blPreviewUrl(dataUrl);
+      blUpdatePreview();
     };
     orig.src = e.target.result;
   };
@@ -936,6 +1047,7 @@ function blClearCover() {
   document.getElementById('bl-cover').value = '';
   document.getElementById('bl-cover-file').value = '';
   document.getElementById('bl-cover-preview').style.display = 'none';
+  blUpdatePreview();
 }
 
 function blCancelEdit() {
@@ -947,6 +1059,7 @@ function blCancelEdit() {
   document.getElementById('bl-author').value = 'Admin';
   document.getElementById('bl-published').checked = true;
   blClearCover();
+  blSetTab('edit');
   document.getElementById('bl-msg').className = 's-msg';
 }
 
@@ -954,65 +1067,54 @@ function blCancelEdit() {
 async function loadBlogPosts() {
   const el = document.getElementById('blog-post-list');
   const { data: posts } = await _adminDb.client.from('posts')
-    .select('id,title,category,author,published,created_at,sort_order')
+    .select('id,title,category,published,created_at,sort_order')
     .order('sort_order', { ascending: false })
     .order('created_at', { ascending: false });
 
-  // Populate category datalist
   const cats = [...new Set((posts || []).map(p => p.category).filter(Boolean))];
   document.getElementById('bl-cat-suggestions').innerHTML = cats.map(c => `<option value="${escHtml(c)}">`).join('');
 
-  if (!posts?.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem">Chưa có bài viết nào.</p>'; return; }
-
-  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
-    <thead><tr>
-      <th style="width:24px;padding:8px 4px;border-bottom:1px solid #e5e7eb"></th>
-      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb">Tiêu đề</th>
-      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap">Chuyên mục</th>
-      <th style="text-align:left;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;padding:8px;border-bottom:1px solid #e5e7eb;white-space:nowrap">Trạng thái</th>
-      <th style="padding:8px;border-bottom:1px solid #e5e7eb"></th>
-    </tr></thead>
-    <tbody>${posts.map(p => `<tr class="bl-drag-row" data-id="${p.id}"
-        draggable="true"
-        ondragstart="blDragStart(event,${p.id})"
+  if (!posts?.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Chưa có bài viết nào.</p>'; return; }
+  el.innerHTML = posts.map(p => `
+    <div class="bl-post-item" data-id="${p.id}" draggable="true"
+        ondragstart="blDragStart(event,'${p.id}')"
         ondragover="blDragOver(event)"
         ondragleave="blDragLeave(event)"
-        ondrop="blDrop(event,${p.id})"
-        ondragend="blDragEnd()"
-        style="border-top:1px solid #f3f4f6">
-      <td style="padding:10px 4px;color:#c0bfbf;cursor:grab;font-size:15px;user-select:none;text-align:center" title="Kéo để sắp xếp">☰</td>
-      <td style="padding:10px 8px;font-weight:500;word-break:break-word">${escHtml(p.title)}</td>
-      <td style="padding:10px 8px;color:#6b7280;white-space:nowrap">${escHtml(p.category||'—')}</td>
-      <td style="padding:10px 8px;white-space:nowrap">
-        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;${p.published?'background:#f0fdf4;color:#15803d':'background:#f3f4f6;color:#6b7280'}">
-          ${p.published?'Đã đăng':'Nháp'}
-        </span>
-      </td>
-      <td style="padding:10px 8px;text-align:right;white-space:nowrap">
+        ondrop="blDrop(event,'${p.id}')"
+        ondragend="blDragEnd()">
+      <span class="bl-post-drag" title="Kéo để sắp xếp">☰</span>
+      <div class="bl-post-info">
+        <div class="bl-post-title">${escHtml(p.title)}</div>
+        <div class="bl-post-meta">
+          <span class="bl-post-dot" style="background:${p.published?'#15803d':'#9ca3af'}"></span>
+          ${p.published ? 'Đã đăng' : 'Nháp'}${p.category ? ' · ' + escHtml(p.category) : ''}
+        </div>
+      </div>
+      <div class="bl-post-actions">
         <a href="/post.html?id=${p.id}" target="_blank" class="table-btn" title="Xem"><i class="fa-solid fa-eye"></i></a>
         <button class="table-btn" onclick="blEditPost(${p.id})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
         <button class="table-btn" onclick="deletePost(${p.id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
-      </td>
-    </tr>`).join('')}</tbody>
-  </table>`;
+      </div>
+    </div>`).join('');
 }
 
 async function blEditPost(id) {
   const { data: post } = await _adminDb.client.from('posts').select('*').eq('id', id).single();
   if (!post) return;
-  document.getElementById('bl-edit-id').value   = id;
-  document.getElementById('bl-title').value      = post.title || '';
-  document.getElementById('bl-cat').value        = post.category || '';
-  document.getElementById('bl-author').value     = post.author || 'Admin';
-  document.getElementById('bl-cover').value      = post.cover_url || '';
-  document.getElementById('bl-excerpt').value    = post.excerpt || '';
-  document.getElementById('bl-content').value    = post.content || '';
+  document.getElementById('bl-edit-id').value    = id;
+  document.getElementById('bl-title').value       = post.title || '';
+  document.getElementById('bl-cat').value         = post.category || '';
+  document.getElementById('bl-author').value      = post.author || 'Admin';
+  document.getElementById('bl-cover').value       = post.cover_url || '';
+  document.getElementById('bl-excerpt').value     = post.excerpt || '';
+  document.getElementById('bl-content').value     = post.content || '';
   document.getElementById('bl-published').checked = !!post.published;
   blPreviewUrl(post.cover_url || '');
   document.getElementById('bl-form-mode-title').textContent = 'Chỉnh sửa bài viết';
   document.getElementById('bl-save-btn').textContent = '💾 Cập nhật';
   document.getElementById('bl-cancel-btn').style.display = '';
-  document.getElementById('section-blog').closest('.content')?.scrollTo({ top: 0, behavior: 'smooth' });
+  blSetTab('edit');
+  document.querySelector('.content').scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 async function adminSavePost() {
@@ -1046,50 +1148,44 @@ async function deletePost(id) {
   loadBlogPosts();
 }
 
-// Drag-and-drop ordering
+// Drag-and-drop ordering (card list)
 let _blDragId = null;
 function blDragStart(e, id) {
   _blDragId = id;
   e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => e.currentTarget.closest('tr')?.classList.add('dragging'), 0);
+  setTimeout(() => e.currentTarget.closest('.bl-post-item')?.classList.add('dragging'), 0);
 }
 function blDragOver(e) {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
-  document.querySelectorAll('.bl-drag-row').forEach(r => r.classList.remove('drag-over'));
-  e.currentTarget.closest('tr')?.classList.add('drag-over');
+  document.querySelectorAll('.bl-post-item').forEach(r => r.classList.remove('drag-over'));
+  e.currentTarget.closest('.bl-post-item')?.classList.add('drag-over');
 }
 function blDragLeave(e) {
-  if (!e.currentTarget.closest('tr')?.contains(e.relatedTarget)) {
-    e.currentTarget.closest('tr')?.classList.remove('drag-over');
-  }
+  if (!e.currentTarget.closest('.bl-post-item')?.contains(e.relatedTarget))
+    e.currentTarget.closest('.bl-post-item')?.classList.remove('drag-over');
 }
 function blDragEnd() {
-  document.querySelectorAll('.bl-drag-row').forEach(r => { r.classList.remove('drag-over'); r.classList.remove('dragging'); });
+  document.querySelectorAll('.bl-post-item').forEach(r => { r.classList.remove('drag-over'); r.classList.remove('dragging'); });
 }
 async function blDrop(e, targetId) {
   e.preventDefault();
   blDragEnd();
-  if (_blDragId === targetId) return;
-  const tbody = document.querySelector('#blog-post-list tbody');
-  if (!tbody) return;
-  const rows = [...tbody.querySelectorAll('tr')];
-  const srcRow = rows.find(r => r.dataset.id == _blDragId);
-  const tgtRow = rows.find(r => r.dataset.id == targetId);
-  if (!srcRow || !tgtRow) return;
-  const srcIdx = rows.indexOf(srcRow);
-  const tgtIdx = rows.indexOf(tgtRow);
-  if (srcIdx < tgtIdx) tbody.insertBefore(srcRow, tgtRow.nextSibling);
-  else tbody.insertBefore(srcRow, tgtRow);
+  if (_blDragId == targetId) return;
+  const container = document.getElementById('blog-post-list');
+  const items = [...container.querySelectorAll('.bl-post-item')];
+  const src = items.find(r => r.dataset.id == _blDragId);
+  const tgt = items.find(r => r.dataset.id == targetId);
+  if (!src || !tgt) return;
+  if (items.indexOf(src) < items.indexOf(tgt)) container.insertBefore(src, tgt.nextSibling);
+  else container.insertBefore(src, tgt);
   await savePostOrder();
 }
 async function savePostOrder() {
-  const rows = [...document.querySelectorAll('#blog-post-list tbody tr')];
-  const total = rows.length;
-  for (let i = 0; i < rows.length; i++) {
-    const id = parseInt(rows[i].dataset.id);
-    await _adminDb.client.from('posts').update({ sort_order: total - i }).eq('id', id);
-  }
+  const items = [...document.querySelectorAll('#blog-post-list .bl-post-item')];
+  const total = items.length;
+  for (let i = 0; i < items.length; i++)
+    await _adminDb.client.from('posts').update({ sort_order: total - i }).eq('id', parseInt(items[i].dataset.id));
 }
 
 function adminMsg(elId, text, type) {
