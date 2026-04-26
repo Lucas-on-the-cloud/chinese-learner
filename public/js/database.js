@@ -5,7 +5,12 @@ class Database {
 
   async getLessons() {
     const { data } = await this.client.from('lessons').select('*').order('id');
-    return data;
+    return (data || []).map(l => ({
+      ...l,
+      zh: l.chinese  ?? l.zh ?? '',
+      py: l.pinyin   ?? l.py ?? '',
+      vi: l.vietnamese ?? l.vi ?? '',
+    }));
   }
 
   async getFlashcards() {

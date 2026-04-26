@@ -1284,12 +1284,20 @@ async function saveSubCourse() {
   const row = {
     display_name: document.getElementById('sub-name').value.trim() || null,
     description:  document.getElementById('sub-desc').value.trim() || null,
-    detail:       document.getElementById('sub-detail').value.trim() || null,
     cover_url:    document.getElementById('sub-cover').value.trim() || null,
   };
+  const detailVal = document.getElementById('sub-detail').value.trim();
+  if (detailVal) row.detail = detailVal;
   const { error } = await _adminDb.client.from('books').update(row).eq('name', _subCurrentBook);
-  if (error) { adminMsg('sub-msg', 'Lỗi: ' + error.message, 'err'); return; }
-  adminMsg('sub-msg', '✓ Đã lưu: ' + (_subCurrentBook), 'ok');
+  if (error) {
+    if (error.message?.includes('detail')) {
+      adminMsg('sub-msg', 'Cột "detail" chưa tồn tại. Chạy SQL: alter table books add column if not exists detail text;', 'err');
+    } else {
+      adminMsg('sub-msg', 'Lỗi: ' + error.message, 'err');
+    }
+    return;
+  }
+  adminMsg('sub-msg', '✓ Đã lưu: ' + _subCurrentBook, 'ok');
   loadSubCourses();
 }
 
@@ -1303,12 +1311,15 @@ async function subLoadLessons(bookName) {
 }
 
 function subLessonRow(l) {
-  const zhPrev = (l.zh || '').replace(/\s+/g,' ').slice(0, 40);
+  const zhText  = l.chinese || l.zh || '';
+  const pyText  = l.pinyin  || l.py || '';
+  const viText  = l.vietnamese || l.vi || '';
+  const zhPrev  = zhText.replace(/\s+/g,' ').slice(0, 40);
   return `<div class="bl-post-item" id="sub-lesson-${l.id}" style="flex-direction:column;align-items:stretch;gap:0">
     <div style="display:flex;align-items:center;gap:8px">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:500;color:#1f2937">${escHtml(l.title || '(chưa có tiêu đề)')}</div>
-        <div style="font-size:11px;color:#9ca3af;font-family:'Noto Serif TC',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">${escHtml(zhPrev)}${l.zh?.length > 40 ? '…' : ''}</div>
+        <div style="font-size:11px;color:#9ca3af;font-family:'Noto Serif TC',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">${escHtml(zhPrev)}${zhText.length > 40 ? '…' : ''}</div>
       </div>
       <div style="display:flex;gap:2px;flex-shrink:0">
         <button class="table-btn" onclick="subToggleEditLesson(${l.id})" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color:#1a56db"></i></button>
@@ -1324,15 +1335,15 @@ function subLessonRow(l) {
         </div>
         <div>
           <div class="s-label">Tiếng Trung 繁體</div>
-          <textarea id="sub-edit-zh-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Noto Serif TC',serif;font-size:14px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.zh || '')}</textarea>
+          <textarea id="sub-edit-zh-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Noto Serif TC',serif;font-size:14px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(zhText)}</textarea>
         </div>
         <div>
           <div class="s-label">Pinyin</div>
-          <textarea id="sub-edit-py-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.pinyin || '')}</textarea>
+          <textarea id="sub-edit-py-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(pyText)}</textarea>
         </div>
         <div style="grid-column:1/-1">
           <div class="s-label">Tiếng Việt</div>
-          <textarea id="sub-edit-vi-${l.id}" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.vi || '')}</textarea>
+          <textarea id="sub-edit-vi-${l.id}" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(viText)}</textarea>
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
@@ -1350,10 +1361,11 @@ function subToggleEditLesson(id) {
 
 async function subSaveLesson(id) {
   const row = {
-    title:  document.getElementById(`sub-edit-title-${id}`).value.trim(),
-    zh:     document.getElementById(`sub-edit-zh-${id}`).value.trim(),
-    pinyin: document.getElementById(`sub-edit-py-${id}`).value.trim(),
-    vi:     document.getElementById(`sub-edit-vi-${id}`).value.trim(),
+    title:       document.getElementById(`sub-edit-title-${id}`).value.trim(),
+    chinese:     document.getElementById(`sub-edit-zh-${id}`).value.trim(),
+    pinyin:      document.getElementById(`sub-edit-py-${id}`).value.trim(),
+    vietnamese:  document.getElementById(`sub-edit-vi-${id}`).value.trim(),
+    description: document.getElementById(`sub-edit-zh-${id}`).value.trim().slice(0, 60) || null,
   };
   const { error } = await _adminDb.client.from('lessons').update(row).eq('id', id);
   if (error) { alert('Lỗi: ' + error.message); return; }
@@ -1383,7 +1395,14 @@ async function subSaveNewLesson() {
   const pinyin = document.getElementById('sub-new-py').value.trim();
   const vi     = document.getElementById('sub-new-vi').value.trim();
   if (!zh) { adminMsg('sub-add-msg', 'Nhập nội dung tiếng Trung.', 'err'); return; }
-  const { error } = await _adminDb.client.from('lessons').insert([{ title: title || null, zh, pinyin: pinyin || null, vi: vi || null, book: _subCurrentBook }]);
+  const { error } = await _adminDb.client.from('lessons').insert([{
+    title: title || null,
+    chinese: zh,
+    pinyin: pinyin || null,
+    vietnamese: vi || null,
+    description: zh.slice(0, 60) || null,
+    book: _subCurrentBook,
+  }]);
   if (error) { adminMsg('sub-add-msg', 'Lỗi: ' + error.message, 'err'); return; }
   adminMsg('sub-add-msg', '✓ Đã thêm bài học.', 'ok');
   subToggleAddLesson();
