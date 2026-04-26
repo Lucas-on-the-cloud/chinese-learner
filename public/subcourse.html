@@ -226,6 +226,17 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <button class="sc-btn outline" onclick="location.href='/flashcards.html'">
         <i class="fa-solid fa-bolt"></i> Ôn từ vựng Flashcard
       </button>
+      <div id="listening-btn-wrap" style="display:none">
+        <div style="height:1px;background:#f3f4f6;margin:10px 0"></div>
+        <button class="sc-btn" id="listening-btn"
+          style="background:linear-gradient(135deg,#4c1d95,#7c3aed);margin-top:0">
+          <i class="fa-solid fa-headphones"></i> Luyện nghe & Chép chính tả
+        </button>
+        <div style="font-size:11px;color:var(--text-3);margin-top:6px;text-align:center">
+          <i class="fa-solid fa-circle" style="font-size:7px;color:#16a34a"></i>
+          Có audio cho khóa học này
+        </div>
+      </div>
     </div>
     <div class="sidebar-card" id="sidebar-desc" style="display:none">
       <div class="sc-title">Mô tả chi tiết</div>
@@ -298,7 +309,20 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   if (backBtn) backBtn.href = backHref;
   if (chBack)  chBack.href  = backHref;
 
-  const [rawLessons, metaList] = await Promise.all([db.getLessons(), db.getBooksMeta()]);
+  const [rawLessons, metaList, audioCheck] = await Promise.all([
+    db.getLessons(),
+    db.getBooksMeta(),
+    db.client.from('audio_segments').select('id',{count:'exact',head:true})
+      .eq('book_name', book).eq('published', true),
+  ]);
+
+  // Hiện nút Listening nếu có audio
+  if ((audioCheck.count || 0) > 0) {
+    const wrap = document.getElementById('listening-btn-wrap');
+    const btn  = document.getElementById('listening-btn');
+    if (wrap) wrap.style.display = '';
+    if (btn)  btn.onclick = () => location.href = `/listening.html?b=${encodeURIComponent(book)}`;
+  }
 
   const lessons = (rawLessons || [])
     .filter(l => (l.book || 'B1') === book)
@@ -349,6 +373,12 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   document.getElementById('stat-total').textContent = totalGroups;
   document.getElementById('stat-parts').textContent = totalParts;
 
+  // Load audio segments list (để đánh dấu bài nào có audio)
+  const { data: audioSegs } = await db.client
+    .from('audio_segments').select('lesson_id')
+    .eq('book_name', book).eq('published', true);
+  const lessonIdsWithAudio = new Set((audioSegs||[]).map(s => s.lesson_id));
+
   // Load progress from localStorage
   const progressKey  = `tocfl_progress_${book}`;
   const doneIds      = new Set(JSON.parse(localStorage.getItem(progressKey) || '[]'));
@@ -389,6 +419,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     const href     = `/reading.html?ids=${allIds.join(',')}&b=${encodeURIComponent(book)}`;
     const isMulti  = grpLessons.length > 1;
     const status   = groupStatus.get(groupKey) || '';
+    const hasAudio = grpLessons.some(l => lessonIdsWithAudio.has(l.id));
 
     const toggle = isMulti ? `toggleGroup(this,'${href}')` : `location.href='${href}'`;
 
@@ -396,6 +427,12 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       ? `<span class="lr-status done"><i class="fa-solid fa-check"></i></span>`
       : status === 'started'
       ? `<span class="lr-status started"><i class="fa-solid fa-ellipsis"></i></span>`
+      : '';
+
+    const audioIcon = hasAudio
+      ? `<span title="Có bài nghe" style="width:20px;height:20px;border-radius:50%;background:#f5f3ff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+           <i class="fa-solid fa-headphones" style="font-size:9px;color:#7c3aed"></i>
+         </span>`
       : '';
 
     // Group header row
@@ -408,6 +445,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <div class="lr-title">${groupKey}</div>
         ${zhFirst ? `<div class="lr-zh">${zhFirst}…</div>` : ''}
       </div>
+      ${audioIcon}
       ${statusIcon}
       <span class="lr-badge${isMulti ? '' : ' single'}">${isMulti ? grpLessons.length + ' đoạn' : '1 đoạn'}</span>
       <i class="fa-solid fa-chevron-right lr-arrow"></i>
