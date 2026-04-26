@@ -272,35 +272,38 @@ async function init() {
     const desc    = meta.description  || '';
     const cover   = meta.cover_url    || '';
     const count   = countMap[link.book_name] || 0;
-    const skill   = link.skill_type || 'reading';
-    const isComingSoon = skill === 'listening';
-    const grad    = GRADIENTS[i % GRADIENTS.length];
-    const badgeClass = skill === 'reading' ? 'reading' : 'listening';
-    const badgeText  = skill === 'reading' ? '📖 Reading' : '🎧 Listening';
+    const skill      = link.skill_type || 'reading';
+    const isListening= skill === 'listening';
+    const grad       = GRADIENTS[i % GRADIENTS.length];
+    const badgeClass = isListening ? 'listening' : 'reading';
+    const badgeText  = isListening ? '🎧 Listening' : '📖 Reading';
+    const countIcon  = isListening ? 'fa-headphones' : 'fa-book-open';
+    const countLabel = isListening ? 'đoạn audio' : 'bài đọc';
+    const targetUrl  = isListening
+      ? `/subcourse-listening.html?b=${encodeURIComponent(link.book_name)}`
+      : `/subcourse.html?b=${encodeURIComponent(link.book_name)}`;
 
     const thumbHtml = cover
       ? `<img class="sub-card-thumb" src="${esc(cover)}" alt="${esc(title)}">`
-      : `<div class="sub-card-thumb-ph" style="background:linear-gradient(${grad})">讀</div>`;
+      : `<div class="sub-card-thumb-ph" style="background:linear-gradient(${grad})">${isListening?'聽':'讀'}</div>`;
 
     const cardContent = `
-      <div class="sub-card${isComingSoon?' coming-soon':''}">
+      <div class="sub-card">
         ${thumbHtml}
         <div class="sub-card-body">
           <div style="display:flex;align-items:center;gap:8px">
             <span class="sub-skill-badge ${badgeClass}">${badgeText}</span>
-            ${isComingSoon ? '<span class="sub-coming-badge">Sắp ra mắt</span>' : ''}
           </div>
           <div class="sub-card-title">${esc(title)}</div>
           ${desc ? `<div class="sub-card-desc">${esc(desc)}</div>` : ''}
           <div class="sub-card-foot">
-            <span class="sub-card-count"><i class="fa-solid fa-book-open" style="font-size:11px;margin-right:4px"></i>${count} bài đọc</span>
-            ${!isComingSoon ? '<span class="sub-card-btn">Vào học <i class="fa-solid fa-arrow-right"></i></span>' : ''}
+            <span class="sub-card-count"><i class="fa-solid ${countIcon}" style="font-size:11px;margin-right:4px"></i>${count} ${countLabel}</span>
+            <span class="sub-card-btn">Vào học <i class="fa-solid fa-arrow-right"></i></span>
           </div>
         </div>
       </div>`;
 
-    if (isComingSoon) return cardContent;
-    return `<a href="/subcourse.html?b=${encodeURIComponent(link.book_name)}" style="display:contents">${cardContent}</a>`;
+    return `<a href="${targetUrl}" style="display:contents">${cardContent}</a>`;
   }).join('');
 }
 

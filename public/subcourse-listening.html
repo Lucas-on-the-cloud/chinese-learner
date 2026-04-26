@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện nghe — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;--purple-dk:#6d28d9;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px}
+.nav-btn:hover{background:var(--blue-dark)}
+
+/* HERO — purple theme for listening */
+.content-header{background:linear-gradient(135deg,#3b0764 0%,#6d28d9 100%);padding:36px 1.5rem 44px;position:relative;overflow:hidden}
+.content-header::after{content:'聽';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none;line-height:1}
+.ch-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:6px;margin-bottom:14px;transition:all .15s}
+.ch-back:hover{color:#fff;background:rgba(255,255,255,.18)}
+.ch-inner{display:flex;align-items:center;gap:20px}
+.ch-cover{width:90px;height:auto;max-height:130px;object-fit:contain;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.4);flex-shrink:0;background:rgba(0,0,0,.15)}
+.ch-text h1{font-family:'Noto Serif TC',serif;font-size:clamp(20px,3vw,30px);font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3}
+.ch-text p{font-size:13px;color:rgba(255,255,255,.65);line-height:1.7;max-width:560px}
+.ch-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;padding:3px 10px;border-radius:50px;margin-top:8px}
+
+/* MAIN */
+.app-main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:28px 1.5rem 60px;display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+
+/* LESSON CARD */
+.lesson-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.lesson-card-hd{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #f3f4f6}
+.lch-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.lch-title::before{content:'';width:4px;height:18px;background:var(--purple);border-radius:2px;display:inline-block;flex-shrink:0}
+.lch-count{font-size:12px;color:var(--text-3);font-weight:500}
+.lesson-list{display:flex;flex-direction:column}
+
+/* Lesson group row */
+.lesson-row{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid #f9fafb;transition:background .12s;color:var(--text);cursor:pointer}
+.lesson-row:last-child{border-bottom:none}
+.lesson-row:hover{background:#faf5ff}
+.lesson-row:hover .lr-arrow{color:var(--purple);transform:translateX(3px)}
+.lr-icon{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(255,255,255,.85);flex-shrink:0}
+.lr-info{flex:1;min-width:0}
+.lr-title{font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:2px}
+.lr-sub{font-size:12px;color:var(--text-3)}
+.lr-badge{font-size:11px;font-weight:600;color:var(--purple);background:var(--purple-lt);padding:3px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+.lr-arrow{font-size:11px;color:#d1d5db;flex-shrink:0;transition:all .15s}
+
+/* Accordion parts */
+.lesson-parts{background:#fafbfc;border-bottom:1px solid #f3f4f6;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.lesson-parts.open{max-height:3000px}
+.lesson-row.open{background:#faf5ff}
+.lesson-row.open .lr-arrow{transform:rotate(90deg);color:var(--purple)}
+
+/* Study-all row (inside accordion) */
+.part-row-all{display:flex;align-items:center;gap:12px;padding:10px 22px 10px 82px;border-bottom:1px solid #f3f4f6;background:#f5f3ff;cursor:pointer;transition:background .12s}
+.part-row-all:hover{background:#ede9fe}
+
+/* Individual segment row */
+.seg-row{display:flex;align-items:center;gap:12px;padding:12px 22px 12px 82px;border-bottom:1px solid #f3f4f6;transition:background .12s}
+.seg-row:last-child{border-bottom:none}
+.seg-row:hover{background:#faf5ff}
+.seg-dot{width:6px;height:6px;border-radius:50%;background:#d1d5db;flex-shrink:0}
+.seg-dot.done{background:var(--green)}
+.seg-info{flex:1;min-width:0}
+.seg-label{font-size:13px;font-weight:500;color:var(--text-2)}
+.seg-transcript{font-family:'Noto Serif TC',serif;font-size:12px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;margin-top:2px}
+.seg-dur{font-size:10px;color:var(--text-3);white-space:nowrap;flex-shrink:0}
+.seg-actions{display:flex;gap:6px;flex-shrink:0}
+.seg-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 11px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid}
+.seg-btn.play{background:var(--purple);color:#fff;border-color:var(--purple)}
+.seg-btn.play:hover{background:var(--purple-dk)}
+.seg-btn.preview{background:#f3f4f6;color:var(--text-2);border-color:var(--border)}
+.seg-btn.preview:hover{background:var(--purple-lt);color:var(--purple);border-color:#c4b5fd}
+
+/* Mini inline audio player */
+.mini-player{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:8px 12px;margin:0 22px 8px 82px;display:flex;align-items:center;gap:10px}
+.mini-play-btn{width:28px;height:28px;border-radius:50%;background:var(--purple);color:#fff;border:none;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mini-timeline{flex:1;height:4px;background:#ddd6fe;border-radius:100px;overflow:hidden;cursor:pointer}
+.mini-fill{height:100%;background:var(--purple);border-radius:100px;transition:width .1s linear;width:0%}
+.mini-time{font-size:11px;color:var(--purple);font-weight:500;flex-shrink:0}
+.mini-transcript{font-family:'Noto Serif TC',serif;font-size:12px;color:#6d28d9;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* SIDEBAR */
+.book-sidebar{position:sticky;top:80px;display:flex;flex-direction:column;gap:14px}
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.sc-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.sc-title::before{content:'';width:3px;height:14px;background:var(--purple);border-radius:2px;display:inline-block}
+.sc-stat{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.sc-stat:last-child{border-bottom:none}
+.sc-stat-label{color:var(--text-2)}
+.sc-stat-val{font-weight:600;color:var(--text)}
+.sc-prog-wrap{margin-top:14px;padding-top:14px;border-top:1px solid #f3f4f6}
+.sc-prog-label{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:7px}
+.sc-prog-pct{font-weight:700;color:var(--purple)}
+.sc-prog-bar{height:9px;background:#f3f4f6;border-radius:100px;overflow:hidden}
+.sc-prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .5s ease}
+.sc-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:10px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:12px}
+.sc-btn.primary{background:var(--purple);color:#fff}
+.sc-btn.primary:hover{background:var(--purple-dk)}
+.sc-btn.outline{background:transparent;color:var(--purple);border:1.5px solid var(--purple);margin-top:6px}
+.sc-btn.outline:hover{background:var(--purple-lt)}
+
+/* FOOTER */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.6);transition:all .15s}
+.footer-social:hover{background:var(--purple);color:#fff}
+.footer-col-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.footer-links a{color:rgba(255,255,255,.5);font-size:13px;transition:color .15s}
+.footer-links a:hover{color:rgba(255,255,255,.85)}
+.footer-info-row{display:flex;align-items:flex-start;gap:8px;color:rgba(255,255,255,.5);margin-bottom:.45rem;font-size:13px}
+.footer-info-row i{width:14px;flex-shrink:0;margin-top:2px;color:rgba(255,255,255,.3)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
+
+@media(max-width:900px){.app-main{grid-template-columns:1fr}.book-sidebar{position:static}}
+@media(max-width:640px){.nav-link{display:none}.seg-row{padding-left:22px}.mini-player{margin-left:22px}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link active" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content-header">
+  <div class="container">
+    <a id="ch-back" href="/courses.html" class="ch-back">
+      <i class="fas fa-arrow-left"></i> &nbsp;Khóa học
+    </a>
+    <div class="ch-inner">
+      <img id="ch-cover" class="ch-cover" src="" alt="" style="display:none">
+      <div class="ch-text">
+        <h1 id="ch-title">Đang tải…</h1>
+        <p id="ch-desc"></p>
+        <div id="ch-tag"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-main">
+
+  <!-- LESSON LIST -->
+  <div class="lesson-card">
+    <div class="lesson-card-hd">
+      <div class="lch-title">Danh sách bài nghe</div>
+      <div class="lch-count" id="lesson-count">Đang tải…</div>
+    </div>
+    <div class="lesson-list" id="lesson-grid">
+      <div style="padding:3rem;text-align:center;color:#9ca3af;font-size:13px">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:20px;margin-bottom:10px;display:block"></i>
+        Đang tải bài nghe…
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="book-sidebar">
+    <div class="sidebar-card">
+      <div class="sc-title">Thống kê</div>
+      <div class="sc-stat">
+        <span class="sc-stat-label">Tổng bài nghe</span>
+        <span class="sc-stat-val" id="stat-total">—</span>
+      </div>
+      <div class="sc-stat">
+        <span class="sc-stat-label">Tổng đoạn audio</span>
+        <span class="sc-stat-val" id="stat-segs">—</span>
+      </div>
+      <div class="sc-stat">
+        <span class="sc-stat-label">Đã hoàn thành</span>
+        <span class="sc-stat-val" id="stat-done">0</span>
+      </div>
+      <div class="sc-prog-wrap">
+        <div class="sc-prog-label">
+          <span>Tiến độ</span>
+          <span class="sc-prog-pct" id="prog-pct">0%</span>
+        </div>
+        <div class="sc-prog-bar">
+          <div class="sc-prog-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <button class="sc-btn primary" id="start-btn">
+        <i class="fa-solid fa-headphones"></i> Bắt đầu luyện nghe
+      </button>
+      <button class="sc-btn outline" onclick="location.href='/flashcards.html'">
+        <i class="fa-solid fa-bolt"></i> Ôn từ vựng Flashcard
+      </button>
+    </div>
+    <div class="sidebar-card" id="sidebar-desc" style="display:none">
+      <div class="sc-title">Mô tả chi tiết</div>
+      <div id="sidebar-desc-content" style="font-size:13px;line-height:1.8;color:#374151"></div>
+    </div>
+  </aside>
+
+</div>
+
+<footer>
+  <div class="footer-main">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/courses.html"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="footer-info-row"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/courses.html">Khóa học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<!-- shared mini audio player -->
+<audio id="mini-audio" preload="none"></audio>
+
+<script src="js/database.js"></script>
+<script>
+(async () => {
+  const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+  const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+  const db   = new Database(DB_URL, DB_KEY);
+  const book = decodeURIComponent(new URLSearchParams(location.search).get('b') || '');
+  if (!book) { location.href = '/courses.html'; return; }
+
+  // Back button
+  const { data: courseLink } = await db.client
+    .from('course_books').select('course_id').eq('book_name', book).limit(1).maybeSingle();
+  const backHref = courseLink?.course_id ? `/course.html?id=${courseLink.course_id}` : '/courses.html';
+  document.getElementById('ch-back').href = backHref;
+
+  // Load metadata + segments in parallel
+  const [metaList, { data: rawSegs }] = await Promise.all([
+    db.getBooksMeta(),
+    db.client.from('audio_segments').select('*')
+      .eq('book_name', book).eq('published', true).order('sort_order').order('id'),
+  ]);
+
+  const meta = (metaList || []).find(m => m.name === book) || {};
+  const segs = rawSegs || [];
+
+  // Hero
+  document.getElementById('ch-title').textContent = meta.display_name || book;
+  document.getElementById('ch-desc').textContent  = meta.description  || '';
+  document.title = (meta.display_name || book) + ' · Luyện nghe — TOCFL FAFA';
+  if (meta.cover_url) {
+    const img = document.getElementById('ch-cover');
+    img.src = meta.cover_url; img.style.display = 'block';
+  }
+  document.getElementById('ch-tag').innerHTML =
+    `<span class="ch-tag"><i class="fa-solid fa-headphones" style="font-size:10px"></i> Listening</span>`;
+  if (meta.detail) {
+    document.getElementById('sidebar-desc').style.display = '';
+    document.getElementById('sidebar-desc-content').innerHTML = meta.detail.replace(/\n/g,'<br>');
+  }
+
+  if (!segs.length) {
+    document.getElementById('lesson-grid').innerHTML =
+      '<p style="padding:3rem;text-align:center;color:#9ca3af;font-size:13px">Chưa có audio nào. Admin cần upload trong admin panel.</p>';
+    return;
+  }
+
+  // Group by lesson (lesson_id → lesson_title)
+  const groupMap = new Map(); // lesson_id → {title, segs[]}
+  segs.forEach(s => {
+    const key = s.lesson_id || s.lesson_title || 'unknown';
+    if (!groupMap.has(key)) groupMap.set(key, { title: s.lesson_title || 'Bài học', segs: [] });
+    groupMap.get(key).segs.push(s);
+  });
+
+  const totalGroups = groupMap.size;
+  const totalSegs   = segs.length;
+
+  // Load progress from localStorage + DB
+  const doneSegIds = loadProgress(book);
+
+  // Count done groups (all segs in group done)
+  let doneGroups = 0;
+  groupMap.forEach(g => {
+    if (g.segs.every(s => doneSegIds.has(s.id))) doneGroups++;
+  });
+  const pct = totalGroups ? Math.round(doneGroups / totalGroups * 100) : 0;
+
+  document.getElementById('lesson-count').textContent = `${totalGroups} bài · ${totalSegs} đoạn audio`;
+  document.getElementById('stat-total').textContent   = totalGroups;
+  document.getElementById('stat-segs').textContent    = totalSegs;
+  document.getElementById('stat-done').textContent    = doneGroups;
+  document.getElementById('prog-pct').textContent     = pct + '%';
+  document.getElementById('prog-fill').style.width    = pct + '%';
+
+  // Start btn → first lesson
+  const firstGroup = [...groupMap.values()][0];
+  document.getElementById('start-btn').onclick = () => {
+    const lid = [...groupMap.keys()][0];
+    goStudy(book, lid);
+  };
+
+  // Render accordion rows
+  const GRADIENTS = [
+    ['#4c1d95','#7c3aed'],['#065f46','#064e3b'],
+    ['#7f1d1d','#991b1b'],['#0c4a6e','#075985'],
+    ['#713f12','#92400e'],['#1e1b4b','#312e81'],
+  ];
+
+  const rows = [...groupMap.entries()].map(([lessonId, group], gi) => {
+    const [c1,c2]  = GRADIENTS[gi % GRADIENTS.length];
+    const isAllDone = group.segs.every(s => doneSegIds.has(s.id));
+    const isStarted = !isAllDone && group.segs.some(s => doneSegIds.has(s.id));
+
+    const statusIcon = isAllDone
+      ? `<span style="width:22px;height:22px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-check" style="font-size:10px;color:var(--green)"></i></span>`
+      : isStarted
+      ? `<span style="width:22px;height:22px;border-radius:50%;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-ellipsis" style="font-size:10px;color:#ca8a04"></i></span>`
+      : '';
+
+    // Individual segment rows
+    const segRows = group.segs.map((s, si) => {
+      const dur     = s.end_sec > 0 ? ((s.end_sec - s.start_sec).toFixed(1) + 's') : '';
+      const segDone = doneSegIds.has(s.id);
+      const preview = (s.transcript || '').slice(0, 36);
+      return `<div class="seg-row" id="segrow-${s.id}">
+        <span class="seg-dot${segDone?' done':''}"></span>
+        <div class="seg-info">
+          <div class="seg-label">Đoạn ${si + 1}</div>
+          ${preview ? `<div class="seg-transcript">「${preview}${s.transcript.length>36?'…':''}」</div>` : ''}
+        </div>
+        <span class="seg-dur">${dur}</span>
+        <div class="seg-actions">
+          <button class="seg-btn preview" onclick="previewSegment(event,${s.id},'${encodeURIComponent(s.audio_url)}',${s.start_sec},${s.end_sec},'${encodeURIComponent(s.transcript||'')}')">
+            <i class="fas fa-play" style="font-size:9px"></i> Nghe
+          </button>
+          <button class="seg-btn play" onclick="goStudySegment('${book}',${lessonId},${s.id})">
+            <i class="fas fa-pen" style="font-size:9px"></i> Chép
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const studyAllRow = `<div class="part-row-all" onclick="goStudy('${book}',${lessonId})">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0"></span>
+      <span style="font-size:13px;font-weight:600;color:var(--purple);flex:1">Luyện tất cả ${group.segs.length} đoạn của bài này</span>
+      <i class="fas fa-headphones" style="font-size:11px;color:var(--purple)"></i>
+    </div>`;
+
+    return `
+    <div class="lesson-row" onclick="toggleLsGroup(this)">
+      <div class="lr-icon" style="background:linear-gradient(135deg,${c1},${c2})">
+        <i class="fa-solid fa-headphones" style="font-size:15px;color:rgba(255,255,255,.9)"></i>
+      </div>
+      <div class="lr-info">
+        <div class="lr-title">${group.title}</div>
+        <div class="lr-sub">${group.segs.length} đoạn audio</div>
+      </div>
+      ${statusIcon}
+      <span class="lr-badge">${group.segs.length} đoạn</span>
+      <i class="fas fa-chevron-right lr-arrow"></i>
+    </div>
+    <div class="lesson-parts" id="lsparts-${gi}">
+      <div id="mini-player-${gi}" style="display:none"></div>
+      ${studyAllRow}
+      ${segRows}
+    </div>`;
+  }).join('');
+
+  document.getElementById('lesson-grid').innerHTML = rows;
+})();
+
+// ── Navigation ─────────────────────────────────────
+function goStudy(book, lessonId) {
+  location.href = `/listening.html?b=${encodeURIComponent(book)}&lesson=${lessonId}`;
+}
+
+function goStudySegment(book, lessonId, segId) {
+  location.href = `/listening.html?b=${encodeURIComponent(book)}&lesson=${lessonId}&seg=${segId}`;
+}
+
+// ── Accordion ──────────────────────────────────────
+function toggleLsGroup(row) {
+  const parts  = row.nextElementSibling;
+  const isOpen = parts?.classList.contains('open');
+  document.querySelectorAll('.lesson-parts.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.lesson-row.open').forEach(r => r.classList.remove('open'));
+  if (!isOpen && parts) { parts.classList.add('open'); row.classList.add('open'); }
+}
+
+// ── Mini inline player ─────────────────────────────
+let miniAudio   = document.getElementById('mini-audio');
+let miniTimer   = null;
+let activeMini  = null;
+
+function previewSegment(e, segId, urlEnc, startSec, endSec, transcriptEnc) {
+  e.stopPropagation();
+  const url        = decodeURIComponent(urlEnc);
+  const transcript = decodeURIComponent(transcriptEnc);
+  const row        = document.getElementById('segrow-' + segId);
+  const partsEl    = row?.closest('.lesson-parts');
+  const gi         = partsEl?.id?.replace('lsparts-','');
+  const mpEl       = document.getElementById('mini-player-' + gi);
+  if (!mpEl) return;
+
+  // Toggle off if same segment
+  if (activeMini === segId) {
+    miniAudio.pause();
+    mpEl.style.display = 'none';
+    clearInterval(miniTimer);
+    activeMini = null;
+    return;
+  }
+
+  activeMini = segId;
+  miniAudio.src        = url;
+  miniAudio.currentTime = startSec;
+  miniAudio.play();
+
+  mpEl.style.display = '';
+  mpEl.innerHTML = `<div class="mini-player">
+    <button class="mini-play-btn" id="mp-btn-${segId}" onclick="miniToggle(${segId},${startSec},${endSec})">
+      <i class="fas fa-pause" style="font-size:9px"></i>
+    </button>
+    <div class="mini-timeline"><div class="mini-fill" id="mp-fill-${segId}"></div></div>
+    <span class="mini-time" id="mp-time-${segId}">0:00</span>
+    <span class="mini-transcript">${transcript.slice(0,40)}${transcript.length>40?'…':''}</span>
+  </div>`;
+
+  clearInterval(miniTimer);
+  const dur = endSec - startSec;
+  miniTimer = setInterval(() => {
+    if (miniAudio.currentTime >= endSec) {
+      miniAudio.pause(); clearInterval(miniTimer);
+      const btn = document.getElementById('mp-btn-' + segId);
+      if (btn) btn.innerHTML = '<i class="fas fa-play" style="font-size:9px"></i>';
+      return;
+    }
+    const elapsed = miniAudio.currentTime - startSec;
+    const fill = document.getElementById('mp-fill-' + segId);
+    const time = document.getElementById('mp-time-' + segId);
+    if (fill) fill.style.width = (elapsed / dur * 100).toFixed(1) + '%';
+    if (time) time.textContent = fmtTime(elapsed);
+  }, 100);
+}
+
+function miniToggle(segId, startSec, endSec) {
+  if (miniAudio.paused) {
+    miniAudio.currentTime = Math.max(startSec, miniAudio.currentTime);
+    miniAudio.play();
+    const btn = document.getElementById('mp-btn-' + segId);
+    if (btn) btn.innerHTML = '<i class="fas fa-pause" style="font-size:9px"></i>';
+  } else {
+    miniAudio.pause();
+    const btn = document.getElementById('mp-btn-' + segId);
+    if (btn) btn.innerHTML = '<i class="fas fa-play" style="font-size:9px"></i>';
+  }
+}
+
+function fmtTime(sec) {
+  const s = Math.floor(sec);
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+
+// ── Progress ───────────────────────────────────────
+function loadProgress(book) {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(`ls_prog_${book}_`));
+  const done = new Set();
+  keys.forEach(k => {
+    const ids = JSON.parse(localStorage.getItem(k) || '[]');
+    ids.forEach(id => done.add(id));
+  });
+  return done;
+}
+</script>
+</body>
+</html>

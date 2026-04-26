@@ -198,6 +198,7 @@ const params   = new URLSearchParams(location.search);
 let   bookName = params.get('b') || '';
 let   lessonId = params.get('lesson') ? parseInt(params.get('lesson')) : null;
 
+let startSegId   = params.get('seg') ? parseInt(params.get('seg')) : null;
 let allSegments  = [];   // segments for current lesson
 let currentIdx   = 0;
 let sessionScore = { correct: 0, total: 0 };
@@ -312,6 +313,12 @@ async function loadDictation(book, lid) {
     .eq('published', true).order('sort_order').order('id');
 
   allSegments = segs || [];
+  // Nếu có ?seg=ID, bắt đầu từ segment đó
+  if (startSegId) {
+    const segIdx = allSegments.findIndex(s => s.id === startSegId);
+    if (segIdx > -1) currentIdx = segIdx;
+    startSegId = null;
+  }
   if (!allSegments.length) {
     document.getElementById('app-main').innerHTML =
       `<div class="loading-spinner">Bài học này chưa có audio.</div>`;
@@ -324,7 +331,7 @@ async function loadDictation(book, lid) {
   document.getElementById('page-desc').textContent = `${allSegments.length} đoạn · ${label}`;
   document.title = 'Luyện nghe — TOCFL FAFA';
 
-  renderSegment(0);
+  renderSegment(currentIdx);
 }
 
 function renderSegment(idx) {
