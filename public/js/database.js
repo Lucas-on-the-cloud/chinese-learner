@@ -163,6 +163,47 @@ class Database {
     return await this.client.from('flashcard_templates').delete().eq('id', id);
   }
 
+  // ── Audio Segments (Listening / Dictation) ────
+  async getAudioSegments({ bookName, lessonId, publishedOnly } = {}) {
+    let q = this.client.from('audio_segments').select('*').order('sort_order').order('id');
+    if (bookName)      q = q.eq('book_name', bookName);
+    if (lessonId)      q = q.eq('lesson_id', lessonId);
+    if (publishedOnly) q = q.eq('published', true);
+    const { data, error } = await q;
+    return { data: data || [], error };
+  }
+
+  async saveAudioSegment(row) {
+    const id = row.id;
+    const payload = { ...row }; delete payload.id;
+    if (id) return await this.client.from('audio_segments').update(payload).eq('id', id);
+    return await this.client.from('audio_segments').insert([payload]);
+  }
+
+  async bulkInsertAudioSegments(rows) {
+    return await this.client.from('audio_segments').insert(rows);
+  }
+
+  async deleteAudioSegment(id) {
+    return await this.client.from('audio_segments').delete().eq('id', id);
+  }
+
+  async uploadAudio(file, bookName, lessonId) {
+    const ext  = file.name.split('.').pop();
+    const path = `${bookName}/${lessonId}_${Date.now()}.${ext}`;
+    const { data, error } = await this.client.storage
+      .from('audio').upload(path, file, { contentType: file.type, upsert: true });
+    if (error) return { url: null, error };
+    const { data: pub } = this.client.storage.from('audio').getPublicUrl(path);
+    return { url: pub.publicUrl, error: null };
+  }
+
+  async getAudioSegmentSummary() {
+    const { data } = await this.client
+      .from('audio_segments').select('book_name,lesson_id').eq('published', true);
+    return data || [];
+  }
+
   async getFlashcardTemplateSummary() {
     const { data } = await this.client
       .from('flashcard_templates').select('book_name,lesson_id,lesson_title').eq('published', true);

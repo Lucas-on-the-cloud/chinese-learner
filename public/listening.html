@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện nghe — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;--purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.08);
+}
+.container{max-width:900px;margin:0 auto;padding:0 1.5rem}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+
+/* HEADER */
+.content-header{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);padding:36px 1.5rem 44px;position:relative;overflow:hidden}
+.content-header::after{content:'聽';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none}
+.ch-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:6px;margin-bottom:14px;transition:all .15s;cursor:pointer;border:none;font-family:inherit}
+.ch-back:hover{color:#fff;background:rgba(255,255,255,.18)}
+.ch-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.9);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 14px;border-radius:50px;margin-bottom:.85rem}
+.content-header h1{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,30px);font-weight:700;color:#fff;margin-bottom:.4rem}
+.content-header p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.75;max-width:500px}
+
+/* MAIN */
+.app-main{flex:1;max-width:900px;width:100%;margin:0 auto;padding:28px 1.5rem 60px}
+
+/* LESSON LIST */
+.lesson-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.lesson-hd{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #f9fafb;cursor:pointer;transition:background .12s}
+.lesson-hd:hover{background:#f8faff}
+.lesson-num{width:38px;height:38px;border-radius:9px;background:linear-gradient(135deg,var(--purple),#a855f7);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:16px;color:#fff;font-weight:700;flex-shrink:0}
+.lesson-info{flex:1}
+.lesson-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.lesson-sub{font-size:12px;color:var(--text-3)}
+.lesson-badge{font-size:11px;font-weight:600;color:var(--purple);background:var(--purple-lt);padding:3px 10px;border-radius:8px;flex-shrink:0}
+.lesson-arrow{font-size:11px;color:#d1d5db;transition:transform .2s}
+
+/* EXERCISE */
+.ex-wrap{display:flex;flex-direction:column;gap:20px}
+
+/* PROGRESS */
+.ex-prog-bar{height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.ex-prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .35s ease}
+.ex-meta{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-2);margin-top:5px}
+
+/* PLAYER CARD */
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
+.player-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.play-btn{width:48px;height:48px;border-radius:50%;background:var(--purple);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;box-shadow:0 4px 12px rgba(124,58,237,.35)}
+.play-btn:hover{background:#6d28d9;transform:scale(1.05)}
+.play-btn:active{transform:scale(.97)}
+.player-timeline{flex:1;display:flex;flex-direction:column;gap:4px}
+.timeline-bar{height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden;cursor:pointer}
+.timeline-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .1s linear;width:0%}
+.timeline-time{font-size:11px;color:var(--text-3);display:flex;justify-content:space-between}
+.speed-btns{display:flex;gap:4px}
+.speed-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
+.speed-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+.replay-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;border:1.5px solid var(--purple);background:var(--purple-lt);color:var(--purple);cursor:pointer;transition:all .15s}
+.replay-btn:hover{background:var(--purple);color:#fff}
+.hint-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
+.hint-btn:hover{border-color:var(--orange);color:var(--orange)}
+.hint-row{margin-top:10px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;font-style:italic;display:none}
+
+/* INPUT AREA */
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
+.input-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dictation-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:20px;outline:none;transition:border-color .15s;resize:none;line-height:1.6;color:var(--text)}
+.dictation-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.08)}
+.input-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.check-btn{background:var(--purple);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.check-btn:hover{background:#6d28d9}
+.skip-btn{background:transparent;color:var(--text-2);border:1px solid var(--border);padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.skip-btn:hover{border-color:var(--text-2);color:var(--text)}
+.show-ans-btn{background:transparent;color:var(--orange);border:1px solid #fde68a;padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.show-ans-btn:hover{background:#fffbeb}
+
+/* RESULT */
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
+.char-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
+.char-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:32px}
+.char-zh{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.2}
+.char-user{font-family:'Noto Serif TC',serif;font-size:13px;line-height:1.2;color:var(--text-3)}
+.char-ok .char-zh{color:var(--green)}
+.char-ok .char-user{color:var(--green);opacity:.7}
+.char-err .char-zh{color:var(--red)}
+.char-err .char-user{color:var(--red);font-weight:700}
+.char-miss .char-zh{color:var(--text-3)}
+.score-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f3f4f6;flex-wrap:wrap}
+.score-num{font-size:20px;font-weight:700}
+.score-num.perfect{color:var(--green)}
+.score-num.good{color:var(--blue)}
+.score-num.bad{color:var(--red)}
+.score-label{font-size:12px;color:var(--text-2)}
+.next-btn{margin-left:auto;background:var(--purple);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.next-btn:hover{background:#6d28d9}
+.retry-btn{background:transparent;color:var(--purple);border:1.5px solid var(--purple);padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.retry-btn:hover{background:var(--purple-lt)}
+
+/* DONE SCREEN */
+.done-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:3rem;text-align:center;box-shadow:var(--shadow)}
+.done-icon{font-family:'Noto Serif TC',serif;font-size:64px;color:var(--purple);opacity:.3;margin-bottom:1rem}
+.done-score{font-size:36px;font-weight:700;color:var(--purple);margin-bottom:.5rem}
+
+/* LOADING */
+.loading-spinner{text-align:center;padding:3rem;color:var(--text-3);font-size:13px}
+
+/* FOOTER */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;font-size:13px}
+
+@media(max-width:640px){.nav-link{display:none}.player-controls{gap:8px}.char-zh{font-size:18px}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link active" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content-header">
+  <div class="container">
+    <button class="ch-back" id="ch-back-btn" onclick="goBack()">
+      <i class="fas fa-arrow-left"></i> Quay lại
+    </button>
+    <div class="ch-eyebrow"><i class="fas fa-headphones" style="font-size:10px"></i>&nbsp; 聽力練習 · Dictation</div>
+    <h1 id="page-h1">Luyện nghe & Chép chính tả</h1>
+    <p id="page-desc">Nghe từng đoạn và gõ lại bằng 繁體字 — luyện tai và nhớ chữ cùng lúc.</p>
+  </div>
+</div>
+
+<main class="app-main" id="app-main">
+  <div class="loading-spinner">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;margin-bottom:10px;display:block"></i>
+    Đang tải…
+  </div>
+</main>
+
+<footer>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <a href="/courses.html" style="color:rgba(255,255,255,.5)">Khóa học</a>
+  </div>
+</footer>
+
+<!-- Hidden audio element -->
+<audio id="main-audio" preload="auto"></audio>
+
+<script>
+const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const db = supabase.createClient(DB_URL, DB_KEY);
+
+// ─── State ──────────────────────────────────────
+const params   = new URLSearchParams(location.search);
+let   bookName = params.get('b') || '';
+let   lessonId = params.get('lesson') ? parseInt(params.get('lesson')) : null;
+
+let allSegments  = [];   // segments for current lesson
+let currentIdx   = 0;
+let sessionScore = { correct: 0, total: 0 };
+let audioSpeed   = 1;
+let timeInterval = null;
+let allBooks     = [];
+let allLessons   = [];
+
+const audioEl = document.getElementById('main-audio');
+
+// ─── INIT ───────────────────────────────────────
+(async () => {
+  const [{ data: books }, { data: lessons }] = await Promise.all([
+    db.from('books').select('*').order('name'),
+    db.from('lessons').select('id,title,book').order('id'),
+  ]);
+  allBooks   = books   || [];
+  allLessons = lessons || [];
+
+  if (bookName && lessonId) {
+    await loadDictation(bookName, lessonId);
+  } else if (bookName) {
+    renderLessonList(bookName);
+  } else {
+    renderBookList();
+  }
+})();
+
+function goBack() {
+  if (lessonId) { lessonId = null; renderLessonList(bookName); }
+  else if (bookName) { bookName = ''; renderBookList(); }
+  else history.back();
+}
+
+// ─── BOOK LIST ──────────────────────────────────
+async function renderBookList() {
+  document.getElementById('page-h1').textContent = 'Luyện nghe & Chép chính tả';
+  document.getElementById('page-desc').textContent = 'Chọn khóa học con để bắt đầu luyện nghe.';
+  document.getElementById('ch-back-btn').textContent = '';
+
+  const { data: summary } = await db.from('audio_segments')
+    .select('book_name').eq('published', true);
+  const booksWithAudio = new Set((summary||[]).map(s => s.book_name));
+
+  const bookHTML = [...booksWithAudio].sort().map((name, i) => {
+    const meta  = allBooks.find(b => b.name === name) || {};
+    const label = meta.display_name || name;
+    const cnt   = (summary||[]).filter(s => s.book_name === name).length;
+    return `<div class="lesson-card" style="cursor:pointer" onclick="renderLessonList('${name}')">
+      <div class="lesson-hd">
+        <div class="lesson-num">${name.slice(0,2)}</div>
+        <div class="lesson-info">
+          <div class="lesson-title">${label}</div>
+          <div class="lesson-sub">${cnt} đoạn audio</div>
+        </div>
+        <i class="fas fa-chevron-right lesson-arrow"></i>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('app-main').innerHTML = bookHTML ||
+    `<div class="loading-spinner">Chưa có bài nghe nào. Admin cần upload audio trong admin panel.</div>`;
+}
+
+// ─── LESSON LIST ────────────────────────────────
+async function renderLessonList(book) {
+  bookName = book;
+  const meta  = allBooks.find(b => b.name === book) || {};
+  const label = meta.display_name || book;
+  document.getElementById('page-h1').textContent   = label + ' · Luyện nghe';
+  document.getElementById('page-desc').textContent = 'Chọn bài học để luyện chép chính tả.';
+
+  const { data: segs } = await db.from('audio_segments')
+    .select('lesson_id,lesson_title').eq('book_name', book).eq('published', true);
+
+  const lessonMap = new Map();
+  (segs||[]).forEach(s => {
+    if (!lessonMap.has(s.lesson_id)) lessonMap.set(s.lesson_id, { title: s.lesson_title, count: 0 });
+    lessonMap.get(s.lesson_id).count++;
+  });
+
+  const rowsHTML = [...lessonMap.entries()].map(([lid, info], i) => {
+    const prog = getLessonProgress(book, lid);
+    const pct  = info.count ? Math.round(prog / info.count * 100) : 0;
+    return `<div class="lesson-card">
+      <div class="lesson-hd" onclick="loadDictation('${book}',${lid})">
+        <div class="lesson-num">${i+1}</div>
+        <div class="lesson-info">
+          <div class="lesson-title">${info.title || 'Bài học'}</div>
+          <div class="lesson-sub">${info.count} đoạn · ${pct > 0 ? pct + '% hoàn thành' : 'Chưa học'}</div>
+        </div>
+        <span class="lesson-badge">${info.count} đoạn</span>
+        <i class="fas fa-chevron-right lesson-arrow"></i>
+      </div>
+      ${pct > 0 ? `<div style="height:3px;background:#f3f4f6"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--purple),#a855f7)"></div></div>` : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('app-main').innerHTML = rowsHTML ||
+    `<div class="loading-spinner">Chưa có bài nghe nào trong khóa học này.</div>`;
+}
+
+// ─── DICTATION EXERCISE ─────────────────────────
+async function loadDictation(book, lid) {
+  bookName = book;
+  lessonId = lid;
+  currentIdx   = 0;
+  sessionScore = { correct: 0, total: 0 };
+
+  const { data: segs } = await db.from('audio_segments')
+    .select('*').eq('book_name', book).eq('lesson_id', lid)
+    .eq('published', true).order('sort_order').order('id');
+
+  allSegments = segs || [];
+  if (!allSegments.length) {
+    document.getElementById('app-main').innerHTML =
+      `<div class="loading-spinner">Bài học này chưa có audio.</div>`;
+    return;
+  }
+
+  const meta  = allBooks.find(b => b.name === book) || {};
+  const label = meta.display_name || book;
+  document.getElementById('page-h1').textContent   = (segs[0]?.lesson_title || 'Bài học') + ' · Chép chính tả';
+  document.getElementById('page-desc').textContent = `${allSegments.length} đoạn · ${label}`;
+  document.title = 'Luyện nghe — TOCFL FAFA';
+
+  renderSegment(0);
+}
+
+function renderSegment(idx) {
+  currentIdx = idx;
+  if (idx >= allSegments.length) { renderDone(); return; }
+
+  const seg  = allSegments[idx];
+  const pct  = Math.round(idx / allSegments.length * 100);
+  const dur  = (seg.end_sec - seg.start_sec).toFixed(1);
+  const blank= [...seg.transcript].map(() => '_').join('​'); // hint skeleton
+
+  // Preload audio
+  if (audioEl.src !== seg.audio_url) audioEl.src = seg.audio_url;
+  audioEl.playbackRate = audioSpeed;
+
+  document.getElementById('app-main').innerHTML = `
+    <div class="ex-wrap">
+      <!-- Progress -->
+      <div>
+        <div class="ex-prog-bar"><div class="ex-prog-fill" id="ex-pf" style="width:${pct}%"></div></div>
+        <div class="ex-meta">
+          <span>Đoạn ${idx+1} / ${allSegments.length}</span>
+          <span>✓ ${sessionScore.correct} đúng</span>
+        </div>
+      </div>
+
+      <!-- Player -->
+      <div class="player-card">
+        <div class="player-title">
+          <i class="fas fa-headphones" style="color:var(--purple);font-size:14px"></i>
+          Nghe đoạn ${idx+1}
+          <span style="font-size:12px;font-weight:400;color:var(--text-3);margin-left:auto">${dur}s</span>
+        </div>
+        <div class="player-controls">
+          <button class="play-btn" id="play-btn" onclick="playCurrentSegment()">
+            <i class="fas fa-play" id="play-icon"></i>
+          </button>
+          <div class="player-timeline">
+            <div class="timeline-bar"><div class="timeline-fill" id="timeline-fill"></div></div>
+            <div class="timeline-time">
+              <span id="time-cur">0:00</span>
+              <span id="time-end">${formatTime(seg.end_sec - seg.start_sec)}</span>
+            </div>
+          </div>
+          <button class="replay-btn" onclick="playCurrentSegment()">
+            <i class="fas fa-rotate-left"></i> Nghe lại
+          </button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text-2)">Tốc độ:</span>
+          <div class="speed-btns">
+            <button class="speed-btn${audioSpeed===0.75?' active':''}" onclick="setSpeed(0.75)">0.75×</button>
+            <button class="speed-btn${audioSpeed===1?' active':''}" onclick="setSpeed(1)">1×</button>
+            <button class="speed-btn${audioSpeed===1.25?' active':''}" onclick="setSpeed(1.25)">1.25×</button>
+          </div>
+          <button class="hint-btn" onclick="toggleHint()"><i class="fas fa-lightbulb"></i> Gợi ý</button>
+        </div>
+        <div class="hint-row" id="hint-row">
+          ${seg.pinyin ? `<div style="font-style:italic;margin-bottom:3px">${seg.pinyin}</div>` : ''}
+          <div style="font-size:11px;color:#ca8a04">Số chữ: ${seg.transcript.replace(/\s/g,'').length} ký tự</div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="input-card">
+        <div class="input-label"><i class="fas fa-keyboard" style="font-size:10px"></i> Gõ những gì bạn nghe:</div>
+        <textarea class="dictation-input" id="dictation-input" rows="2"
+          placeholder="Gõ 繁體字 vào đây…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();checkAnswer()}"></textarea>
+        <div class="input-actions">
+          <button class="check-btn" onclick="checkAnswer()"><i class="fas fa-check"></i> Kiểm tra</button>
+          <button class="skip-btn" onclick="skipSegment()">Bỏ qua</button>
+          <button class="show-ans-btn" onclick="showAnswer()"><i class="fas fa-eye"></i> Xem đáp án</button>
+        </div>
+      </div>
+
+      <!-- Result placeholder -->
+      <div id="result-area"></div>
+    </div>`;
+
+  // Auto-play first time
+  setTimeout(playCurrentSegment, 300);
+}
+
+function playCurrentSegment() {
+  const seg = allSegments[currentIdx];
+  if (!seg) return;
+
+  if (audioEl.src !== seg.audio_url) { audioEl.src = seg.audio_url; audioEl.load(); }
+  audioEl.playbackRate = audioSpeed;
+  audioEl.currentTime = seg.start_sec;
+  audioEl.play();
+
+  const playIcon = document.getElementById('play-icon');
+  if (playIcon) { playIcon.className = 'fas fa-pause'; }
+
+  clearInterval(timeInterval);
+  timeInterval = setInterval(() => {
+    if (audioEl.currentTime >= seg.end_sec) {
+      audioEl.pause();
+      clearInterval(timeInterval);
+      if (playIcon) playIcon.className = 'fas fa-play';
+      return;
+    }
+    const elapsed = audioEl.currentTime - seg.start_sec;
+    const total   = seg.end_sec - seg.start_sec;
+    const pct     = (elapsed / total * 100).toFixed(1);
+    const fillEl  = document.getElementById('timeline-fill');
+    const curEl   = document.getElementById('time-cur');
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (curEl)  curEl.textContent  = formatTime(elapsed);
+  }, 100);
+}
+
+function setSpeed(s) {
+  audioSpeed = s;
+  audioEl.playbackRate = s;
+  document.querySelectorAll('.speed-btn').forEach(b => {
+    b.classList.toggle('active', parseFloat(b.textContent) === s);
+  });
+}
+
+function toggleHint() {
+  const h = document.getElementById('hint-row');
+  if (h) h.style.display = h.style.display === 'block' ? 'none' : 'block';
+}
+
+function checkAnswer() {
+  const seg   = allSegments[currentIdx];
+  const input = document.getElementById('dictation-input')?.value || '';
+  showResult(seg.transcript, input, seg);
+}
+
+function showAnswer() {
+  const seg = allSegments[currentIdx];
+  document.getElementById('dictation-input').value = seg.transcript;
+  checkAnswer();
+}
+
+function skipSegment() {
+  sessionScore.total++;
+  saveProgress(bookName, lessonId, currentIdx);
+  renderSegment(currentIdx + 1);
+}
+
+function showResult(transcript, userInput, seg) {
+  const correct  = transcript.replace(/\s/g, '');
+  const user     = userInput.replace(/\s/g, '');
+  const chars    = [...correct];
+  let   okCount  = 0;
+
+  const cellsHTML = chars.map((ch, i) => {
+    const uch = user[i] || '';
+    const ok  = uch === ch;
+    if (ok) okCount++;
+    const cls = uch === '' ? 'char-miss' : ok ? 'char-ok' : 'char-err';
+    return `<div class="char-cell ${cls}">
+      <div class="char-zh">${ch}</div>
+      <div class="char-user">${uch || '?'}</div>
+    </div>`;
+  }).join('');
+
+  // Extra chars user typed
+  const extra = user.length > chars.length
+    ? `<div style="font-size:12px;color:var(--red);margin-top:6px">+${user.length - chars.length} ký tự thừa</div>`
+    : '';
+
+  const pct  = chars.length ? Math.round(okCount / chars.length * 100) : 0;
+  const cls  = pct === 100 ? 'perfect' : pct >= 70 ? 'good' : 'bad';
+  const msg  = pct === 100 ? '🎉 Hoàn hảo!' : pct >= 70 ? '👍 Khá tốt!' : '💪 Cố gắng hơn!';
+
+  sessionScore.correct += (pct === 100 ? 1 : 0);
+  sessionScore.total++;
+  saveProgress(bookName, lessonId, currentIdx);
+
+  document.getElementById('result-area').innerHTML = `
+    <div class="result-card">
+      <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Kết quả</div>
+      <div class="char-row">${cellsHTML}</div>
+      ${extra}
+      ${seg.meaning_vi ? `<div style="font-size:13px;color:var(--text-2);padding:8px 0;border-top:1px solid #f3f4f6;margin-top:6px">${seg.meaning_vi}</div>` : ''}
+      <div class="score-row">
+        <div>
+          <div class="score-num ${cls}">${pct}%</div>
+          <div class="score-label">${okCount}/${chars.length} ký tự đúng · ${msg}</div>
+        </div>
+        <button class="retry-btn" onclick="renderSegment(${currentIdx})"><i class="fas fa-rotate-left"></i> Thử lại</button>
+        <button class="next-btn" onclick="renderSegment(${currentIdx + 1})">
+          ${currentIdx + 1 < allSegments.length ? 'Đoạn tiếp <i class="fas fa-arrow-right"></i>' : '🏁 Kết thúc'}
+        </button>
+      </div>
+    </div>`;
+
+  // Scroll to result
+  document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderDone() {
+  const total   = sessionScore.total;
+  const correct = sessionScore.correct;
+  const pct     = total ? Math.round(correct / total * 100) : 0;
+
+  document.getElementById('app-main').innerHTML = `
+    <div class="done-card">
+      <div class="done-icon">🎉</div>
+      <div class="done-score">${pct}%</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:.5rem">Hoàn thành bài luyện!</div>
+      <div style="font-size:14px;color:var(--text-2);margin-bottom:2rem">${correct}/${total} đoạn hoàn hảo · ${allSegments.length} đoạn tổng cộng</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button onclick="loadDictation('${bookName}',${lessonId})"
+          style="background:var(--purple);color:#fff;border:none;padding:11px 24px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">
+          <i class="fas fa-rotate-left"></i> Học lại
+        </button>
+        <button onclick="renderLessonList('${bookName}')"
+          style="background:transparent;color:var(--purple);border:1.5px solid var(--purple);padding:11px 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">
+          <i class="fas fa-list"></i> Chọn bài khác
+        </button>
+      </div>
+    </div>`;
+}
+
+// ─── PROGRESS (localStorage) ─────────────────────
+function progressKey(book, lid) { return `ls_prog_${book}_${lid}`; }
+function getLessonProgress(book, lid) {
+  return JSON.parse(localStorage.getItem(progressKey(book, lid)) || '[]').length;
+}
+function saveProgress(book, lid, idx) {
+  const key  = progressKey(book, lid);
+  const done = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  done.add(idx);
+  localStorage.setItem(key, JSON.stringify([...done]));
+}
+
+// ─── UTILS ──────────────────────────────────────
+function formatTime(sec) {
+  const s = Math.floor(sec);
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+</script>
+</body>
+</html>
