@@ -210,7 +210,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Already logged in → skip login
 db.auth.getSession().then(({ data }) => {
-  if (data.session) window.location.href = '/lessons.html';
+  if (data.session) window.location.href = '/library.html';
 });
 
 async function handleGoogleLogin() {
@@ -223,7 +223,7 @@ async function handleGoogleLogin() {
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/lessons.html',
+      redirectTo: window.location.origin + '/library.html',
     },
   });
 

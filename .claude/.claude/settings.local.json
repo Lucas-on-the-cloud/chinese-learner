@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C c:/022026materials/web/chinese-learner status)",
+      "Bash(git -C c:/022026materials/web/chinese-learner remote -v)"
+    ]
+  }
+}

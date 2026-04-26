@@ -179,7 +179,7 @@ class LessonManager {
              <span class="bk-card-emoji">${emoji}</span>
            </div>`;
 
-      return `<div class="bk-card" onclick="location.href='/book.html?b=${encodeURIComponent(code)}'">
+      return `<div class="bk-card" onclick="location.href='/subcourse.html?b=${encodeURIComponent(code)}'">
         ${coverHtml}
         <div class="bk-card-body">
           <div class="bk-card-title">${title}</div>

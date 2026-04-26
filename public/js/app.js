@@ -35,7 +35,7 @@ class ChineseApp {
 
     if (bParam) {
       const backBtn = document.getElementById('back-btn');
-      if (backBtn) backBtn.href = `/book.html?b=${encodeURIComponent(bParam)}`;
+      if (backBtn) backBtn.href = `/subcourse.html?b=${encodeURIComponent(bParam)}`;
     }
 
     if (idsParam) {

@@ -353,7 +353,7 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
         <i class="fa-regular fa-bell"></i>
         <span class="dot-red"></span>
       </button>
-      <a href="/lessons.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+      <a href="/library.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
       <button class="primary-btn" onclick="location.href='/add-lesson.html'"><i class="fa-solid fa-plus"></i> &nbsp;Thêm bài học</button>
     </div>
   </header>
@@ -369,7 +369,7 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
           <div class="action-eyebrow">Việc cần làm hôm nay · Today</div>
           <div class="action-title">Thư viện bài học của bạn<br><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.65)">Quản lý, chỉnh sửa và thêm nội dung mới</span></div>
           <div class="action-btns">
-            <a href="/lessons.html" class="btn-light">Xem bài học →</a>
+            <a href="/library.html" class="btn-light">Xem bài học →</a>
             <a href="/add-lesson.html" class="btn-ghost-light">Thêm bài mới</a>
           </div>
         </div>
@@ -499,7 +499,7 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
             <div class="card-title">Bài học gần đây · Recent lessons</div>
             <div class="card-sub">Mới được thêm vào thư viện</div>
           </div>
-          <a class="link-arrow" href="/lessons.html">Xem tất cả →</a>
+          <a class="link-arrow" href="/library.html">Xem tất cả →</a>
         </div>
         <table class="data-table">
           <thead>
@@ -1610,7 +1610,7 @@ async function loadCourseBooks(courseId) {
     <div style="display:flex;align-items:center;gap:8px;background:#f4f5f7;border-radius:7px;padding:7px 10px">
       <span style="font-size:12px;background:${b.skill_type==='reading'?'#eff6ff':'#f0fdf4'};color:${b.skill_type==='reading'?'#1a56db':'#15803d'};padding:2px 8px;border-radius:8px;font-weight:600;flex-shrink:0">${b.skill_type==='reading'?'📖 Reading':'🎧 Listening'}</span>
       <span style="flex:1;font-size:13px;font-weight:500">${escHtml(b.book_name)}</span>
-      <a href="/book.html?b=${encodeURIComponent(b.book_name)}" target="_blank" style="color:#9ca3af;font-size:12px" title="Xem"><i class="fa-solid fa-eye"></i></a>
+      <a href="/subcourse.html?b=${encodeURIComponent(b.book_name)}" target="_blank" style="color:#9ca3af;font-size:12px" title="Xem"><i class="fa-solid fa-eye"></i></a>
       <button onclick="removeCourseBook(${b.id})" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:13px" title="Xóa"><i class="fa-solid fa-times"></i></button>
     </div>`).join('');
 }
