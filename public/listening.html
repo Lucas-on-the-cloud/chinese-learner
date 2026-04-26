@@ -233,7 +233,9 @@ const audioEl = document.getElementById('main-audio');
       await renderBookList();
     }
   } catch(e) {
-    document.getElementById('app-main').innerHTML =
+    console.error('[listening] outer init error:', e);
+    const el = document.getElementById('app-main');
+    if (el) el.innerHTML =
       `<div style="padding:3rem;text-align:center;color:#dc2626;font-size:13px">
         <i class="fas fa-exclamation-circle" style="font-size:24px;display:block;margin-bottom:10px"></i>
         Lỗi tải trang: ${e.message}
@@ -352,10 +354,13 @@ async function loadDictation(book, lid) {
       allSegments = allSegments.filter(s => s.item_label === labelFilter);
     }
   } catch(e) {
+    console.error('[listening] loadDictation error:', e);
     document.getElementById('app-main').innerHTML =
       `<div style="padding:3rem;text-align:center;color:#dc2626;font-size:13px">Lỗi: ${e.message}</div>`;
     return;
   }
+
+  console.log('[listening] segments loaded:', allSegments.length, 'labelFilter:', labelFilter);
 
   // Nếu có ?seg=ID, bắt đầu từ segment đó
   if (startSegId) {
@@ -371,7 +376,7 @@ async function loadDictation(book, lid) {
 
   const meta  = allBooks.find(b => b.name === book) || {};
   const label = meta.display_name || book;
-  const lessonTitle = segs[0]?.lesson_title || 'Bài học';
+  const lessonTitle = allSegments[0]?.lesson_title || 'Bài học';
   document.getElementById('page-h1').textContent   = (labelFilter ? labelFilter + ' · ' : '') + lessonTitle + ' · Chép chính tả';
   document.getElementById('page-desc').textContent = `${allSegments.length} đoạn · ${label}`;
   document.title = 'Luyện nghe — TOCFL FAFA';
