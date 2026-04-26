@@ -2450,8 +2450,7 @@ let lsAudioUrl       = null;
 let lsPendingSegs    = [];
 let lsItemLabel      = '';       // e.g. "Audio 1.1"
 
-function lsGetGcpKey() { return localStorage.getItem('gcp_stt_key') || ''; }
-function lsSaveGcpKey(k) { localStorage.setItem('gcp_stt_key', k); }
+function lsGetOpenAIKey() { return localStorage.getItem('api_key_openai') || ''; }
 
 async function loadListeningAdmin() {
   const [{ data: lessons }, { data: books }, summary] = await Promise.all([
@@ -2518,21 +2517,21 @@ async function lsRenderRight(bookName) {
     segsByLesson[s.lesson_id].push(s);
   });
 
-  const gcpKey = lsGetGcpKey();
+  const openaiKey = lsGetOpenAIKey();
+  const keyOk = !!openaiKey;
   const lessonOpts = lessons.map(l => `<option value="${l.id}">${l.title}</option>`).join('');
 
   document.getElementById('ls-right-area').innerHTML = `
     <div class="s-card" style="margin-bottom:16px">
       <div class="s-title" style="margin-bottom:16px"><i class="fa-solid fa-headphones" style="color:#1a56db"></i> ${label}</div>
 
-      <!-- GCP Key -->
-      <div style="background:#f8faff;border:1px solid #c7d7fd;border-radius:8px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
-        <i class="fa-solid fa-key" style="color:#1a56db;font-size:13px;flex-shrink:0"></i>
-        <input id="ls-gcp-key" type="password" placeholder="Google Cloud STT API Key"
-          value="${gcpKey}"
-          style="flex:1;border:none;background:transparent;outline:none;font-family:inherit;font-size:13px"
-          onchange="lsSaveGcpKey(this.value)">
-        <span style="font-size:11px;color:#6b7280">STT Key</span>
+      <!-- Whisper key status -->
+      <div style="background:${keyOk?'#f0fdf4':'#fef2f2'};border:1px solid ${keyOk?'#bbf7d0':'#fecaca'};border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+        <i class="fa-solid fa-microphone" style="color:${keyOk?'#16a34a':'#dc2626'};font-size:13px;flex-shrink:0"></i>
+        <span style="flex:1;font-size:13px;color:${keyOk?'#15803d':'#b91c1c'}">
+          ${keyOk ? '✓ OpenAI key đã cấu hình — dùng Whisper để transcribe' : 'Chưa có OpenAI key — vào Settings → AI &amp; API để thêm key'}
+        </span>
+        ${!keyOk ? `<a href="#" onclick="document.querySelector('[data-tab=settings]')?.click()" style="font-size:11px;color:#1a56db;white-space:nowrap">Thêm key →</a>` : ''}
       </div>
 
       <!-- Upload area -->
@@ -2686,132 +2685,50 @@ async function lsUploadAudio() {
 async function lsTranscribe() {
   const fileInput = document.getElementById('ls-file-input');
   const file      = fileInput?.files[0];
-  const gcpKey    = document.getElementById('ls-gcp-key')?.value.trim() || lsGetGcpKey();
-  if (!file)   { lsMsg('Cần chọn file MP3.', 'err'); return; }
-  if (!gcpKey) { lsMsg('Cần nhập Google Cloud STT API Key.', 'err'); return; }
-  lsSaveGcpKey(gcpKey);
+  const key       = lsGetOpenAIKey();
+  if (!file) { lsMsg('Cần chọn file MP3.', 'err'); return; }
+  if (!key)  { lsMsg('Chưa có OpenAI key — vào Settings → AI & API để thêm.', 'err'); return; }
+
+  const MB25 = 25 * 1024 * 1024;
+  if (file.size > MB25) { lsMsg(`File quá lớn (${(file.size/1024/1024).toFixed(1)}MB > 25MB giới hạn Whisper).`, 'err'); return; }
 
   const btn = document.getElementById('ls-stt-btn');
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang transcribe…';
-  lsMsg('Đang gửi audio lên Google STT…', 'info');
+  lsMsg('Đang gửi audio lên Whisper…', 'info');
 
   try {
-    const ab = await file.arrayBuffer();
-    const segments = await lsRunSTT(ab, gcpKey);
+    const segments = await lsRunWhisper(file, key);
     lsPendingSegs = segments;
     lsRenderPendingSegs(segments);
     lsMsg(`✓ Transcribe xong — ${segments.length} đoạn. Xem lại rồi lưu.`, 'ok');
   } catch(e) {
-    lsMsg('Lỗi STT: ' + e.message, 'err');
+    lsMsg('Lỗi Whisper: ' + e.message, 'err');
   } finally {
-    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-microphone"></i> Transcribe với STT';
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-microphone"></i> Transcribe với Whisper';
   }
 }
 
-async function lsRunSTT(arrayBuffer, gcpKey) {
-  const CHUNK_BYTES = 3_800_000; // ~60s MP3 @128kbps ≈ 3.8MB
-  if (arrayBuffer.byteLength <= CHUNK_BYTES) {
-    return await lsCallSTT(arrayBuffer, gcpKey, 0);
-  }
-  // Long file: decode → chunk PCM → send as LINEAR16
-  return await lsTranscribeLong(arrayBuffer, gcpKey);
-}
+async function lsRunWhisper(file, key) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('model', 'whisper-1');
+  form.append('language', 'zh');
+  form.append('response_format', 'verbose_json');
+  form.append('prompt', '繁體中文，臺灣用語，請使用繁體字');
 
-async function lsCallSTT(arrayBuffer, gcpKey, timeOffset) {
-  const uint8   = new Uint8Array(arrayBuffer);
-  let binary = '';
-  for (let i = 0; i < uint8.length; i++) binary += String.fromCharCode(uint8[i]);
-  const base64  = btoa(binary);
-
-  const res = await fetch(
-    `https://speech.googleapis.com/v1/speech:recognize?key=${gcpKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        config: {
-          encoding: 'MP3',
-          languageCode: 'zh-TW',
-          enableWordTimeOffsets: true,
-          enableAutomaticPunctuation: true,
-        },
-        audio: { content: base64 }
-      })
-    }
-  );
+  const res  = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}` },
+    body: form,
+  });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  const words = (data.results||[]).flatMap(r => r.alternatives?.[0]?.words||[]);
-  return lsGroupWords(words, timeOffset);
-}
 
-async function lsTranscribeLong(arrayBuffer, gcpKey) {
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-  const decoded  = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-  const mono     = decoded.getChannelData(0);
-  const SR       = 16000;
-  const CHUNK    = SR * 55; // 55s chunks
-  const allSegs  = [];
-
-  for (let off = 0; off < mono.length; off += CHUNK) {
-    const slice   = mono.slice(off, off + CHUNK);
-    const int16   = new Int16Array(slice.length);
-    for (let i = 0; i < slice.length; i++)
-      int16[i] = Math.max(-32768, Math.min(32767, slice[i] * 32768));
-
-    const bytes  = new Uint8Array(int16.buffer);
-    let   bin    = '';
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    const base64 = btoa(bin);
-    const timeOff= off / SR;
-
-    const res = await fetch(
-      `https://speech.googleapis.com/v1/speech:recognize?key=${gcpKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          config: {
-            encoding: 'LINEAR16',
-            sampleRateHertz: 16000,
-            languageCode: 'zh-TW',
-            enableWordTimeOffsets: true,
-            enableAutomaticPunctuation: true,
-          },
-          audio: { content: base64 }
-        })
-      }
-    );
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const words = (data.results||[]).flatMap(r => r.alternatives?.[0]?.words||[]);
-    allSegs.push(...lsGroupWords(words, timeOff));
-  }
-  return allSegs;
-}
-
-function lsGroupWords(words, timeOffset = 0) {
-  if (!words.length) return [];
-  const segs = [];
-  let cur = [];
-
-  words.forEach((w, i) => {
-    cur.push(w);
-    const endSec  = parseFloat(w.endTime?.replace('s','') || 0) + timeOffset;
-    const nextSec = words[i+1] ? parseFloat(words[i+1].startTime?.replace('s','') || 0) + timeOffset : 9999;
-    const pause   = nextSec - endSec;
-    const isPunct = /[。！？，、]$/.test(w.word);
-
-    if (isPunct || pause > 0.65 || i === words.length - 1) {
-      segs.push({
-        text:      cur.map(w=>w.word).join(''),
-        start_sec: parseFloat(cur[0].startTime?.replace('s','') || 0) + timeOffset,
-        end_sec:   endSec + 0.35,
-      });
-      cur = [];
-    }
-  });
-  return segs;
+  return (data.segments || []).map(s => ({
+    text:      s.text.trim(),
+    start_sec: parseFloat(s.start.toFixed(2)),
+    end_sec:   parseFloat(s.end.toFixed(2)),
+  })).filter(s => s.text);
 }
 
 function lsRenderPendingSegs(segs) {

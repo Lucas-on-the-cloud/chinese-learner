@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Google STT Test</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: monospace; background: #0f172a; color: #e2e8f0; padding: 2rem; font-size: 14px; }
+h1 { font-size: 18px; color: #a78bfa; margin-bottom: 1.5rem; }
+.card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+input[type=text], input[type=password] {
+  width: 100%; padding: 9px 12px; border: 1px solid #334155; border-radius: 7px;
+  background: #0f172a; color: #e2e8f0; font-family: monospace; font-size: 13px; outline: none;
+}
+input[type=text]:focus, input[type=password]:focus { border-color: #7c3aed; }
+input[type=file] { color: #94a3b8; font-size: 13px; }
+button {
+  background: #7c3aed; color: #fff; border: none; padding: 10px 22px; border-radius: 7px;
+  font-family: monospace; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 1rem;
+}
+button:hover { background: #6d28d9; }
+button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+#status { margin-top: 12px; font-size: 12px; color: #94a3b8; min-height: 18px; }
+#status.ok  { color: #4ade80; }
+#status.err { color: #f87171; }
+.section-title { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ── Timeline ── */
+.timeline-wrap { display: flex; flex-direction: column; gap: 4px; }
+.tl-row {
+  display: flex; align-items: stretch; gap: 0; min-height: 38px;
+}
+.tl-stamp {
+  width: 56px; flex-shrink: 0; font-size: 10px; color: #475569;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px; border-right: 2px solid #334155;
+}
+.tl-segments { flex: 1; display: flex; align-items: center; padding: 4px 0 4px 0; position: relative; }
+.tl-seg {
+  position: absolute; top: 4px; bottom: 4px;
+  border-radius: 5px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #f8fafc; font-family: 'Noto Serif TC', serif;
+  overflow: hidden; white-space: nowrap; padding: 0 6px;
+  border: 1px solid rgba(255,255,255,.08);
+  cursor: default; transition: opacity .15s;
+}
+.tl-seg:hover { opacity: .8; z-index: 10; }
+.tl-word-chip {
+  position: absolute; top: 4px; bottom: 4px;
+  border-radius: 4px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; color: #f8fafc; font-family: 'Noto Serif TC', serif;
+  overflow: hidden; white-space: nowrap; padding: 0 5px;
+  border: 1px solid rgba(255,255,255,.1); cursor: default;
+}
+.tl-word-chip:hover::after {
+  content: attr(data-time);
+  position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+  background: #0f172a; border: 1px solid #334155; border-radius: 4px;
+  font-size: 10px; font-family: monospace; color: #94a3b8;
+  padding: 3px 7px; white-space: nowrap; z-index: 20;
+}
+.tl-track-bg {
+  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  height: 2px; background: #1e293b;
+}
+
+/* result blocks */
+.result-block { background: #0f172a; border: 1px solid #334155; border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+.result-block-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; background: #1e293b; border-bottom: 1px solid #334155;
+  font-size: 11px; font-weight: 700; color: #a78bfa;
+}
+.result-block-body { padding: 14px; }
+.transcript-text { font-size: 22px; font-family: 'Noto Serif TC', serif; color: #f8fafc; line-height: 1.6; letter-spacing: 1px; margin-bottom: 6px; }
+
+/* raw json */
+.raw-json {
+  padding: 12px; background: #0a0f1e; border: 1px solid #1e293b; border-radius: 6px;
+  font-size: 11px; color: #7dd3fc; white-space: pre-wrap; word-break: break-all;
+  max-height: 340px; overflow-y: auto;
+}
+
+/* tabs */
+.tabs { display: flex; gap: 4px; margin-bottom: 1rem; }
+.tab-btn {
+  padding: 6px 16px; border-radius: 6px; border: 1px solid #334155;
+  background: transparent; color: #64748b; font-family: monospace; font-size: 12px; cursor: pointer;
+}
+.tab-btn.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h1>🎙 Google STT — Inspector</h1>
+
+<div class="card">
+  <div style="margin-bottom:14px">
+    <label>Google Cloud API Key</label>
+    <input type="password" id="api-key" placeholder="AIza..." autocomplete="off">
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+    <div style="flex:0 0 160px">
+      <label>Language</label>
+      <input type="text" id="lang-code" value="zh-TW">
+    </div>
+    <div style="flex:0 0 200px">
+      <label>Chunk size (giây, cho file dài)</label>
+      <input type="text" id="chunk-sec" value="55">
+    </div>
+  </div>
+  <div>
+    <label>Audio file</label>
+    <input type="file" id="audio-file" accept="audio/*">
+  </div>
+  <button id="send-btn" onclick="runSTT()">▶ Send to Google STT</button>
+  <div id="status"></div>
+</div>
+
+<div class="card" id="results-card" style="display:none">
+  <div class="section-title" id="results-summary"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('timeline')">Timeline</button>
+    <button class="tab-btn" onclick="switchTab('sentences')">Sentences</button>
+    <button class="tab-btn" onclick="switchTab('raw')">Raw JSON</button>
+  </div>
+
+  <div class="tab-pane active" id="tab-timeline"></div>
+  <div class="tab-pane" id="tab-sentences"></div>
+  <div class="tab-pane" id="tab-raw">
+    <div class="raw-json" id="raw-json"></div>
+  </div>
+</div>
+
+<script>
+let allWords    = [];   // { word, startSec, endSec }
+let allResults  = [];   // raw results[]
+
+// ── Tab switch ──────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const names = ['timeline','sentences','raw'];
+    b.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── Main ────────────────────────────────────────────
+async function runSTT() {
+  const key      = document.getElementById('api-key').value.trim();
+  const lang     = document.getElementById('lang-code').value.trim() || 'zh-TW';
+  const file     = document.getElementById('audio-file').files[0];
+  const chunkSec = parseInt(document.getElementById('chunk-sec').value) || 55;
+  const btn      = document.getElementById('send-btn');
+
+  if (!key)  { setStatus('Cần nhập API Key.', 'err'); return; }
+  if (!file) { setStatus('Cần chọn file audio.', 'err'); return; }
+
+  btn.disabled = true;
+  setStatus('Đang đọc và decode audio…', '');
+
+  try {
+    const ab = await file.arrayBuffer();
+    const LIMIT = chunkSec * 128 * 1000 / 8; // ~bytes cho MP3 @128kbps
+
+    let rawResults;
+    if (ab.byteLength <= LIMIT) {
+      setStatus('File ngắn — gửi trực tiếp…', '');
+      rawResults = await callSTT(ab, key, lang, 0);
+    } else {
+      setStatus('File dài — decode PCM rồi chunk…', '');
+      rawResults = await callSTTLong(ab, key, lang, chunkSec);
+    }
+
+    btn.disabled = false;
+    allResults = rawResults.results;
+    allWords   = rawResults.words;
+    setStatus(`✓ Xong — ${allResults.length} result(s), ${allWords.length} words`, 'ok');
+    renderAll(rawResults.raw);
+
+  } catch(e) {
+    btn.disabled = false;
+    setStatus('Lỗi: ' + e.message, 'err');
+    console.error(e);
+  }
+}
+
+// ── Short file (< ~1 min) ───────────────────────────
+async function callSTT(ab, key, lang, timeOffset) {
+  const base64 = arrayBufferToBase64(ab);
+  const mime   = document.getElementById('audio-file').files[0]?.type || '';
+  let encoding = 'MP3';
+  if (mime.includes('wav'))  encoding = 'LINEAR16';
+  if (mime.includes('ogg'))  encoding = 'OGG_OPUS';
+  if (mime.includes('flac')) encoding = 'FLAC';
+
+  const res = await fetch(
+    `https://speech.googleapis.com/v1/speech:recognize?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        config: { encoding, languageCode: lang, enableWordTimeOffsets: true, enableAutomaticPunctuation: true },
+        audio: { content: base64 }
+      })
+    }
+  );
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return parseResponse(data, timeOffset);
+}
+
+// ── Long file — decode PCM → chunk LINEAR16 ─────────
+async function callSTTLong(ab, key, lang, chunkSec) {
+  const SR       = 16000;
+  const CHUNK    = SR * chunkSec;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
+  const decoded  = await audioCtx.decodeAudioData(ab.slice(0));
+  const mono     = decoded.getChannelData(0);
+  const totalSec = decoded.duration.toFixed(1);
+
+  let allResults = [], allWords = [], lastRaw = null;
+  const chunks = Math.ceil(mono.length / CHUNK);
+
+  for (let c = 0; c < chunks; c++) {
+    const off    = c * CHUNK;
+    const slice  = mono.slice(off, off + CHUNK);
+    const timeOff = off / SR;
+
+    setStatus(`Chunk ${c+1}/${chunks} (${timeOff.toFixed(1)}s – ${Math.min((off+CHUNK)/SR, decoded.duration).toFixed(1)}s)…`, '');
+
+    // PCM → Int16 → base64
+    const pcm = new Int16Array(slice.length);
+    for (let i = 0; i < slice.length; i++) pcm[i] = Math.max(-32768, Math.min(32767, slice[i] * 32768));
+    const base64 = arrayBufferToBase64(pcm.buffer);
+
+    const res = await fetch(
+      `https://speech.googleapis.com/v1/speech:recognize?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          config: {
+            encoding: 'LINEAR16', sampleRateHertz: SR, languageCode: lang,
+            enableWordTimeOffsets: true, enableAutomaticPunctuation: true,
+          },
+          audio: { content: base64 }
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(`Chunk ${c+1}: ${data.error.message}`);
+    lastRaw = data;
+
+    const parsed = parseResponse(data, timeOff);
+    allResults.push(...parsed.results);
+    allWords.push(...parsed.words);
+  }
+
+  return { results: allResults, words: allWords, raw: lastRaw, totalSec };
+}
+
+// ── Parse raw response ───────────────────────────────
+function parseResponse(data, timeOffset = 0) {
+  const results = (data.results || []).map(r => {
+    const alt   = r.alternatives?.[0] || {};
+    const words = (alt.words || []).map(w => ({
+      word:     w.word,
+      startSec: parseFloat(w.startTime?.replace('s','') || 0) + timeOffset,
+      endSec:   parseFloat(w.endTime?.replace('s','') || 0) + timeOffset,
+    }));
+    const startSec = words[0]?.startSec ?? 0;
+    const endSec   = words.at(-1)?.endSec ?? 0;
+    return { transcript: alt.transcript || '', confidence: alt.confidence, words, startSec, endSec };
+  });
+
+  const words = results.flatMap(r => r.words);
+  return { results, words, raw: data };
+}
+
+// ── Render all views ─────────────────────────────────
+function renderAll(lastRaw) {
+  document.getElementById('results-card').style.display = '';
+  document.getElementById('results-summary').textContent =
+    `${allResults.length} result(s) · ${allWords.length} words`;
+
+  renderTimeline();
+  renderSentences();
+  document.getElementById('raw-json').textContent = JSON.stringify(lastRaw, null, 2);
+}
+
+// ── Timeline view ────────────────────────────────────
+function renderTimeline() {
+  const el = document.getElementById('tab-timeline');
+  if (!allWords.length) { el.innerHTML = '<div style="color:#64748b">Không có word timing.</div>'; return; }
+
+  const totalSec = allWords.at(-1)?.endSec || 1;
+  const COLORS   = ['#7c3aed','#0ea5e9','#16a34a','#d97706','#db2777','#0891b2'];
+
+  // Sentence-level rows (one row per result)
+  const sentRows = allResults.map((r, ri) => {
+    const color = COLORS[ri % COLORS.length];
+    const pct   = s => ((s / totalSec) * 100).toFixed(3) + '%';
+    const width = ((r.endSec - r.startSec) / totalSec * 100).toFixed(3) + '%';
+    const left  = pct(r.startSec);
+    const conf  = r.confidence != null ? (r.confidence * 100).toFixed(0) + '%' : '';
+
+    const wordChips = r.words.map(w => {
+      const wLeft  = ((w.startSec - r.startSec) / Math.max(r.endSec - r.startSec, 0.01) * 100).toFixed(2) + '%';
+      const wWidth = ((w.endSec - w.startSec) / Math.max(r.endSec - r.startSec, 0.01) * 100).toFixed(2) + '%';
+      return `<div class="tl-word-chip"
+        style="left:${wLeft};width:${wWidth};background:${color}22;border-color:${color}44"
+        title="${w.startSec.toFixed(2)}s → ${w.endSec.toFixed(2)}s"
+        data-time="${w.startSec.toFixed(2)}s–${w.endSec.toFixed(2)}s">${w.word}</div>`;
+    }).join('');
+
+    return `<div class="tl-row">
+      <div class="tl-stamp">${r.startSec.toFixed(1)}s</div>
+      <div class="tl-segments" style="height:50px">
+        <div class="tl-track-bg"></div>
+        <div class="tl-seg" style="left:0;right:0;background:${color}18;border-color:${color}33;font-size:11px;flex-direction:column;gap:1px;padding:4px 8px">
+          <span style="font-family:'Noto Serif TC',serif;font-size:15px">${r.transcript}</span>
+          <span style="font-size:10px;color:#64748b">${r.startSec.toFixed(2)}s → ${r.endSec.toFixed(2)}s${conf ? ' · ' + conf : ''}</span>
+        </div>
+        <div style="position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden">
+          ${wordChips}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Global word strip
+  const globalWords = allWords.map(w => {
+    const color  = COLORS[allResults.findIndex(r => r.words.includes(w)) % COLORS.length] || '#7c3aed';
+    const left   = ((w.startSec / totalSec) * 100).toFixed(3) + '%';
+    const width  = (Math.max((w.endSec - w.startSec) / totalSec * 100, 0.5)).toFixed(3) + '%';
+    return `<div class="tl-word-chip"
+      style="left:${left};width:${width};background:${color}33;border-color:${color}55"
+      title="${w.startSec.toFixed(2)}s → ${w.endSec.toFixed(2)}s · ${w.word}"
+      data-time="${w.startSec.toFixed(2)}s–${w.endSec.toFixed(2)}s">${w.word}</div>`;
+  }).join('');
+
+  const globalStrip = `<div class="tl-row">
+    <div class="tl-stamp" style="color:#4ade80;font-weight:700">ALL</div>
+    <div class="tl-segments" style="height:44px">
+      <div class="tl-track-bg"></div>
+      ${globalWords}
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-stamp"></div>
+    <div style="flex:1;padding-left:10px;display:flex;justify-content:space-between;font-size:10px;color:#475569;padding-top:2px">
+      <span>0s</span><span>${(totalSec/4).toFixed(1)}s</span><span>${(totalSec/2).toFixed(1)}s</span><span>${(totalSec*3/4).toFixed(1)}s</span><span>${totalSec.toFixed(1)}s</span>
+    </div>
+  </div>`;
+
+  el.innerHTML = `
+    <div style="margin-bottom:12px;font-size:11px;color:#64748b">
+      Tổng thời lượng: <strong style="color:#e2e8f0">${totalSec.toFixed(2)}s</strong> ·
+      Hover vào từng chữ để xem timestamp
+    </div>
+    <div class="timeline-wrap">
+      <div style="margin-bottom:8px;font-size:11px;font-weight:700;color:#64748b;border-bottom:1px solid #334155;padding-bottom:6px">Theo câu (results[])</div>
+      ${sentRows}
+      <div style="margin:12px 0 8px;font-size:11px;font-weight:700;color:#64748b;border-bottom:1px solid #334155;padding-bottom:6px">Tổng quan tất cả words</div>
+      ${globalStrip}
+    </div>`;
+}
+
+// ── Sentences view ───────────────────────────────────
+function renderSentences() {
+  const el = document.getElementById('tab-sentences');
+  if (!allResults.length) { el.innerHTML = '<div style="color:#64748b">Không có results.</div>'; return; }
+
+  el.innerHTML = allResults.map((r, ri) => {
+    const conf = r.confidence != null ? (r.confidence * 100).toFixed(1) + '%' : 'N/A';
+    const wordList = r.words.map(w =>
+      `<span style="display:inline-block;margin:2px 3px;padding:2px 7px;background:#1e293b;border:1px solid #334155;border-radius:4px;font-size:12px" title="${w.startSec.toFixed(2)}s → ${w.endSec.toFixed(2)}s">
+        <span style="font-family:'Noto Serif TC',serif;font-size:15px">${w.word}</span>
+        <span style="color:#475569;font-size:10px;margin-left:3px">${w.startSec.toFixed(1)}s</span>
+      </span>`
+    ).join('');
+
+    return `<div class="result-block">
+      <div class="result-block-head">
+        <span>results[${ri}] — ${r.startSec.toFixed(2)}s → ${r.endSec.toFixed(2)}s</span>
+        <span>confidence: ${conf} · ${r.words.length} words</span>
+      </div>
+      <div class="result-block-body">
+        <div class="transcript-text">${r.transcript}</div>
+        <div style="margin-top:8px">${wordList}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Helpers ──────────────────────────────────────────
+function arrayBufferToBase64(ab) {
+  const bytes = new Uint8Array(ab);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = type || '';
+}
+</script>
+</body>
+</html>
