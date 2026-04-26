@@ -76,7 +76,10 @@ img{display:block;max-width:100%}
 .lr-arrow{font-size:11px;color:#d1d5db;flex-shrink:0;transition:all .15s}
 
 /* Sub-rows (parts of a group) */
-.lesson-parts{background:#fafbfc;border-bottom:1px solid #f3f4f6}
+.lesson-parts{background:#fafbfc;border-bottom:1px solid #f3f4f6;max-height:0;overflow:hidden;transition:max-height .28s ease}
+.lesson-parts.open{max-height:2000px}
+.lesson-row.open{background:#f0f4ff}
+.lesson-row.open .lr-arrow{transform:rotate(90deg);color:var(--blue)}
 .lesson-part-row{display:flex;align-items:center;gap:12px;padding:10px 22px 10px 82px;border-bottom:1px solid #f3f4f6;transition:background .12s;cursor:pointer;color:var(--text)}
 .lesson-part-row:last-child{border-bottom:none}
 .lesson-part-row:hover{background:#f0f4ff}
@@ -332,8 +335,10 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     const href     = `/reading.html?ids=${allIds.join(',')}&b=${encodeURIComponent(book)}`;
     const isMulti  = grpLessons.length > 1;
 
-    // Group header row (click → read all)
-    let html = `<div class="lesson-row" onclick="location.href='${href}'">
+    const toggle = isMulti ? `toggleGroup(this,'${href}')` : `location.href='${href}'`;
+
+    // Group header row
+    let html = `<div class="lesson-row" onclick="${toggle}">
       <div class="lr-icon" style="background:linear-gradient(135deg,${c1},${c2})">
         <span class="lr-icon-wm">${wm}</span>
         <i class="fa-solid fa-book-open" style="font-size:14px;position:relative;z-index:1;color:rgba(255,255,255,.85)"></i>
@@ -348,6 +353,11 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
     // Sub-rows for each part
     if (isMulti) {
+      const readAllRow = `<div class="lesson-part-row" onclick="location.href='${href}'" style="background:#eff6ff">
+          <span class="lpr-dot" style="background:#1a56db"></span>
+          <div class="lpr-title" style="color:#1a56db;font-weight:600">Đọc tất cả ${grpLessons.length} đoạn</div>
+          <i class="fa-solid fa-chevron-right lpr-arrow" style="color:#1a56db"></i>
+        </div>`;
       const subRows = grpLessons.map(l => {
         const sep  = l.title.indexOf(' · ');
         const part = sep > -1 ? l.title.slice(sep + 3) : l.title;
@@ -362,7 +372,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
           <i class="fa-solid fa-chevron-right lpr-arrow"></i>
         </div>`;
       }).join('');
-      html += `<div class="lesson-parts">${subRows}</div>`;
+      html += `<div class="lesson-parts">${readAllRow}${subRows}</div>`;
     }
 
     return html;
@@ -370,6 +380,19 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
   document.getElementById('lesson-grid').innerHTML = rows;
 })();
+
+function toggleGroup(row) {
+  const parts = row.nextElementSibling;
+  const isOpen = parts?.classList.contains('open');
+  // Collapse all
+  document.querySelectorAll('.lesson-parts.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.lesson-row.open').forEach(r => r.classList.remove('open'));
+  // Expand clicked (if it was closed)
+  if (!isOpen && parts) {
+    parts.classList.add('open');
+    row.classList.add('open');
+  }
+}
 </script>
 </body>
 </html>
