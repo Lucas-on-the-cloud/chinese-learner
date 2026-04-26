@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/user-session.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -185,6 +186,12 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const db = supabase.createClient(DB_URL, DB_KEY);
+
+// Init user session
+window.userSession = new UserSession(db);
+window.userSession.init().then(() => {
+  window.userSession.migrateFromLocalStorage();
+});
 
 // ─── State ──────────────────────────────────────
 const params   = new URLSearchParams(location.search);
@@ -459,7 +466,8 @@ function showAnswer() {
 
 function skipSegment() {
   sessionScore.total++;
-  saveProgress(bookName, lessonId, currentIdx);
+  const seg = allSegments[currentIdx];
+  saveProgress(bookName, lessonId, seg.id, 0);
   renderSegment(currentIdx + 1);
 }
 
@@ -491,7 +499,8 @@ function showResult(transcript, userInput, seg) {
 
   sessionScore.correct += (pct === 100 ? 1 : 0);
   sessionScore.total++;
-  saveProgress(bookName, lessonId, currentIdx);
+  const seg = allSegments[currentIdx];
+  saveProgress(bookName, lessonId, seg.id, pct);
 
   document.getElementById('result-area').innerHTML = `
     <div class="result-card">
@@ -539,16 +548,23 @@ function renderDone() {
     </div>`;
 }
 
-// ─── PROGRESS (localStorage) ─────────────────────
+// ─── PROGRESS — DB + localStorage fallback ───────
 function progressKey(book, lid) { return `ls_prog_${book}_${lid}`; }
+
 function getLessonProgress(book, lid) {
   return JSON.parse(localStorage.getItem(progressKey(book, lid)) || '[]').length;
 }
-function saveProgress(book, lid, idx) {
+
+function saveProgress(book, lid, segmentId, scorePct) {
+  // localStorage fallback
   const key  = progressKey(book, lid);
   const done = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
-  done.add(idx);
+  done.add(segmentId);
   localStorage.setItem(key, JSON.stringify([...done]));
+  // Save to Supabase
+  if (window.userSession?.uid) {
+    window.userSession.saveListeningResult(book, lid, segmentId, scorePct || 0);
+  }
 }
 
 // ─── UTILS ──────────────────────────────────────
