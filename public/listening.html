@@ -60,66 +60,103 @@ a{text-decoration:none;color:inherit}
 .lesson-arrow{font-size:11px;color:#d1d5db;transition:transform .2s}
 
 /* EXERCISE */
-.ex-wrap{display:flex;flex-direction:column;gap:20px}
+.ex-wrap{display:flex;flex-direction:column;gap:16px}
 
 /* PROGRESS */
-.ex-prog-bar{height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden}
-.ex-prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .35s ease}
-.ex-meta{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-2);margin-top:5px}
+.ex-prog-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow-sm)}
+.ex-prog-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.ex-prog-label{font-size:12px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:6px}
+.ex-prog-score{font-size:12px;font-weight:600;color:var(--green);background:var(--green-lt);padding:2px 8px;border-radius:6px}
+.ex-prog-bar{height:6px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.ex-prog-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .4s cubic-bezier(.4,0,.2,1)}
 
 /* PLAYER CARD */
-.player-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
-.player-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.player-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.play-btn{width:48px;height:48px;border-radius:50%;background:var(--purple);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;box-shadow:0 4px 12px rgba(124,58,237,.35)}
-.play-btn:hover{background:#6d28d9;transform:scale(1.05)}
-.play-btn:active{transform:scale(.97)}
-.player-timeline{flex:1;display:flex;flex-direction:column;gap:4px}
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.player-head{background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 60%,#a855f7 100%);padding:18px 22px 16px;display:flex;align-items:center;justify-content:space-between}
+.player-head-left{display:flex;align-items:center;gap:12px}
+.player-seg-badge{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.5px;text-transform:uppercase}
+.player-seg-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.player-dur{font-size:11px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.12);padding:3px 9px;border-radius:6px}
+.sound-bars{display:flex;align-items:flex-end;gap:2px;height:20px;margin-left:4px}
+.sound-bar{width:3px;background:rgba(255,255,255,.4);border-radius:2px;transition:height .1s}
+.sound-bars.playing .sound-bar:nth-child(1){animation:bar1 .6s ease-in-out infinite}
+.sound-bars.playing .sound-bar:nth-child(2){animation:bar2 .5s ease-in-out infinite}
+.sound-bars.playing .sound-bar:nth-child(3){animation:bar3 .7s ease-in-out infinite}
+.sound-bars.playing .sound-bar:nth-child(4){animation:bar2 .55s ease-in-out infinite}
+.sound-bars.playing .sound-bar:nth-child(5){animation:bar1 .65s ease-in-out infinite}
+@keyframes bar1{0%,100%{height:5px}50%{height:16px}}
+@keyframes bar2{0%,100%{height:10px}50%{height:5px}}
+@keyframes bar3{0%,100%{height:3px}33%{height:18px}66%{height:8px}}
+
+.player-body{padding:18px 22px}
+.player-controls{display:flex;align-items:center;gap:12px}
+.play-btn{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#a855f7);color:#fff;border:none;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;box-shadow:0 4px 16px rgba(124,58,237,.4)}
+.play-btn:hover{box-shadow:0 6px 20px rgba(124,58,237,.5);transform:scale(1.06)}
+.play-btn:active{transform:scale(.95)}
+.player-timeline{flex:1;display:flex;flex-direction:column;gap:5px}
 .timeline-bar{height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden;cursor:pointer}
 .timeline-fill{height:100%;background:linear-gradient(90deg,var(--purple),#a855f7);border-radius:100px;transition:width .1s linear;width:0%}
 .timeline-time{font-size:11px;color:var(--text-3);display:flex;justify-content:space-between}
-.speed-btns{display:flex;gap:4px}
-.speed-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
-.speed-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
-.replay-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:7px 14px;border-radius:7px;border:1.5px solid var(--purple);background:var(--purple-lt);color:var(--purple);cursor:pointer;transition:all .15s}
+.player-footer{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap;padding-top:14px;border-top:1px solid #f3f4f6}
+.speed-group{display:flex;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.speed-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:5px 10px;border:none;border-right:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .12s}
+.speed-btn:last-child{border-right:none}
+.speed-btn.active{background:var(--purple);color:#fff}
+.replay-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border-radius:7px;border:1.5px solid var(--purple);background:var(--purple-lt);color:var(--purple);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;margin-left:auto}
 .replay-btn:hover{background:var(--purple);color:#fff}
-.hint-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
+.hint-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .15s}
 .hint-btn:hover{border-color:var(--orange);color:var(--orange)}
-.hint-row{margin-top:10px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#92400e;font-style:italic;display:none}
+.hint-row{margin-top:12px;padding:10px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;font-size:13px;color:#92400e;display:none;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
 /* INPUT AREA */
-.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
-.input-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.dictation-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:20px;outline:none;transition:border-color .15s;resize:none;line-height:1.6;color:var(--text)}
-.dictation-input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.08)}
-.input-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.check-btn{background:var(--purple);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
-.check-btn:hover{background:#6d28d9}
-.skip-btn{background:transparent;color:var(--text-2);border:1px solid var(--border);padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow-sm)}
+.input-label{font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.dictation-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:22px;outline:none;transition:border-color .15s,box-shadow .15s;resize:none;line-height:1.65;color:var(--text);letter-spacing:1px}
+.dictation-input:focus{border-color:var(--purple);box-shadow:0 0 0 4px rgba(124,58,237,.08)}
+.input-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px;flex-wrap:wrap;gap:8px}
+.input-actions{display:flex;gap:8px;flex-wrap:wrap}
+.check-btn{background:var(--purple);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.check-btn:hover{background:#6d28d9;box-shadow:0 4px 12px rgba(109,40,217,.3)}
+.skip-btn{background:transparent;color:var(--text-2);border:1px solid var(--border);padding:10px 16px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
 .skip-btn:hover{border-color:var(--text-2);color:var(--text)}
-.show-ans-btn{background:transparent;color:var(--orange);border:1px solid #fde68a;padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.show-ans-btn{background:transparent;color:var(--orange);border:1px solid #fde68a;padding:10px 16px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
 .show-ans-btn:hover{background:#fffbeb}
+.kbd-hint{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:6px}
+.kbd{display:inline-block;padding:1px 5px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:10px;font-family:monospace;color:var(--text-2)}
 
 /* RESULT */
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
-.char-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px}
-.char-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:32px}
-.char-zh{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.2}
-.char-user{font-family:'Noto Serif TC',serif;font-size:13px;line-height:1.2;color:var(--text-3)}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);animation:fadeIn .25s ease}
+.result-answer{padding:18px 22px 14px;border-bottom:1px solid #f3f4f6}
+.result-answer-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:8px}
+.result-answer-text{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);line-height:1.7;letter-spacing:1px}
+.result-compare{padding:14px 22px;border-bottom:1px solid #f3f4f6}
+.result-compare-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-3);margin-bottom:10px}
+.char-row{display:flex;flex-wrap:wrap;gap:6px}
+.char-cell{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:34px;padding:4px 6px;border-radius:6px}
+.char-zh{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1.1}
+.char-user{font-family:'Noto Serif TC',serif;font-size:12px;line-height:1;border-top:1px solid currentColor;padding-top:3px;width:100%;text-align:center;opacity:.7}
+.char-ok{background:#f0fdf4}
 .char-ok .char-zh{color:var(--green)}
-.char-ok .char-user{color:var(--green);opacity:.7}
+.char-ok .char-user{color:var(--green)}
+.char-err{background:#fef2f2}
 .char-err .char-zh{color:var(--red)}
-.char-err .char-user{color:var(--red);font-weight:700}
-.char-miss .char-zh{color:var(--text-3)}
-.score-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid #f3f4f6;flex-wrap:wrap}
-.score-num{font-size:20px;font-weight:700}
-.score-num.perfect{color:var(--green)}
-.score-num.good{color:var(--blue)}
-.score-num.bad{color:var(--red)}
-.score-label{font-size:12px;color:var(--text-2)}
-.next-btn{margin-left:auto;background:var(--purple);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
-.next-btn:hover{background:#6d28d9}
-.retry-btn{background:transparent;color:var(--purple);border:1.5px solid var(--purple);padding:10px 18px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.char-err .char-user{color:var(--red);font-weight:700;opacity:1}
+.char-miss{background:#f9fafb}
+.char-miss .char-zh{color:#9ca3af}
+.char-miss .char-user{color:#d1d5db}
+.result-bottom{padding:14px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.score-badge{display:flex;align-items:center;gap:10px}
+.score-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.score-circle.perfect{background:var(--green-lt);color:var(--green)}
+.score-circle.good{background:var(--blue-lt);color:var(--blue)}
+.score-circle.bad{background:var(--red-lt);color:var(--red)}
+.score-detail{font-size:12px;color:var(--text-2)}
+.score-msg{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.result-actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.next-btn{background:var(--purple);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px}
+.next-btn:hover{background:#6d28d9;box-shadow:0 4px 12px rgba(109,40,217,.3)}
+.retry-btn{background:transparent;color:var(--purple);border:1.5px solid var(--purple);padding:10px 16px;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
 .retry-btn:hover{background:var(--purple-lt)}
 
 /* DONE SCREEN */
@@ -400,62 +437,88 @@ function renderSegment(idx) {
 
   document.getElementById('app-main').innerHTML = `
     <div class="ex-wrap">
-      <!-- Progress -->
-      <div>
-        <div class="ex-prog-bar"><div class="ex-prog-fill" id="ex-pf" style="width:${pct}%"></div></div>
-        <div class="ex-meta">
-          <span>Đoạn ${idx+1} / ${allSegments.length}</span>
-          <span>✓ ${sessionScore.correct} đúng</span>
+
+      <!-- Progress bar -->
+      <div class="ex-prog-wrap">
+        <div class="ex-prog-top">
+          <div class="ex-prog-label">
+            <i class="fas fa-headphones" style="color:var(--purple);font-size:10px"></i>
+            Đoạn <strong>${idx+1}</strong> / ${allSegments.length}
+          </div>
+          <div class="ex-prog-score"><i class="fas fa-check" style="font-size:9px"></i> ${sessionScore.correct} đúng</div>
         </div>
+        <div class="ex-prog-bar"><div class="ex-prog-fill" id="ex-pf" style="width:${pct}%"></div></div>
       </div>
 
       <!-- Player -->
       <div class="player-card">
-        <div class="player-title">
-          <i class="fas fa-headphones" style="color:var(--purple);font-size:14px"></i>
-          Nghe đoạn ${idx+1}
-          <span style="font-size:12px;font-weight:400;color:var(--text-3);margin-left:auto">${dur}s</span>
-        </div>
-        <div class="player-controls">
-          <button class="play-btn" id="play-btn" onclick="playCurrentSegment()">
-            <i class="fas fa-play" id="play-icon"></i>
-          </button>
-          <div class="player-timeline">
-            <div class="timeline-bar"><div class="timeline-fill" id="timeline-fill"></div></div>
-            <div class="timeline-time">
-              <span id="time-cur">0:00</span>
-              <span id="time-end">${formatTime(seg.end_sec - seg.start_sec)}</span>
+        <div class="player-head">
+          <div class="player-head-left">
+            <div>
+              <div class="player-seg-badge">Đoạn ${idx+1}</div>
+              <div class="player-seg-title">聽 · Nghe &amp; Chép</div>
+            </div>
+            <div class="sound-bars" id="sound-bars">
+              <div class="sound-bar" style="height:6px"></div>
+              <div class="sound-bar" style="height:12px"></div>
+              <div class="sound-bar" style="height:4px"></div>
+              <div class="sound-bar" style="height:16px"></div>
+              <div class="sound-bar" style="height:8px"></div>
             </div>
           </div>
-          <button class="replay-btn" onclick="playCurrentSegment()">
-            <i class="fas fa-rotate-left"></i> Nghe lại
-          </button>
+          <div class="player-dur">${dur}s</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap">
-          <span style="font-size:12px;color:var(--text-2)">Tốc độ:</span>
-          <div class="speed-btns">
-            <button class="speed-btn${audioSpeed===0.75?' active':''}" onclick="setSpeed(0.75)">0.75×</button>
-            <button class="speed-btn${audioSpeed===1?' active':''}" onclick="setSpeed(1)">1×</button>
-            <button class="speed-btn${audioSpeed===1.25?' active':''}" onclick="setSpeed(1.25)">1.25×</button>
+
+        <div class="player-body">
+          <div class="player-controls">
+            <button class="play-btn" id="play-btn" onclick="playCurrentSegment()">
+              <i class="fas fa-play" id="play-icon"></i>
+            </button>
+            <div class="player-timeline">
+              <div class="timeline-bar"><div class="timeline-fill" id="timeline-fill"></div></div>
+              <div class="timeline-time">
+                <span id="time-cur">0:00</span>
+                <span id="time-end">${formatTime(seg.end_sec - seg.start_sec)}</span>
+              </div>
+            </div>
           </div>
-          <button class="hint-btn" onclick="toggleHint()"><i class="fas fa-lightbulb"></i> Gợi ý</button>
-        </div>
-        <div class="hint-row" id="hint-row">
-          ${seg.pinyin ? `<div style="font-style:italic;margin-bottom:3px">${seg.pinyin}</div>` : ''}
-          <div style="font-size:11px;color:#ca8a04">Số chữ: ${transcript.replace(/\s/g,'').length} ký tự</div>
+
+          <div class="player-footer">
+            <span style="font-size:11px;color:var(--text-2);font-weight:600">Tốc độ:</span>
+            <div class="speed-group">
+              <button class="speed-btn${audioSpeed===0.75?' active':''}" onclick="setSpeed(0.75)">0.75×</button>
+              <button class="speed-btn${audioSpeed===1?' active':''}" onclick="setSpeed(1)">1×</button>
+              <button class="speed-btn${audioSpeed===1.25?' active':''}" onclick="setSpeed(1.25)">1.25×</button>
+            </div>
+            <button class="hint-btn" onclick="toggleHint()"><i class="fas fa-lightbulb"></i> Gợi ý</button>
+            <button class="replay-btn" onclick="playCurrentSegment()">
+              <i class="fas fa-rotate-left"></i> Nghe lại
+            </button>
+          </div>
+
+          <div class="hint-row" id="hint-row">
+            ${seg.pinyin ? `<div style="font-weight:600;margin-bottom:4px;color:#b45309"><i class="fas fa-music" style="font-size:10px;margin-right:4px"></i>${seg.pinyin}</div>` : ''}
+            <div style="font-size:12px;color:#ca8a04"><i class="fas fa-font" style="font-size:9px;margin-right:4px"></i>${transcript.replace(/\s/g,'').length} ký tự</div>
+          </div>
         </div>
       </div>
 
       <!-- Input -->
       <div class="input-card">
-        <div class="input-label"><i class="fas fa-keyboard" style="font-size:10px"></i> Gõ những gì bạn nghe:</div>
+        <div class="input-label"><i class="fas fa-keyboard" style="font-size:9px"></i> Gõ những gì bạn nghe</div>
         <textarea class="dictation-input" id="dictation-input" rows="2"
           placeholder="Gõ 繁體字 vào đây…"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();checkAnswer()}"></textarea>
-        <div class="input-actions">
-          <button class="check-btn" onclick="checkAnswer()"><i class="fas fa-check"></i> Kiểm tra</button>
-          <button class="skip-btn" onclick="skipSegment()">Bỏ qua</button>
-          <button class="show-ans-btn" onclick="showAnswer()"><i class="fas fa-eye"></i> Xem đáp án</button>
+          onkeydown="handleDictationKey(event)"></textarea>
+        <div class="input-footer">
+          <div class="input-actions">
+            <button class="check-btn" onclick="checkAnswer()"><i class="fas fa-check"></i> Kiểm tra</button>
+            <button class="skip-btn" onclick="skipSegment()">Bỏ qua</button>
+            <button class="show-ans-btn" onclick="showAnswer()"><i class="fas fa-eye"></i> Đáp án</button>
+          </div>
+          <div class="kbd-hint">
+            <span><kbd class="kbd">Enter</kbd> kiểm tra</span>
+            <span><kbd class="kbd">Space</kbd> phát audio</span>
+          </div>
         </div>
       </div>
 
@@ -477,7 +540,9 @@ function playCurrentSegment() {
   audioEl.play().catch(() => {}); // ignore autoplay policy error — user can press play manually
 
   const playIcon = document.getElementById('play-icon');
+  const soundBars = document.getElementById('sound-bars');
   if (playIcon) { playIcon.className = 'fas fa-pause'; }
+  if (soundBars) soundBars.classList.add('playing');
 
   clearInterval(timeInterval);
   timeInterval = setInterval(() => {
@@ -485,6 +550,7 @@ function playCurrentSegment() {
       audioEl.pause();
       clearInterval(timeInterval);
       if (playIcon) playIcon.className = 'fas fa-play';
+      if (soundBars) soundBars.classList.remove('playing');
       return;
     }
     const elapsed = audioEl.currentTime - seg.start_sec;
@@ -561,19 +627,35 @@ function showResult(transcript, userInput, seg) {
 
   document.getElementById('result-area').innerHTML = `
     <div class="result-card">
-      <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Kết quả</div>
-      <div class="char-row">${cellsHTML}</div>
-      ${extra}
-      ${seg.meaning_vi ? `<div style="font-size:13px;color:var(--text-2);padding:8px 0;border-top:1px solid #f3f4f6;margin-top:6px">${seg.meaning_vi}</div>` : ''}
-      <div class="score-row">
-        <div>
-          <div class="score-num ${cls}">${pct}%</div>
-          <div class="score-label">${okCount}/${chars.length} ký tự đúng · ${msg}</div>
+      <!-- Correct answer -->
+      <div class="result-answer">
+        <div class="result-answer-label"><i class="fas fa-check-circle" style="color:var(--green);font-size:9px;margin-right:4px"></i>Đáp án đúng</div>
+        <div class="result-answer-text">${transcript}</div>
+        ${seg.meaning_vi ? `<div style="font-size:13px;color:var(--text-2);margin-top:6px;line-height:1.6">${seg.meaning_vi}</div>` : ''}
+      </div>
+
+      <!-- Char-by-char comparison -->
+      <div class="result-compare">
+        <div class="result-compare-label"><i class="fas fa-spell-check" style="font-size:9px;margin-right:4px"></i>So sánh từng chữ</div>
+        <div class="char-row">${cellsHTML}</div>
+        ${extra}
+      </div>
+
+      <!-- Score + actions -->
+      <div class="result-bottom">
+        <div class="score-badge">
+          <div class="score-circle ${cls}">${pct}%</div>
+          <div>
+            <div class="score-msg">${msg}</div>
+            <div class="score-detail">${okCount}/${chars.length} ký tự đúng</div>
+          </div>
         </div>
-        <button class="retry-btn" onclick="renderSegment(${currentIdx})"><i class="fas fa-rotate-left"></i> Thử lại</button>
-        <button class="next-btn" onclick="renderSegment(${currentIdx + 1})">
-          ${currentIdx + 1 < allSegments.length ? 'Đoạn tiếp <i class="fas fa-arrow-right"></i>' : '🏁 Kết thúc'}
-        </button>
+        <div class="result-actions">
+          <button class="retry-btn" onclick="renderSegment(${currentIdx})"><i class="fas fa-rotate-left"></i> Thử lại</button>
+          <button class="next-btn" onclick="renderSegment(${currentIdx + 1})">
+            ${currentIdx + 1 < allSegments.length ? 'Đoạn tiếp <i class="fas fa-arrow-right"></i>' : '🏁 Kết thúc'}
+          </button>
+        </div>
       </div>
     </div>`;
 
@@ -622,6 +704,12 @@ function saveProgress(book, lid, segmentId, scorePct) {
   if (window.userSession?.uid) {
     window.userSession.saveListeningResult(book, lid, segmentId, scorePct || 0);
   }
+}
+
+function handleDictationKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); checkAnswer(); }
+  // Space with empty textarea → replay audio
+  if (e.key === ' ' && e.target.value === '') { e.preventDefault(); playCurrentSegment(); }
 }
 
 // ─── UTILS ──────────────────────────────────────
