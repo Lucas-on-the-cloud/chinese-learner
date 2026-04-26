@@ -68,9 +68,24 @@ img{display:block;max-width:100%}
 .post-card-sm .sm-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:4px}
 .post-card-sm .sm-meta{font-size:11px;color:var(--text-3)}
 
-/* all posts grid */
-.all-posts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:40px}
-@media(max-width:600px){.featured-grid{grid-template-columns:1fr}.all-posts-grid{grid-template-columns:1fr}}
+/* horizontal post list */
+.post-list{display:flex;flex-direction:column;gap:14px;margin-bottom:40px}
+.post-row{display:flex;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s;text-decoration:none;color:inherit}
+.post-row:hover{box-shadow:var(--shadow);border-color:#c7d7fd;transform:translateY(-2px)}
+.post-row-thumb{width:300px;flex-shrink:0;background:linear-gradient(135deg,var(--navy),#1e3a8a)}
+.post-row-thumb img{width:100%;height:100%;object-fit:cover;min-height:205px;display:block}
+.post-row-thumb-ph{width:100%;min-height:205px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:52px;color:rgba(255,255,255,.15)}
+.post-row-body{flex:1;padding:22px 28px;display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0}
+.post-row-cats{font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:6px}
+.post-row-cats i{font-size:10px;color:var(--text-3)}
+.post-row-title{font-family:'Noto Serif TC',serif;font-size:19px;font-weight:700;color:var(--text);line-height:1.4;transition:color .15s}
+.post-row:hover .post-row-title{color:var(--blue)}
+.post-row-excerpt{font-size:13.5px;color:var(--text-2);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-row-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.post-row-meta{font-size:11px;color:var(--text-3)}
+.post-row-more{font-size:12.5px;font-weight:600;color:var(--blue);display:inline-flex;align-items:center;gap:5px;transition:gap .15s;flex-shrink:0}
+.post-row:hover .post-row-more{gap:9px}
+@media(max-width:700px){.featured-grid{grid-template-columns:1fr}.post-row{flex-direction:column}.post-row-thumb{width:100%}.post-row-thumb img,.post-row-thumb-ph{min-height:170px}}
 
 /* sidebar */
 .sidebar{position:sticky;top:80px}
@@ -97,12 +112,26 @@ img{display:block;max-width:100%}
 .empty-state .big{font-family:'Noto Serif TC',serif;font-size:48px;color:var(--blue);opacity:.2;margin-bottom:1rem}
 
 /* FOOTER */
-footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-main{padding:48px 1.5rem 40px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.6);transition:all .15s}
+.footer-social:hover{background:var(--blue);color:#fff}
+.footer-col-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:.85rem;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-links a{color:rgba(255,255,255,.55);transition:color .15s}
+.footer-links a:hover{color:rgba(255,255,255,.9)}
+.footer-info-row{display:flex;align-items:flex-start;gap:8px;color:rgba(255,255,255,.5);margin-bottom:.5rem}
+.footer-info-row i{width:16px;flex-shrink:0;margin-top:2px;color:rgba(255,255,255,.3)}
 .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
 .footer-bottom-links{display:flex;gap:1.5rem}
 .footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s}
 .footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
-@media(max-width:640px){.nav-link{display:none}}
+@media(max-width:640px){.nav-link{display:none}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
 </style>
 </head>
 <body>
@@ -146,7 +175,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
 
         <!-- All posts -->
         <div class="section-title" id="section-label">Tất cả bài viết</div>
-        <div class="all-posts-grid" id="all-posts"></div>
+        <div class="post-list" id="all-posts"></div>
         <div class="pagination" id="pagination"></div>
       </div>
 
@@ -174,11 +203,42 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
 </div>
 
 <footer>
+  <div class="footer-main">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — kết hợp AI, bài đọc thực từ đề thi và công cụ học tập cá nhân hóa.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/lessons.html" title="Bài học"><i class="fas fa-graduation-cap"></i></a>
+        <a class="footer-social" href="/blog.html" title="Blog"><i class="fas fa-pen-nib"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/lessons.html">Bài học</a></li>
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+        <li><a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="footer-info-row"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
   <div class="footer-bottom">
-    <span>TOCFL FAFA © 2026</span>
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
     <div class="footer-bottom-links">
       <a href="/lessons.html">Bài học</a>
-      <a href="/blog.html">Blog</a>
+      <a href="/courses.html">Khóa học</a>
       <a href="/about.html">Giới thiệu</a>
     </div>
   </div>
@@ -195,8 +255,8 @@ const db = new (class extends Object {
     );
   }
   async getPosts({ category, limit, search } = {}) {
-    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at')
-      .eq('published', true).order('created_at', { ascending: false });
+    let q = this.client.from('posts').select('id,title,slug,excerpt,cover_url,category,author,created_at,sort_order')
+      .eq('published', true).order('sort_order', { ascending: false }).order('created_at', { ascending: false });
     if (category) q = q.eq('category', category);
     if (limit)    q = q.limit(limit);
     if (search)   q = q.ilike('title', `%${search}%`);
@@ -205,7 +265,7 @@ const db = new (class extends Object {
   }
 })();
 
-let allPosts = [], filtered = [], currentCat = null, PAGE = 8, page = 1;
+let allPosts = [], filtered = [], currentCat = null, PAGE = 10, page = 1;
 
 const GRADIENTS = ['#0d1b4b,#1e3a8a','#064e3b,#065f46','#4c1d95,#5b21b6','#7f1d1d,#991b1b','#0c4a6e,#075985'];
 
@@ -250,20 +310,27 @@ function renderFeatured(posts) {
 function renderAllPosts() {
   const start = (page - 1) * PAGE;
   const slice = filtered.slice(start, start + PAGE);
-  const grid  = document.getElementById('all-posts');
+  const el = document.getElementById('all-posts');
   if (!slice.length) {
-    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="big">📝</div><p>Không tìm thấy bài viết nào.</p></div>';
+    el.innerHTML = '<div class="empty-state"><div class="big">📝</div><p>Không tìm thấy bài viết nào.</p></div>';
   } else {
-    grid.innerHTML = slice.map(p => `
-      <a class="post-card" href="/post.html?id=${p.id}" style="display:block">
-        ${postCover(p)}
-        <div class="post-body">
-          ${p.category ? `<span class="post-cat">${p.category}</span>` : ''}
-          <div class="post-title">${p.title}</div>
-          ${p.excerpt ? `<div class="post-excerpt">${p.excerpt}</div>` : ''}
-          <div class="post-meta"><i class="fa-regular fa-calendar"></i> ${fmt(p.created_at)} · ${p.author||'Admin'}</div>
+    el.innerHTML = slice.map(p => {
+      const thumb = p.cover_url
+        ? `<img src="${p.cover_url}" alt="${p.title}">`
+        : `<div class="post-row-thumb-ph">文</div>`;
+      return `<a class="post-row" href="/post.html?id=${p.id}">
+        <div class="post-row-thumb">${thumb}</div>
+        <div class="post-row-body">
+          ${p.category ? `<div class="post-row-cats"><i class="fa-regular fa-folder"></i> ${p.category}</div>` : ''}
+          <div class="post-row-title">${p.title}</div>
+          ${p.excerpt ? `<div class="post-row-excerpt">${p.excerpt}</div>` : ''}
+          <div class="post-row-foot">
+            <div class="post-row-meta"><i class="fa-regular fa-calendar" style="font-size:10px"></i> ${fmt(p.created_at)} · ${p.author||'Admin'}</div>
+            <span class="post-row-more">Xem thêm! <i class="fa-solid fa-arrow-right" style="font-size:11px"></i></span>
+          </div>
         </div>
-      </a>`).join('');
+      </a>`;
+    }).join('');
   }
   renderPagination();
 }
