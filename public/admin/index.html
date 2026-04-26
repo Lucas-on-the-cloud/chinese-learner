@@ -2705,8 +2705,6 @@ async function lsCallSTT(arrayBuffer, gcpKey, timeOffset) {
           languageCode: 'zh-TW',
           enableWordTimeOffsets: true,
           enableAutomaticPunctuation: true,
-          model: 'latest_long',
-          useEnhanced: true,
         },
         audio: { content: base64 }
       })
@@ -2750,7 +2748,6 @@ async function lsTranscribeLong(arrayBuffer, gcpKey) {
             languageCode: 'zh-TW',
             enableWordTimeOffsets: true,
             enableAutomaticPunctuation: true,
-            model: 'latest_long',
           },
           audio: { content: base64 }
         })
