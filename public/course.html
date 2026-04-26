@@ -129,11 +129,24 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
 <!-- Body -->
 <div class="page-body">
-  <div class="container">
-    <div class="section-label">Khóa học trong chương trình này</div>
-    <div class="sub-grid" id="sub-grid">
-      <p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Đang tải…</p>
+  <div class="container" style="display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start">
+
+    <div>
+      <!-- Sub-courses -->
+      <div class="section-label">Khóa học trong chương trình này</div>
+      <div class="sub-grid" id="sub-grid">
+        <p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Đang tải…</p>
+      </div>
     </div>
+
+    <!-- Detail sidebar -->
+    <aside id="detail-sidebar" style="display:none;position:sticky;top:80px">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px">
+        <div class="section-label" style="margin-bottom:16px;font-size:15px">Thông tin khóa học</div>
+        <div id="detail-content" style="font-size:14px;line-height:1.9;color:#1f2937"></div>
+      </div>
+    </aside>
+
   </div>
 </div>
 
@@ -183,6 +196,26 @@ const db = supabase.createClient(
 
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+function renderMarkdown(text) {
+  return (text || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:15px;margin:1.2rem 0 .5rem">$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:17px;margin:1.4rem 0 .6rem">$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:20px;margin:1.6rem 0 .7rem">$1</h1>')
+    .replace(/^> (.+)$/gm,'<blockquote style="border-left:3px solid #1a56db;padding:.5rem .8rem;color:#6b7280;font-style:italic;background:#eff6ff;border-radius:0 6px 6px 0;margin:.8rem 0">$1</blockquote>')
+    .replace(/^[-•] (.+)$/gm,'<li style="margin-bottom:.35rem">$1</li>')
+    .replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.2rem 0">')
+    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:#0d1b4b">$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g,'<em>$1</em>')
+    .replace(/__([^_\n]+?)__/g,'<u>$1</u>')
+    .replace(/==r:([^=\n]+)==/g,'<mark style="background:#fecaca;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/==g:([^=\n]+)==/g,'<mark style="background:#bbf7d0;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/==([^=\n:][^=\n]*)==/g,'<mark style="background:#fef08a;padding:1px 3px;border-radius:3px">$1</mark>')
+    .replace(/(<li[^>]*>.*<\/li>\n?)+/g, m => `<ul style="padding-left:1.2rem;margin:.6rem 0">${m}</ul>`)
+    .replace(/\n{2,}/g,'</p><p style="margin-bottom:.8rem">')
+    .replace(/\n/g,'<br>');
+}
+
 const GRADIENTS = ['135deg,#0d1b4b,#1e3a8a','135deg,#064e3b,#065f46','135deg,#4c1d95,#5b21b6','135deg,#7f1d1d,#991b1b'];
 
 async function init() {
@@ -195,6 +228,16 @@ async function init() {
   document.title = course.title + ' — TOCFL FAFA';
   document.getElementById('hero-title').textContent = course.title;
   document.getElementById('hero-desc').textContent  = course.description || '';
+
+  if (course.detail) {
+    const sidebar = document.getElementById('detail-sidebar');
+    const content = document.getElementById('detail-content');
+    sidebar.style.display = '';
+    content.innerHTML = `<p style="margin-bottom:.8rem">${renderMarkdown(course.detail)}</p>`;
+    // Switch body to 2-col; if no detail, stays 1-col
+  } else {
+    document.querySelector('.page-body .container').style.gridTemplateColumns = '1fr';
+  }
 
   const tags = [];
   if (course.level) tags.push(`<span class="hero-tag"><i class="fa-solid fa-signal"></i> ${esc(course.level)}</span>`);

@@ -570,20 +570,22 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   <!-- ── COURSES ──────────────────────────────── -->
   <div id="section-courses" style="display:none;width:100%">
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
 
       <!-- FORM -->
       <div class="s-card">
         <div class="s-title"><i class="fa-solid fa-graduation-cap" style="color:#1a56db"></i> <span id="cr-form-title">Tạo khóa học mới</span></div>
 
+        <!-- Row 1: title full width -->
         <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
         <input type="text" id="cr-title" class="s-input" placeholder="Tên khóa học…">
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+        <!-- Row 2: level / price / cover in 3 cols -->
+        <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;margin-top:10px;align-items:end">
           <div>
             <div class="s-label">Cấp độ</div>
             <select id="cr-level" class="s-input" style="height:38px">
-              <option value="">— Chọn cấp độ —</option>
+              <option value="">— Cấp độ —</option>
               <option>A1</option><option>A1–A2</option><option>A2</option>
               <option>B1</option><option>B1–B2</option><option>B2</option>
               <option>C1</option>
@@ -593,30 +595,59 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
             <div class="s-label">Học phí</div>
             <input type="text" id="cr-price" class="s-input" placeholder="Miễn phí / 299.000đ…" value="Miễn phí">
           </div>
+          <div>
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer;height:38px">
+              <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản ngay
+            </label>
+          </div>
         </div>
 
-        <div class="s-label" style="margin-top:10px">Mô tả</div>
-        <textarea id="cr-desc" style="width:100%;min-height:72px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn về khóa học…"></textarea>
+        <!-- Row 3: short desc + cover side by side -->
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;margin-top:12px;align-items:start">
+          <div>
+            <div class="s-label">Mô tả ngắn <span style="font-size:11px;font-weight:400;color:#9ca3af">(hiện trên card)</span></div>
+            <textarea id="cr-desc" style="width:100%;min-height:96px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="1-2 câu mô tả ngắn hiển thị trên card khóa học…"></textarea>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <div class="s-label" style="margin:0">Ảnh bìa</div>
+              <span style="font-size:10px;color:#9ca3af">1280×720 · 16:9</span>
+            </div>
+            <div class="s-img-row" style="margin-top:5px">
+              <input type="text" id="cr-cover" class="s-input" placeholder="URL hoặc chọn file…" oninput="crPreviewUrl(this.value)" style="flex:1;min-width:0">
+              <input type="file" id="cr-cover-file" accept="image/*" style="display:none" onchange="crFileChange(this)">
+              <button class="s-file-btn" onclick="document.getElementById('cr-cover-file').click()">📷</button>
+            </div>
+            <div class="s-img-preview" id="cr-cover-preview" style="margin-top:6px">
+              <img id="cr-cover-preview-img" src="" alt="" style="height:54px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+              <button onclick="crClearCover()" style="background:none;border:none;color:#6b7280;font-size:15px;cursor:pointer">✕</button>
+            </div>
+          </div>
+        </div>
 
-        <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px">
-          <div class="s-label" style="margin:0">Ảnh bìa</div>
-          <span style="font-size:11px;color:#9ca3af">Khuyến nghị: <b style="color:#6b7280">1280 × 720px</b> (tỉ lệ 16:9) · tối đa ~2MB</span>
+        <!-- Row 4: detailed content editor with toolbar -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:14px">
+          <div class="s-label" style="margin:0">Nội dung chi tiết <span style="font-size:11px;font-weight:400;color:#9ca3af">(Markdown · hiện trên trang khóa học)</span></div>
         </div>
-        <div class="s-img-row" style="margin-top:5px">
-          <input type="text" id="cr-cover" class="s-input" placeholder="URL ảnh hoặc chọn file…" oninput="crPreviewUrl(this.value)" style="flex:1">
-          <input type="file" id="cr-cover-file" accept="image/*" style="display:none" onchange="crFileChange(this)">
-          <button class="s-file-btn" onclick="document.getElementById('cr-cover-file').click()">📷 Chọn file</button>
+        <div class="bl-toolbar" style="margin-top:6px">
+          <button class="bl-tb-btn" onclick="crInsertLine('# ')">H1</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('## ')">H2</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('### ')">H3</button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="crWrap('**','**')"><b>B</b></button>
+          <button class="bl-tb-btn" onclick="crWrap('*','*')"><i>I</i></button>
+          <button class="bl-tb-btn" onclick="crWrap('__','__')"><u>U</u></button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-hl-btn" style="background:#fef08a" onclick="crWrap('==','==')" title="Highlight vàng"></button>
+          <button class="bl-hl-btn" style="background:#bbf7d0" onclick="crWrap('==g:','==')" title="Highlight xanh"></button>
+          <button class="bl-hl-btn" style="background:#fecaca" onclick="crWrap('==r:','==')" title="Highlight đỏ"></button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="crInsertLine('- ')">• List</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('> ')">❝ Quote</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('---')">───</button>
         </div>
-        <div class="s-img-preview" id="cr-cover-preview">
-          <img id="cr-cover-preview-img" src="" alt="" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
-          <button onclick="crClearCover()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer">✕</button>
-        </div>
+        <textarea id="cr-detail" style="width:100%;min-height:320px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="## Bạn sẽ học được gì?&#10;&#10;- Nắm vững từ vựng TOCFL Band B&#10;- Đọc hiểu văn bản nhật dụng&#10;&#10;## Nội dung khóa học&#10;&#10;**Phần 1**: Từ vựng cơ bản&#10;**Phần 2**: Bài đọc có chú thích&#10;&#10;## Yêu cầu đầu vào&#10;&#10;- Đã học xong Band A hoặc tương đương"></textarea>
 
-        <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
-          <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
-            <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản ngay
-          </label>
-        </div>
         <input type="hidden" id="cr-edit-id">
         <div id="cr-msg" class="s-msg"></div>
         <div style="display:flex;gap:8px;margin-top:12px">
@@ -1052,13 +1083,32 @@ function crClearCover() {
   document.getElementById('cr-cover-file').value = '';
   document.getElementById('cr-cover-preview').style.display = 'none';
 }
+function crWrap(before, after) {
+  const ta = document.getElementById('cr-detail');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s, e);
+  ta.setRangeText(before + (sel || 'văn bản') + after, s, e, 'select');
+  ta.focus();
+}
+function crInsertLine(prefix) {
+  const ta = document.getElementById('cr-detail');
+  const pos = ta.selectionStart;
+  const lineStart = ta.value.lastIndexOf('\n', pos - 1) + 1;
+  const before = ta.value.slice(0, lineStart);
+  const after  = ta.value.slice(lineStart);
+  ta.value = before + prefix + after;
+  const cur = lineStart + prefix.length;
+  ta.setSelectionRange(cur, cur);
+  ta.focus();
+}
+
 function crCancelEdit() {
   document.getElementById('cr-edit-id').value = '';
   document.getElementById('cr-form-title').textContent = 'Tạo khóa học mới';
   document.getElementById('cr-save-btn').textContent = '💾 Lưu khóa học';
   document.getElementById('cr-cancel-btn').style.display = 'none';
   document.getElementById('cr-books-section').style.display = 'none';
-  ['cr-title','cr-desc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['cr-title','cr-desc','cr-detail'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('cr-level').value = '';
   document.getElementById('cr-price').value = 'Miễn phí';
   document.getElementById('cr-published').checked = true;
@@ -1100,6 +1150,7 @@ async function crEditCourse(id) {
   document.getElementById('cr-edit-id').value    = id;
   document.getElementById('cr-title').value       = c.title || '';
   document.getElementById('cr-desc').value        = c.description || '';
+  document.getElementById('cr-detail').value      = c.detail || '';
   document.getElementById('cr-level').value       = c.level || '';
   document.getElementById('cr-price').value       = c.price || 'Miễn phí';
   document.getElementById('cr-cover').value       = c.cover_url || '';
@@ -1121,6 +1172,7 @@ async function adminSaveCourse() {
   const row = {
     title,
     description: document.getElementById('cr-desc').value.trim() || null,
+    detail:      document.getElementById('cr-detail').value.trim() || null,
     level:       document.getElementById('cr-level').value || null,
     price:       document.getElementById('cr-price').value.trim() || 'Miễn phí',
     cover_url:   document.getElementById('cr-cover').value.trim() || null,
