@@ -557,7 +557,6 @@ function showResult(transcript, userInput, seg) {
 
   sessionScore.correct += (pct === 100 ? 1 : 0);
   sessionScore.total++;
-  const seg = allSegments[currentIdx];
   saveProgress(bookName, lessonId, seg.id, pct);
 
   document.getElementById('result-area').innerHTML = `
