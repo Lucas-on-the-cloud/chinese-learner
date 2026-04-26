@@ -60,6 +60,32 @@ class FlashcardManager {
     const { error } = await this.db.addFlashcards(rows);
     if (error) { alert('Lỗi: ' + error.message); return; }
     rows.forEach(r => this.cards.push(r));
+
+    // Sync to localStorage so flashcards.html "Của tôi" tab can show them
+    const USER_FC_KEY = 'tocfl_user_flashcards';
+    const existing    = JSON.parse(localStorage.getItem(USER_FC_KEY) || '[]');
+    const existChars  = new Set(existing.map(c => c.char));
+    const vocabMap    = new Map(app.vocab.items.map(v => [v.char, v]));
+    const toAdd = rows
+      .filter(r => !existChars.has(r.char))
+      .map(r => {
+        const v = vocabMap.get(r.char) || {};
+        return {
+          char:         r.char,
+          pinyin:       r.pinyin,
+          meaning:      r.meaning,
+          example_zh:   v.example   || '',
+          example_vi:   v.exMeaning || '',
+          lesson_title: r.lesson_title,
+          book_name:    r.book,
+          from_reading: true,
+          custom:       false,
+        };
+      });
+    if (toAdd.length) {
+      localStorage.setItem(USER_FC_KEY, JSON.stringify([...existing, ...toAdd]));
+    }
+
     app.vocab.render();
   }
 

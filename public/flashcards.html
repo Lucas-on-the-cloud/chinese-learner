@@ -457,8 +457,9 @@ function renderLessons(bookName) {
     // Multi-part → accordion
     const subHTML = [...partsMap.entries()].map(([partTitle, partCards]) => {
       const sep   = partTitle.indexOf(' · ');
-      const pName = sep > -1 ? partTitle.slice(sep + 3).trim() : partTitle;
-      const pJson = JSON.stringify(partCards).replace(/"/g, '&quot;');
+      const pName     = sep > -1 ? partTitle.slice(sep + 3).trim() : partTitle;
+      const pJson     = JSON.stringify(partCards).replace(/"/g, '&quot;');
+      const allForked = partCards.every(c => isForked(c.char));
       return `<div class="part-row">
         <span class="part-dot"></span>
         <span class="part-label">${pName}</span>
@@ -469,6 +470,12 @@ function renderLessons(bookName) {
           </button>
           <button class="part-btn play" onclick="startStudy('${pJson}')">
             <i class="fas fa-play" style="font-size:9px"></i> Học
+          </button>
+          <button id="fork-part-${encodeURIComponent(partTitle)}"
+            style="font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 11px;border-radius:6px;white-space:nowrap;border:1px solid;${allForked?'background:#dcfce7;color:#16a34a;border-color:#bbf7d0;cursor:default':'background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;cursor:pointer'}"
+            onclick="${allForked ? '' : `forkPart('${bookName}','${encodeURIComponent(partTitle)}',this)`}"
+            ${allForked ? 'disabled' : ''}>
+            ${allForked ? '<i class="fas fa-check" style="font-size:9px"></i> Đã fork' : '<i class="fas fa-download" style="font-size:9px"></i> Fork'}
           </button>
         </div>
       </div>`;
@@ -614,16 +621,35 @@ function forkAll(bookName, lessonTitleEncoded) {
   const lessonTitle = decodeURIComponent(lessonTitleEncoded);
   const cards = allTemplates.filter(t => t.book_name === bookName && t.lesson_title === lessonTitle);
   const user = getUserCards();
-  let added = 0;
   cards.forEach(c => {
     if (!user.some(u => u.char === c.char)) {
       user.push({ ...c, forked_from_book: bookName, forked_from_lesson: lessonTitle, custom: false });
-      added++;
     }
   });
   saveUserCards(user);
   updateMineBadge();
   renderCards(bookName, lessonTitleEncoded);
+}
+
+// Fork all cards from one part (called from accordion part-row button)
+function forkPart(bookName, partTitleEncoded, btn) {
+  const partTitle = decodeURIComponent(partTitleEncoded);
+  const cards = allTemplates.filter(t => t.book_name === bookName && t.lesson_title === partTitle);
+  const user  = getUserCards();
+  let added   = 0;
+  cards.forEach(c => {
+    if (!user.some(u => u.char === c.char)) {
+      user.push({ ...c, forked_from_book: bookName, forked_from_lesson: partTitle, custom: false });
+      added++;
+    }
+  });
+  saveUserCards(user);
+  updateMineBadge();
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-check" style="font-size:9px"></i> Đã fork';
+    btn.style.background = '#dcfce7'; btn.style.color = '#16a34a'; btn.style.cursor = 'default';
+  }
 }
 
 // ─── STUDY MODE ─────────────────────────────────────
@@ -754,13 +780,23 @@ function renderMine() {
     return;
   }
 
-  // Group by source
+  // Group by source: reading → custom → forked (by lesson)
   const groups = new Map();
+  // Preserve order: reading first, then custom, then forked by lesson
   userCards.forEach((c, i) => {
-    const key = c.custom ? 'custom' : (c.forked_from_lesson || 'Đã fork');
+    let key;
+    if (c.from_reading)  key = '__reading__';
+    else if (c.custom)   key = '__custom__';
+    else                 key = c.forked_from_lesson || 'Đã fork';
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push({ ...c, _idx: i });
   });
+  // Sort so reading & custom come first
+  const sorted = new Map();
+  if (groups.has('__reading__')) sorted.set('__reading__', groups.get('__reading__'));
+  if (groups.has('__custom__'))  sorted.set('__custom__',  groups.get('__custom__'));
+  groups.forEach((v, k) => { if (k !== '__reading__' && k !== '__custom__') sorted.set(k, v); });
+  groups.clear(); sorted.forEach((v,k) => groups.set(k,v));
 
   let studyAllBtn = '';
   if (userCards.length) {
@@ -797,7 +833,9 @@ function renderMine() {
       </div>`;
     }).join('');
 
-    const displayTitle = title === 'custom' ? 'Thẻ tự tạo' : title;
+    const displayTitle = title === '__custom__'  ? '✏️ Thẻ tự tạo'
+                       : title === '__reading__' ? '📖 Từ bài đọc'
+                       : title;
     return `<div style="margin-bottom:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
         <div style="font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy)">${displayTitle} <span style="font-size:13px;font-weight:500;color:var(--text-3)">(${cards.length} thẻ)</span></div>
