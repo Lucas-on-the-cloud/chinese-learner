@@ -293,6 +293,10 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       <i class="fa-solid fa-graduation-cap"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
     </button>
+    <button class="nav-item" onclick="setNav(this,'subcourses')">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
+    </button>
     <button class="nav-item" onclick="setNav(this,'blog')">
       <i class="fa-solid fa-pen-nib"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
@@ -683,6 +687,127 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     </div>
   </div>
 
+  <!-- ── SUB-COURSES ───────────────────────────── -->
+  <div id="section-subcourses" style="display:none;width:100%">
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+
+      <!-- BOOK EDITOR FORM -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con</div>
+
+        <div class="s-label">Chọn khóa học con</div>
+        <select id="sub-book-select" class="s-input" style="height:38px" onchange="subSelectBook(this.value)">
+          <option value="">— Chọn sách để chỉnh sửa —</option>
+        </select>
+
+        <div id="sub-book-form" style="display:none;margin-top:14px">
+          <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
+            <div>
+              <div class="s-label">Tên hiển thị</div>
+              <input type="text" id="sub-name" class="s-input" placeholder="Tên khóa học con hiển thị…">
+              <div class="s-label" style="margin-top:10px">Mô tả ngắn <span style="font-size:11px;font-weight:400;color:#9ca3af">(hiện trên card)</span></div>
+              <textarea id="sub-desc" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="1-2 câu mô tả ngắn…"></textarea>
+            </div>
+            <div>
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <div class="s-label" style="margin:0">Ảnh bìa</div>
+                <span style="font-size:10px;color:#9ca3af">1280×720 · 16:9</span>
+              </div>
+              <div class="s-img-row" style="margin-top:5px">
+                <input type="text" id="sub-cover" class="s-input" placeholder="URL hoặc chọn file…" oninput="subCoverPreview(this.value)" style="flex:1;min-width:0">
+                <input type="file" id="sub-cover-file" accept="image/*" style="display:none" onchange="subFileChange(this)">
+                <button class="s-file-btn" onclick="document.getElementById('sub-cover-file').click()">📷</button>
+              </div>
+              <div class="s-img-preview" id="sub-cover-preview" style="margin-top:6px">
+                <img id="sub-cover-preview-img" src="" alt="" style="height:54px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+                <button onclick="subClearCover()" style="background:none;border:none;color:#6b7280;font-size:15px;cursor:pointer">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:12px">
+            <div class="s-label" style="margin:0">Nội dung chi tiết <span style="font-size:11px;font-weight:400;color:#9ca3af">(Markdown)</span></div>
+          </div>
+          <div class="bl-toolbar" style="margin-top:6px">
+            <button class="bl-tb-btn" onclick="subInsertLine('# ')">H1</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('## ')">H2</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('### ')">H3</button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="subWrap('**','**')"><b>B</b></button>
+            <button class="bl-tb-btn" onclick="subWrap('*','*')"><i>I</i></button>
+            <button class="bl-tb-btn" onclick="subWrap('__','__')"><u>U</u></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-hl-btn" style="background:#fef08a" onclick="subWrap('==','==')"></button>
+            <button class="bl-hl-btn" style="background:#bbf7d0" onclick="subWrap('==g:','==')"></button>
+            <button class="bl-hl-btn" style="background:#fecaca" onclick="subWrap('==r:','==')"></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="subInsertLine('- ')">• List</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('> ')">❝ Quote</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('---')">───</button>
+          </div>
+          <textarea id="sub-detail" style="width:100%;min-height:260px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="## Bạn sẽ học được gì?&#10;&#10;- Từ vựng theo chủ đề&#10;- Kỹ năng đọc hiểu&#10;&#10;## Nội dung&#10;&#10;**Phần 1**: Bài đọc cơ bản"></textarea>
+
+          <div id="sub-msg" class="s-msg"></div>
+          <button class="s-btn" onclick="saveSubCourse()" style="margin-top:12px">💾 Lưu khóa học con</button>
+        </div>
+      </div>
+
+      <!-- BOOK LIST -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="s-title" style="margin-bottom:0;font-size:14px"><i class="fa-solid fa-list" style="color:#6b7280"></i> Danh sách sách</div>
+          <button class="s-btn" onclick="loadSubCourses()" style="padding:5px 12px;font-size:11px">↺</button>
+        </div>
+        <div id="sub-book-list"><p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Đang tải…</p></div>
+      </div>
+
+    </div>
+
+    <!-- LESSON MANAGER (appears when a book is selected) -->
+    <div id="sub-lesson-wrap" style="display:none;margin-top:20px">
+      <div class="s-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="s-title" style="margin-bottom:2px" id="sub-lesson-heading">Bài học</div>
+            <div style="font-size:11px;color:#9ca3af">Quản lý từng bài đọc trong khóa học con này</div>
+          </div>
+          <button class="s-btn" onclick="subToggleAddLesson()" id="sub-add-btn" style="font-size:12px;padding:7px 16px">+ Thêm bài học</button>
+        </div>
+
+        <!-- Add lesson form -->
+        <div id="sub-add-form" style="display:none;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:16px">
+          <div class="s-label" style="margin-bottom:6px">Thêm bài học mới</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="grid-column:1/-1">
+              <div class="s-label">Tên bài học</div>
+              <input type="text" id="sub-new-title" class="s-input" placeholder="VD: Bài 1 — Giới thiệu bản thân">
+            </div>
+            <div>
+              <div class="s-label">Tiếng Trung 繁體 <span style="color:#9ca3af;font-weight:400">(bắt buộc)</span></div>
+              <textarea id="sub-new-zh" style="width:100%;min-height:100px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Noto Serif TC',serif;font-size:14px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="我叫…"></textarea>
+            </div>
+            <div>
+              <div class="s-label">Pinyin</div>
+              <textarea id="sub-new-py" style="width:100%;min-height:100px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="Wǒ jiào…"></textarea>
+            </div>
+            <div style="grid-column:1/-1">
+              <div class="s-label">Tiếng Việt</div>
+              <textarea id="sub-new-vi" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="Tôi tên là…"></textarea>
+            </div>
+          </div>
+          <div id="sub-add-msg" class="s-msg"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="s-btn" onclick="subSaveNewLesson()" style="flex:1">💾 Thêm bài</button>
+            <button class="s-btn" onclick="subToggleAddLesson()" style="background:#6b7280">Hủy</button>
+          </div>
+        </div>
+
+        <!-- Lesson list -->
+        <div id="sub-lesson-list"><p style="color:#9ca3af;text-align:center;padding:2rem">Đang tải…</p></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── BLOG ─────────────────────────────────── -->
   <div id="section-blog" style="display:none;width:100%">
     <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
@@ -949,7 +1074,7 @@ function toggleSidebar() {
 }
 
 // All sections mapping
-const ALL_SECTIONS = ['dashboard','courses','blog','imports','import-book','ai'];
+const ALL_SECTIONS = ['dashboard','courses','subcourses','blog','imports','import-book','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -959,6 +1084,7 @@ function setNav(btn, id) {
     vocab:         'Từ vựng / Vocabulary',
     users:         'Người dùng / Users',
     courses:       'Khóa học / Courses',
+    subcourses:    'Khóa học con / Sub-courses',
     blog:          'Blog / Bài viết',
     imports:       'Import bài học',
     'import-book': 'Import book',
@@ -974,9 +1100,10 @@ function setNav(btn, id) {
   });
   const active = document.getElementById('section-' + id);
   if (active) active.style.display = (id === 'dashboard') ? 'flex' : 'block';
-  if (id === 'ai')      adminInitSettings();
-  if (id === 'blog')    loadBlogPosts();
-  if (id === 'courses') loadCourses();
+  if (id === 'ai')         adminInitSettings();
+  if (id === 'blog')       loadBlogPosts();
+  if (id === 'courses')    loadCourses();
+  if (id === 'subcourses') loadSubCourses();
 }
 
 // ── Settings functions ──────────────────────────
@@ -1053,6 +1180,214 @@ async function adminSaveBook() {
   adminMsg('bk-msg', '✓ Đã lưu: ' + (display || name), 'ok');
   ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
   adminBkClear();
+}
+
+// ── Sub-course (book) management ─────────────────
+let _subCurrentBook = null;
+
+async function loadSubCourses() {
+  const books = await _adminDb.getBooksMeta();
+  const listEl = document.getElementById('sub-book-list');
+  const selEl  = document.getElementById('sub-book-select');
+
+  // Populate dropdown
+  selEl.innerHTML = '<option value="">— Chọn sách để chỉnh sửa —</option>' +
+    books.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.display_name || b.name)}</option>`).join('');
+
+  // Populate compact list
+  if (!books.length) { listEl.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Chưa có sách nào.</p>'; return; }
+
+  // Get lesson counts
+  const { data: ldata } = await _adminDb.client.from('lessons').select('book');
+  const counts = {};
+  (ldata || []).forEach(l => { counts[l.book || 'B1'] = (counts[l.book || 'B1'] || 0) + 1; });
+
+  listEl.innerHTML = books.map(b => `
+    <div class="bl-post-item" style="cursor:pointer" onclick="subSelectBookFromList('${b.name.replace(/'/g,"\\'")}')">
+      <div class="bl-post-info">
+        <div class="bl-post-title">${escHtml(b.display_name || b.name)}</div>
+        <div class="bl-post-meta">
+          <span class="bl-post-dot" style="background:#1a56db"></span>
+          ${escHtml(b.name)} · ${counts[b.name] || 0} bài học
+        </div>
+      </div>
+      <button class="table-btn" title="Chọn"><i class="fa-solid fa-pen-to-square" style="color:#1a56db"></i></button>
+    </div>`).join('');
+}
+
+async function subSelectBook(bookName) {
+  if (!bookName) { document.getElementById('sub-book-form').style.display = 'none'; document.getElementById('sub-lesson-wrap').style.display = 'none'; return; }
+  _subCurrentBook = bookName;
+  const books = await _adminDb.getBooksMeta();
+  const meta = books.find(b => b.name === bookName) || {};
+  document.getElementById('sub-name').value  = meta.display_name || '';
+  document.getElementById('sub-desc').value  = meta.description  || '';
+  document.getElementById('sub-detail').value = meta.detail      || '';
+  document.getElementById('sub-cover').value = meta.cover_url   || '';
+  subCoverPreview(meta.cover_url || '');
+  document.getElementById('sub-book-form').style.display = '';
+  document.getElementById('sub-msg').className = 's-msg';
+  document.getElementById('sub-lesson-heading').textContent = `Bài học — ${meta.display_name || bookName}`;
+  document.getElementById('sub-lesson-wrap').style.display = '';
+  subLoadLessons(bookName);
+}
+
+function subSelectBookFromList(bookName) {
+  document.getElementById('sub-book-select').value = bookName;
+  subSelectBook(bookName);
+}
+
+function subCoverPreview(url) {
+  const wrap = document.getElementById('sub-cover-preview');
+  const img  = document.getElementById('sub-cover-preview-img');
+  if (url) { img.src = url; wrap.style.display = 'flex'; } else { wrap.style.display = 'none'; }
+}
+function subFileChange(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 900; let w = orig.width, h = orig.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      document.getElementById('sub-cover').value = dataUrl; subCoverPreview(dataUrl);
+    };
+    orig.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function subClearCover() {
+  document.getElementById('sub-cover').value = '';
+  document.getElementById('sub-cover-file').value = '';
+  document.getElementById('sub-cover-preview').style.display = 'none';
+}
+function subWrap(before, after) {
+  const ta = document.getElementById('sub-detail');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.setRangeText(before + (ta.value.slice(s, e) || 'văn bản') + after, s, e, 'select');
+  ta.focus();
+}
+function subInsertLine(prefix) {
+  const ta = document.getElementById('sub-detail');
+  const pos = ta.selectionStart;
+  const ls = ta.value.lastIndexOf('\n', pos - 1) + 1;
+  ta.value = ta.value.slice(0, ls) + prefix + ta.value.slice(ls);
+  ta.setSelectionRange(ls + prefix.length, ls + prefix.length);
+  ta.focus();
+}
+
+async function saveSubCourse() {
+  if (!_subCurrentBook) return;
+  const row = {
+    display_name: document.getElementById('sub-name').value.trim() || null,
+    description:  document.getElementById('sub-desc').value.trim() || null,
+    detail:       document.getElementById('sub-detail').value.trim() || null,
+    cover_url:    document.getElementById('sub-cover').value.trim() || null,
+  };
+  const { error } = await _adminDb.client.from('books').update(row).eq('name', _subCurrentBook);
+  if (error) { adminMsg('sub-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  adminMsg('sub-msg', '✓ Đã lưu: ' + (_subCurrentBook), 'ok');
+  loadSubCourses();
+}
+
+// ── Lesson management ─────────────────────────────
+async function subLoadLessons(bookName) {
+  const el = document.getElementById('sub-lesson-list');
+  el.innerHTML = '<p style="color:#9ca3af;padding:1rem;font-size:13px">Đang tải…</p>';
+  const { data: lessons } = await _adminDb.client.from('lessons').select('*').eq('book', bookName).order('id');
+  if (!lessons?.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Chưa có bài học nào.</p>'; return; }
+  el.innerHTML = lessons.map(l => subLessonRow(l)).join('');
+}
+
+function subLessonRow(l) {
+  const zhPrev = (l.zh || '').replace(/\s+/g,' ').slice(0, 40);
+  return `<div class="bl-post-item" id="sub-lesson-${l.id}" style="flex-direction:column;align-items:stretch;gap:0">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:#1f2937">${escHtml(l.title || '(chưa có tiêu đề)')}</div>
+        <div style="font-size:11px;color:#9ca3af;font-family:'Noto Serif TC',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">${escHtml(zhPrev)}${l.zh?.length > 40 ? '…' : ''}</div>
+      </div>
+      <div style="display:flex;gap:2px;flex-shrink:0">
+        <button class="table-btn" onclick="subToggleEditLesson(${l.id})" title="Sửa"><i class="fa-solid fa-pen-to-square" style="color:#1a56db"></i></button>
+        <button class="table-btn" onclick="subDeleteLesson(${l.id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
+      </div>
+    </div>
+    <div id="sub-edit-${l.id}" style="display:none;margin-top:10px;padding:14px;background:#f4f5f7;border-radius:8px;border:1px solid #e5e7eb">
+      <div class="s-label" style="margin-bottom:6px">Sửa bài học</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="grid-column:1/-1">
+          <div class="s-label">Tên bài học</div>
+          <input type="text" id="sub-edit-title-${l.id}" class="s-input" value="${escHtml(l.title || '')}">
+        </div>
+        <div>
+          <div class="s-label">Tiếng Trung 繁體</div>
+          <textarea id="sub-edit-zh-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Noto Serif TC',serif;font-size:14px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.zh || '')}</textarea>
+        </div>
+        <div>
+          <div class="s-label">Pinyin</div>
+          <textarea id="sub-edit-py-${l.id}" style="width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.pinyin || '')}</textarea>
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="s-label">Tiếng Việt</div>
+          <textarea id="sub-edit-vi-${l.id}" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7">${escHtml(l.vi || '')}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="s-btn" onclick="subSaveLesson(${l.id})" style="flex:1;font-size:12px">💾 Lưu</button>
+        <button class="s-btn" onclick="subToggleEditLesson(${l.id})" style="background:#6b7280;font-size:12px">Hủy</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function subToggleEditLesson(id) {
+  const el = document.getElementById(`sub-edit-${id}`);
+  if (el) el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+
+async function subSaveLesson(id) {
+  const row = {
+    title:  document.getElementById(`sub-edit-title-${id}`).value.trim(),
+    zh:     document.getElementById(`sub-edit-zh-${id}`).value.trim(),
+    pinyin: document.getElementById(`sub-edit-py-${id}`).value.trim(),
+    vi:     document.getElementById(`sub-edit-vi-${id}`).value.trim(),
+  };
+  const { error } = await _adminDb.client.from('lessons').update(row).eq('id', id);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  if (_subCurrentBook) subLoadLessons(_subCurrentBook);
+}
+
+async function subDeleteLesson(id) {
+  if (!confirm('Xóa bài học này?')) return;
+  await _adminDb.client.from('lessons').delete().eq('id', id);
+  if (_subCurrentBook) subLoadLessons(_subCurrentBook);
+}
+
+function subToggleAddLesson() {
+  const el = document.getElementById('sub-add-form');
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : '';
+  if (!isOpen) {
+    ['sub-new-title','sub-new-zh','sub-new-py','sub-new-vi'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+    document.getElementById('sub-add-msg').className = 's-msg';
+  }
+}
+
+async function subSaveNewLesson() {
+  if (!_subCurrentBook) return;
+  const title  = document.getElementById('sub-new-title').value.trim();
+  const zh     = document.getElementById('sub-new-zh').value.trim();
+  const pinyin = document.getElementById('sub-new-py').value.trim();
+  const vi     = document.getElementById('sub-new-vi').value.trim();
+  if (!zh) { adminMsg('sub-add-msg', 'Nhập nội dung tiếng Trung.', 'err'); return; }
+  const { error } = await _adminDb.client.from('lessons').insert([{ title: title || null, zh, pinyin: pinyin || null, vi: vi || null, book: _subCurrentBook }]);
+  if (error) { adminMsg('sub-add-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  adminMsg('sub-add-msg', '✓ Đã thêm bài học.', 'ok');
+  subToggleAddLesson();
+  subLoadLessons(_subCurrentBook);
 }
 
 // ── Course helpers ────────────────────────────────
