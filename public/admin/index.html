@@ -598,8 +598,11 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
         <div class="s-label" style="margin-top:10px">Mô tả</div>
         <textarea id="cr-desc" style="width:100%;min-height:72px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn về khóa học…"></textarea>
 
-        <div class="s-label" style="margin-top:10px">Ảnh bìa</div>
-        <div class="s-img-row">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px">
+          <div class="s-label" style="margin:0">Ảnh bìa</div>
+          <span style="font-size:11px;color:#9ca3af">Khuyến nghị: <b style="color:#6b7280">1280 × 720px</b> (tỉ lệ 16:9) · tối đa ~2MB</span>
+        </div>
+        <div class="s-img-row" style="margin-top:5px">
           <input type="text" id="cr-cover" class="s-input" placeholder="URL ảnh hoặc chọn file…" oninput="crPreviewUrl(this.value)" style="flex:1">
           <input type="file" id="cr-cover-file" accept="image/*" style="display:none" onchange="crFileChange(this)">
           <button class="s-file-btn" onclick="document.getElementById('cr-cover-file').click()">📷 Chọn file</button>
