@@ -297,6 +297,11 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       <i class="fa-solid fa-book-bookmark"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
     </button>
+    <button class="nav-item" onclick="setNav(this,'flashcards')">
+      <i class="fa-solid fa-clone"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
+      <span class="nav-count" id="sb-fc-count">…</span>
+    </button>
     <button class="nav-item" onclick="setNav(this,'blog')">
       <i class="fa-solid fa-pen-nib"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
@@ -815,6 +820,35 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     </div>
   </div>
 
+  <!-- ── FLASHCARDS ───────────────────────────── -->
+  <div id="section-flashcards" style="display:none;width:100%">
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;align-items:start">
+
+      <!-- LEFT: Book selector -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div class="s-title"><i class="fa-solid fa-layer-group" style="color:#1a56db"></i> Khóa học con</div>
+        <div id="fc-book-list" style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+          <div style="font-size:13px;color:#9ca3af">Đang tải…</div>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #f3f4f6">
+          <button class="primary-btn" style="width:100%;font-size:12px" onclick="fcShowSQLNote()">
+            <i class="fa-solid fa-database"></i> Xem SQL setup
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Lesson + Card editor -->
+      <div>
+        <div id="fc-right-area">
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:3rem;text-align:center;color:#9ca3af;font-size:13px">
+            <i class="fa-solid fa-clone" style="font-size:28px;margin-bottom:12px;display:block;opacity:.3"></i>
+            Chọn một khóa học con bên trái để quản lý flashcards
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── BLOG ─────────────────────────────────── -->
   <div id="section-blog" style="display:none;width:100%">
     <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
@@ -1033,7 +1067,7 @@ function toggleSidebar() {
 }
 
 // All sections mapping
-const ALL_SECTIONS = ['dashboard','courses','subcourses','blog','ai'];
+const ALL_SECTIONS = ['dashboard','courses','subcourses','flashcards','blog','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1044,6 +1078,7 @@ function setNav(btn, id) {
     users:         'Người dùng / Users',
     courses:       'Khóa học / Courses',
     subcourses:    'Khóa học con / Sub-courses',
+    flashcards:    'Flashcard / Bộ thẻ từ vựng',
     blog:          'Blog / Bài viết',
     feedback:      'Phản hồi / Feedback',
     ai:            'AI & API',
@@ -1061,6 +1096,7 @@ function setNav(btn, id) {
   if (id === 'blog')       loadBlogPosts();
   if (id === 'courses')    loadCourses();
   if (id === 'subcourses') loadSubCourses();
+  if (id === 'flashcards') loadFCAdmin();
 }
 
 // ── Settings functions ──────────────────────────
@@ -1561,21 +1597,29 @@ async function adminSaveCourse() {
   const editId = document.getElementById('cr-edit-id').value;
   const title  = document.getElementById('cr-title').value.trim();
   if (!title) { adminMsg('cr-msg', 'Nhập tiêu đề khóa học.', 'err'); return; }
+  const detailVal = document.getElementById('cr-detail').value.trim() || null;
   const row = {
     title,
     description: document.getElementById('cr-desc').value.trim() || null,
-    detail:      document.getElementById('cr-detail').value.trim() || null,
     level:       document.getElementById('cr-level').value || null,
     price:       document.getElementById('cr-price').value.trim() || 'Miễn phí',
     cover_url:   document.getElementById('cr-cover').value.trim() || null,
     published:   document.getElementById('cr-published').checked,
   };
+  if (detailVal) row.detail = detailVal;
   if (editId) row.id = parseInt(editId);
   const btn = document.getElementById('cr-save-btn');
   btn.disabled = true; btn.textContent = 'Đang lưu…';
   const { error } = await _adminDb.saveCourse(row);
   btn.disabled = false; btn.textContent = editId ? '💾 Cập nhật' : '💾 Lưu khóa học';
-  if (error) { adminMsg('cr-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  if (error) {
+    if (error.message?.includes('detail')) {
+      adminMsg('cr-msg', 'Cột "detail" chưa tồn tại. Chạy SQL: alter table courses add column if not exists detail text;', 'err');
+    } else {
+      adminMsg('cr-msg', 'Lỗi: ' + error.message, 'err');
+    }
+    return;
+  }
   adminMsg('cr-msg', (editId ? '✓ Đã cập nhật: ' : '✓ Đã tạo: ') + title, 'ok');
   // If new course was created, we need its id to enable linked books section
   if (!editId) {
@@ -1975,6 +2019,354 @@ async function loadData() {
       </td>
     </tr>`;
   }).join('');
+}
+
+loadData();
+
+// ── FLASHCARD ADMIN ─────────────────────────────
+let fcAllLessons = [];
+let fcAllBooks   = [];
+let fcSelectedBook   = null;
+let fcSelectedLesson = null;
+let fcAIResults  = [];
+
+async function loadFCAdmin() {
+  // Load books & lessons & template summary
+  const [{ data: lessons }, { data: books }, summary] = await Promise.all([
+    DB.from('lessons').select('id,title,book,chinese,pinyin,vietnamese').order('id'),
+    DB.from('books').select('*').order('name'),
+    _adminDb.getFlashcardTemplateSummary(),
+  ]);
+  fcAllLessons = (lessons || []).map(l => ({
+    id: l.id, title: l.title || '', book: l.book || 'B1',
+    zh: l.chinese || '', py: l.pinyin || '', vi: l.vietnamese || '',
+  }));
+  fcAllBooks = books || [];
+
+  // Count templates per book
+  const countByBook = {};
+  (summary || []).forEach(r => {
+    countByBook[r.book_name] = (countByBook[r.book_name] || 0) + 1;
+  });
+
+  // Update sidebar count
+  const total = Object.values(countByBook).reduce((a,b) => a+b, 0);
+  const sbCount = document.getElementById('sb-fc-count');
+  if (sbCount) sbCount.textContent = total;
+
+  // Render book list
+  const bookNames = [...new Set([
+    ...fcAllBooks.map(b => b.name),
+    ...fcAllLessons.map(l => l.book),
+  ])].sort();
+
+  document.getElementById('fc-book-list').innerHTML = bookNames.map(name => {
+    const meta  = fcAllBooks.find(b => b.name === name) || {};
+    const label = meta.display_name || name;
+    const cnt   = countByBook[name] || 0;
+    return `<button onclick="fcSelectBook('${name}')" id="fcb-${name}"
+      style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;font-family:inherit;font-size:13px;transition:all .15s;text-align:left;width:100%"
+      onmouseover="this.style.borderColor='#1a56db'" onmouseout="if(fcSelectedBook!=='${name}')this.style.borderColor='#e5e7eb'">
+      <span style="font-weight:500;color:#1f2937">${label}</span>
+      <span style="font-size:11px;font-weight:600;color:#6b7280;background:#f3f4f6;padding:2px 8px;border-radius:8px">${cnt} thẻ</span>
+    </button>`;
+  }).join('');
+}
+
+function fcSelectBook(bookName) {
+  fcSelectedBook   = bookName;
+  fcSelectedLesson = null;
+  // Highlight active button
+  document.querySelectorAll('[id^="fcb-"]').forEach(b => {
+    b.style.background = b.id === 'fcb-' + bookName ? '#eff6ff' : '#fff';
+    b.style.borderColor = b.id === 'fcb-' + bookName ? '#1a56db' : '#e5e7eb';
+    b.style.color = b.id === 'fcb-' + bookName ? '#1a56db' : '';
+  });
+  fcRenderLessons(bookName);
+}
+
+async function fcRenderLessons(bookName) {
+  const meta  = fcAllBooks.find(b => b.name === bookName) || {};
+  const label = meta.display_name || bookName;
+  const lessons = fcAllLessons.filter(l => l.book === bookName);
+
+  // Load template counts per lesson for this book
+  const { data: tpls } = await DB.from('flashcard_templates')
+    .select('lesson_id').eq('book_name', bookName);
+  const cntByLesson = {};
+  (tpls || []).forEach(t => {
+    cntByLesson[t.lesson_id] = (cntByLesson[t.lesson_id] || 0) + 1;
+  });
+
+  // Group lessons by group key (before " · ")
+  const groupMap = new Map();
+  lessons.forEach(l => {
+    const sep = l.title.indexOf(' · ');
+    const key = sep > -1 ? l.title.slice(0, sep).trim() : l.title.trim();
+    if (!groupMap.has(key)) groupMap.set(key, []);
+    groupMap.get(key).push(l);
+  });
+
+  const lessonsHTML = [...groupMap.entries()].map(([groupKey, grp]) => {
+    const cnt = grp.reduce((a, l) => a + (cntByLesson[l.id] || 0), 0);
+    const ids = grp.map(l => l.id).join(',');
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;border:1px solid #f3f4f6;background:#fafafa;margin-bottom:6px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#1f2937">${groupKey}</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px">${grp.length} đoạn đọc · ${cnt} thẻ flashcard</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${cnt > 0 ? `<button onclick="fcSelectLesson(${grp[0].id},'${escHtml(groupKey)}')" style="background:#eff6ff;color:#1a56db;border:1px solid #c7d7fd;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit">✏️ Quản lý (${cnt})</button>` : ''}
+        <button onclick="fcSelectLesson(${grp[0].id},'${escHtml(groupKey)}')" style="background:#1a56db;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:inherit">+ Thêm thẻ</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const bookTotal = (tpls||[]).length;
+
+  document.getElementById('fc-right-area').innerHTML = `
+    <div class="s-card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="s-title"><i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> ${label}</div>
+        <span style="font-size:12px;color:#6b7280;background:#f3f4f6;padding:4px 12px;border-radius:8px;font-weight:600">${bookTotal} thẻ tổng cộng</span>
+      </div>
+      ${lessonsHTML || '<div style="font-size:13px;color:#9ca3af;padding:1rem 0">Chưa có bài học nào trong khóa học con này.</div>'}
+    </div>
+    <div id="fc-lesson-editor" style="display:none"></div>`;
+}
+
+async function fcSelectLesson(lessonId, groupTitle) {
+  fcSelectedLesson = lessonId;
+  // Find the lesson group
+  const lesson = fcAllLessons.find(l => l.id === lessonId);
+  if (!lesson) return;
+
+  // Load existing templates for this lesson (all parts in group)
+  const groupKey = groupTitle;
+  const groupLessons = fcAllLessons.filter(l => {
+    const sep = l.title.indexOf(' · ');
+    const key = sep > -1 ? l.title.slice(0, sep).trim() : l.title.trim();
+    return key === groupKey && l.book === fcSelectedBook;
+  });
+  const ids = groupLessons.map(l => l.id);
+
+  const { data: existing } = await DB.from('flashcard_templates')
+    .select('*').in('lesson_id', ids).order('sort_order').order('id');
+
+  fcRenderLessonEditor(groupTitle, groupLessons, existing || []);
+}
+
+function fcRenderLessonEditor(groupTitle, groupLessons, cards) {
+  const editorEl = document.getElementById('fc-lesson-editor');
+  editorEl.style.display = 'block';
+  editorEl.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  const cardsHTML = cards.map((c, i) => `
+    <div id="fce-card-${c.id}" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #f3f4f6;border-radius:8px;background:#fafafa;margin-bottom:8px">
+      <div style="flex:1;min-width:0">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px">
+          <input id="fce-char-${c.id}" value="${escHtml(c.char)}" placeholder="漢字" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-family:'Noto Serif TC',serif;font-size:15px">
+          <input id="fce-py-${c.id}" value="${escHtml(c.pinyin||'')}" placeholder="Pinyin" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit">
+          <input id="fce-mg-${c.id}" value="${escHtml(c.meaning||'')}" placeholder="Nghĩa tiếng Việt" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <input id="fce-ezh-${c.id}" value="${escHtml(c.example_zh||'')}" placeholder="Ví dụ (中文)" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-family:'Noto Serif TC',serif;font-size:13px">
+          <input id="fce-evi-${c.id}" value="${escHtml(c.example_vi||'')}" placeholder="Ví dụ (Tiếng Việt)" style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        <button onclick="fcSaveCard(${c.id},'${escHtml(groupTitle)}')" style="background:#16a34a;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit">💾</button>
+        <button onclick="fcDeleteCard(${c.id})" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit">🗑</button>
+      </div>
+    </div>`).join('');
+
+  editorEl.innerHTML = `
+    <div class="s-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="s-title"><i class="fa-solid fa-clone" style="color:#1a56db"></i> ${groupTitle} · ${cards.length} thẻ</div>
+        <button onclick="document.getElementById('fc-lesson-editor').style.display='none'" style="background:transparent;border:none;color:#9ca3af;font-size:18px;cursor:pointer">×</button>
+      </div>
+
+      <!-- Existing cards -->
+      <div id="fc-cards-list">
+        ${cards.length ? cardsHTML : '<div style="font-size:13px;color:#9ca3af;padding:.5rem 0">Chưa có thẻ nào. Dùng AI hoặc thêm thủ công bên dưới.</div>'}
+      </div>
+
+      <!-- AI Generate -->
+      <div style="margin-top:20px;padding:16px;background:#eff6ff;border:1px solid #c7d7fd;border-radius:10px">
+        <div style="font-size:13px;font-weight:700;color:#1a56db;margin-bottom:10px"><i class="fa-solid fa-sparkles"></i> Tạo từ vựng bằng AI</div>
+        <div style="font-size:12px;color:#374151;margin-bottom:8px">Chọn đoạn đọc để AI trích xuất từ vựng:</div>
+        <select id="fc-lesson-picker" style="width:100%;padding:8px 10px;border:1px solid #c7d7fd;border-radius:7px;font-family:inherit;font-size:13px;margin-bottom:10px;background:#fff">
+          ${groupLessons.map(l => `<option value="${l.id}">${l.title}</option>`).join('')}
+        </select>
+        <button onclick="fcGenerateAI('${escHtml(groupTitle)}')" id="fc-ai-btn"
+          style="background:#1a56db;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;width:100%">
+          <i class="fa-solid fa-sparkles"></i> Tạo từ vựng với AI
+        </button>
+        <div id="fc-ai-result" style="margin-top:12px"></div>
+      </div>
+
+      <!-- Manual Add -->
+      <div style="margin-top:16px;padding:16px;border:1px solid #e5e7eb;border-radius:10px;background:#fff">
+        <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px"><i class="fa-solid fa-plus"></i> Thêm thẻ thủ công</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <input id="fc-new-char" placeholder="漢字 *" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-family:'Noto Serif TC',serif;font-size:15px">
+          <input id="fc-new-py" placeholder="Pinyin" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit">
+          <input id="fc-new-mg" placeholder="Nghĩa tiếng Việt *" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <input id="fc-new-ezh" placeholder="Ví dụ (中文)" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-family:'Noto Serif TC',serif;font-size:13px">
+          <input id="fc-new-evi" placeholder="Ví dụ (Tiếng Việt)" style="padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;font-size:13px;font-family:inherit">
+        </div>
+        <button onclick="fcAddManual('${escHtml(groupTitle)}')" style="background:#16a34a;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+          <i class="fa-solid fa-plus"></i> Thêm thẻ
+        </button>
+      </div>
+    </div>`;
+}
+
+async function fcGenerateAI(groupTitle) {
+  const lessonId = parseInt(document.getElementById('fc-lesson-picker').value);
+  const lesson   = fcAllLessons.find(l => l.id === lessonId);
+  if (!lesson || !lesson.zh) { alert('Bài học không có nội dung tiếng Trung.'); return; }
+
+  const btn = document.getElementById('fc-ai-btn');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo…';
+
+  const prompt = `Bạn là chuyên gia từ vựng tiếng Trung phồn thể (繁體字) dành cho người Việt học TOCFL.
+Trích xuất 8-15 từ vựng quan trọng từ đoạn văn bên dưới.
+Trả về DUY NHẤT một mảng JSON, không có văn bản khác:
+[{"char":"繁體字","pinyin":"fán tǐ zì","meaning":"chữ phồn thể","example_zh":"我學繁體字。","example_vi":"Tôi học chữ phồn thể."}]
+
+Đoạn văn:
+${lesson.zh.slice(0, 1500)}`;
+
+  try {
+    const raw = await window.app.ai.call('You extract vocabulary from Chinese text and return pure JSON arrays only.', prompt, 2000);
+    const match = raw.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('AI không trả về JSON hợp lệ');
+    fcAIResults = JSON.parse(match[0]);
+    fcRenderAIResults(groupTitle, lesson);
+  } catch(e) {
+    document.getElementById('fc-ai-result').innerHTML = `<div style="color:#dc2626;font-size:13px;padding:8px">Lỗi: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Tạo từ vựng với AI';
+  }
+}
+
+function fcRenderAIResults(groupTitle, lesson) {
+  const resEl = document.getElementById('fc-ai-result');
+  if (!fcAIResults.length) { resEl.innerHTML = '<div style="font-size:13px;color:#9ca3af">Không tạo được từ vựng.</div>'; return; }
+
+  const rowsHTML = fcAIResults.map((v, i) => `
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;background:#fff;margin-bottom:6px">
+      <input type="checkbox" id="fc-ai-chk-${i}" checked style="margin-top:4px;flex-shrink:0;width:16px;height:16px">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
+          <span style="font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#0d1b4b">${v.char||''}</span>
+          <span style="font-size:12px;color:#6b7280;font-style:italic">${v.pinyin||''}</span>
+          <span style="font-size:13px;font-weight:600;color:#374151">${v.meaning||''}</span>
+        </div>
+        ${v.example_zh ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;font-family:'Noto Serif TC',serif">${v.example_zh}</div>` : ''}
+        ${v.example_vi ? `<div style="font-size:12px;color:#9ca3af;margin-top:1px">${v.example_vi}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  resEl.innerHTML = `
+    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">AI gợi ý ${fcAIResults.length} từ vựng — chọn những thẻ muốn lưu:</div>
+    ${rowsHTML}
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="fcSaveAISelected('${escHtml(groupTitle)}',${lesson.id},'${escHtml(lesson.title)}')"
+        style="background:#16a34a;color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+        💾 Lưu những thẻ đã chọn
+      </button>
+      <button onclick="document.getElementById('fc-ai-result').innerHTML=''"
+        style="background:transparent;border:1px solid #e5e7eb;padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;color:#6b7280">
+        Huỷ
+      </button>
+    </div>`;
+}
+
+async function fcSaveAISelected(groupTitle, lessonId, lessonTitle) {
+  const selected = fcAIResults.filter((_, i) => document.getElementById('fc-ai-chk-' + i)?.checked);
+  if (!selected.length) { alert('Chưa chọn thẻ nào.'); return; }
+
+  const rows = selected.map((v, i) => ({
+    book_name:    fcSelectedBook,
+    lesson_id:    lessonId,
+    lesson_title: lessonTitle,
+    char:         v.char    || '',
+    pinyin:       v.pinyin  || '',
+    meaning:      v.meaning || '',
+    example_zh:   v.example_zh || '',
+    example_vi:   v.example_vi || '',
+    sort_order:   i,
+    published:    true,
+  }));
+
+  const { error } = await _adminDb.bulkInsertFlashcardTemplates(rows);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  alert(`✓ Đã lưu ${rows.length} thẻ flashcard!`);
+  fcSelectLesson(lessonId, groupTitle);
+}
+
+async function fcSaveCard(cardId, groupTitle) {
+  const char  = document.getElementById('fce-char-' + cardId)?.value.trim();
+  const py    = document.getElementById('fce-py-'   + cardId)?.value.trim();
+  const mg    = document.getElementById('fce-mg-'   + cardId)?.value.trim();
+  const ezh   = document.getElementById('fce-ezh-'  + cardId)?.value.trim();
+  const evi   = document.getElementById('fce-evi-'  + cardId)?.value.trim();
+  if (!char) { alert('Vui lòng nhập chữ Hán.'); return; }
+  const { error } = await _adminDb.saveFlashcardTemplate({
+    id: cardId, char, pinyin: py, meaning: mg, example_zh: ezh, example_vi: evi,
+  });
+  if (error) alert('Lỗi: ' + error.message);
+  else { const b = event.target; b.textContent = '✓'; setTimeout(() => b.textContent = '💾', 1200); }
+}
+
+async function fcDeleteCard(cardId) {
+  if (!confirm('Xóa thẻ này?')) return;
+  const { error } = await _adminDb.deleteFlashcardTemplate(cardId);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  document.getElementById('fce-card-' + cardId)?.remove();
+}
+
+async function fcAddManual(groupTitle) {
+  const char = document.getElementById('fc-new-char').value.trim();
+  const mg   = document.getElementById('fc-new-mg').value.trim();
+  if (!char || !mg) { alert('Cần nhập Hán tự và nghĩa.'); return; }
+
+  // Find first lesson in group for lesson_id
+  const lesson = fcAllLessons.find(l => {
+    const sep = l.title.indexOf(' · ');
+    const key = sep > -1 ? l.title.slice(0, sep).trim() : l.title.trim();
+    return key === groupTitle && l.book === fcSelectedBook;
+  });
+
+  const { error } = await _adminDb.saveFlashcardTemplate({
+    book_name: fcSelectedBook,
+    lesson_id: lesson?.id || null,
+    lesson_title: groupTitle,
+    char,
+    pinyin:     document.getElementById('fc-new-py').value.trim(),
+    meaning:    mg,
+    example_zh: document.getElementById('fc-new-ezh').value.trim(),
+    example_vi: document.getElementById('fc-new-evi').value.trim(),
+    sort_order: 0, published: true,
+  });
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  ['fc-new-char','fc-new-py','fc-new-mg','fc-new-ezh','fc-new-evi'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  fcSelectLesson(lesson?.id || fcAllLessons.find(l=>l.book===fcSelectedBook)?.id, groupTitle);
+}
+
+function fcShowSQLNote() {
+  alert(`Chạy SQL này trong Supabase để tạo bảng flashcard_templates:\n\nCREATE TABLE flashcard_templates (\n  id BIGSERIAL PRIMARY KEY,\n  book_name TEXT NOT NULL,\n  lesson_id BIGINT,\n  lesson_title TEXT DEFAULT '',\n  char TEXT NOT NULL,\n  pinyin TEXT DEFAULT '',\n  meaning TEXT DEFAULT '',\n  example_zh TEXT DEFAULT '',\n  example_vi TEXT DEFAULT '',\n  sort_order INT DEFAULT 0,\n  published BOOLEAN DEFAULT true,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\nALTER TABLE flashcard_templates DISABLE ROW LEVEL SECURITY;`);
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
 loadData();

@@ -135,4 +135,37 @@ class Database {
   async updateCourseBookOrder(id, sort_order) {
     return await this.client.from('course_books').update({ sort_order }).eq('id', id);
   }
+
+  // ── Flashcard Templates (admin-created) ────────
+  async getFlashcardTemplates({ bookName, lessonId, publishedOnly } = {}) {
+    let q = this.client.from('flashcard_templates').select('*')
+      .order('sort_order').order('id');
+    if (bookName)     q = q.eq('book_name', bookName);
+    if (lessonId)     q = q.eq('lesson_id', lessonId);
+    if (publishedOnly) q = q.eq('published', true);
+    const { data, error } = await q;
+    return { data: data || [], error };
+  }
+
+  async saveFlashcardTemplate(row) {
+    const id = row.id;
+    const payload = { ...row };
+    delete payload.id;
+    if (id) return await this.client.from('flashcard_templates').update(payload).eq('id', id);
+    return await this.client.from('flashcard_templates').insert([payload]);
+  }
+
+  async bulkInsertFlashcardTemplates(rows) {
+    return await this.client.from('flashcard_templates').insert(rows);
+  }
+
+  async deleteFlashcardTemplate(id) {
+    return await this.client.from('flashcard_templates').delete().eq('id', id);
+  }
+
+  async getFlashcardTemplateSummary() {
+    const { data } = await this.client
+      .from('flashcard_templates').select('book_name,lesson_id,lesson_title').eq('published', true);
+    return data || [];
+  }
 }

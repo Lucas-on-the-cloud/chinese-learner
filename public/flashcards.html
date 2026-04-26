@@ -37,12 +37,12 @@ img{display:block;max-width:100%}
 .nav-btn:hover{background:var(--blue-dark)}
 
 /* HEADER */
-.content-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:40px 1.5rem 0;position:relative;overflow:hidden}
-.content-header::after{content:'詞';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none;line-height:1}
+.content-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:38px 1.5rem 0;position:relative;overflow:hidden}
+.content-header::after{content:'詞';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none}
 .ch-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 14px;border-radius:50px;margin-bottom:.85rem}
-.content-header h1{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;margin-bottom:.5rem;line-height:1.3}
+.content-header h1{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:#fff;margin-bottom:.4rem;line-height:1.3}
 .content-header p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.75;max-width:520px;margin-bottom:1.25rem}
-.ch-tabs{display:flex;gap:2px;position:relative;z-index:1}
+.ch-tabs{display:flex;gap:2px}
 .ch-tab{font-size:13px;font-weight:500;color:rgba(255,255,255,.6);padding:8px 18px;border-radius:8px 8px 0 0;cursor:pointer;transition:all .15s;border:1px solid transparent;border-bottom:none}
 .ch-tab.active{background:#f4f5f7;color:var(--navy);font-weight:600}
 .ch-tab:not(.active):hover{color:#fff;background:rgba(255,255,255,.12)}
@@ -50,106 +50,103 @@ img{display:block;max-width:100%}
 /* MAIN */
 .app-main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:28px 1.5rem 60px}
 
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-3);margin-bottom:18px;flex-wrap:wrap}
+.breadcrumb a,.breadcrumb button{color:var(--blue);font-weight:500;background:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;padding:0;transition:opacity .15s}
+.breadcrumb a:hover,.breadcrumb button:hover{opacity:.75}
+.breadcrumb .sep{color:var(--border)}
+
 /* DISCOVERY GRID */
-.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .section-title{font-family:'Noto Serif TC',serif;font-size:19px;font-weight:700;color:var(--navy)}
-.section-sub{font-size:13px;color:var(--text-2);margin-top:4px}
+.section-sub{font-size:13px;color:var(--text-2);margin-top:3px}
 .fc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.fc-set-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .18s;display:flex;flex-direction:column}
+.fc-set-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .18s;display:flex;flex-direction:column;cursor:pointer}
 .fc-set-card:hover{border-color:#c7d7fd;box-shadow:0 6px 24px rgba(26,86,219,.1);transform:translateY(-2px)}
-.fc-set-cover{width:100%;height:120px;object-fit:cover;background:linear-gradient(135deg,var(--navy),#1e3a8a);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
+.fc-set-cover{width:100%;height:110px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
 .fc-set-cover img{width:100%;height:100%;object-fit:cover}
 .fc-set-cover-wm{position:absolute;font-family:'Noto Serif TC',serif;font-size:72px;font-weight:700;color:rgba(255,255,255,.07);line-height:1;bottom:-10px;right:6px;pointer-events:none}
 .fc-set-cover-icon{font-family:'Noto Serif TC',serif;font-size:36px;font-weight:700;color:rgba(255,255,255,.75);position:relative;z-index:1}
-.fc-set-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:10px}
-.fc-set-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fc-set-meta{display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--text-3)}
-.fc-set-meta span{display:flex;align-items:center;gap:4px}
-.fc-set-actions{display:flex;gap:8px;margin-top:auto}
-.fc-study-btn{flex:1;background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:8px 12px;border-radius:7px;cursor:pointer;transition:background .15s;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px}
-.fc-study-btn:hover{background:var(--blue-dark)}
-.fc-list-btn{background:transparent;color:var(--blue);border:1.5px solid var(--blue);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:8px;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.fc-list-btn:hover{background:var(--blue-lt)}
+.fc-set-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.fc-set-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
+.fc-set-meta{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-3)}
+.prog-mini{height:4px;background:#f3f4f6;border-radius:100px;overflow:hidden}
+.prog-mini-fill{height:100%;border-radius:100px;transition:width .4s}
 
-/* SET VIEW HEADER */
-.set-hd{display:flex;align-items:flex-start;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:22px;box-shadow:var(--shadow-sm)}
-.set-hd-cover{width:72px;height:72px;border-radius:9px;object-fit:cover;flex-shrink:0;background:linear-gradient(135deg,var(--navy),#1e3a8a);display:flex;align-items:center;justify-content:center}
-.set-hd-cover img{width:100%;height:100%;object-fit:cover;border-radius:9px}
-.set-hd-cover-icon{font-family:'Noto Serif TC',serif;font-size:28px;color:rgba(255,255,255,.8)}
-.set-hd-info{flex:1;min-width:0}
-.set-hd-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px}
-.set-hd-desc{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:10px}
-.set-hd-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.set-tag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:50px;background:var(--blue-lt);color:var(--blue)}
-.set-hd-actions{display:flex;gap:8px;flex-shrink:0}
-.btn-primary{background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:7px;white-space:nowrap}
-.btn-primary:hover{background:var(--blue-dark)}
-.btn-outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;padding:9px 18px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.btn-outline:hover{background:var(--blue-lt)}
-.btn-back{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text-2);padding:6px 14px;border-radius:7px;margin-bottom:18px;transition:all .15s;cursor:pointer}
-.btn-back:hover{color:var(--blue);border-color:var(--blue);background:var(--blue-lt)}
+/* LESSON LIST */
+.lesson-list-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px}
+.lesson-list-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #f9fafb}
+.lesson-list-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy)}
+.lesson-row{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid #f9fafb;transition:background .12s;cursor:pointer}
+.lesson-row:last-child{border-bottom:none}
+.lesson-row:hover{background:#f8faff}
+.lr-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:18px;color:rgba(255,255,255,.8);flex-shrink:0}
+.lr-info{flex:1;min-width:0}
+.lr-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:2px}
+.lr-sub{font-size:11.5px;color:var(--text-3)}
+.lr-badge{font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-lt);padding:3px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0}
 
-/* VOCAB LIST (STUDY4 style) */
-.vocab-list{display:flex;flex-direction:column;gap:14px}
-.vocab-item{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;gap:0;transition:box-shadow .15s}
+/* VOCAB CARD LIST */
+.vocab-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.vocab-item{background:var(--surface);border:1px solid var(--border);border-radius:11px;display:flex;overflow:hidden;transition:box-shadow .15s}
 .vocab-item:hover{box-shadow:var(--shadow)}
-.vocab-item-cover{width:140px;flex-shrink:0;object-fit:cover;background:linear-gradient(135deg,#0d1b4b,#1e3a8a);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-.vocab-item-cover-wm{position:absolute;font-family:'Noto Serif TC',serif;font-size:64px;font-weight:700;color:rgba(255,255,255,.07);line-height:1;bottom:-4px;right:4px}
-.vocab-item-cover-icon{font-family:'Noto Serif TC',serif;font-size:30px;color:rgba(255,255,255,.7);position:relative;z-index:1}
-.vocab-item-body{flex:1;padding:18px 20px}
-.vocab-item-title{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:2px;line-height:1.3;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.vocab-pos{font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text-3);background:#f3f4f6;padding:2px 8px;border-radius:5px}
-.vocab-py{font-family:'Be Vietnam Pro',sans-serif;font-size:13px;color:var(--text-2);font-style:italic;margin-bottom:8px}
-.vocab-def-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
-.vocab-def{font-size:13.5px;color:var(--text);line-height:1.7;margin-bottom:8px}
-.vocab-ex-label{font-size:12px;font-weight:700;color:var(--text-2);margin-bottom:3px}
-.vocab-ex{font-size:12.5px;color:var(--text-2);line-height:1.7;border-left:3px solid var(--border);padding-left:10px;font-style:italic}
-.vocab-ex .zh{font-family:'Noto Serif TC',serif;color:var(--text)}
-.vocab-item-actions{display:flex;align-items:flex-start;padding:14px 14px 14px 0;flex-shrink:0}
-.vocab-fc-btn{background:var(--blue-lt);color:var(--blue);border:1px solid #c7d7fd;font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.vocab-fc-btn:hover{background:var(--blue);color:#fff}
-
-/* PAGINATION */
-.pagination{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:28px}
-.page-btn{background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:500;color:var(--text-2);width:38px;height:38px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.page-btn:hover{border-color:var(--blue);color:var(--blue)}
-.page-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700}
-.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.vocab-cover{width:120px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:90px}
+.vocab-cover-wm{position:absolute;font-family:'Noto Serif TC',serif;font-size:58px;font-weight:700;color:rgba(255,255,255,.07);line-height:1;bottom:-6px;right:4px}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700;color:rgba(255,255,255,.85);position:relative;z-index:1}
+.vocab-body{flex:1;padding:14px 16px}
+.vocab-title-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.vocab-char-text{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy)}
+.vocab-py{font-size:12px;color:var(--text-2);font-style:italic}
+.vocab-pos{font-size:11px;font-weight:600;color:var(--text-3);background:#f3f4f6;padding:2px 7px;border-radius:5px}
+.vocab-def{font-size:13.5px;color:var(--text);line-height:1.6;margin-bottom:6px}
+.vocab-ex{font-size:12px;color:var(--text-2);line-height:1.6;border-left:3px solid var(--border);padding-left:8px}
+.vocab-ex .zh{font-family:'Noto Serif TC',serif;color:var(--text);font-size:13px}
+.vocab-actions{display:flex;align-items:flex-start;padding:12px 12px 12px 0;flex-direction:column;gap:6px;flex-shrink:0}
+.vocab-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid}
+.vocab-btn.study{background:var(--blue-lt);color:var(--blue);border-color:#c7d7fd}
+.vocab-btn.study:hover{background:var(--blue);color:#fff}
+.vocab-btn.fork{background:#f0fdf4;color:#16a34a;border-color:#bbf7d0}
+.vocab-btn.fork:hover{background:#16a34a;color:#fff}
+.vocab-btn.forked{background:#dcfce7;color:#16a34a;border-color:#bbf7d0;cursor:default}
 
 /* STUDY MODE */
-.study-mode{display:flex;flex-direction:column;align-items:center;gap:20px}
-.study-progress-bar{width:100%;max-width:500px;height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden}
-.study-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),#4f96ff);border-radius:100px;transition:width .3s ease}
-.study-meta{font-size:13px;color:var(--text-2);text-align:center}
+.study-wrap{display:flex;flex-direction:column;align-items:center;gap:18px}
+.study-prog-bar{width:100%;max-width:500px;height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.study-prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#4f96ff);border-radius:100px;transition:width .3s ease}
 .flashcard{width:100%;max-width:480px;height:280px;perspective:1200px;cursor:pointer}
 .flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
 .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
-.flashcard-front,.flashcard-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:1.75rem;border:1px solid var(--border);box-shadow:var(--shadow-lg)}
+.flashcard-front,.flashcard-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:1.75rem;border:1px solid var(--border);box-shadow:var(--shadow-lg)}
 .flashcard-front{background:#fff}
-.flashcard-back{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);transform:rotateY(180deg);border-color:transparent;overflow:hidden}
-.flashcard-back::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(251,191,36,.06),transparent 60%);pointer-events:none}
-.fc-zh{font-family:'Noto Serif TC',serif;font-size:clamp(18px,4vw,32px);font-weight:700;color:var(--blue);line-height:1.4;text-align:center;max-width:90%}
-.fc-title{font-size:13px;font-weight:500;color:var(--text-2);text-align:center}
-.fc-hint{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px;font-weight:500}
-.fc-py-back{font-size:15px;color:#fbbf24;font-style:italic;font-weight:500;position:relative;z-index:1;text-align:center}
-.fc-vi-back{font-size:18px;font-weight:600;color:#fff;text-align:center;position:relative;z-index:1;line-height:1.5;max-width:90%}
-.fc-zh-back{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;color:rgba(255,255,255,.3);margin-top:4px;position:relative;z-index:1;text-align:center}
-.fc-nav{display:flex;align-items:center;gap:20px}
+.flashcard-back{background:linear-gradient(135deg,var(--navy),#1e3a8a);transform:rotateY(180deg);border-color:transparent;overflow:hidden}
+.fc-zh{font-family:'Noto Serif TC',serif;font-size:clamp(24px,5vw,40px);font-weight:700;color:var(--blue);text-align:center}
+.fc-hint{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px}
+.fc-py-b{font-size:14px;color:#fbbf24;font-style:italic;font-weight:500;position:relative;z-index:1;text-align:center}
+.fc-vi-b{font-size:17px;font-weight:600;color:#fff;text-align:center;position:relative;z-index:1;line-height:1.5;max-width:90%}
+.fc-ex-b{font-family:'Noto Serif TC',serif;font-size:12px;color:rgba(255,255,255,.45);text-align:center;position:relative;z-index:1;max-width:90%;line-height:1.5}
+.fc-nav{display:flex;align-items:center;gap:18px}
 .fc-nav-btn{background:var(--surface);border:1px solid var(--border);width:44px;height:44px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--text-2);box-shadow:var(--shadow-sm)}
-.fc-nav-btn:hover{border-color:var(--blue);background:var(--blue);color:#fff;transform:translateY(-2px);box-shadow:var(--shadow)}
-.fc-counter{font-size:13px;color:var(--text);font-weight:600;min-width:64px;text-align:center}
+.fc-nav-btn:hover{border-color:var(--blue);background:var(--blue);color:#fff}
+.fc-counter{font-size:13px;font-weight:600;min-width:64px;text-align:center}
 .fc-counter span{color:var(--text-3);font-weight:500}
-.study-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.study-action-btn{background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;color:var(--text-2);padding:8px 18px;border-radius:8px;cursor:pointer;transition:all .15s}
-.study-action-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.study-action-btn.danger:hover{border-color:#dc2626;color:#dc2626;background:#fef2f2}
-.kbd-hint{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:-6px}
-.kbd{font-size:11px;font-weight:600;color:var(--text-2);background:#f3f4f6;border:1px solid #d1d5db;padding:2px 8px;border-radius:4px}
+.study-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.sa-btn{background:var(--surface);border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;color:var(--text-2);padding:7px 16px;border-radius:8px;cursor:pointer;transition:all .15s}
+.sa-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.kbd{font-size:11px;font-weight:600;color:var(--text-2);background:#f3f4f6;border:1px solid #d1d5db;padding:2px 7px;border-radius:4px}
+
+/* USER PERSONAL FLASHCARDS */
+.personal-empty{text-align:center;padding:3rem 1rem;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.personal-empty .big{font-family:'Noto Serif TC',serif;font-size:52px;margin-bottom:1rem;color:var(--blue);opacity:.2}
+.add-custom-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.form-input{padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.form-input:focus{border-color:var(--blue)}
+.form-input.zh-input{font-family:'Noto Serif TC',serif;font-size:16px}
 
 /* EMPTY & LOADING */
-.empty-state{text-align:center;padding:4rem 1rem;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:12px}
-.empty-state .big{font-family:'Noto Serif TC',serif;font-size:56px;margin-bottom:1rem;color:var(--blue);opacity:.2}
 .loading-spinner{text-align:center;padding:3rem;color:var(--text-3);font-size:13px}
+.empty-state{text-align:center;padding:4rem 1rem;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:12px}
+.empty-state .big{font-family:'Noto Serif TC',serif;font-size:52px;margin-bottom:1rem;color:var(--blue);opacity:.2}
 
 /* FOOTER */
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
@@ -170,11 +167,10 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
 .footer-bottom-links{display:flex;gap:1.5rem}
 .footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
-.footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
 
 @media(max-width:1000px){.fc-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:720px){.fc-grid{grid-template-columns:repeat(2,1fr)}.vocab-item-cover{width:100px}.set-hd{flex-wrap:wrap}.set-hd-actions{width:100%;justify-content:flex-start}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
-@media(max-width:500px){.fc-grid{grid-template-columns:1fr}.vocab-item-cover{display:none}.nav-link{display:none}}
+@media(max-width:720px){.fc-grid{grid-template-columns:repeat(2,1fr)}.vocab-cover{width:90px}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
+@media(max-width:500px){.fc-grid{grid-template-columns:1fr}.vocab-cover{display:none}.nav-link{display:none}.form-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -199,10 +195,10 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   <div class="container">
     <div class="ch-eyebrow"><i class="fas fa-clone" style="font-size:10px"></i>&nbsp; TOCFL · 詞彙 · Flashcards</div>
     <h1 id="page-h1">Flashcards từ vựng</h1>
-    <p id="page-desc">Ôn luyện từ vựng tiếng Trung phồn thể theo từng khóa học. Chọn bộ thẻ và bắt đầu luyện tập ngay.</p>
+    <p id="page-desc">Ôn luyện từ vựng tiếng Trung phồn thể — bộ thẻ do admin tạo theo từng bài học, hoặc tự tạo bộ thẻ riêng.</p>
     <div class="ch-tabs">
-      <div class="ch-tab active" id="tab-discover" onclick="switchTab('discover')">Khám phá</div>
-      <div class="ch-tab" id="tab-studying" onclick="switchTab('studying')" style="display:none">Đang học</div>
+      <div class="ch-tab active" id="tab-discover" onclick="gotoTab('discover')">Khám phá</div>
+      <div class="ch-tab" id="tab-mine" onclick="gotoTab('mine')">Của tôi <span id="mine-count-badge" style="display:none;background:var(--orange);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:4px">0</span></div>
     </div>
   </div>
 </div>
@@ -255,107 +251,114 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <script>
 const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
-const { createClient } = supabase;
-const db = createClient(DB_URL, DB_KEY);
+const db = supabase.createClient(DB_URL, DB_KEY);
 
-const COVER_GRADIENTS = [
-  ['#0d1b4b','#1e3a8a'],['#064e3b','#065f46'],
-  ['#4c1d95','#5b21b6'],['#7f1d1d','#991b1b'],
-  ['#0c4a6e','#075985'],['#713f12','#92400e'],
+const GRADIENTS = [
+  ['#0d1b4b','#1e3a8a'],['#064e3b','#065f46'],['#4c1d95','#5b21b6'],
+  ['#7f1d1d','#991b1b'],['#0c4a6e','#075985'],['#713f12','#92400e'],
   ['#1e1b4b','#312e81'],['#14532d','#166534'],
 ];
-const COVER_CHARS = ['讀','詞','學','文','語','閱','識','字'];
+const CHARS = ['讀','詞','學','文','語','閱','識','字'];
 
-// State
-let allLessons  = [];
-let allBooks    = [];
-let currentBook = null;
-let studyList   = [];
-let studyIdx    = 0;
-let studyMode   = false;
-let listPage    = 1;
-const PAGE_SIZE = 20;
+// ─── State ─────────────────────────────────────────
+let allBooks     = [];
+let allTemplates = [];     // [{id,book_name,lesson_id,lesson_title,char,pinyin,meaning,example_zh,example_vi}]
+let currentTab   = 'discover';
+let studyCards   = [];
+let studyIdx     = 0;
+let studyMode    = false;
 
-function switchTab(tab) {
-  document.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-}
+// User personal collection (localStorage)
+const USER_FC_KEY = 'tocfl_user_flashcards';
+function getUserCards() { return JSON.parse(localStorage.getItem(USER_FC_KEY) || '[]'); }
+function saveUserCards(cards) { localStorage.setItem(USER_FC_KEY, JSON.stringify(cards)); }
+function isForked(char) { return getUserCards().some(c => c.char === char); }
 
-/* ─── INIT ─── */
+// ─── INIT ──────────────────────────────────────────
 (async () => {
-  const params = new URLSearchParams(location.search);
-  const bParam = params.get('b');
-
-  const [{ data: lessonData }, { data: bookData }] = await Promise.all([
-    db.from('lessons').select('*').order('id'),
-    db.from('books').select('*').order('id'),
+  const [{ data: tpls }, { data: books }] = await Promise.all([
+    db.from('flashcard_templates').select('*').eq('published', true).order('sort_order').order('id'),
+    db.from('books').select('*').order('name'),
   ]);
+  allTemplates = tpls || [];
+  allBooks     = books || [];
 
-  allLessons = (lessonData || []).map(l => ({
-    id: l.id,
-    book: l.book || 'B1',
-    title: l.title || '',
-    zh:   l.chinese   || l.zh  || '',
-    py:   l.pinyin    || l.py  || '',
-    vi:   l.vietnamese || l.vi || '',
-  }));
-  allBooks = bookData || [];
+  updateMineBadge();
 
-  if (bParam) {
-    await renderSetView(bParam);
+  const params  = new URLSearchParams(location.search);
+  const tabP    = params.get('tab');
+  const bookP   = params.get('b');
+  const lessonP = params.get('lesson');
+
+  if (tabP === 'mine') {
+    gotoTab('mine');
+  } else if (bookP && lessonP) {
+    gotoTab('discover');
+    renderCards(bookP, lessonP);
+  } else if (bookP) {
+    gotoTab('discover');
+    renderLessons(bookP);
   } else {
-    renderDiscovery();
+    gotoTab('discover');
   }
 
-  document.addEventListener('keydown', handleStudyKey);
+  document.addEventListener('keydown', handleKey);
 })();
 
-/* ─── DISCOVERY ─── */
-function renderDiscovery() {
-  document.getElementById('page-h1').textContent   = 'Flashcards từ vựng';
-  document.getElementById('page-desc').textContent = 'Ôn luyện từ vựng tiếng Trung phồn thể theo từng khóa học con. Chọn bộ thẻ và bắt đầu luyện tập ngay.';
+function updateMineBadge() {
+  const cnt = getUserCards().length;
+  const badge = document.getElementById('mine-count-badge');
+  if (badge) { badge.textContent = cnt; badge.style.display = cnt ? '' : 'none'; }
+}
 
-  const bookNames = [...new Set(allLessons.map(l => l.book))].sort();
-  const bookMeta  = name => allBooks.find(b => b.name === name) || {};
+function gotoTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'discover') renderDiscovery();
+  else                    renderMine();
+}
+
+// ─── DISCOVERY ─────────────────────────────────────
+function renderDiscovery() {
+  exitStudy();
+  document.getElementById('page-h1').textContent   = 'Flashcards từ vựng';
+  document.getElementById('page-desc').textContent = 'Bộ thẻ từ vựng do admin tạo, phân loại theo khóa học con. Chọn một bộ để bắt đầu.';
+
+  // Group templates by book
+  const bookNames = [...new Set(allTemplates.map(t => t.book_name))].sort();
 
   if (!bookNames.length) {
     document.getElementById('app-main').innerHTML =
-      `<div class="empty-state"><div class="big">詞</div><p>Chưa có khóa học nào.<br>Vui lòng thêm khóa học con trong admin panel.</p></div>`;
+      `<div class="empty-state"><div class="big">詞</div><p>Admin chưa tạo bộ thẻ nào.<br>Vào admin panel → Flashcard để tạo.</p></div>`;
     return;
   }
 
   const cardsHTML = bookNames.map((name, i) => {
-    const meta   = bookMeta(name);
-    const count  = allLessons.filter(l => l.book === name).length;
-    const [c1,c2]= COVER_GRADIENTS[i % COVER_GRADIENTS.length];
-    const wm     = COVER_CHARS[i % COVER_CHARS.length];
-    const label  = meta.display_name || `Khóa học ${name}`;
-    const coverHTML = meta.cover_url
+    const meta   = allBooks.find(b => b.name === name) || {};
+    const label  = meta.display_name || name;
+    const cards  = allTemplates.filter(t => t.book_name === name);
+    const lessons = [...new Set(cards.map(t => t.lesson_title).filter(Boolean))];
+    const [c1,c2]= GRADIENTS[i % GRADIENTS.length];
+    const wm     = CHARS[i % CHARS.length];
+
+    const coverInner = meta.cover_url
       ? `<img src="${meta.cover_url}" alt="${label}" style="width:100%;height:100%;object-fit:cover">`
       : `<span class="fc-set-cover-icon">${wm}</span><span class="fc-set-cover-wm">${wm}</span>`;
 
-    // Check progress
-    const doneIds = new Set(JSON.parse(localStorage.getItem(`tocfl_progress_${name}`) || '[]'));
-    const doneCount = allLessons.filter(l => l.book === name && doneIds.has(l.id)).length;
-    const pct = count ? Math.round(doneCount / count * 100) : 0;
+    const userCards  = getUserCards().filter(c => c.book_name === name);
+    const pct = cards.length ? Math.round(userCards.length / cards.length * 100) : 0;
 
-    return `<div class="fc-set-card">
-      <div class="fc-set-cover" style="background:linear-gradient(135deg,${c1},${c2})">${coverHTML}</div>
+    return `<div class="fc-set-card" onclick="renderLessons('${name}')">
+      <div class="fc-set-cover" style="background:linear-gradient(135deg,${c1},${c2})">${coverInner}</div>
       <div class="fc-set-body">
         <div class="fc-set-title">${label}</div>
         <div class="fc-set-meta">
-          <span><i class="fas fa-clone" style="font-size:10px"></i> ${count} thẻ</span>
-          ${pct > 0 ? `<span style="color:${pct===100?'#16a34a':'var(--blue)'}"><i class="fas fa-check-circle" style="font-size:10px"></i> ${pct}%</span>` : ''}
+          <span><i class="fas fa-clone" style="font-size:10px"></i> ${cards.length} thẻ</span>
+          <span><i class="fas fa-list" style="font-size:10px"></i> ${lessons.length} bài</span>
         </div>
-        <div style="height:4px;background:#f3f4f6;border-radius:100px;overflow:hidden;margin-top:2px">
-          <div style="height:100%;width:${pct}%;background:${pct===100?'#16a34a':'var(--blue)'};border-radius:100px;transition:width .4s"></div>
-        </div>
-        <div class="fc-set-actions">
-          <button class="fc-study-btn" onclick="startStudyFromDiscover('${name}')">
-            <i class="fas fa-play" style="font-size:10px"></i> Luyện tập
-          </button>
-          <button class="fc-list-btn" onclick="location.href='?b=${encodeURIComponent(name)}'">☰</button>
-        </div>
+        <div class="prog-mini"><div class="prog-mini-fill" style="width:${pct}%;background:${pct===100?'#16a34a':'var(--blue)'}"></div></div>
+        ${pct > 0 ? `<div style="font-size:11px;color:${pct===100?'#16a34a':'var(--blue)'};">${pct===100?'✓ Đã fork đủ':'Fork '+pct+'%'}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -364,244 +367,383 @@ function renderDiscovery() {
     <div class="section-hd">
       <div>
         <div class="section-title">Tất cả bộ thẻ</div>
-        <div class="section-sub">${bookNames.length} bộ thẻ · dựa theo khóa học con</div>
+        <div class="section-sub">${bookNames.length} khóa học con · ${allTemplates.length} thẻ từ vựng</div>
       </div>
     </div>
     <div class="fc-grid">${cardsHTML}</div>`;
 }
 
-function startStudyFromDiscover(bookName) {
-  const lessons = allLessons.filter(l => l.book === bookName);
-  if (!lessons.length) { alert('Bộ này chưa có bài học nào.'); return; }
-  location.href = `?b=${encodeURIComponent(bookName)}&study=1`;
-}
-
-/* ─── SET VIEW ─── */
-async function renderSetView(bookName) {
-  currentBook = bookName;
-  const meta  = allBooks.find(b => b.name === bookName) || {};
-  const label = meta.display_name || `Khóa học ${bookName}`;
-  const lessons = allLessons.filter(l => l.book === bookName);
+// ─── LESSON LIST ────────────────────────────────────
+function renderLessons(bookName) {
+  exitStudy();
+  const meta   = allBooks.find(b => b.name === bookName) || {};
+  const label  = meta.display_name || bookName;
+  const cards  = allTemplates.filter(t => t.book_name === bookName);
 
   document.getElementById('page-h1').textContent   = label;
-  document.getElementById('page-desc').textContent = meta.description || '';
-  document.title = label + ' · Flashcards — TOCFL FAFA';
+  document.getElementById('page-desc').textContent = meta.description || 'Chọn bài học để xem và luyện tập flashcards.';
 
-  const params   = new URLSearchParams(location.search);
-  const autoStudy = params.get('study') === '1';
+  // Group by lesson_title
+  const lessonMap = new Map();
+  cards.forEach(c => {
+    const key = c.lesson_title || 'Bài học';
+    if (!lessonMap.has(key)) lessonMap.set(key, []);
+    lessonMap.get(key).push(c);
+  });
 
-  // Cover
-  const coverInner = meta.cover_url
-    ? `<img src="${meta.cover_url}" alt="${label}" style="width:72px;height:72px;object-fit:cover;border-radius:9px">`
-    : `<div class="set-hd-cover" style="width:72px;height:72px;background:linear-gradient(135deg,var(--navy),#1e3a8a);border-radius:9px;display:flex;align-items:center;justify-content:center"><span class="set-hd-cover-icon">詞</span></div>`;
+  if (!lessonMap.size) {
+    document.getElementById('app-main').innerHTML = `
+      <div class="breadcrumb">
+        <button onclick="renderDiscovery()">Tất cả bộ thẻ</button>
+      </div>
+      <div class="empty-state"><div class="big">詞</div><p>Chưa có bài học nào trong bộ thẻ này.</p></div>`;
+    return;
+  }
 
-  const doneIds   = new Set(JSON.parse(localStorage.getItem(`tocfl_progress_${bookName}`) || '[]'));
-  const doneCount = lessons.filter(l => doneIds.has(l.id)).length;
-  const pct       = lessons.length ? Math.round(doneCount / lessons.length * 100) : 0;
+  const [c1,c2] = GRADIENTS[([...allBooks].findIndex(b=>b.name===bookName)) % GRADIENTS.length];
+
+  const lessonsHTML = [...lessonMap.entries()].map(([title, cs], i) => {
+    const [lc1,lc2] = GRADIENTS[(i+1) % GRADIENTS.length];
+    const wm = (cs[0]?.char || CHARS[i % CHARS.length]).charAt(0);
+    return `<div class="lesson-row" onclick="renderCards('${bookName}','${encodeURIComponent(title)}')">
+      <div class="lr-icon" style="background:linear-gradient(135deg,${lc1},${lc2})">${wm}</div>
+      <div class="lr-info">
+        <div class="lr-title">${title}</div>
+        <div class="lr-sub">${cs.length} thẻ từ vựng</div>
+      </div>
+      <span class="lr-badge">${cs.length} thẻ</span>
+      <i class="fas fa-chevron-right" style="font-size:11px;color:#d1d5db;margin-left:8px"></i>
+    </div>`;
+  }).join('');
 
   document.getElementById('app-main').innerHTML = `
-    <button class="btn-back" onclick="location.href='/flashcards.html'">
-      <i class="fas fa-arrow-left"></i> Tất cả bộ thẻ
-    </button>
-
-    <div class="set-hd">
-      ${meta.cover_url
-        ? `<img src="${meta.cover_url}" alt="${label}" style="width:72px;height:72px;object-fit:cover;border-radius:9px;flex-shrink:0">`
-        : `<div style="width:72px;height:72px;background:linear-gradient(135deg,var(--navy),#1e3a8a);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-family:'Noto Serif TC',serif;font-size:28px;color:rgba(255,255,255,.8)">詞</span></div>`}
-      <div class="set-hd-info">
-        <div class="set-hd-title">${label}</div>
-        ${meta.description ? `<div class="set-hd-desc">${meta.description}</div>` : ''}
-        <div class="set-hd-tags">
-          <span class="set-tag"><i class="fas fa-clone" style="font-size:9px"></i> ${lessons.length} thẻ</span>
-          ${pct > 0 ? `<span class="set-tag" style="background:${pct===100?'#dcfce7':'#fef9c3'};color:${pct===100?'#16a34a':'#ca8a04'}">${pct === 100 ? '✓ Hoàn thành' : pct + '% đã học'}</span>` : ''}
-          <span class="set-tag" style="background:#f3f4f6;color:var(--text-2)">繁體中文</span>
-        </div>
-      </div>
-      <div class="set-hd-actions">
-        <button class="btn-primary" onclick="enterStudyMode()">
-          <i class="fas fa-play"></i> Luyện tập
-        </button>
-        <button class="btn-outline" onclick="shuffleStudyMode()">
-          <i class="fas fa-random"></i> Ngẫu nhiên
-        </button>
-      </div>
+    <div class="breadcrumb">
+      <button onclick="renderDiscovery()">Tất cả bộ thẻ</button>
+      <span class="sep">/</span>
+      <span>${label}</span>
     </div>
-
-    <div id="study-area" style="display:none"></div>
-    <div id="list-area"></div>`;
-
-  if (autoStudy) {
-    enterStudyMode();
-  } else {
-    renderVocabList(lessons, 1);
-  }
+    <div class="lesson-list-card">
+      <div class="lesson-list-hd">
+        <div class="lesson-list-title">${label} · ${lessonMap.size} bài · ${cards.length} thẻ</div>
+        <button onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')})" style="background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+          <i class="fas fa-play"></i> Học tất cả
+        </button>
+      </div>
+      ${lessonsHTML}
+    </div>`;
 }
 
-function renderVocabList(lessons, page) {
-  listPage = page;
-  const totalPages = Math.ceil(lessons.length / PAGE_SIZE);
-  const slice      = lessons.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const GRADS      = COVER_GRADIENTS;
-  const CHARS      = COVER_CHARS;
+// ─── CARDS VIEW ─────────────────────────────────────
+function renderCards(bookName, lessonTitleEncoded) {
+  exitStudy();
+  const lessonTitle = decodeURIComponent(lessonTitleEncoded);
+  const meta   = allBooks.find(b => b.name === bookName) || {};
+  const label  = meta.display_name || bookName;
+  const cards  = allTemplates.filter(t => t.book_name === bookName && t.lesson_title === lessonTitle);
 
-  const itemsHTML = slice.map((l, si) => {
-    const gi   = ((page - 1) * PAGE_SIZE + si);
-    const [c1,c2] = GRADS[gi % GRADS.length];
-    const wm   = (l.zh || '').match(/[一-鿿]/)?.[0] || CHARS[gi % CHARS.length];
-    const zhPreview = (l.zh || '').replace(/\s+/g,' ').slice(0, 60);
-    const viPreview = (l.vi || '').replace(/\s+/g,' ').slice(0, 100);
-    const pyPreview = (l.py || '').replace(/\s+/g,' ').slice(0, 60);
-    const groupTitle = l.title.replace(/ · .+/, '');
+  document.getElementById('page-h1').textContent   = lessonTitle;
+  document.getElementById('page-desc').textContent = `${cards.length} thẻ từ vựng trong ${label}`;
+
+  const cardsHTML = cards.map((c, i) => {
+    const [c1,c2] = GRADIENTS[i % GRADIENTS.length];
+    const wm = (c.char || '').charAt(0) || CHARS[i % CHARS.length];
+    const forked = isForked(c.char);
     return `<div class="vocab-item">
-      <div class="vocab-item-cover" style="background:linear-gradient(135deg,${c1},${c2})">
-        <span class="vocab-item-cover-wm">${wm}</span>
-        <span class="vocab-item-cover-icon">${wm}</span>
+      <div class="vocab-cover" style="background:linear-gradient(135deg,${c1},${c2})">
+        <span class="vocab-cover-wm">${wm}</span>
+        <span class="vocab-char">${wm}</span>
       </div>
-      <div class="vocab-item-body">
-        <div class="vocab-item-title">
-          ${groupTitle}
-          <span class="vocab-pos">bài đọc</span>
+      <div class="vocab-body">
+        <div class="vocab-title-row">
+          <span class="vocab-char-text">${c.char}</span>
+          <span class="vocab-py">${c.pinyin || ''}</span>
         </div>
-        ${pyPreview ? `<div class="vocab-py">${pyPreview}${l.py.length > 60 ? '…' : ''}</div>` : ''}
-        <div class="vocab-def-label">Định nghĩa:</div>
-        <div class="vocab-def">${viPreview}${l.vi.length > 100 ? '…' : ''}</div>
-        ${zhPreview ? `<div class="vocab-ex-label">Ví dụ:</div>
-        <div class="vocab-ex"><span class="zh">${zhPreview}${l.zh.length > 60 ? '…' : ''}</span></div>` : ''}
+        <div class="vocab-def">${c.meaning || ''}</div>
+        ${c.example_zh ? `<div class="vocab-ex"><span class="zh">${c.example_zh}</span>${c.example_vi ? '<br>' + c.example_vi : ''}</div>` : ''}
       </div>
-      <div class="vocab-item-actions">
-        <button class="vocab-fc-btn" onclick="jumpToCard(${gi})">
-          <i class="fas fa-clone"></i> Học thẻ này
+      <div class="vocab-actions">
+        <button class="vocab-btn study" onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')},${i})">
+          <i class="fas fa-play" style="font-size:9px"></i> Học
+        </button>
+        <button id="fork-btn-${i}" class="vocab-btn ${forked ? 'forked' : 'fork'}" onclick="forkCard(${i},this)" ${forked?'disabled':''}>
+          ${forked ? '✓ Đã fork' : '<i class="fas fa-download" style="font-size:9px"></i> Fork'}
         </button>
       </div>
     </div>`;
   }).join('');
 
-  // Pagination
-  let pgHTML = '';
-  if (totalPages > 1) {
-    pgHTML += `<div class="pagination">`;
-    if (page > 1) pgHTML += `<button class="page-btn" onclick="goPage(${page-1})"><i class="fas fa-chevron-left" style="font-size:11px"></i></button>`;
-    for (let p = Math.max(1, page-2); p <= Math.min(totalPages, page+2); p++) {
-      pgHTML += `<button class="page-btn${p===page?' active':''}" onclick="goPage(${p})">${p}</button>`;
+  const forkAll = cards.filter(c => !isForked(c.char));
+
+  document.getElementById('app-main').innerHTML = `
+    <div class="breadcrumb">
+      <button onclick="renderDiscovery()">Tất cả bộ thẻ</button>
+      <span class="sep">/</span>
+      <button onclick="renderLessons('${bookName}')">${label}</button>
+      <span class="sep">/</span>
+      <span>${lessonTitle}</span>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center">
+      <button onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')})" style="background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px">
+        <i class="fas fa-play"></i> Luyện tập (${cards.length} thẻ)
+      </button>
+      ${forkAll.length ? `<button onclick="forkAll('${bookName}','${encodeURIComponent(lessonTitle)}')" style="background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px">
+        <i class="fas fa-download"></i> Fork tất cả (${forkAll.length} thẻ mới)
+      </button>` : `<span style="font-size:13px;color:#16a34a;font-weight:600">✓ Đã fork tất cả vào bộ của tôi</span>`}
+    </div>
+
+    <div id="study-area" style="display:none;margin-bottom:24px"></div>
+    <div id="vocab-list-area" class="vocab-list">${cardsHTML || '<div style="padding:2rem;text-align:center;color:#9ca3af;font-size:13px">Không có thẻ nào.</div>'}</div>`;
+
+  window._currentBookCards = { bookName, lessonTitle, cards };
+}
+
+// ─── FORK ───────────────────────────────────────────
+function forkCard(idx, btn) {
+  const { cards, bookName, lessonTitle } = window._currentBookCards || {};
+  if (!cards) return;
+  const c = cards[idx];
+  if (!c || isForked(c.char)) return;
+  const user = getUserCards();
+  user.push({ ...c, forked_from_book: bookName, forked_from_lesson: lessonTitle, custom: false });
+  saveUserCards(user);
+  btn.className = 'vocab-btn forked';
+  btn.textContent = '✓ Đã fork';
+  btn.disabled = true;
+  updateMineBadge();
+}
+
+function forkAll(bookName, lessonTitleEncoded) {
+  const lessonTitle = decodeURIComponent(lessonTitleEncoded);
+  const cards = allTemplates.filter(t => t.book_name === bookName && t.lesson_title === lessonTitle);
+  const user = getUserCards();
+  let added = 0;
+  cards.forEach(c => {
+    if (!user.some(u => u.char === c.char)) {
+      user.push({ ...c, forked_from_book: bookName, forked_from_lesson: lessonTitle, custom: false });
+      added++;
     }
-    if (page < totalPages) pgHTML += `<button class="page-btn" onclick="goPage(${page+1})"><i class="fas fa-chevron-right" style="font-size:11px"></i></button>`;
-    pgHTML += `</div>`;
-  }
-
-  document.getElementById('list-area').innerHTML = `<div class="vocab-list">${itemsHTML}</div>${pgHTML}`;
+  });
+  saveUserCards(user);
+  updateMineBadge();
+  renderCards(bookName, lessonTitleEncoded);
 }
 
-function goPage(p) {
-  const lessons = allLessons.filter(l => l.book === currentBook);
-  renderVocabList(lessons, p);
-  document.getElementById('list-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* ─── STUDY MODE ─── */
-function enterStudyMode() {
-  studyList = allLessons.filter(l => l.book === currentBook);
-  if (!studyList.length) return;
-  studyIdx  = 0;
-  studyMode = true;
+// ─── STUDY MODE ─────────────────────────────────────
+function startStudy(cards, startIdx = 0) {
+  studyCards = Array.isArray(cards) ? cards : JSON.parse(cards);
+  studyIdx   = startIdx;
+  studyMode  = true;
+  const sa = document.getElementById('study-area');
+  const la = document.getElementById('vocab-list-area');
+  if (!sa) { renderStudyStandalone(); return; }
+  sa.style.display = '';
+  if (la) la.style.display = 'none';
   renderStudyCard();
+  sa.scrollIntoView({ behavior: 'smooth' });
 }
 
-function shuffleStudyMode() {
-  studyList = [...allLessons.filter(l => l.book === currentBook)];
-  for (let i = studyList.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [studyList[i], studyList[j]] = [studyList[j], studyList[i]];
-  }
-  studyIdx  = 0;
-  studyMode = true;
+function renderStudyStandalone() {
+  document.getElementById('page-h1').textContent = 'Luyện tập flashcard';
+  document.getElementById('app-main').innerHTML =
+    '<div id="study-area"></div>';
   renderStudyCard();
-}
-
-function jumpToCard(idx) {
-  const lessons = allLessons.filter(l => l.book === currentBook);
-  studyList = lessons;
-  studyIdx  = idx;
-  studyMode = true;
-  renderStudyCard();
-  document.getElementById('study-area').scrollIntoView({ behavior: 'smooth' });
 }
 
 function renderStudyCard() {
-  const c    = studyList[studyIdx];
-  const pct  = Math.round((studyIdx + 1) / studyList.length * 100);
+  const c    = studyCards[studyIdx];
+  if (!c) return;
+  const pct  = Math.round((studyIdx + 1) / studyCards.length * 100);
   const sa   = document.getElementById('study-area');
-  const la   = document.getElementById('list-area');
   if (!sa) return;
-  sa.style.display = '';
-  if (la) la.style.display = studyMode ? 'none' : '';
-
-  const titleShort  = c.title.replace(/ · .+/, '');
-  const zhFirst     = (c.zh || '').replace(/\s+/g,' ').slice(0, 80);
-  const pyFirst     = (c.py || '').replace(/\s+/g,' ').slice(0, 60);
-  const viFirst     = (c.vi || '').replace(/\s+/g,' ').slice(0, 120);
 
   sa.innerHTML = `
-    <div class="study-mode">
+    <div class="study-wrap">
       <div style="width:100%;max-width:500px">
-        <div class="study-progress-bar">
-          <div class="study-progress-fill" style="width:${pct}%"></div>
-        </div>
-        <div class="study-meta" style="margin-top:6px">${studyIdx + 1} / ${studyList.length} thẻ · ${pct}% hoàn thành</div>
+        <div class="study-prog-bar"><div class="study-prog-fill" style="width:${pct}%"></div></div>
+        <div style="text-align:center;font-size:12px;color:var(--text-2);margin-top:5px">${studyIdx+1} / ${studyCards.length} · ${pct}% hoàn thành</div>
       </div>
-
       <div class="flashcard" id="fc-card" onclick="document.getElementById('fc-card').classList.toggle('flipped')">
         <div class="flashcard-inner">
           <div class="flashcard-front">
-            <div class="fc-zh">${zhFirst || titleShort}${(c.zh||'').length > 80 ? '…' : ''}</div>
-            <div class="fc-title">${titleShort}</div>
+            <div class="fc-zh">${c.char}</div>
+            ${c.pinyin ? `<div style="font-size:13px;color:var(--text-2);font-style:italic">${c.pinyin}</div>` : ''}
             <div class="fc-hint">Nhấn để xem nghĩa</div>
           </div>
           <div class="flashcard-back">
-            ${pyFirst ? `<div class="fc-py-back">${pyFirst}${(c.py||'').length > 60 ? '…' : ''}</div>` : ''}
-            <div class="fc-vi-back">${viFirst || '—'}${(c.vi||'').length > 120 ? '…' : ''}</div>
-            <div class="fc-zh-back">${titleShort}</div>
+            ${c.pinyin ? `<div class="fc-py-b">${c.pinyin}</div>` : ''}
+            <div class="fc-vi-b">${c.meaning || '—'}</div>
+            ${c.example_zh ? `<div class="fc-ex-b">${c.example_zh}</div>` : ''}
           </div>
         </div>
       </div>
-
       <div class="fc-nav">
-        <button class="fc-nav-btn" onclick="navigateCard(-1)" title="Trước (←)">‹</button>
-        <span class="fc-counter">${studyIdx + 1} <span>/ ${studyList.length}</span></span>
-        <button class="fc-nav-btn" onclick="navigateCard(1)" title="Sau (→)">›</button>
+        <button class="fc-nav-btn" onclick="navCard(-1)" title="←">‹</button>
+        <span class="fc-counter">${studyIdx+1} <span>/ ${studyCards.length}</span></span>
+        <button class="fc-nav-btn" onclick="navCard(1)" title="→">›</button>
       </div>
-
-      <div class="kbd-hint">
-        <span class="kbd">Space</span> lật thẻ &nbsp;
-        <span class="kbd">←</span><span class="kbd">→</span> chuyển thẻ
+      <div style="display:flex;gap:6px;align-items:center;justify-content:center;font-size:12px;color:var(--text-3)">
+        <span class="kbd">Space</span> lật &nbsp;
+        <span class="kbd">←</span><span class="kbd">→</span> chuyển
       </div>
-
       <div class="study-actions">
-        <button class="study-action-btn" onclick="shuffleStudyMode()"><i class="fas fa-random"></i> Ngẫu nhiên</button>
-        <button class="study-action-btn" onclick="exitStudyMode()"><i class="fas fa-list"></i> Xem danh sách</button>
-        <button class="study-action-btn" onclick="location.href='/flashcards.html'"><i class="fas fa-th"></i> Tất cả bộ thẻ</button>
+        <button class="sa-btn" onclick="shuffleStudy()"><i class="fas fa-random"></i> Ngẫu nhiên</button>
+        <button class="sa-btn" onclick="exitStudy()"><i class="fas fa-list"></i> Xem danh sách</button>
       </div>
     </div>`;
 }
 
-function navigateCard(dir) {
-  studyIdx = (studyIdx + dir + studyList.length) % studyList.length;
+function navCard(dir) {
+  studyIdx = (studyIdx + dir + studyCards.length) % studyCards.length;
   renderStudyCard();
 }
 
-function exitStudyMode() {
+function shuffleStudy() {
+  for (let i = studyCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [studyCards[i], studyCards[j]] = [studyCards[j], studyCards[i]];
+  }
+  studyIdx = 0; renderStudyCard();
+}
+
+function exitStudy() {
   studyMode = false;
-  const sa  = document.getElementById('study-area');
-  const la  = document.getElementById('list-area');
+  const sa = document.getElementById('study-area');
+  const la = document.getElementById('vocab-list-area');
   if (sa) sa.style.display = 'none';
   if (la) la.style.display = '';
 }
 
-function handleStudyKey(e) {
+function handleKey(e) {
   if (!studyMode) return;
   const fc = document.getElementById('fc-card');
   if (e.code === 'Space') { e.preventDefault(); fc?.classList.toggle('flipped'); }
-  else if (e.code === 'ArrowLeft')  { e.preventDefault(); navigateCard(-1); }
-  else if (e.code === 'ArrowRight') { e.preventDefault(); navigateCard(1); }
+  else if (e.code === 'ArrowLeft')  { e.preventDefault(); navCard(-1); }
+  else if (e.code === 'ArrowRight') { e.preventDefault(); navCard(1); }
+}
+
+// ─── MY FLASHCARDS ──────────────────────────────────
+function renderMine() {
+  exitStudy();
+  document.getElementById('page-h1').textContent   = 'Flashcards của tôi';
+  document.getElementById('page-desc').textContent = 'Bộ thẻ đã fork từ template hoặc tự tạo.';
+
+  const userCards = getUserCards();
+
+  const addFormHTML = `
+    <div class="add-custom-form">
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px"><i class="fas fa-plus"></i> Tạo thẻ riêng</div>
+      <div class="form-row">
+        <input id="my-char" class="form-input zh-input" placeholder="漢字 *">
+        <input id="my-py"   class="form-input" placeholder="Pinyin">
+        <input id="my-mg"   class="form-input" placeholder="Nghĩa tiếng Việt *">
+      </div>
+      <div class="form-row" style="grid-template-columns:1fr 1fr">
+        <input id="my-ezh" class="form-input zh-input" placeholder="Ví dụ tiếng Trung">
+        <input id="my-evi" class="form-input" placeholder="Ví dụ tiếng Việt">
+      </div>
+      <button onclick="addUserCard()" style="background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:6px">
+        <i class="fas fa-plus"></i> Thêm thẻ
+      </button>
+    </div>`;
+
+  if (!userCards.length) {
+    document.getElementById('app-main').innerHTML = `
+      ${addFormHTML}
+      <div class="personal-empty">
+        <div class="big">詞</div>
+        <p style="font-size:14px">Chưa có thẻ nào.<br>Tạo thẻ riêng hoặc fork bộ thẻ từ tab Khám phá.</p>
+      </div>`;
+    return;
+  }
+
+  // Group by source
+  const groups = new Map();
+  userCards.forEach((c, i) => {
+    const key = c.custom ? 'custom' : (c.forked_from_lesson || 'Đã fork');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ ...c, _idx: i });
+  });
+
+  let studyAllBtn = '';
+  if (userCards.length) {
+    studyAllBtn = `<button onclick="startStudy(${JSON.stringify(userCards).replace(/"/g,'&quot;')})" style="background:var(--blue);color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:18px">
+      <i class="fas fa-play"></i> Học tất cả ${userCards.length} thẻ
+    </button>`;
+  }
+
+  const groupsHTML = [...groups.entries()].map(([title, cards]) => {
+    const cardsHTML = cards.map((c, ci) => {
+      const [c1,c2] = GRADIENTS[ci % GRADIENTS.length];
+      const wm = (c.char||'').charAt(0) || '詞';
+      return `<div class="vocab-item">
+        <div class="vocab-cover" style="background:linear-gradient(135deg,${c1},${c2})">
+          <span class="vocab-cover-wm">${wm}</span>
+          <span class="vocab-char">${wm}</span>
+        </div>
+        <div class="vocab-body">
+          <div class="vocab-title-row">
+            <span class="vocab-char-text">${c.char}</span>
+            <span class="vocab-py">${c.pinyin||''}</span>
+          </div>
+          <div class="vocab-def">${c.meaning||''}</div>
+          ${c.example_zh ? `<div class="vocab-ex"><span class="zh">${c.example_zh}</span></div>` : ''}
+        </div>
+        <div class="vocab-actions">
+          <button class="vocab-btn study" onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')},${ci})">
+            <i class="fas fa-play" style="font-size:9px"></i> Học
+          </button>
+          <button class="vocab-btn" style="background:#fef2f2;color:#dc2626;border-color:#fecaca" onclick="removeUserCard(${c._idx})">
+            🗑 Xóa
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const displayTitle = title === 'custom' ? 'Thẻ tự tạo' : title;
+    return `<div style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy)">${displayTitle} <span style="font-size:13px;font-weight:500;color:var(--text-3)">(${cards.length} thẻ)</span></div>
+        <button onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')})" style="background:transparent;color:var(--blue);border:1px solid var(--blue);padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">▶ Học nhóm này</button>
+      </div>
+      <div class="vocab-list">${cardsHTML}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('app-main').innerHTML = `
+    <div id="study-area" style="display:none;margin-bottom:24px"></div>
+    ${addFormHTML}
+    ${studyAllBtn}
+    <div id="vocab-list-area">${groupsHTML}</div>`;
+}
+
+function addUserCard() {
+  const char = document.getElementById('my-char')?.value.trim();
+  const mg   = document.getElementById('my-mg')?.value.trim();
+  if (!char || !mg) { alert('Vui lòng nhập Hán tự và nghĩa.'); return; }
+  const user = getUserCards();
+  user.push({
+    char, pinyin: document.getElementById('my-py')?.value.trim() || '',
+    meaning: mg,
+    example_zh: document.getElementById('my-ezh')?.value.trim() || '',
+    example_vi: document.getElementById('my-evi')?.value.trim() || '',
+    custom: true,
+  });
+  saveUserCards(user);
+  ['my-char','my-py','my-mg','my-ezh','my-evi'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  updateMineBadge();
+  renderMine();
+}
+
+function removeUserCard(idx) {
+  if (!confirm('Xóa thẻ này khỏi bộ của bạn?')) return;
+  const user = getUserCards();
+  user.splice(idx, 1);
+  saveUserCards(user);
+  updateMineBadge();
+  renderMine();
 }
 </script>
 </body>
