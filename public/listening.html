@@ -197,9 +197,13 @@ window.userSession.init().then(() => {
 const params   = new URLSearchParams(location.search);
 let   bookName = params.get('b') || '';
 let   lessonId = params.get('lesson') ? parseInt(params.get('lesson')) : null;
+// lessonId NaN → không có lesson hợp lệ
+if (isNaN(lessonId)) lessonId = null;
 
 let startSegId   = params.get('seg') ? parseInt(params.get('seg')) : null;
-let allSegments  = [];   // segments for current lesson
+if (isNaN(startSegId)) startSegId = null;
+
+let allSegments  = [];
 let currentIdx   = 0;
 let sessionScore = { correct: 0, total: 0 };
 let audioSpeed   = 1;
@@ -211,23 +215,36 @@ const audioEl = document.getElementById('main-audio');
 
 // ─── INIT ───────────────────────────────────────
 (async () => {
-  const [{ data: books }, { data: lessons }] = await Promise.all([
-    db.from('books').select('*').order('name'),
-    db.from('lessons').select('id,title,book').order('id'),
-  ]);
-  allBooks   = books   || [];
-  allLessons = lessons || [];
+  try {
+    const [{ data: books }, { data: lessons }] = await Promise.all([
+      db.from('books').select('*').order('name'),
+      db.from('lessons').select('id,title,book').order('id'),
+    ]);
+    allBooks   = books   || [];
+    allLessons = lessons || [];
 
-  if (bookName && lessonId) {
-    await loadDictation(bookName, lessonId);
-  } else if (bookName) {
-    renderLessonList(bookName);
-  } else {
-    renderBookList();
+    if (bookName && lessonId) {
+      await loadDictation(bookName, lessonId);
+    } else if (bookName) {
+      await renderLessonList(bookName);
+    } else {
+      await renderBookList();
+    }
+  } catch(e) {
+    document.getElementById('app-main').innerHTML =
+      `<div style="padding:3rem;text-align:center;color:#dc2626;font-size:13px">
+        <i class="fas fa-exclamation-circle" style="font-size:24px;display:block;margin-bottom:10px"></i>
+        Lỗi tải trang: ${e.message}
+      </div>`;
   }
 })();
 
 function goBack() {
+  // Nếu đến từ subcourse-listening, quay về đó
+  const ref = document.referrer;
+  if (ref.includes('subcourse-listening')) {
+    history.back(); return;
+  }
   if (lessonId) { lessonId = null; renderLessonList(bookName); }
   else if (bookName) { bookName = ''; renderBookList(); }
   else history.back();
@@ -308,11 +325,32 @@ async function loadDictation(book, lid) {
   currentIdx   = 0;
   sessionScore = { correct: 0, total: 0 };
 
-  const { data: segs } = await db.from('audio_segments')
-    .select('*').eq('book_name', book).eq('lesson_id', lid)
-    .eq('published', true).order('sort_order').order('id');
+  try {
+    // Query theo lesson_id
+    let { data: segs, error } = await db.from('audio_segments')
+      .select('*').eq('book_name', book).eq('lesson_id', lid)
+      .eq('published', true).order('sort_order').order('id');
 
-  allSegments = segs || [];
+    // Fallback: nếu không có kết quả, lấy toàn bộ book rồi filter
+    if ((!segs || !segs.length) && !error) {
+      const { data: allSegs } = await db.from('audio_segments')
+        .select('*').eq('book_name', book).eq('published', true)
+        .order('sort_order').order('id');
+      segs = (allSegs || []).filter(s => s.lesson_id === lid || s.lesson_id == lid);
+      // Last resort: first lesson_id in the book
+      if (!segs.length && allSegs?.length) {
+        const firstLid = allSegs[0].lesson_id;
+        segs = allSegs.filter(s => s.lesson_id === firstLid);
+      }
+    }
+
+    allSegments = segs || [];
+  } catch(e) {
+    document.getElementById('app-main').innerHTML =
+      `<div style="padding:3rem;text-align:center;color:#dc2626;font-size:13px">Lỗi: ${e.message}</div>`;
+    return;
+  }
+
   // Nếu có ?seg=ID, bắt đầu từ segment đó
   if (startSegId) {
     const segIdx = allSegments.findIndex(s => s.id === startSegId);
@@ -338,10 +376,11 @@ function renderSegment(idx) {
   currentIdx = idx;
   if (idx >= allSegments.length) { renderDone(); return; }
 
-  const seg  = allSegments[idx];
-  const pct  = Math.round(idx / allSegments.length * 100);
-  const dur  = (seg.end_sec - seg.start_sec).toFixed(1);
-  const blank= [...seg.transcript].map(() => '_').join('​'); // hint skeleton
+  const seg        = allSegments[idx];
+  const transcript = seg.transcript || '';
+  const pct        = Math.round(idx / allSegments.length * 100);
+  const durSec     = Math.max(0, (seg.end_sec || 0) - (seg.start_sec || 0));
+  const dur        = durSec.toFixed(1);
 
   // Preload audio
   if (audioEl.src !== seg.audio_url) audioEl.src = seg.audio_url;
@@ -391,7 +430,7 @@ function renderSegment(idx) {
         </div>
         <div class="hint-row" id="hint-row">
           ${seg.pinyin ? `<div style="font-style:italic;margin-bottom:3px">${seg.pinyin}</div>` : ''}
-          <div style="font-size:11px;color:#ca8a04">Số chữ: ${seg.transcript.replace(/\s/g,'').length} ký tự</div>
+          <div style="font-size:11px;color:#ca8a04">Số chữ: ${transcript.replace(/\s/g,'').length} ký tự</div>
         </div>
       </div>
 
@@ -462,12 +501,12 @@ function toggleHint() {
 function checkAnswer() {
   const seg   = allSegments[currentIdx];
   const input = document.getElementById('dictation-input')?.value || '';
-  showResult(seg.transcript, input, seg);
+  showResult(seg.transcript || '', input, seg);
 }
 
 function showAnswer() {
   const seg = allSegments[currentIdx];
-  document.getElementById('dictation-input').value = seg.transcript;
+  document.getElementById('dictation-input').value = seg.transcript || '';
   checkAnswer();
 }
 
