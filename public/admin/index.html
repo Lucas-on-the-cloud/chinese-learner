@@ -301,14 +301,6 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       <i class="fa-solid fa-pen-nib"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
     </button>
-    <button class="nav-item" onclick="setNav(this,'imports')">
-      <i class="fa-solid fa-file-import"></i>
-      <span class="nav-item-text"><span class="nav-item-vi">Import bài học</span><span class="nav-item-en">Import lessons</span></span>
-    </button>
-    <button class="nav-item" onclick="setNav(this,'import-book')">
-      <i class="fa-solid fa-book"></i>
-      <span class="nav-item-text"><span class="nav-item-vi">Import book</span><span class="nav-item-en">Manage books</span></span>
-    </button>
     <button class="nav-item" onclick="setNav(this,'feedback')">
       <i class="fa-solid fa-comments"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Phản hồi</span><span class="nav-item-en">Feedback</span></span>
@@ -783,7 +775,10 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
             <div class="s-title" style="margin-bottom:2px" id="sub-lesson-heading">Bài học</div>
             <div style="font-size:11px;color:#9ca3af">Quản lý từng bài đọc trong khóa học con này</div>
           </div>
-          <button class="s-btn" onclick="subToggleAddLesson()" id="sub-add-btn" style="font-size:12px;padding:7px 16px">+ Thêm bài học</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="s-btn" onclick="subOpenImport()" style="font-size:12px;padding:7px 14px;background:#f47b20">📂 Import .txt</button>
+            <button class="s-btn" onclick="subToggleAddLesson()" id="sub-add-btn" style="font-size:12px;padding:7px 14px">+ Thêm bài học</button>
+          </div>
         </div>
 
         <!-- Add lesson form -->
@@ -921,56 +916,8 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     </div>
   </div>
 
-  <!-- ── IMPORT BÀI HỌC ───────────────────────── -->
-  <div id="section-imports" style="display:none;width:100%">
-    <div class="s-wrap">
-      <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-plus" style="color:#15803d"></i> Thêm bài học</div>
-        <div class="s-sub">Thêm bài đọc mới vào thư viện thủ công. Sau khi lưu bạn có thể tiếp tục thêm bài khác.</div>
-        <a href="/add-lesson.html" class="s-btn" style="display:inline-block;text-decoration:none">+ Thêm bài mới</a>
-      </div>
-      <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-file-import" style="color:#f47b20"></i> Import từ file .txt</div>
-        <div class="s-sub">File phân cách bởi <code style="background:#f4f5f7;padding:1px 6px;border-radius:4px">________________</code> với các đoạn: Tiếng Trung · Pinyin · Tiếng Việt.<br>Hỗ trợ nhiều file cùng lúc. AI tự động phân tích nếu có API key.</div>
-        <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
-        <button class="s-btn orange" onclick="document.getElementById('import-file').click()">📂 Chọn file .txt</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── IMPORT BOOK ────────────────────────────── -->
-  <div id="section-import-book" style="display:none;width:100%">
-    <div class="s-wrap">
-      <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-book" style="color:#1a56db"></i> Thêm / sửa quyển sách</div>
-        <div class="s-sub">Tạo quyển sách với tên, mô tả và ảnh bìa. Mã sách phải khớp với trường <code>book</code> trong bảng lessons.</div>
-        <div class="s-grid2">
-          <div>
-            <div class="s-label">Mã sách <span style="color:#c0392b">*</span></div>
-            <input type="text" id="bk-code" class="s-input" placeholder="B2, B3, Advanced…" style="text-transform:uppercase">
-          </div>
-          <div>
-            <div class="s-label">Tên hiển thị</div>
-            <input type="text" id="bk-title" class="s-input" placeholder="VD: Sơ trung cấp B2">
-          </div>
-        </div>
-        <div class="s-label" style="margin-top:12px">Mô tả</div>
-        <input type="text" id="bk-desc" class="s-input" placeholder="VD: Bài đọc TOCFL trình độ B2">
-        <div class="s-label" style="margin-top:12px">Ảnh bìa <span style="font-size:11px;font-weight:400;color:#6b7280">(tùy chọn)</span></div>
-        <div class="s-img-row">
-          <input type="text" id="bk-cover-url" class="s-input" placeholder="Dán URL ảnh hoặc chọn file…" oninput="adminBkPreview(this.value)" style="flex:1">
-          <input type="file" id="bk-cover-file" accept="image/*" style="display:none" onchange="adminBkFile(this)">
-          <button class="s-file-btn" onclick="document.getElementById('bk-cover-file').click()">📷 Chọn file</button>
-        </div>
-        <div class="s-img-preview" id="bk-preview">
-          <img id="bk-preview-img" src="" alt="preview" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
-          <button onclick="adminBkClear()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer">✕</button>
-        </div>
-        <div id="bk-msg" class="s-msg"></div>
-        <button class="s-btn" id="bk-save-btn" onclick="adminSaveBook()" style="margin-top:14px">💾 Lưu sách</button>
-      </div>
-    </div>
-  </div>
+  <!-- hidden import file input (used by Khóa học con section) -->
+  <input type="file" id="import-file" accept=".txt" multiple style="display:none" onchange="app.importer.handleFiles(this.files)">
 
   <!-- ── AI & API ──────────────────────────────── -->
   <div id="section-ai" style="display:none;width:100%">
@@ -1086,7 +1033,7 @@ function toggleSidebar() {
 }
 
 // All sections mapping
-const ALL_SECTIONS = ['dashboard','courses','subcourses','blog','imports','import-book','ai'];
+const ALL_SECTIONS = ['dashboard','courses','subcourses','blog','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1098,8 +1045,6 @@ function setNav(btn, id) {
     courses:       'Khóa học / Courses',
     subcourses:    'Khóa học con / Sub-courses',
     blog:          'Blog / Bài viết',
-    imports:       'Import bài học',
-    'import-book': 'Import book',
     feedback:      'Phản hồi / Feedback',
     ai:            'AI & API',
     analytics:     'Phân tích / Analytics',
@@ -1450,6 +1395,21 @@ async function subDeleteLesson(id) {
   if (!confirm('Xóa bài học này?')) return;
   await _adminDb.client.from('lessons').delete().eq('id', id);
   if (_subCurrentBook) subLoadLessons(_subCurrentBook);
+}
+
+function subOpenImport() {
+  if (!_subCurrentBook) { adminMsg('sub-msg', 'Chọn khóa học con trước rồi mới import.', 'err'); return; }
+  // Pre-select book in the import overlay
+  app.importer.book = _subCurrentBook;
+  const sel = document.getElementById('import-book');
+  if (sel) {
+    // Ensure the option exists then select it
+    if (![...sel.options].find(o => o.value === _subCurrentBook)) {
+      sel.add(new Option(_subCurrentBook, _subCurrentBook));
+    }
+    sel.value = _subCurrentBook;
+  }
+  document.getElementById('import-file').click();
 }
 
 function subToggleAddLesson() {
