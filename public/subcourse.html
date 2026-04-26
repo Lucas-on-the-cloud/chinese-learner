@@ -259,6 +259,16 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     ['#0c4a6e','#075985'],['#713f12','#92400e'],
   ];
 
+  // Resolve back button → course.html?id=X (find which course this book belongs to)
+  const { data: courseLink } = await db.client
+    .from('course_books').select('course_id').eq('book_name', book).limit(1).maybeSingle();
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) {
+    backBtn.href = courseLink?.course_id
+      ? `/course.html?id=${courseLink.course_id}`
+      : '/courses.html';
+  }
+
   const [rawLessons, metaList] = await Promise.all([db.getLessons(), db.getBooksMeta()]);
 
   const lessons = (rawLessons || [])
