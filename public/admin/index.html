@@ -693,14 +693,23 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
       <!-- BOOK EDITOR FORM -->
       <div class="s-card">
-        <div class="s-title"><i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="s-title" id="sub-form-heading" style="margin-bottom:0"><i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con</div>
+          <button class="s-btn" onclick="subNewBook()" style="font-size:12px;padding:6px 14px">＋ Tạo mới</button>
+        </div>
 
-        <div class="s-label">Chọn khóa học con</div>
+        <div class="s-label" style="margin-top:10px">Chọn khóa học con có sẵn</div>
         <select id="sub-book-select" class="s-input" style="height:38px" onchange="subSelectBook(this.value)">
           <option value="">— Chọn sách để chỉnh sửa —</option>
         </select>
 
         <div id="sub-book-form" style="display:none;margin-top:14px">
+          <!-- Mã sách (chỉ hiện khi tạo mới) -->
+          <div id="sub-code-row" style="display:none;margin-bottom:12px">
+            <div class="s-label">Mã sách <span style="color:#c0392b">*</span> <span style="font-size:11px;font-weight:400;color:#9ca3af">— khóa chính, không đổi được sau khi tạo (VD: B1, B2, ADV…)</span></div>
+            <input type="text" id="sub-code" class="s-input" placeholder="B1, B2, READING_A1…" style="text-transform:uppercase">
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
             <div>
               <div class="s-label">Tên hiển thị</div>
@@ -748,7 +757,10 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
           <textarea id="sub-detail" style="width:100%;min-height:260px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="## Bạn sẽ học được gì?&#10;&#10;- Từ vựng theo chủ đề&#10;- Kỹ năng đọc hiểu&#10;&#10;## Nội dung&#10;&#10;**Phần 1**: Bài đọc cơ bản"></textarea>
 
           <div id="sub-msg" class="s-msg"></div>
-          <button class="s-btn" onclick="saveSubCourse()" style="margin-top:12px">💾 Lưu khóa học con</button>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="s-btn" id="sub-save-btn" onclick="saveSubCourse()" style="flex:1">💾 Lưu khóa học con</button>
+            <button class="s-btn" id="sub-cancel-btn" onclick="subCancelNew()" style="background:#6b7280;display:none">✕ Hủy</button>
+          </div>
         </div>
       </div>
 
@@ -1184,6 +1196,7 @@ async function adminSaveBook() {
 
 // ── Sub-course (book) management ─────────────────
 let _subCurrentBook = null;
+let _subCreateMode  = false;
 
 async function loadSubCourses() {
   const books = await _adminDb.getBooksMeta();
@@ -1215,9 +1228,46 @@ async function loadSubCourses() {
     </div>`).join('');
 }
 
+function subNewBook() {
+  _subCreateMode  = true;
+  _subCurrentBook = null;
+  document.getElementById('sub-book-select').value = '';
+  document.getElementById('sub-form-heading').innerHTML = '<i class="fa-solid fa-plus" style="color:#15803d"></i> Tạo khóa học con mới';
+  document.getElementById('sub-code-row').style.display = '';
+  document.getElementById('sub-code').value = '';
+  document.getElementById('sub-name').value = '';
+  document.getElementById('sub-desc').value = '';
+  document.getElementById('sub-detail').value = '';
+  subClearCover();
+  document.getElementById('sub-save-btn').textContent = '💾 Tạo khóa học con';
+  document.getElementById('sub-cancel-btn').style.display = '';
+  document.getElementById('sub-book-form').style.display = '';
+  document.getElementById('sub-lesson-wrap').style.display = 'none';
+  document.getElementById('sub-msg').className = 's-msg';
+  document.getElementById('sub-code').focus();
+}
+
+function subCancelNew() {
+  _subCreateMode  = false;
+  _subCurrentBook = null;
+  document.getElementById('sub-book-select').value = '';
+  document.getElementById('sub-form-heading').innerHTML = '<i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con';
+  document.getElementById('sub-code-row').style.display = 'none';
+  document.getElementById('sub-save-btn').textContent = '💾 Lưu khóa học con';
+  document.getElementById('sub-cancel-btn').style.display = 'none';
+  document.getElementById('sub-book-form').style.display = 'none';
+  document.getElementById('sub-lesson-wrap').style.display = 'none';
+  document.getElementById('sub-msg').className = 's-msg';
+}
+
 async function subSelectBook(bookName) {
   if (!bookName) { document.getElementById('sub-book-form').style.display = 'none'; document.getElementById('sub-lesson-wrap').style.display = 'none'; return; }
+  _subCreateMode  = false;
   _subCurrentBook = bookName;
+  document.getElementById('sub-form-heading').innerHTML = '<i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con';
+  document.getElementById('sub-code-row').style.display = 'none';
+  document.getElementById('sub-save-btn').textContent = '💾 Lưu khóa học con';
+  document.getElementById('sub-cancel-btn').style.display = 'none';
   const books = await _adminDb.getBooksMeta();
   const meta = books.find(b => b.name === bookName) || {};
   document.getElementById('sub-name').value  = meta.display_name || '';
@@ -1280,13 +1330,37 @@ function subInsertLine(prefix) {
 }
 
 async function saveSubCourse() {
+  const displayName = document.getElementById('sub-name').value.trim();
+  const description = document.getElementById('sub-desc').value.trim() || null;
+  const coverUrl    = document.getElementById('sub-cover').value.trim() || null;
+  const detailVal   = document.getElementById('sub-detail').value.trim() || null;
+
+  if (_subCreateMode) {
+    const code = document.getElementById('sub-code').value.trim().toUpperCase();
+    if (!code) { adminMsg('sub-msg', 'Nhập mã sách.', 'err'); return; }
+    const row = { name: code, display_name: displayName || null, description, cover_url: coverUrl };
+    if (detailVal) row.detail = detailVal;
+    const btn = document.getElementById('sub-save-btn');
+    btn.disabled = true; btn.textContent = 'Đang tạo…';
+    const { error } = await _adminDb.upsertBook(row);
+    btn.disabled = false; btn.textContent = '💾 Tạo khóa học con';
+    if (error) { adminMsg('sub-msg', 'Lỗi: ' + error.message, 'err'); return; }
+    adminMsg('sub-msg', '✓ Đã tạo: ' + code, 'ok');
+    _subCreateMode  = false;
+    _subCurrentBook = code;
+    document.getElementById('sub-code-row').style.display = 'none';
+    document.getElementById('sub-form-heading').innerHTML = '<i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con';
+    document.getElementById('sub-save-btn').textContent = '💾 Lưu khóa học con';
+    document.getElementById('sub-cancel-btn').style.display = 'none';
+    document.getElementById('sub-lesson-heading').textContent = 'Bài học — ' + (displayName || code);
+    document.getElementById('sub-lesson-wrap').style.display = '';
+    subLoadLessons(code);
+    loadSubCourses();
+    return;
+  }
+
   if (!_subCurrentBook) return;
-  const row = {
-    display_name: document.getElementById('sub-name').value.trim() || null,
-    description:  document.getElementById('sub-desc').value.trim() || null,
-    cover_url:    document.getElementById('sub-cover').value.trim() || null,
-  };
-  const detailVal = document.getElementById('sub-detail').value.trim();
+  const row = { display_name: displayName || null, description, cover_url: coverUrl };
   if (detailVal) row.detail = detailVal;
   const { error } = await _adminDb.client.from('books').update(row).eq('name', _subCurrentBook);
   if (error) {
