@@ -143,6 +143,25 @@ img{display:block;max-width:100%}
 .form-input:focus{border-color:var(--blue)}
 .form-input.zh-input{font-family:'Noto Serif TC',serif;font-size:16px}
 
+/* ACCORDION (lesson group dropdown) */
+.lesson-parts{background:#fafbfc;border-bottom:1px solid #f3f4f6;max-height:0;overflow:hidden;transition:max-height .28s ease}
+.lesson-parts.open{max-height:2000px}
+.lesson-row.open{background:#f0f4ff}
+.lesson-row.open .lr-arrow{transform:rotate(90deg);color:var(--blue)}
+.lr-arrow{font-size:11px;color:#d1d5db;flex-shrink:0;transition:all .15s}
+.part-row{display:flex;align-items:center;gap:12px;padding:10px 22px 10px 72px;border-bottom:1px solid #f3f4f6;transition:background .12s;cursor:default}
+.part-row:last-child{border-bottom:none}
+.part-dot{width:6px;height:6px;border-radius:50%;background:#d1d5db;flex-shrink:0}
+.part-label{flex:1;font-size:13px;font-weight:500;color:var(--text-2)}
+.part-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.part-btn{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:600;padding:4px 11px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;border:1px solid}
+.part-btn.play{background:var(--blue);color:#fff;border-color:var(--blue)}
+.part-btn.play:hover{background:var(--blue-dark)}
+.part-btn.list{background:#f3f4f6;color:var(--text-2);border-color:#e5e7eb}
+.part-btn.list:hover{background:var(--blue-lt);color:var(--blue);border-color:#c7d7fd}
+.part-row-all{display:flex;align-items:center;gap:12px;padding:10px 22px 10px 72px;border-bottom:1px solid #f3f4f6;background:#eff6ff;cursor:pointer;transition:background .12s}
+.part-row-all:hover{background:#dbeafe}
+
 /* EMPTY & LOADING */
 .loading-spinner{text-align:center;padding:3rem;color:var(--text-3);font-size:13px}
 .empty-state{text-align:center;padding:4rem 1rem;color:var(--text-2);background:var(--surface);border:1px solid var(--border);border-radius:12px}
@@ -376,43 +395,103 @@ function renderDiscovery() {
 // ─── LESSON LIST ────────────────────────────────────
 function renderLessons(bookName) {
   exitStudy();
-  const meta   = allBooks.find(b => b.name === bookName) || {};
-  const label  = meta.display_name || bookName;
-  const cards  = allTemplates.filter(t => t.book_name === bookName);
+  const meta  = allBooks.find(b => b.name === bookName) || {};
+  const label = meta.display_name || bookName;
+  const cards = allTemplates.filter(t => t.book_name === bookName);
 
   document.getElementById('page-h1').textContent   = label;
   document.getElementById('page-desc').textContent = meta.description || 'Chọn bài học để xem và luyện tập flashcards.';
 
-  // Group by lesson_title
-  const lessonMap = new Map();
-  cards.forEach(c => {
-    const key = c.lesson_title || 'Bài học';
-    if (!lessonMap.has(key)) lessonMap.set(key, []);
-    lessonMap.get(key).push(c);
-  });
-
-  if (!lessonMap.size) {
+  if (!cards.length) {
     document.getElementById('app-main').innerHTML = `
       <div class="breadcrumb">
         <button onclick="renderDiscovery()">Tất cả bộ thẻ</button>
       </div>
-      <div class="empty-state"><div class="big">詞</div><p>Chưa có bài học nào trong bộ thẻ này.</p></div>`;
+      <div class="empty-state"><div class="big">詞</div><p>Chưa có thẻ nào trong bộ này.<br>Admin cần tạo flashcard trong admin panel.</p></div>`;
     return;
   }
 
-  const [c1,c2] = GRADIENTS[([...allBooks].findIndex(b=>b.name===bookName)) % GRADIENTS.length];
+  // ── Group by lesson group key (prefix before " · ") ──
+  const groupMap = new Map(); // groupKey → Map<partTitle, card[]>
+  cards.forEach(c => {
+    const title  = c.lesson_title || 'Bài học';
+    const sep    = title.indexOf(' · ');
+    const grpKey = sep > -1 ? title.slice(0, sep).trim() : title.trim();
+    const partKey= title.trim();
+    if (!groupMap.has(grpKey)) groupMap.set(grpKey, new Map());
+    const grp = groupMap.get(grpKey);
+    if (!grp.has(partKey)) grp.set(partKey, []);
+    grp.get(partKey).push(c);
+  });
 
-  const lessonsHTML = [...lessonMap.entries()].map(([title, cs], i) => {
-    const [lc1,lc2] = GRADIENTS[(i+1) % GRADIENTS.length];
-    const wm = (cs[0]?.char || CHARS[i % CHARS.length]).charAt(0);
-    return `<div class="lesson-row" onclick="renderCards('${bookName}','${encodeURIComponent(title)}')">
-      <div class="lr-icon" style="background:linear-gradient(135deg,${lc1},${lc2})">${wm}</div>
+  const totalGroups = groupMap.size;
+
+  const rowsHTML = [...groupMap.entries()].map(([grpKey, partsMap], gi) => {
+    const [c1, c2] = GRADIENTS[gi % GRADIENTS.length];
+    const allGrpCards = [...partsMap.values()].flat();
+    const wm = (allGrpCards[0]?.char || '').charAt(0) || CHARS[gi % CHARS.length];
+    const isMulti = partsMap.size > 1;
+
+    const grpCardsJson = JSON.stringify(allGrpCards).replace(/"/g, '&quot;');
+
+    if (!isMulti) {
+      // Single part → clickable row
+      const partCards = allGrpCards;
+      const pJson     = JSON.stringify(partCards).replace(/"/g, '&quot;');
+      return `<div class="lesson-row" onclick="startStudy('${pJson}')">
+        <div class="lr-icon" style="background:linear-gradient(135deg,${c1},${c2})">${wm}</div>
+        <div class="lr-info">
+          <div class="lr-title">${grpKey}</div>
+          <div class="lr-sub">${partCards.length} thẻ từ vựng</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="part-btn list" onclick="event.stopPropagation();renderCards('${bookName}','${encodeURIComponent(grpKey)}')" style="font-size:10px">
+            <i class="fas fa-list" style="font-size:9px"></i> Xem
+          </button>
+          <span class="lr-badge">${partCards.length} thẻ</span>
+          <i class="fas fa-play lr-arrow" style="font-size:10px;color:#1a56db"></i>
+        </div>
+      </div>`;
+    }
+
+    // Multi-part → accordion
+    const subHTML = [...partsMap.entries()].map(([partTitle, partCards]) => {
+      const sep   = partTitle.indexOf(' · ');
+      const pName = sep > -1 ? partTitle.slice(sep + 3).trim() : partTitle;
+      const pJson = JSON.stringify(partCards).replace(/"/g, '&quot;');
+      return `<div class="part-row">
+        <span class="part-dot"></span>
+        <span class="part-label">${pName}</span>
+        <div class="part-actions">
+          <span style="font-size:11px;color:var(--text-3);margin-right:2px">${partCards.length} thẻ</span>
+          <button class="part-btn list" onclick="renderCards('${bookName}','${encodeURIComponent(partTitle)}')">
+            <i class="fas fa-list" style="font-size:9px"></i> Xem
+          </button>
+          <button class="part-btn play" onclick="startStudy('${pJson}')">
+            <i class="fas fa-play" style="font-size:9px"></i> Học
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const studyAllRow = `<div class="part-row-all" onclick="startStudy('${grpCardsJson}')">
+      <span class="part-dot" style="background:#1a56db"></span>
+      <span style="font-size:13px;font-weight:600;color:#1a56db;flex:1">Học tất cả ${allGrpCards.length} thẻ của bài này</span>
+      <i class="fas fa-play" style="font-size:10px;color:#1a56db"></i>
+    </div>`;
+
+    return `<div class="lesson-row" onclick="toggleFCGroup(this)">
+      <div class="lr-icon" style="background:linear-gradient(135deg,${c1},${c2})">${wm}</div>
       <div class="lr-info">
-        <div class="lr-title">${title}</div>
-        <div class="lr-sub">${cs.length} thẻ từ vựng</div>
+        <div class="lr-title">${grpKey}</div>
+        <div class="lr-sub">${partsMap.size} phần · ${allGrpCards.length} thẻ</div>
       </div>
-      <span class="lr-badge">${cs.length} thẻ</span>
-      <i class="fas fa-chevron-right" style="font-size:11px;color:#d1d5db;margin-left:8px"></i>
+      <span class="lr-badge">${allGrpCards.length} thẻ</span>
+      <i class="fas fa-chevron-right lr-arrow"></i>
+    </div>
+    <div class="lesson-parts">
+      ${studyAllRow}
+      ${subHTML}
     </div>`;
   }).join('');
 
@@ -424,13 +503,24 @@ function renderLessons(bookName) {
     </div>
     <div class="lesson-list-card">
       <div class="lesson-list-hd">
-        <div class="lesson-list-title">${label} · ${lessonMap.size} bài · ${cards.length} thẻ</div>
-        <button onclick="startStudy(${JSON.stringify(cards).replace(/"/g,'&quot;')})" style="background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+        <div class="lesson-list-title">${label} · ${totalGroups} bài · ${cards.length} thẻ</div>
+        <button onclick="startStudy('${JSON.stringify(cards).replace(/"/g,'&quot;')}')" style="background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
           <i class="fas fa-play"></i> Học tất cả
         </button>
       </div>
-      ${lessonsHTML}
+      ${rowsHTML}
     </div>`;
+}
+
+function toggleFCGroup(row) {
+  const parts  = row.nextElementSibling;
+  const isOpen = parts?.classList.contains('open');
+  document.querySelectorAll('.lesson-parts.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.lesson-row.open').forEach(r => r.classList.remove('open'));
+  if (!isOpen && parts) {
+    parts.classList.add('open');
+    row.classList.add('open');
+  }
 }
 
 // ─── CARDS VIEW ─────────────────────────────────────
@@ -439,7 +529,14 @@ function renderCards(bookName, lessonTitleEncoded) {
   const lessonTitle = decodeURIComponent(lessonTitleEncoded);
   const meta   = allBooks.find(b => b.name === bookName) || {};
   const label  = meta.display_name || bookName;
-  const cards  = allTemplates.filter(t => t.book_name === bookName && t.lesson_title === lessonTitle);
+  // Match exact lesson_title OR group key prefix (for single-part groups)
+  const cards  = allTemplates.filter(t => {
+    if (t.book_name !== bookName) return false;
+    if (t.lesson_title === lessonTitle) return true;
+    const sep = (t.lesson_title||'').indexOf(' · ');
+    const grp = sep > -1 ? t.lesson_title.slice(0,sep).trim() : (t.lesson_title||'').trim();
+    return grp === lessonTitle;
+  });
 
   document.getElementById('page-h1').textContent   = lessonTitle;
   document.getElementById('page-desc').textContent = `${cards.length} thẻ từ vựng trong ${label}`;
