@@ -266,7 +266,9 @@ async function init() {
     ? `<img class="article-cover" src="${esc(post.cover_url)}" alt="${esc(post.title)}">`
     : `<div class="article-cover-ph">文</div>`;
 
-  document.getElementById('article-content').innerHTML = `
+  const contentEl = document.getElementById('article-content');
+  contentEl.removeAttribute('style');
+  contentEl.innerHTML = `
     ${post.category ? `<span class="article-cat">${esc(post.category)}</span>` : ''}
     <h1 class="article-title">${esc(post.title)}</h1>
     <div class="article-meta">
