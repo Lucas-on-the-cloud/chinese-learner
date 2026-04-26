@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khóa học — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--orange:#f47b20;--navy:#0d1b4b;--text:#1f2937;--text-2:#6b7280;--border:#e5e7eb}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;transition:background .15s}
+.nav-btn:hover{background:var(--blue-dark)}
+
+/* HERO */
+.course-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:52px 1.5rem 48px;position:relative;overflow:hidden}
+.course-hero::after{content:'學';position:absolute;font-family:'Noto Serif TC',serif;font-size:320px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none;line-height:1}
+.hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:50px;margin-bottom:14px}
+.hero-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,36px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:14px}
+.hero-desc{font-size:14px;color:rgba(255,255,255,.72);line-height:1.75;max-width:560px;margin-bottom:20px}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.15)}
+.hero-cover{width:220px;height:160px;border-radius:14px;object-fit:cover;box-shadow:0 12px 40px rgba(0,0,0,.3);flex-shrink:0}
+.hero-cover-ph{width:220px;height:160px;border-radius:14px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:60px;color:rgba(255,255,255,.2);flex-shrink:0}
+
+/* BODY */
+.page-body{flex:1;padding:40px 0 64px}
+.section-label{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.section-label::before{content:'';width:4px;height:20px;background:var(--blue);border-radius:2px}
+
+/* Sub-course cards */
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.sub-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
+.sub-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-3px);border-color:#c7d7fd}
+.sub-card-thumb{height:160px;object-fit:cover;width:100%;display:block}
+.sub-card-thumb-ph{height:160px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:52px;color:rgba(255,255,255,.18)}
+.sub-card-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;gap:6px}
+.sub-skill-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;border-radius:8px}
+.sub-skill-badge.reading{background:#eff6ff;color:#1a56db}
+.sub-skill-badge.listening{background:#f0fdf4;color:#15803d}
+.sub-card-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy);line-height:1.4}
+.sub-card-desc{font-size:13px;color:var(--text-2);line-height:1.6;flex:1}
+.sub-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.sub-card-count{font-size:12px;color:var(--text-2)}
+.sub-card-btn{font-size:12px;font-weight:600;color:var(--blue);display:inline-flex;align-items:center;gap:5px}
+.sub-card:hover .sub-card-btn{gap:8px}
+.sub-card-btn i{transition:transform .15s}
+.sub-card:hover .sub-card-btn i{transform:translateX(3px)}
+
+/* coming soon overlay */
+.sub-card.coming-soon{opacity:.65;pointer-events:none}
+.sub-coming-badge{font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px}
+
+/* FOOTER */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-main{padding:48px 1.5rem 40px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.6);transition:all .15s}
+.footer-social:hover{background:var(--blue);color:#fff}
+.footer-col-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:.85rem;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.footer-links a{color:rgba(255,255,255,.55);transition:color .15s}
+.footer-links a:hover{color:rgba(255,255,255,.9)}
+.footer-info-row{display:flex;align-items:flex-start;gap:8px;color:rgba(255,255,255,.5);margin-bottom:.5rem}
+.footer-info-row i{width:16px;flex-shrink:0;margin-top:2px;color:rgba(255,255,255,.3)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s}
+.footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
+
+@media(max-width:768px){.hero-inner{grid-template-columns:1fr}.hero-cover,.hero-cover-ph{display:none}.sub-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.nav-link{display:none}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/lessons.html">Bài học</a>
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link active" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="course-hero" id="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow" id="hero-eyebrow">🎓 TOCFL FAFA · Khóa học</div>
+      <h1 class="hero-title" id="hero-title">Đang tải…</h1>
+      <p class="hero-desc" id="hero-desc"></p>
+      <div class="hero-tags" id="hero-tags"></div>
+    </div>
+    <div id="hero-cover-wrap"></div>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="page-body">
+  <div class="container">
+    <div class="section-label">Khóa học trong chương trình này</div>
+    <div class="sub-grid" id="sub-grid">
+      <p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Đang tải…</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-main">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/lessons.html"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/lessons.html">Bài học</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/lessons.html">Bài học</a>
+      <a href="/courses.html">Khóa học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const db = supabase.createClient(
+  'https://prctmferugkxabyizslx.supabase.co',
+  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+);
+
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const GRADIENTS = ['135deg,#0d1b4b,#1e3a8a','135deg,#064e3b,#065f46','135deg,#4c1d95,#5b21b6','135deg,#7f1d1d,#991b1b'];
+
+async function init() {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { document.getElementById('hero-title').textContent = 'Không tìm thấy khóa học.'; return; }
+
+  const { data: course } = await db.from('courses').select('*').eq('id', id).single();
+  if (!course) { document.getElementById('hero-title').textContent = 'Khóa học không tồn tại.'; return; }
+
+  document.title = course.title + ' — TOCFL FAFA';
+  document.getElementById('hero-title').textContent = course.title;
+  document.getElementById('hero-desc').textContent  = course.description || '';
+
+  const tags = [];
+  if (course.level) tags.push(`<span class="hero-tag"><i class="fa-solid fa-signal"></i> ${esc(course.level)}</span>`);
+  if (course.price) tags.push(`<span class="hero-tag"><i class="fa-solid fa-tag"></i> ${esc(course.price)}</span>`);
+  document.getElementById('hero-tags').innerHTML = tags.join('');
+
+  const coverWrap = document.getElementById('hero-cover-wrap');
+  if (course.cover_url) {
+    coverWrap.innerHTML = `<img class="hero-cover" src="${esc(course.cover_url)}" alt="${esc(course.title)}">`;
+  } else {
+    coverWrap.innerHTML = `<div class="hero-cover-ph">學</div>`;
+  }
+
+  // Load linked books
+  const { data: links } = await db.from('course_books').select('*').eq('course_id', id).order('sort_order');
+  const grid = document.getElementById('sub-grid');
+  if (!links?.length) {
+    grid.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Chưa có khóa học con nào.</p>';
+    return;
+  }
+
+  // Fetch book metadata for each linked book
+  const bookNames = links.map(l => l.book_name);
+  const { data: booksMeta } = await db.from('books').select('*').in('name', bookNames);
+  const metaMap = Object.fromEntries((booksMeta || []).map(b => [b.name, b]));
+
+  // Fetch lesson counts
+  const { data: lessonData } = await db.from('lessons').select('book').in('book', bookNames);
+  const countMap = {};
+  (lessonData || []).forEach(l => { countMap[l.book] = (countMap[l.book] || 0) + 1; });
+
+  grid.innerHTML = links.map((link, i) => {
+    const meta    = metaMap[link.book_name] || {};
+    const title   = meta.display_name || link.book_name;
+    const desc    = meta.description  || '';
+    const cover   = meta.cover_url    || '';
+    const count   = countMap[link.book_name] || 0;
+    const skill   = link.skill_type || 'reading';
+    const isComingSoon = skill === 'listening';
+    const grad    = GRADIENTS[i % GRADIENTS.length];
+    const badgeClass = skill === 'reading' ? 'reading' : 'listening';
+    const badgeText  = skill === 'reading' ? '📖 Reading' : '🎧 Listening';
+
+    const thumbHtml = cover
+      ? `<img class="sub-card-thumb" src="${esc(cover)}" alt="${esc(title)}">`
+      : `<div class="sub-card-thumb-ph" style="background:linear-gradient(${grad})">讀</div>`;
+
+    const cardContent = `
+      <div class="sub-card${isComingSoon?' coming-soon':''}">
+        ${thumbHtml}
+        <div class="sub-card-body">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="sub-skill-badge ${badgeClass}">${badgeText}</span>
+            ${isComingSoon ? '<span class="sub-coming-badge">Sắp ra mắt</span>' : ''}
+          </div>
+          <div class="sub-card-title">${esc(title)}</div>
+          ${desc ? `<div class="sub-card-desc">${esc(desc)}</div>` : ''}
+          <div class="sub-card-foot">
+            <span class="sub-card-count"><i class="fa-solid fa-book-open" style="font-size:11px;margin-right:4px"></i>${count} bài đọc</span>
+            ${!isComingSoon ? '<span class="sub-card-btn">Vào học <i class="fa-solid fa-arrow-right"></i></span>' : ''}
+          </div>
+        </div>
+      </div>`;
+
+    if (isComingSoon) return cardContent;
+    return `<a href="/book.html?b=${encodeURIComponent(link.book_name)}" style="display:contents">${cardContent}</a>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>

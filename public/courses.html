@@ -6,6 +6,7 @@
 <title>Chương trình học — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ── BASE ─────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -209,14 +210,16 @@ img { display: block; max-width: 100%; }
   letter-spacing: .5px; text-transform: uppercase;
 }
 .course-body { padding: 14px 14px 0; flex: 1; }
+.course-cover { width:100%; height:152px; object-fit:cover; display:block; }
 .course-title {
   font-size: 14px; font-weight: 700;
   color: var(--text); line-height: 1.45;
-  margin-bottom: .6rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin-bottom: .5rem;
+}
+.course-desc {
+  font-size: 12px; color: var(--text-2); line-height: 1.55;
+  margin-bottom: .5rem;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .course-meta {
   display: flex; align-items: center; gap: 4px;
@@ -373,265 +376,26 @@ footer {
 <div class="content-body">
   <div class="container">
 
-    <!-- Subject filter -->
+    <!-- Filter pills -->
     <div class="subject-row">
-      <a class="subject-pill active" href="#tocfl-reading">
-        <span class="pill-icon">📖</span>
-        TOCFL Reading
-      </a>
-      <a class="subject-pill" href="#tocfl-listening">
-        <span class="pill-icon">🎧</span>
-        TOCFL Listening
-      </a>
+      <button class="subject-pill active" onclick="filterCourses(this, null)">
+        <span class="pill-icon">📚</span> Tất cả
+      </button>
+      <button class="subject-pill" onclick="filterCourses(this, 'reading')">
+        <span class="pill-icon">📖</span> Reading
+      </button>
+      <button class="subject-pill" onclick="filterCourses(this, 'listening')">
+        <span class="pill-icon">🎧</span> Listening
+      </button>
     </div>
 
-    <!-- ── TOCFL READING ──────────────────────── -->
-    <div id="tocfl-reading" class="section-anchor">
-      <div class="course-section-title">
-        <span>TOCFL Reading</span>
-        <span class="zh-tag">閱讀測驗</span>
-      </div>
-      <div class="courses-grid">
-
-        <!-- Card 1 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#1a237e,#283593)">
-              <span class="course-thumb-char">入</span>
-              <span class="course-thumb-label">A1 – A2</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Reading A1-A2] Nhập môn — Từ vựng & Bài đọc cơ bản</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ A1–A2</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#1565c0,#0288d1)">
-              <span class="course-thumb-char">基</span>
-              <span class="course-thumb-label">B1</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Reading B1] Cơ bản — Đọc hiểu văn bản nhật dụng & xã hội</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ B1</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#00695c,#00897b)">
-              <span class="course-thumb-char">進</span>
-              <span class="course-thumb-label">B2</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Reading B2] Trung cấp — Đọc hiểu bài báo & văn bản học thuật</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ B2</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#6a1b9a,#8e24aa)">
-              <span class="course-thumb-char">高</span>
-              <span class="course-thumb-label">C1</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Reading C1] Cao cấp — Đọc hiểu văn bản chuyên ngành & nghị luận</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ C1</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Card 5 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#c62828,#e53935)">
-              <span class="course-thumb-char">報</span>
-              <span class="course-thumb-label">B2 – C1</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[Đọc báo Đài Loan] Tin tức & Thời sự bằng tiếng Trung phồn thể thực tế</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ B2–C1</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">Thực chiến</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Card 6 -->
-        <div class="course-card">
-          <a href="/">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#e65100,#f57c00)">
-              <span class="course-thumb-char">詞</span>
-              <span class="course-thumb-label">A1 – C1</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[Từ vựng TOCFL] 6,000+ từ vựng cần thiết từ A1 đến C1 với AI flashcard</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Mọi cấp độ</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag free">Miễn phí</span>
-                <span class="c-tag">AI Flashcard</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-free">Miễn phí</span>
-              <span class="course-cta">Học ngay</span>
-            </div>
-          </a>
-        </div>
-
-      </div><!-- /courses-grid -->
-    </div><!-- /section reading -->
-
-    <!-- ── TOCFL LISTENING ────────────────────── -->
-    <div id="tocfl-listening" class="section-anchor">
-      <div class="course-section-title">
-        <span>TOCFL Listening</span>
-        <span class="zh-tag">聽力測驗</span>
-        <span class="coming-soon-badge">Sắp ra mắt</span>
-      </div>
-      <div class="courses-grid">
-
-        <!-- Listening Card 1 -->
-        <div class="course-card" style="opacity:.75">
-          <a href="#tocfl-listening">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#37474f,#546e7a)">
-              <span class="course-thumb-char">聽</span>
-              <span class="course-thumb-label">A1 – A2</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Listening A1-A2] Nhập môn — Luyện nghe hội thoại đời thường</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ A1–A2</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag soon">Sắp ra mắt</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-soon">Sắp ra mắt</span>
-              <span class="course-cta disabled">Chờ ra mắt</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Listening Card 2 -->
-        <div class="course-card" style="opacity:.75">
-          <a href="#tocfl-listening">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#4a148c,#6a1b9a)">
-              <span class="course-thumb-char">聞</span>
-              <span class="course-thumb-label">B1 – B2</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Listening B1-B2] Trung cấp — Luyện nghe bản tin & phỏng vấn</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ B1–B2</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag soon">Sắp ra mắt</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-soon">Sắp ra mắt</span>
-              <span class="course-cta disabled">Chờ ra mắt</span>
-            </div>
-          </a>
-        </div>
-
-        <!-- Listening Card 3 -->
-        <div class="course-card" style="opacity:.75">
-          <a href="#tocfl-listening">
-            <div class="course-thumb" style="background:linear-gradient(135deg,#1b5e20,#2e7d32)">
-              <span class="course-thumb-char">音</span>
-              <span class="course-thumb-label">C1</span>
-            </div>
-            <div class="course-body">
-              <div class="course-title">[TOCFL Listening C1] Cao cấp — Luyện nghe diễn văn & chương trình học thuật</div>
-              <div class="course-meta">
-                <span class="stars">★★★★★</span>
-                <span>Cấp độ C1</span>
-              </div>
-              <div class="course-tags">
-                <span class="c-tag soon">Sắp ra mắt</span>
-                <span class="c-tag">Luyện thi TOCFL</span>
-              </div>
-            </div>
-            <div class="course-footer">
-              <span class="course-price-soon">Sắp ra mắt</span>
-              <span class="course-cta disabled">Chờ ra mắt</span>
-            </div>
-          </a>
-        </div>
-
-      </div><!-- /courses-grid listening -->
-    </div><!-- /section listening -->
+    <!-- Dynamic course grid -->
+    <div id="courses-section-title" class="course-section-title" style="margin-top:0">
+      <span id="section-label-text">Tất cả khóa học</span>
+    </div>
+    <div class="courses-grid" id="courses-grid">
+      <div style="grid-column:1/-1;color:#9ca3af;text-align:center;padding:3rem">Đang tải khóa học…</div>
+    </div>
 
   </div><!-- /container -->
 </div><!-- /content-body -->
@@ -681,5 +445,87 @@ footer {
   </div>
 </footer>
 
+<script>
+const db = supabase.createClient(
+  'https://prctmferugkxabyizslx.supabase.co',
+  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
+);
+
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const GRADIENTS = [
+  '135deg,#0d1b4b,#1e3a8a','135deg,#1a237e,#283593','135deg,#1565c0,#0288d1',
+  '135deg,#00695c,#00897b','135deg,#4a148c,#7b1fa2','135deg,#b71c1c,#c62828',
+];
+const LEVEL_CHARS = { 'A1':'入','A2':'基','A1–A2':'入','B1':'進','B2':'中','C1':'高','C':'精' };
+
+let allCourses = [], activeSkill = null;
+
+async function init() {
+  const { data } = await db.from('courses').select('*')
+    .eq('published', true)
+    .order('sort_order', { ascending: false })
+    .order('created_at', { ascending: false });
+  allCourses = data || [];
+  renderCourses(allCourses);
+}
+
+function filterCourses(btn, skill) {
+  activeSkill = skill;
+  document.querySelectorAll('.subject-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const label = document.getElementById('section-label-text');
+  label.textContent = skill ? (skill === 'reading' ? 'TOCFL Reading' : 'TOCFL Listening') : 'Tất cả khóa học';
+  renderCourses(allCourses);
+}
+
+async function renderCourses(courses) {
+  const grid = document.getElementById('courses-grid');
+
+  // If filtering by skill, we need to check linked books
+  let filtered = courses;
+  if (activeSkill) {
+    const { data: links } = await db.from('course_books').select('course_id,skill_type')
+      .in('course_id', courses.map(c => c.id)).eq('skill_type', activeSkill);
+    const matchIds = new Set((links || []).map(l => l.course_id));
+    filtered = courses.filter(c => matchIds.has(c.id));
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:#9ca3af;text-align:center;padding:3rem;background:#fff;border-radius:12px;border:1px solid #e5e7eb">Chưa có khóa học nào.</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map((c, i) => {
+    const grad = GRADIENTS[i % GRADIENTS.length];
+    const char = LEVEL_CHARS[c.level] || '學';
+    const thumbHtml = c.cover_url
+      ? `<img class="course-cover" src="${esc(c.cover_url)}" alt="${esc(c.title)}">`
+      : `<div class="course-thumb" style="background:linear-gradient(${grad})">
+           <span class="course-thumb-char">${char}</span>
+           ${c.level ? `<span class="course-thumb-label">${esc(c.level)}</span>` : ''}
+         </div>`;
+    return `<div class="course-card">
+      <a href="/course.html?id=${c.id}">
+        ${thumbHtml}
+        <div class="course-body">
+          <div class="course-title">${esc(c.title)}</div>
+          ${c.description ? `<div class="course-desc">${esc(c.description)}</div>` : ''}
+          <div class="course-tags">
+            ${c.level ? `<span class="c-tag">${esc(c.level)}</span>` : ''}
+            ${c.price === 'Miễn phí' || !c.price ? '<span class="c-tag free">Miễn phí</span>' : `<span class="c-tag">${esc(c.price)}</span>`}
+          </div>
+        </div>
+        <div class="course-footer">
+          <span class="${c.price === 'Miễn phí' || !c.price ? 'course-price-free' : 'course-price'}">${esc(c.price || 'Miễn phí')}</span>
+          <span class="course-cta">Xem khóa học</span>
+        </div>
+      </a>
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
 </body>
 </html>

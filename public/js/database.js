@@ -85,4 +85,49 @@ class Database {
   async saveVocab(lessonId, items) {
     await this.client.from('vocab_cache').upsert({ lesson_id: lessonId, items }, { onConflict: 'lesson_id' });
   }
+
+  // ── Courses ────────────────────────────────────
+  async getCourses({ publishedOnly = false } = {}) {
+    let q = this.client.from('courses').select('*')
+      .order('sort_order', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (publishedOnly) q = q.eq('published', true);
+    const { data } = await q;
+    return data || [];
+  }
+
+  async getCourse(id) {
+    const { data } = await this.client.from('courses').select('*').eq('id', id).single();
+    return data;
+  }
+
+  async saveCourse(row) {
+    const id = row.id;
+    const payload = { ...row };
+    delete payload.id;
+    if (id) return await this.client.from('courses').update(payload).eq('id', id);
+    return await this.client.from('courses').insert([payload]);
+  }
+
+  async deleteCourse(id) {
+    return await this.client.from('courses').delete().eq('id', id);
+  }
+
+  async getCourseBooks(courseId) {
+    const { data } = await this.client.from('course_books').select('*')
+      .eq('course_id', courseId).order('sort_order');
+    return data || [];
+  }
+
+  async addCourseBook(row) {
+    return await this.client.from('course_books').insert([row]);
+  }
+
+  async removeCourseBook(id) {
+    return await this.client.from('course_books').delete().eq('id', id);
+  }
+
+  async updateCourseBookOrder(id, sort_order) {
+    return await this.client.from('course_books').update({ sort_order }).eq('id', id);
+  }
 }

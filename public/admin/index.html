@@ -289,6 +289,10 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
       <i class="fa-solid fa-users"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Người dùng</span><span class="nav-item-en">Users</span></span>
     </button>
+    <button class="nav-item" onclick="setNav(this,'courses')">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
+    </button>
     <button class="nav-item" onclick="setNav(this,'blog')">
       <i class="fa-solid fa-pen-nib"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
@@ -564,6 +568,87 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
 
   </div><!-- /section-dashboard -->
 
+  <!-- ── COURSES ──────────────────────────────── -->
+  <div id="section-courses" style="display:none;width:100%">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+      <!-- FORM -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-graduation-cap" style="color:#1a56db"></i> <span id="cr-form-title">Tạo khóa học mới</span></div>
+
+        <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
+        <input type="text" id="cr-title" class="s-input" placeholder="Tên khóa học…">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+          <div>
+            <div class="s-label">Cấp độ</div>
+            <select id="cr-level" class="s-input" style="height:38px">
+              <option value="">— Chọn cấp độ —</option>
+              <option>A1</option><option>A1–A2</option><option>A2</option>
+              <option>B1</option><option>B1–B2</option><option>B2</option>
+              <option>C1</option>
+            </select>
+          </div>
+          <div>
+            <div class="s-label">Học phí</div>
+            <input type="text" id="cr-price" class="s-input" placeholder="Miễn phí / 299.000đ…" value="Miễn phí">
+          </div>
+        </div>
+
+        <div class="s-label" style="margin-top:10px">Mô tả</div>
+        <textarea id="cr-desc" style="width:100%;min-height:72px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="Mô tả ngắn về khóa học…"></textarea>
+
+        <div class="s-label" style="margin-top:10px">Ảnh bìa</div>
+        <div class="s-img-row">
+          <input type="text" id="cr-cover" class="s-input" placeholder="URL ảnh hoặc chọn file…" oninput="crPreviewUrl(this.value)" style="flex:1">
+          <input type="file" id="cr-cover-file" accept="image/*" style="display:none" onchange="crFileChange(this)">
+          <button class="s-file-btn" onclick="document.getElementById('cr-cover-file').click()">📷 Chọn file</button>
+        </div>
+        <div class="s-img-preview" id="cr-cover-preview">
+          <img id="cr-cover-preview-img" src="" alt="" style="height:60px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+          <button onclick="crClearCover()" style="background:none;border:none;color:#6b7280;font-size:16px;cursor:pointer">✕</button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
+          <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản ngay
+          </label>
+        </div>
+        <input type="hidden" id="cr-edit-id">
+        <div id="cr-msg" class="s-msg"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="s-btn" id="cr-save-btn" onclick="adminSaveCourse()" style="flex:1">💾 Lưu khóa học</button>
+          <button class="s-btn" id="cr-cancel-btn" onclick="crCancelEdit()" style="background:#6b7280;display:none">✕ Hủy</button>
+        </div>
+
+        <!-- Linked books (shown when editing) -->
+        <div id="cr-books-section" style="display:none;margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px">
+          <div class="s-label" style="margin-bottom:8px">📚 Khóa học con (liên kết sách)</div>
+          <div id="cr-books-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="cr-book-select" class="s-select" style="flex:1;min-width:140px"></select>
+            <select id="cr-skill-select" class="s-select">
+              <option value="reading">📖 Reading</option>
+              <option value="listening">🎧 Listening</option>
+            </select>
+            <button class="s-btn" onclick="addCourseBook()" style="padding:7px 14px;font-size:12px">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COURSE LIST -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="s-title" style="margin-bottom:0;font-size:14px"><i class="fa-solid fa-list" style="color:#6b7280"></i> Khóa học</div>
+          <button class="s-btn" onclick="loadCourses()" style="padding:5px 12px;font-size:11px">↺</button>
+        </div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:8px">Kéo ☰ để sắp xếp thứ tự hiển thị</div>
+        <div id="course-list"><p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Đang tải…</p></div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ── BLOG ─────────────────────────────────── -->
   <div id="section-blog" style="display:none;width:100%">
     <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
@@ -830,7 +915,7 @@ function toggleSidebar() {
 }
 
 // All sections mapping
-const ALL_SECTIONS = ['dashboard','blog','imports','import-book','ai'];
+const ALL_SECTIONS = ['dashboard','courses','blog','imports','import-book','ai'];
 function setNav(btn, id) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -839,6 +924,7 @@ function setNav(btn, id) {
     lessons:       'Bài học / Lessons',
     vocab:         'Từ vựng / Vocabulary',
     users:         'Người dùng / Users',
+    courses:       'Khóa học / Courses',
     blog:          'Blog / Bài viết',
     imports:       'Import bài học',
     'import-book': 'Import book',
@@ -854,8 +940,9 @@ function setNav(btn, id) {
   });
   const active = document.getElementById('section-' + id);
   if (active) active.style.display = (id === 'dashboard') ? 'flex' : 'block';
-  if (id === 'ai')   adminInitSettings();
-  if (id === 'blog') loadBlogPosts();
+  if (id === 'ai')      adminInitSettings();
+  if (id === 'blog')    loadBlogPosts();
+  if (id === 'courses') loadCourses();
 }
 
 // ── Settings functions ──────────────────────────
@@ -932,6 +1019,202 @@ async function adminSaveBook() {
   adminMsg('bk-msg', '✓ Đã lưu: ' + (display || name), 'ok');
   ['bk-code','bk-title','bk-desc'].forEach(id => document.getElementById(id).value = '');
   adminBkClear();
+}
+
+// ── Course helpers ────────────────────────────────
+function crPreviewUrl(url) {
+  const wrap = document.getElementById('cr-cover-preview');
+  const img  = document.getElementById('cr-cover-preview-img');
+  if (url) { img.src = url; wrap.style.display = 'flex'; } else { wrap.style.display = 'none'; }
+}
+function crFileChange(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const orig = new Image();
+    orig.onload = () => {
+      const MAX = 900; let w = orig.width, h = orig.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(orig, 0, 0, w, h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.85);
+      document.getElementById('cr-cover').value = dataUrl; crPreviewUrl(dataUrl);
+    };
+    orig.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function crClearCover() {
+  document.getElementById('cr-cover').value = '';
+  document.getElementById('cr-cover-file').value = '';
+  document.getElementById('cr-cover-preview').style.display = 'none';
+}
+function crCancelEdit() {
+  document.getElementById('cr-edit-id').value = '';
+  document.getElementById('cr-form-title').textContent = 'Tạo khóa học mới';
+  document.getElementById('cr-save-btn').textContent = '💾 Lưu khóa học';
+  document.getElementById('cr-cancel-btn').style.display = 'none';
+  document.getElementById('cr-books-section').style.display = 'none';
+  ['cr-title','cr-desc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('cr-level').value = '';
+  document.getElementById('cr-price').value = 'Miễn phí';
+  document.getElementById('cr-published').checked = true;
+  crClearCover();
+  document.getElementById('cr-msg').className = 's-msg';
+}
+
+// ── Course CRUD ───────────────────────────────────
+async function loadCourses() {
+  const el = document.getElementById('course-list');
+  const courses = await _adminDb.getCourses();
+  if (!courses.length) { el.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Chưa có khóa học nào.</p>'; return; }
+  el.innerHTML = courses.map(c => `
+    <div class="bl-post-item" data-id="${c.id}" draggable="true"
+        ondragstart="crDragStart(event,'${c.id}')"
+        ondragover="blDragOver(event)"
+        ondragleave="blDragLeave(event)"
+        ondrop="crDrop(event,'${c.id}')"
+        ondragend="blDragEnd()">
+      <span class="bl-post-drag" title="Kéo để sắp xếp">☰</span>
+      <div class="bl-post-info">
+        <div class="bl-post-title">${escHtml(c.title)}</div>
+        <div class="bl-post-meta">
+          <span class="bl-post-dot" style="background:${c.published?'#15803d':'#9ca3af'}"></span>
+          ${c.published?'Đã đăng':'Nháp'}${c.level?' · '+escHtml(c.level):''}${c.price?' · '+escHtml(c.price):''}
+        </div>
+      </div>
+      <div class="bl-post-actions">
+        <a href="/course.html?id=${c.id}" target="_blank" class="table-btn" title="Xem"><i class="fa-solid fa-eye"></i></a>
+        <button class="table-btn" onclick="crEditCourse(${c.id})" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>
+        <button class="table-btn" onclick="crDelete(${c.id})" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+async function crEditCourse(id) {
+  const c = await _adminDb.getCourse(id);
+  if (!c) return;
+  document.getElementById('cr-edit-id').value    = id;
+  document.getElementById('cr-title').value       = c.title || '';
+  document.getElementById('cr-desc').value        = c.description || '';
+  document.getElementById('cr-level').value       = c.level || '';
+  document.getElementById('cr-price').value       = c.price || 'Miễn phí';
+  document.getElementById('cr-cover').value       = c.cover_url || '';
+  document.getElementById('cr-published').checked = !!c.published;
+  crPreviewUrl(c.cover_url || '');
+  document.getElementById('cr-form-title').textContent = 'Chỉnh sửa khóa học';
+  document.getElementById('cr-save-btn').textContent = '💾 Cập nhật';
+  document.getElementById('cr-cancel-btn').style.display = '';
+  document.getElementById('cr-books-section').style.display = '';
+  document.querySelector('.content').scrollTo({ top: 0, behavior: 'smooth' });
+  loadCourseBooks(id);
+  loadBookSelectOptions();
+}
+
+async function adminSaveCourse() {
+  const editId = document.getElementById('cr-edit-id').value;
+  const title  = document.getElementById('cr-title').value.trim();
+  if (!title) { adminMsg('cr-msg', 'Nhập tiêu đề khóa học.', 'err'); return; }
+  const row = {
+    title,
+    description: document.getElementById('cr-desc').value.trim() || null,
+    level:       document.getElementById('cr-level').value || null,
+    price:       document.getElementById('cr-price').value.trim() || 'Miễn phí',
+    cover_url:   document.getElementById('cr-cover').value.trim() || null,
+    published:   document.getElementById('cr-published').checked,
+  };
+  if (editId) row.id = parseInt(editId);
+  const btn = document.getElementById('cr-save-btn');
+  btn.disabled = true; btn.textContent = 'Đang lưu…';
+  const { error } = await _adminDb.saveCourse(row);
+  btn.disabled = false; btn.textContent = editId ? '💾 Cập nhật' : '💾 Lưu khóa học';
+  if (error) { adminMsg('cr-msg', 'Lỗi: ' + error.message, 'err'); return; }
+  adminMsg('cr-msg', (editId ? '✓ Đã cập nhật: ' : '✓ Đã tạo: ') + title, 'ok');
+  // If new course was created, we need its id to enable linked books section
+  if (!editId) {
+    const courses = await _adminDb.getCourses();
+    const newest = courses.find(c => c.title === title);
+    if (newest) {
+      document.getElementById('cr-edit-id').value = newest.id;
+      document.getElementById('cr-form-title').textContent = 'Chỉnh sửa khóa học';
+      document.getElementById('cr-save-btn').textContent = '💾 Cập nhật';
+      document.getElementById('cr-cancel-btn').style.display = '';
+      document.getElementById('cr-books-section').style.display = '';
+      loadCourseBooks(newest.id);
+      loadBookSelectOptions();
+    }
+  }
+  loadCourses();
+}
+
+async function crDelete(id) {
+  if (!confirm('Xóa khóa học này? Tất cả liên kết sách sẽ bị xóa.')) return;
+  await _adminDb.deleteCourse(id);
+  crCancelEdit();
+  loadCourses();
+}
+
+// Linked books management
+async function loadCourseBooks(courseId) {
+  const books = await _adminDb.getCourseBooks(courseId);
+  const el = document.getElementById('cr-books-list');
+  if (!books.length) { el.innerHTML = '<p style="font-size:12px;color:#9ca3af">Chưa có khóa học con. Thêm bên dưới.</p>'; return; }
+  el.innerHTML = books.map(b => `
+    <div style="display:flex;align-items:center;gap:8px;background:#f4f5f7;border-radius:7px;padding:7px 10px">
+      <span style="font-size:12px;background:${b.skill_type==='reading'?'#eff6ff':'#f0fdf4'};color:${b.skill_type==='reading'?'#1a56db':'#15803d'};padding:2px 8px;border-radius:8px;font-weight:600;flex-shrink:0">${b.skill_type==='reading'?'📖 Reading':'🎧 Listening'}</span>
+      <span style="flex:1;font-size:13px;font-weight:500">${escHtml(b.book_name)}</span>
+      <a href="/book.html?b=${encodeURIComponent(b.book_name)}" target="_blank" style="color:#9ca3af;font-size:12px" title="Xem"><i class="fa-solid fa-eye"></i></a>
+      <button onclick="removeCourseBook(${b.id})" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:13px" title="Xóa"><i class="fa-solid fa-times"></i></button>
+    </div>`).join('');
+}
+
+async function loadBookSelectOptions() {
+  const books = await _adminDb.getBooksMeta();
+  const sel = document.getElementById('cr-book-select');
+  sel.innerHTML = books.length
+    ? books.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.display_name || b.name)}</option>`).join('')
+    : '<option value="">— Chưa có sách nào —</option>';
+}
+
+async function addCourseBook() {
+  const courseId = document.getElementById('cr-edit-id').value;
+  if (!courseId) return;
+  const bookName  = document.getElementById('cr-book-select').value;
+  const skillType = document.getElementById('cr-skill-select').value;
+  if (!bookName) return;
+  await _adminDb.addCourseBook({ course_id: parseInt(courseId), book_name: bookName, skill_type: skillType, sort_order: 0 });
+  loadCourseBooks(courseId);
+}
+
+async function removeCourseBook(id) {
+  await _adminDb.removeCourseBook(id);
+  const courseId = document.getElementById('cr-edit-id').value;
+  if (courseId) loadCourseBooks(courseId);
+}
+
+// Course drag-and-drop
+let _crDragId = null;
+function crDragStart(e, id) {
+  _crDragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.currentTarget.closest('.bl-post-item')?.classList.add('dragging'), 0);
+}
+async function crDrop(e, targetId) {
+  e.preventDefault();
+  blDragEnd();
+  if (_crDragId == targetId) return;
+  const container = document.getElementById('course-list');
+  const items = [...container.querySelectorAll('.bl-post-item')];
+  const src = items.find(r => r.dataset.id == _crDragId);
+  const tgt = items.find(r => r.dataset.id == targetId);
+  if (!src || !tgt) return;
+  if (items.indexOf(src) < items.indexOf(tgt)) container.insertBefore(src, tgt.nextSibling);
+  else container.insertBefore(src, tgt);
+  // Save order
+  const ordered = [...container.querySelectorAll('.bl-post-item')];
+  const total = ordered.length;
+  for (let i = 0; i < ordered.length; i++)
+    await _adminDb.client.from('courses').update({ sort_order: total - i }).eq('id', parseInt(ordered[i].dataset.id));
 }
 
 // ── Blog helpers ─────────────────────────────────
