@@ -2231,24 +2231,44 @@ async function fcGenerateAI(groupTitle) {
   if (!lesson || !lesson.zh) { alert('Bài học không có nội dung tiếng Trung.'); return; }
 
   const btn = document.getElementById('fc-ai-btn');
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo…';
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI đang phân tích…';
 
-  const prompt = `Bạn là chuyên gia từ vựng tiếng Trung phồn thể (繁體字) dành cho người Việt học TOCFL.
-Trích xuất 8-15 từ vựng quan trọng từ đoạn văn bên dưới.
-Trả về DUY NHẤT một mảng JSON, không có văn bản khác:
-[{"char":"繁體字","pinyin":"fán tǐ zì","meaning":"chữ phồn thể","example_zh":"我學繁體字。","example_vi":"Tôi học chữ phồn thể."}]
+  // Dùng y chang SYSTEM_PROMPT của vocab-manager.js
+  const SYSTEM_PROMPT = `Bạn là giáo viên tiếng Trung phồn thể Đài Loan (繁體中文，台灣) chuyên giúp người Việt đọc hiểu. Nhiệm vụ: phân tích bài đọc và tạo danh sách 15-25 từ/cụm từ THIẾT YẾU để học viên nắm được ngữ cảnh, nhân vật, tình huống và thông điệp của bài TRƯỚC KHI đọc.
 
-Đoạn văn:
-${lesson.zh.slice(0, 1500)}`;
+NGUYÊN TẮC BẮT BUỘC:
+- Chỉ chọn từ/cụm từ có TỪ 2 CHỮ TRỞ LÊN. Tuyệt đối không chọn từ đơn 1 chữ.
+- Tập trung vào 3 loại từ cấu thành câu chuyện:
+  * CHỦ NGỮ (名詞/danh từ chỉ người, sự vật, khái niệm trung tâm của bài)
+  * ĐỘNG TỪ / CỤM ĐỘNG TỪ (động từ hành động hoặc trạng thái quyết định diễn biến câu chuyện)
+  * TÂN NGỮ (đối tượng bị tác động, kết quả, mục tiêu trong bài)
+- Ưu tiên thành ngữ, cụm cố định, collocations xuất hiện trong bài
+- KHÔNG chọn: từ hư (的、了、在、是、也、都), từ quá cơ bản mà người học trung cấp đã biết
+
+Yêu cầu bắt buộc:
+- Số lượng: 15-25 mục
+- example PHẢI là câu/cụm NGUYÊN VĂN từ bài đọc chứa từ đó
+- exMeaning giải thích nghĩa trong ngữ cảnh câu, không chỉ dịch từng chữ
+
+Trả về JSON thuần (KHÔNG markdown, KHÔNG giải thích):
+[{"char":"生活習慣","pinyin":"shēnghuó xíguàn","meaning":"thói quen sinh hoạt","example":"大學生的生活習慣普通不是很好","exPinyin":"dàxuéshēng de shēnghuó xíguàn pǔtōng bù shì hěn hǎo","exMeaning":"Thói quen sinh hoạt của sinh viên thường không tốt","level":"trung cấp"}]
+level: "cơ bản" / "trung cấp" / "nâng cao"`;
 
   try {
-    const raw = await window.app.ai.call('You extract vocabulary from Chinese text and return pure JSON arrays only.', prompt, 2000);
-    const match = raw.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('AI không trả về JSON hợp lệ');
+    const raw = await window.app.ai.call(
+      SYSTEM_PROMPT,
+      `Bài đọc tiếng Trung:\n${lesson.zh}\n\nPinyin:\n${lesson.py}\n\nDịch tiếng Việt:\n${lesson.vi}\n\nHãy tạo 15-25 từ/cụm từ THIẾT YẾU giúp hiểu ngữ cảnh bài. JSON thuần.`,
+      3500
+    );
+    if (!raw) throw new Error('AI không trả về kết quả');
+    const cleaned = raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    const match   = cleaned.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Không tìm thấy JSON array');
     fcAIResults = JSON.parse(match[0]);
     fcRenderAIResults(groupTitle, lesson);
   } catch(e) {
-    document.getElementById('fc-ai-result').innerHTML = `<div style="color:#dc2626;font-size:13px;padding:8px">Lỗi: ${e.message}</div>`;
+    document.getElementById('fc-ai-result').innerHTML =
+      `<div style="color:#dc2626;font-size:13px;padding:8px;background:#fef2f2;border-radius:6px">Lỗi: ${e.message}</div>`;
   } finally {
     btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Tạo từ vựng với AI';
   }
@@ -2258,48 +2278,70 @@ function fcRenderAIResults(groupTitle, lesson) {
   const resEl = document.getElementById('fc-ai-result');
   if (!fcAIResults.length) { resEl.innerHTML = '<div style="font-size:13px;color:#9ca3af">Không tạo được từ vựng.</div>'; return; }
 
-  const rowsHTML = fcAIResults.map((v, i) => `
-    <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid #e5e7eb;border-radius:7px;background:#fff;margin-bottom:6px">
-      <input type="checkbox" id="fc-ai-chk-${i}" checked style="margin-top:4px;flex-shrink:0;width:16px;height:16px">
+  const bgMap = { 'cơ bản': '#e6f4f0', 'trung cấp': '#fdf6e3', 'nâng cao': '#fde8e6' };
+  const txMap = { 'cơ bản': '#0f6e56', 'trung cấp': '#b8860b', 'nâng cao': '#c0392b' };
+
+  const rowsHTML = fcAIResults.map((v, i) => {
+    const bg = bgMap[v.level] || '#f3f4f6';
+    const tx = txMap[v.level] || '#6b7280';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;margin-bottom:6px">
+      <input type="checkbox" id="fc-ai-chk-${i}" checked style="margin-top:5px;flex-shrink:0;width:16px;height:16px;cursor:pointer">
       <div style="flex:1;min-width:0">
-        <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap">
-          <span style="font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#0d1b4b">${v.char||''}</span>
+        <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#0d1b4b">${v.char||''}</span>
           <span style="font-size:12px;color:#6b7280;font-style:italic">${v.pinyin||''}</span>
           <span style="font-size:13px;font-weight:600;color:#374151">${v.meaning||''}</span>
+          ${v.level ? `<span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;background:${bg};color:${tx}">${v.level}</span>` : ''}
         </div>
-        ${v.example_zh ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;font-family:'Noto Serif TC',serif">${v.example_zh}</div>` : ''}
-        ${v.example_vi ? `<div style="font-size:12px;color:#9ca3af;margin-top:1px">${v.example_vi}</div>` : ''}
+        ${v.example ? `<div style="font-size:12px;font-family:'Noto Serif TC',serif;color:#374151;margin-bottom:2px">「${v.example}」</div>` : ''}
+        ${v.exPinyin ? `<div style="font-size:11px;color:#9ca3af;font-style:italic;margin-bottom:2px">${v.exPinyin}</div>` : ''}
+        ${v.exMeaning ? `<div style="font-size:12px;color:#6b7280">${v.exMeaning}</div>` : ''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   resEl.innerHTML = `
-    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">AI gợi ý ${fcAIResults.length} từ vựng — chọn những thẻ muốn lưu:</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:12px;font-weight:700;color:#374151">AI gợi ý ${fcAIResults.length} từ vựng — chọn thẻ muốn lưu:</span>
+      <label style="font-size:12px;color:#6b7280;cursor:pointer;display:flex;align-items:center;gap:5px">
+        <input type="checkbox" id="fc-ai-chk-all" checked onchange="fcAIToggleAll(this.checked)">
+        Chọn tất cả
+      </label>
+    </div>
     ${rowsHTML}
-    <div style="display:flex;gap:8px;margin-top:10px">
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button onclick="fcSaveAISelected('${escHtml(groupTitle)}',${lesson.id},'${escHtml(lesson.title)}')"
-        style="background:#16a34a;color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
+        style="background:#16a34a;color:#fff;border:none;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
         💾 Lưu những thẻ đã chọn
       </button>
       <button onclick="document.getElementById('fc-ai-result').innerHTML=''"
-        style="background:transparent;border:1px solid #e5e7eb;padding:8px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;color:#6b7280">
+        style="background:transparent;border:1px solid #e5e7eb;padding:9px 14px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;color:#6b7280">
         Huỷ
       </button>
     </div>`;
+}
+
+function fcAIToggleAll(checked) {
+  fcAIResults.forEach((_, i) => {
+    const chk = document.getElementById('fc-ai-chk-' + i);
+    if (chk) chk.checked = checked;
+  });
 }
 
 async function fcSaveAISelected(groupTitle, lessonId, lessonTitle) {
   const selected = fcAIResults.filter((_, i) => document.getElementById('fc-ai-chk-' + i)?.checked);
   if (!selected.length) { alert('Chưa chọn thẻ nào.'); return; }
 
+  // Map vocab-manager fields → flashcard_templates fields
   const rows = selected.map((v, i) => ({
     book_name:    fcSelectedBook,
     lesson_id:    lessonId,
     lesson_title: lessonTitle,
-    char:         v.char    || '',
-    pinyin:       v.pinyin  || '',
-    meaning:      v.meaning || '',
-    example_zh:   v.example_zh || '',
-    example_vi:   v.example_vi || '',
+    char:         v.char     || '',
+    pinyin:       v.pinyin   || '',
+    meaning:      v.meaning  || '',
+    example_zh:   v.example  || '',   // example = câu nguyên văn từ bài
+    example_vi:   v.exMeaning || '',  // exMeaning = nghĩa câu ví dụ
     sort_order:   i,
     published:    true,
   }));
