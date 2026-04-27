@@ -734,8 +734,10 @@ function buildFullBody(seg) {
 function buildFullExtra(seg) {
   const transcriptBlock = fullHideScript
     ? `<div style="font-size:13px;color:var(--text-3);font-style:italic;text-align:center;padding:1rem 0">Script đang ẩn — nhấn "Hiện script" để xem</div>`
-    : `<div class="tc-text">${seg.transcript || ''}</div>
-       ${seg.meaning_vi ? `<div class="tc-vi-label">Dịch nghĩa</div><div class="tc-vi-text">${seg.meaning_vi}</div>` : ''}`;
+    : `<div class="tc-text">${seg.transcript || ''}</div>`;
+  const meaningBlock = seg.meaning_vi
+    ? `<div class="tc-vi-label">Dịch nghĩa</div><div class="tc-vi-text">${seg.meaning_vi}</div>`
+    : '';
 
   const circles = allSegments.map((_, i) => {
     const done = getLessonProgress(bookName, lessonId) > i;
@@ -747,6 +749,7 @@ function buildFullExtra(seg) {
     <div class="transcript-card">
       <div class="tc-label">Transcript</div>
       ${transcriptBlock}
+      ${meaningBlock}
     </div>
     <div class="seg-list-card">
       <div class="sl-label">Danh sách câu</div>
