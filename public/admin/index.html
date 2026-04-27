@@ -1090,6 +1090,61 @@ window.app.ai       = new AIService(window.app.config);
 window.app.importer = new FileImporter();
 app.lessons.load();
 
+// ── Shared UI utilities ──────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showMsg(elId, text, type) {
+  const el = document.getElementById(elId); if (!el) return;
+  el.textContent = text; el.className = 's-msg ' + type;
+  if (type === 'ok') setTimeout(() => el.className = 's-msg', 5000);
+}
+function resizeImage(origImg, maxW = 900, quality = 0.85) {
+  let w = origImg.width, h = origImg.height;
+  if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  c.getContext('2d').drawImage(origImg, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', quality);
+}
+function imgPreview(url, wrapId, imgId) {
+  const wrap = document.getElementById(wrapId); const img = document.getElementById(imgId);
+  if (!wrap) return;
+  if (url) { if (img) img.src = url; wrap.style.display = 'flex'; }
+  else     { wrap.style.display = 'none'; }
+}
+function imgFileChange(input, urlId, wrapId, imgId, maxW = 900, onDone) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const orig = new Image();
+    orig.onload = () => {
+      const dataUrl = resizeImage(orig, maxW);
+      const urlEl = document.getElementById(urlId); if (urlEl) urlEl.value = dataUrl;
+      imgPreview(dataUrl, wrapId, imgId);
+      if (onDone) onDone(dataUrl);
+    };
+    orig.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function imgClear(urlId, fileId, wrapId) {
+  [urlId, fileId].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const wrap = document.getElementById(wrapId); if (wrap) wrap.style.display = 'none';
+}
+function mdWrap(taId, before, after) {
+  const ta = document.getElementById(taId); if (!ta) return;
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.setRangeText(before + (ta.value.slice(s, e) || 'văn bản') + after, s, e, 'select');
+  ta.focus();
+}
+function mdInsertLine(taId, prefix) {
+  const ta = document.getElementById(taId); if (!ta) return;
+  const pos = ta.selectionStart, ls = ta.value.lastIndexOf('\n', pos - 1) + 1;
+  ta.value = ta.value.slice(0, ls) + prefix + ta.value.slice(ls);
+  ta.setSelectionRange(ls + prefix.length, ls + prefix.length);
+  ta.focus();
+}
+
 // Sidebar toggle
 let collapsed = false;
 function toggleSidebar() {
@@ -1159,40 +1214,9 @@ function adminSaveKey() {
   statusEl.className = 's-key-status ok';
 }
 
-function adminBkPreview(url) {
-  const wrap = document.getElementById('bk-preview');
-  const img  = document.getElementById('bk-preview-img');
-  if (url) { img.src = url; wrap.style.display = 'flex'; }
-  else     { wrap.style.display = 'none'; }
-}
-
-function adminBkFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 480;
-      let w = orig.width, h = orig.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.82);
-      document.getElementById('bk-cover-url').value = dataUrl;
-      adminBkPreview(dataUrl);
-    };
-    orig.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function adminBkClear() {
-  document.getElementById('bk-cover-url').value = '';
-  document.getElementById('bk-cover-file').value = '';
-  document.getElementById('bk-preview').style.display = 'none';
-}
+function adminBkPreview(url) { imgPreview(url, 'bk-preview', 'bk-preview-img'); }
+function adminBkFile(input) { imgFileChange(input, 'bk-cover-url', 'bk-preview', 'bk-preview-img', 480); }
+function adminBkClear() { imgClear('bk-cover-url', 'bk-cover-file', 'bk-preview'); }
 
 async function adminSaveBook() {
   const name    = document.getElementById('bk-code').value.trim().toUpperCase();
@@ -1303,47 +1327,11 @@ function subSelectBookFromList(bookName) {
   subSelectBook(bookName);
 }
 
-function subCoverPreview(url) {
-  const wrap = document.getElementById('sub-cover-preview');
-  const img  = document.getElementById('sub-cover-preview-img');
-  if (url) { img.src = url; wrap.style.display = 'flex'; } else { wrap.style.display = 'none'; }
-}
-function subFileChange(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 900; let w = orig.width, h = orig.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.85);
-      document.getElementById('sub-cover').value = dataUrl; subCoverPreview(dataUrl);
-    };
-    orig.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function subClearCover() {
-  document.getElementById('sub-cover').value = '';
-  document.getElementById('sub-cover-file').value = '';
-  document.getElementById('sub-cover-preview').style.display = 'none';
-}
-function subWrap(before, after) {
-  const ta = document.getElementById('sub-detail');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  ta.setRangeText(before + (ta.value.slice(s, e) || 'văn bản') + after, s, e, 'select');
-  ta.focus();
-}
-function subInsertLine(prefix) {
-  const ta = document.getElementById('sub-detail');
-  const pos = ta.selectionStart;
-  const ls = ta.value.lastIndexOf('\n', pos - 1) + 1;
-  ta.value = ta.value.slice(0, ls) + prefix + ta.value.slice(ls);
-  ta.setSelectionRange(ls + prefix.length, ls + prefix.length);
-  ta.focus();
-}
+function subCoverPreview(url) { imgPreview(url, 'sub-cover-preview', 'sub-cover-preview-img'); }
+function subFileChange(input) { imgFileChange(input, 'sub-cover', 'sub-cover-preview', 'sub-cover-preview-img'); }
+function subClearCover() { imgClear('sub-cover', 'sub-cover-file', 'sub-cover-preview'); }
+function subWrap(before, after) { mdWrap('sub-detail', before, after); }
+function subInsertLine(prefix) { mdInsertLine('sub-detail', prefix); }
 
 async function saveSubCourse() {
   const displayName = document.getElementById('sub-name').value.trim();
@@ -1519,51 +1507,11 @@ async function subSaveNewLesson() {
 }
 
 // ── Course helpers ────────────────────────────────
-function crPreviewUrl(url) {
-  const wrap = document.getElementById('cr-cover-preview');
-  const img  = document.getElementById('cr-cover-preview-img');
-  if (url) { img.src = url; wrap.style.display = 'flex'; } else { wrap.style.display = 'none'; }
-}
-function crFileChange(input) {
-  const file = input.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 900; let w = orig.width, h = orig.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.85);
-      document.getElementById('cr-cover').value = dataUrl; crPreviewUrl(dataUrl);
-    };
-    orig.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-function crClearCover() {
-  document.getElementById('cr-cover').value = '';
-  document.getElementById('cr-cover-file').value = '';
-  document.getElementById('cr-cover-preview').style.display = 'none';
-}
-function crWrap(before, after) {
-  const ta = document.getElementById('cr-detail');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const sel = ta.value.slice(s, e);
-  ta.setRangeText(before + (sel || 'văn bản') + after, s, e, 'select');
-  ta.focus();
-}
-function crInsertLine(prefix) {
-  const ta = document.getElementById('cr-detail');
-  const pos = ta.selectionStart;
-  const lineStart = ta.value.lastIndexOf('\n', pos - 1) + 1;
-  const before = ta.value.slice(0, lineStart);
-  const after  = ta.value.slice(lineStart);
-  ta.value = before + prefix + after;
-  const cur = lineStart + prefix.length;
-  ta.setSelectionRange(cur, cur);
-  ta.focus();
-}
+function crPreviewUrl(url) { imgPreview(url, 'cr-cover-preview', 'cr-cover-preview-img'); }
+function crFileChange(input) { imgFileChange(input, 'cr-cover', 'cr-cover-preview', 'cr-cover-preview-img'); }
+function crClearCover() { imgClear('cr-cover', 'cr-cover-file', 'cr-cover-preview'); }
+function crWrap(before, after) { mdWrap('cr-detail', before, after); }
+function crInsertLine(prefix) { mdInsertLine('cr-detail', prefix); }
 
 function crCancelEdit() {
   document.getElementById('cr-edit-id').value = '';
@@ -1747,10 +1695,6 @@ async function crDrop(e, targetId) {
 }
 
 // ── Blog helpers ─────────────────────────────────
-function escHtml(t) {
-  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 function renderMarkdownAdmin(text) {
   return (text || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -1803,64 +1747,11 @@ function blUpdatePreview() {
     `${coverHtml}${catHtml}${titleHtml}<p>${renderMarkdownAdmin(content)}</p>`;
 }
 
-function blWrap(before, after) {
-  const ta = document.getElementById('bl-content');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const sel = ta.value.slice(s, e);
-  ta.setRangeText(before + (sel || 'văn bản') + after, s, e, 'select');
-  ta.focus();
-  blUpdatePreview();
-}
-
-function blInsertLine(prefix) {
-  const ta = document.getElementById('bl-content');
-  const pos = ta.selectionStart;
-  const lineStart = ta.value.lastIndexOf('\n', pos - 1) + 1;
-  const before = ta.value.slice(0, lineStart);
-  const after  = ta.value.slice(lineStart);
-  ta.value = before + prefix + after;
-  const cur = lineStart + prefix.length;
-  ta.setSelectionRange(cur, cur);
-  ta.focus();
-  blUpdatePreview();
-}
-
-function blPreviewUrl(url) {
-  const wrap = document.getElementById('bl-cover-preview');
-  const img  = document.getElementById('bl-cover-preview-img');
-  if (url) { img.src = url; wrap.style.display = 'flex'; }
-  else     { wrap.style.display = 'none'; }
-}
-
-function blFileChange(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const orig = new Image();
-    orig.onload = () => {
-      const MAX = 900;
-      let w = orig.width, h = orig.height;
-      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(orig, 0, 0, w, h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.85);
-      document.getElementById('bl-cover').value = dataUrl;
-      blPreviewUrl(dataUrl);
-      blUpdatePreview();
-    };
-    orig.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function blClearCover() {
-  document.getElementById('bl-cover').value = '';
-  document.getElementById('bl-cover-file').value = '';
-  document.getElementById('bl-cover-preview').style.display = 'none';
-  blUpdatePreview();
-}
+function blWrap(before, after) { mdWrap('bl-content', before, after); blUpdatePreview(); }
+function blInsertLine(prefix) { mdInsertLine('bl-content', prefix); blUpdatePreview(); }
+function blPreviewUrl(url) { imgPreview(url, 'bl-cover-preview', 'bl-cover-preview-img'); }
+function blFileChange(input) { imgFileChange(input, 'bl-cover', 'bl-cover-preview', 'bl-cover-preview-img', 900, () => blUpdatePreview()); }
+function blClearCover() { imgClear('bl-cover', 'bl-cover-file', 'bl-cover-preview'); blUpdatePreview(); }
 
 function blCancelEdit() {
   document.getElementById('bl-edit-id').value = '';
@@ -2000,11 +1891,7 @@ async function savePostOrder() {
     await _adminDb.client.from('posts').update({ sort_order: total - i }).eq('id', parseInt(items[i].dataset.id));
 }
 
-function adminMsg(elId, text, type) {
-  const el = document.getElementById(elId);
-  el.textContent = text; el.className = 's-msg ' + type;
-  if (type === 'ok') setTimeout(() => el.className = 's-msg', 5000);
-}
+function adminMsg(elId, text, type) { showMsg(elId, text, type); }
 
 // Chart
 const chartData = [42,48,51,46,58,72,80,65,70,75,82,88,76,84,92,98,89,94,102,108,96,103,112,118,107,114,124,131,121,128];
@@ -2445,10 +2332,6 @@ function fcShowSQLNote() {
   alert(`Chạy SQL này trong Supabase để tạo bảng flashcard_templates:\n\nCREATE TABLE flashcard_templates (\n  id BIGSERIAL PRIMARY KEY,\n  book_name TEXT NOT NULL,\n  lesson_id BIGINT,\n  lesson_title TEXT DEFAULT '',\n  char TEXT NOT NULL,\n  pinyin TEXT DEFAULT '',\n  meaning TEXT DEFAULT '',\n  example_zh TEXT DEFAULT '',\n  example_vi TEXT DEFAULT '',\n  sort_order INT DEFAULT 0,\n  published BOOLEAN DEFAULT true,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\nALTER TABLE flashcard_templates DISABLE ROW LEVEL SECURITY;`);
 }
 
-function escHtml(s) {
-  return String(s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
-
 // ── LISTENING ADMIN (v2) ───────────────────────
 let lsSelectedBook   = null;
 let lsSelectedLesson = null;
@@ -2853,13 +2736,10 @@ async function lsDeleteSeg(id) {
 }
 
 function lsMsg(text, type) {
-  const el = document.getElementById('ls-upload-msg');
-  if (!el) return;
+  const el = document.getElementById('ls-upload-msg'); if (!el) return;
   el.textContent = text;
   el.style.color = type === 'err' ? '#dc2626' : type === 'ok' ? '#16a34a' : '#1a56db';
 }
-
-loadData();
 </script>
 </body>
 </html>
