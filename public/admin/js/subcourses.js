@@ -638,47 +638,49 @@ function subLaRemovePending(lessonId, i) {
 async function subLaAIFill(lessonId) {
   const st  = _saGet(lessonId);
   const key = localStorage.getItem('api_key_openai') || '';
-  if (!key) { subLaMsg(lessonId, 'Chưa có OpenAI key.', 'err'); return; }
+  if (!key) { subLaMsg(lessonId, 'Chưa có OpenAI key — vào Settings → AI & API.', 'err'); return; }
 
-  // Collect all current transcript values
   const texts = st.pending.map((_, i) =>
     document.getElementById(`sub-pt-${lessonId}-${i}`)?.value.trim() || ''
-  );
+  ).filter(t => t);
   if (!texts.length) return;
 
   const btn = document.getElementById(`sub-la-ai-btn-${lessonId}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI…'; }
 
-  const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, trả về Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn.
-Trả về JSON array thuần túy, không giải thích, không markdown:
-[{"pinyin":"...","vi":"..."}]
-Đúng số phần tử, đúng thứ tự.`;
-
-  // Batch 15 items at a time to stay within token limits
-  const BATCH = 15;
+  // Use OpenAI directly (same key as Whisper) — batch 20/call
+  const BATCH = 20;
   const results = new Array(texts.length).fill(null);
   let filled = 0;
 
   try {
     for (let start = 0; start < texts.length; start += BATCH) {
-      const chunk  = texts.slice(start, start + BATCH);
-      const offset = start;
-      subLaMsg(lessonId, `AI xử lý ${start + 1}–${Math.min(start + BATCH, texts.length)} / ${texts.length}…`, 'info');
+      const chunk = texts.slice(start, start + BATCH);
+      subLaMsg(lessonId, `Đang xử lý ${start + 1}–${Math.min(start + BATCH, texts.length)} / ${texts.length}…`, 'info');
 
-      const userMsg = chunk.map((t, i) => `${offset + i + 1}. ${t}`).join('\n');
-      const raw = await window.app.ai.call(SYSTEM, userMsg, 2500);
-      if (!raw) throw new Error(`Batch ${start}–${start + BATCH}: AI không trả về kết quả`);
-
-      const cleaned = raw.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'');
-      const match   = cleaned.match(/\[[\s\S]*\]/);
-      if (!match) throw new Error(`Batch ${start}–${start + BATCH}: Không tìm thấy JSON array`);
-
-      const parsed = JSON.parse(match[0]);
-      parsed.forEach((r, i) => { results[offset + i] = r; });
-      filled += parsed.length;
+      const userMsg = chunk.map((t, i) => `${start + i + 1}. ${t}`).join('\n');
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          max_tokens: 2000,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, tạo Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn. Trả về JSON: {"items":[{"pinyin":"...","vi":"..."}]} — đúng số, đúng thứ tự.` },
+            { role: 'user', content: userMsg },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      const content = data.choices?.[0]?.message?.content || '';
+      const parsed  = JSON.parse(content);
+      const items   = parsed.items || parsed;
+      (Array.isArray(items) ? items : []).forEach((r, i) => { results[start + i] = r; });
+      filled += (Array.isArray(items) ? items : []).length;
     }
 
-    // Fill inputs
     results.forEach((r, i) => {
       if (!r) return;
       const pyEl = document.getElementById(`sub-pp-${lessonId}-${i}`);
@@ -686,7 +688,7 @@ Trả về JSON array thuần túy, không giải thích, không markdown:
       if (pyEl && r.pinyin) pyEl.value = r.pinyin;
       if (viEl && r.vi)     viEl.value = r.vi;
     });
-    subLaMsg(lessonId, `✓ AI đã điền xong ${filled}/${texts.length} đoạn.`, 'ok');
+    subLaMsg(lessonId, `✓ Đã điền ${filled}/${texts.length} đoạn.`, 'ok');
   } catch(e) {
     subLaMsg(lessonId, 'Lỗi AI: ' + e.message, 'err');
   } finally {
