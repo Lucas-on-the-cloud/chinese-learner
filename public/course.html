@@ -297,6 +297,12 @@ const GRADIENTS = {
   const audioCnt   = {};
   (audioRows   || []).forEach(s => { audioCnt[s.book_name] = (audioCnt[s.book_name] || 0) + 1; });
 
+  // books.skill_type is the source of truth — override course_books.skill_type
+  links.forEach(l => {
+    const bookSkill = metaMap[l.book_name]?.skill_type;
+    if (bookSkill) l.skill_type = bookSkill;
+  });
+
   const readingLinks   = links.filter(l => l.skill_type === 'reading');
   const listeningLinks = links.filter(l => l.skill_type === 'listening');
 

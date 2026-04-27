@@ -137,20 +137,28 @@ async function loadCourseBooks(courseId) {
     </div>`).join('');
 }
 
+let _crBooksMeta = [];
+
 async function loadBookSelectOptions() {
-  const books = await _adminDb.getBooksMeta();
+  _crBooksMeta = await _adminDb.getBooksMeta();
   const sel = document.getElementById('cr-book-select');
-  sel.innerHTML = books.length
-    ? books.map(b => `<option value="${escHtml(b.name)}">${escHtml(b.display_name || b.name)}</option>`).join('')
+  sel.innerHTML = _crBooksMeta.length
+    ? _crBooksMeta.map(b => {
+        const icon = b.skill_type === 'listening' ? '🎧' : '📖';
+        return `<option value="${escHtml(b.name)}" data-skill="${escHtml(b.skill_type||'reading')}">${icon} ${escHtml(b.display_name || b.name)}</option>`;
+      }).join('')
     : '<option value="">— Chưa có sách nào —</option>';
 }
 
 async function addCourseBook() {
   const courseId = document.getElementById('cr-edit-id').value;
   if (!courseId) return;
-  const bookName  = document.getElementById('cr-book-select').value;
-  const skillType = document.getElementById('cr-skill-select').value;
+  const bookSel  = document.getElementById('cr-book-select');
+  const bookName = bookSel?.value;
   if (!bookName) return;
+  // Use books.skill_type as source of truth; fallback to cr-skill-select
+  const bookMeta  = _crBooksMeta.find(b => b.name === bookName);
+  const skillType = bookMeta?.skill_type || document.getElementById('cr-skill-select')?.value || 'reading';
   await _adminDb.addCourseBook({ course_id: parseInt(courseId), book_name: bookName, skill_type: skillType, sort_order: 0 });
   loadCourseBooks(courseId);
 }
