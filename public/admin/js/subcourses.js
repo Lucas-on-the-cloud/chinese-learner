@@ -639,22 +639,54 @@ async function subLaAIFill(lessonId) {
   const st  = _saGet(lessonId);
   const key = localStorage.getItem('api_key_openai') || '';
   if (!key) { subLaMsg(lessonId, 'Chưa có OpenAI key.', 'err'); return; }
-  const texts = st.pending.map((_, i) => document.getElementById(`sub-pt-${lessonId}-${i}`)?.value.trim()).filter(Boolean);
+
+  // Collect all current transcript values
+  const texts = st.pending.map((_, i) =>
+    document.getElementById(`sub-pt-${lessonId}-${i}`)?.value.trim() || ''
+  );
   if (!texts.length) return;
+
   const btn = document.getElementById(`sub-la-ai-btn-${lessonId}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI…'; }
-  const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan. Với mỗi câu, cung cấp Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên. Trả về JSON thuần: [{"pinyin":"...","vi":"..."}]`;
+
+  const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, trả về Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn.
+Trả về JSON array thuần túy, không giải thích, không markdown:
+[{"pinyin":"...","vi":"..."}]
+Đúng số phần tử, đúng thứ tự.`;
+
+  // Batch 15 items at a time to stay within token limits
+  const BATCH = 15;
+  const results = new Array(texts.length).fill(null);
+  let filled = 0;
+
   try {
-    const raw = await window.app.ai.call(SYSTEM, texts.map((t,i)=>`${i+1}. ${t}`).join('\n'), 1500);
-    const match = (raw||'').match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('Không có JSON');
-    JSON.parse(match[0]).forEach((r, i) => {
+    for (let start = 0; start < texts.length; start += BATCH) {
+      const chunk  = texts.slice(start, start + BATCH);
+      const offset = start;
+      subLaMsg(lessonId, `AI xử lý ${start + 1}–${Math.min(start + BATCH, texts.length)} / ${texts.length}…`, 'info');
+
+      const userMsg = chunk.map((t, i) => `${offset + i + 1}. ${t}`).join('\n');
+      const raw = await window.app.ai.call(SYSTEM, userMsg, 2500);
+      if (!raw) throw new Error(`Batch ${start}–${start + BATCH}: AI không trả về kết quả`);
+
+      const cleaned = raw.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'');
+      const match   = cleaned.match(/\[[\s\S]*\]/);
+      if (!match) throw new Error(`Batch ${start}–${start + BATCH}: Không tìm thấy JSON array`);
+
+      const parsed = JSON.parse(match[0]);
+      parsed.forEach((r, i) => { results[offset + i] = r; });
+      filled += parsed.length;
+    }
+
+    // Fill inputs
+    results.forEach((r, i) => {
+      if (!r) return;
       const pyEl = document.getElementById(`sub-pp-${lessonId}-${i}`);
       const viEl = document.getElementById(`sub-pv-${lessonId}-${i}`);
       if (pyEl && r.pinyin) pyEl.value = r.pinyin;
       if (viEl && r.vi)     viEl.value = r.vi;
     });
-    subLaMsg(lessonId, '✓ AI đã điền xong.', 'ok');
+    subLaMsg(lessonId, `✓ AI đã điền xong ${filled}/${texts.length} đoạn.`, 'ok');
   } catch(e) {
     subLaMsg(lessonId, 'Lỗi AI: ' + e.message, 'err');
   } finally {
