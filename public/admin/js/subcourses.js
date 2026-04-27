@@ -109,13 +109,20 @@ async function subSelectBook(bookName) {
   _subCurrentBook = bookName;
   document.getElementById('sub-form-heading').innerHTML    = '<i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con';
   document.getElementById('sub-code-row').style.display   = 'none';
-  document.getElementById('sub-skill-row').style.display  = 'none';
+  document.getElementById('sub-skill-row').style.display  = '';
   document.getElementById('sub-save-btn').textContent     = '💾 Lưu khóa học con';
   document.getElementById('sub-cancel-btn').style.display = 'none';
 
   const books = await _adminDb.getBooksMeta();
   const meta  = books.find(b => b.name === bookName) || {};
   _subSkillType = meta.skill_type || 'reading';
+
+  // Pre-select skill type radio
+  const rBtn = document.getElementById('sub-skill-reading');
+  const lBtn = document.getElementById('sub-skill-listening');
+  if (rBtn) rBtn.checked = _subSkillType === 'reading';
+  if (lBtn) lBtn.checked = _subSkillType === 'listening';
+  subSkillChange();
 
   document.getElementById('sub-name').value   = meta.display_name || '';
   document.getElementById('sub-desc').value   = meta.description  || '';
@@ -188,7 +195,9 @@ async function saveSubCourse() {
   }
 
   if (!_subCurrentBook) return;
-  const row = { display_name: displayName || null, description, cover_url: coverUrl };
+  const skillType = document.querySelector('input[name="sub-skill"]:checked')?.value || _subSkillType;
+  _subSkillType = skillType;
+  const row = { display_name: displayName || null, description, cover_url: coverUrl, skill_type: skillType };
   if (detailVal) row.detail = detailVal;
   const { error } = await _adminDb.client.from('books').update(row).eq('name', _subCurrentBook);
   if (error) {
@@ -199,6 +208,10 @@ async function saveSubCourse() {
   }
   adminMsg('sub-msg', '✓ Đã lưu: ' + _subCurrentBook, 'ok');
   loadSubCourses();
+  // Reload lesson area to reflect possible skill_type change
+  const skillLabel = _subSkillType === 'listening' ? '🎧 Listening' : '📖 Reading';
+  document.getElementById('sub-lesson-subhead').textContent = `${skillLabel} · Quản lý bài học trong khóa học con này`;
+  subLoadLessons(_subCurrentBook);
 }
 
 // ── Lesson management (branches by skill type) ────
