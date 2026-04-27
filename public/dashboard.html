@@ -729,7 +729,7 @@ async function loadDashboard() {
           ${c.display_name?.charAt(0) || '課'}
         </div>
         <div class="course-body">
-          <div class="course-name">${c.display_name || 'Khóa học'}</div>
+          <div class="course-name">${c.title || c.display_name || 'Khóa học'}</div>
           <div class="course-sub">${lvl}</div>
           <div class="course-tags">
             ${c.is_free ? '<span class="course-tag free">Miễn phí</span>' : '<span class="course-tag paid">Trả phí</span>'}

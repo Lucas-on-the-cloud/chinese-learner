@@ -601,9 +601,12 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
             <div class="s-label">Học phí</div>
             <input type="text" id="cr-price" class="s-input" placeholder="Miễn phí / 299.000đ…" value="Miễn phí">
           </div>
-          <div>
-            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer;height:38px">
-              <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản ngay
+          <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;height:38px;margin-top:auto">
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cr-is-free" checked style="accent-color:#16a34a"> Miễn phí
+            </label>
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản
             </label>
           </div>
         </div>
@@ -1613,6 +1616,7 @@ async function crEditCourse(id) {
   document.getElementById('cr-detail').value      = c.detail || '';
   document.getElementById('cr-level').value       = c.level || '';
   document.getElementById('cr-price').value       = c.price || 'Miễn phí';
+  document.getElementById('cr-is-free').checked  = c.is_free ?? (!c.price || c.price === 'Miễn phí');
   document.getElementById('cr-cover').value       = c.cover_url || '';
   document.getElementById('cr-published').checked = !!c.published;
   crPreviewUrl(c.cover_url || '');
@@ -1630,11 +1634,13 @@ async function adminSaveCourse() {
   const title  = document.getElementById('cr-title').value.trim();
   if (!title) { adminMsg('cr-msg', 'Nhập tiêu đề khóa học.', 'err'); return; }
   const detailVal = document.getElementById('cr-detail').value.trim() || null;
+  const isFree = document.getElementById('cr-is-free').checked;
   const row = {
     title,
     description: document.getElementById('cr-desc').value.trim() || null,
     level:       document.getElementById('cr-level').value || null,
-    price:       document.getElementById('cr-price').value.trim() || 'Miễn phí',
+    price:       isFree ? 'Miễn phí' : (document.getElementById('cr-price').value.trim() || 'Miễn phí'),
+    is_free:     isFree,
     cover_url:   document.getElementById('cr-cover').value.trim() || null,
     published:   document.getElementById('cr-published').checked,
   };

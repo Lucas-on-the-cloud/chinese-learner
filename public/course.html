@@ -7,13 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
 a{text-decoration:none;color:inherit}
 img{display:block;max-width:100%}
-:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--orange:#f47b20;--navy:#0d1b4b;--text:#1f2937;--text-2:#6b7280;--border:#e5e7eb}
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.1);
+}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 
 /* NAVBAR */
@@ -27,80 +36,107 @@ img{display:block;max-width:100%}
 .nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;white-space:nowrap}
 .nav-link:hover{color:var(--text);background:#f3f4f6}
 .nav-link.active{color:var(--blue);font-weight:600}
-.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;transition:background .15s}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;transition:background .15s;white-space:nowrap}
 .nav-btn:hover{background:var(--blue-dark)}
+.nav-user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7);margin-left:8px;overflow:hidden}
+.nav-user-avatar img{width:100%;height:100%;object-fit:cover}
 
 /* HERO */
-.course-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:52px 1.5rem 48px;position:relative;overflow:hidden}
+.course-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:40px 1.5rem 48px;position:relative;overflow:hidden}
 .course-hero::after{content:'學';position:absolute;font-family:'Noto Serif TC',serif;font-size:320px;font-weight:700;color:rgba(255,255,255,.04);bottom:-80px;right:4%;pointer-events:none;line-height:1}
 .hero-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;position:relative;z-index:1}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:50px;margin-bottom:14px}
-.hero-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,36px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:14px}
-.hero-desc{font-size:14px;color:rgba(255,255,255,.72);line-height:1.75;max-width:560px;margin-bottom:20px}
+
+.hero-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:6px;margin-bottom:16px;transition:all .15s;cursor:pointer;border:none;font-family:inherit}
+.hero-back:hover{color:#fff;background:rgba(255,255,255,.18)}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:50px;margin-bottom:12px}
+.hero-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,36px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:10px}
+.hero-desc{font-size:13px;color:rgba(255,255,255,.7);line-height:1.75;max-width:560px;margin-bottom:16px}
 .hero-tags{display:flex;gap:8px;flex-wrap:wrap}
-.hero-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.15)}
-.hero-cover{width:200px;height:auto;max-height:220px;border-radius:14px;object-fit:contain;box-shadow:0 12px 40px rgba(0,0,0,.3);flex-shrink:0;background:rgba(0,0,0,.2)}
-.hero-cover-ph{width:220px;height:160px;border-radius:14px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:60px;color:rgba(255,255,255,.2);flex-shrink:0}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);font-size:12px;font-weight:500;padding:4px 12px;border-radius:50px;border:1px solid rgba(255,255,255,.15)}
 
-/* BODY */
-.page-body{flex:1;padding:40px 0 64px}
-.section-label{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.section-label::before{content:'';width:4px;height:20px;background:var(--blue);border-radius:2px}
+.hero-cover-wrap{width:180px;flex-shrink:0}
+.hero-cover{width:100%;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.35);object-fit:cover;aspect-ratio:16/9}
+.hero-cover-ph{width:180px;height:120px;border-radius:12px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:52px;color:rgba(255,255,255,.2)}
 
-/* Sub-course cards */
-.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.sub-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
-.sub-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);transform:translateY(-3px);border-color:#c7d7fd}
-.sub-card-thumb{height:160px;object-fit:cover;width:100%;display:block}
-.sub-card-thumb-ph{height:160px;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:52px;color:rgba(255,255,255,.18)}
-.sub-card-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;gap:6px}
-.sub-skill-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 10px;border-radius:8px}
-.sub-skill-badge.reading{background:#eff6ff;color:#1a56db}
-.sub-skill-badge.listening{background:#f0fdf4;color:#15803d}
-.sub-card-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy);line-height:1.4}
-.sub-card-desc{font-size:13px;color:var(--text-2);line-height:1.6;flex:1}
-.sub-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
-.sub-card-count{font-size:12px;color:var(--text-2)}
-.sub-card-btn{font-size:12px;font-weight:600;color:var(--blue);display:inline-flex;align-items:center;gap:5px}
-.sub-card:hover .sub-card-btn{gap:8px}
-.sub-card-btn i{transition:transform .15s}
-.sub-card:hover .sub-card-btn i{transform:translateX(3px)}
+/* PAGE BODY */
+.page-body{flex:1;padding:32px 0 64px}
+.body-layout{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
 
-/* coming soon overlay */
-.sub-card.coming-soon{opacity:.65;pointer-events:none}
-.sub-coming-badge{font-size:10px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px}
+/* SECTION HEADERS */
+.skill-section{margin-bottom:28px}
+.skill-section-hd{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+.skill-section-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.skill-section-icon.reading{background:var(--blue-lt);color:var(--blue)}
+.skill-section-icon.listening{background:var(--purple-lt);color:var(--purple)}
+.skill-section-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--navy)}
+.skill-section-sub{font-size:12px;color:var(--text-3);margin-top:2px}
+.skill-section-count{margin-left:auto;font-size:12px;font-weight:600;color:var(--text-3)}
+
+/* SUBCOURSE CARDS */
+.subcourse-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.sub-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .15s,box-shadow .15s,border-color .15s;display:flex;flex-direction:column}
+.sub-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#c7d7fd}
+.sub-card.listening:hover{border-color:#ddd6fe}
+
+.sub-thumb{height:120px;position:relative;overflow:hidden;flex-shrink:0}
+.sub-thumb img{width:100%;height:100%;object-fit:cover}
+.sub-thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:48px;color:rgba(255,255,255,.15);font-weight:700}
+
+.sub-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:6px}
+.sub-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4}
+.sub-desc{font-size:12px;color:var(--text-2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+
+.sub-footer{padding:10px 16px 14px;border-top:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between}
+.sub-count{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:4px}
+.sub-btn{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;transition:all .12s}
+.sub-btn.reading{color:var(--blue);background:var(--blue-lt)}
+.sub-btn.reading:hover{background:var(--blue);color:#fff}
+.sub-btn.listening{color:var(--purple);background:var(--purple-lt)}
+.sub-btn.listening:hover{background:var(--purple);color:#fff}
+.sub-btn i{transition:transform .12s;font-size:10px}
+.sub-card:hover .sub-btn i{transform:translateX(3px)}
+
+/* Progress bar on sub-card */
+.sub-progress-wrap{padding:0 16px 10px}
+.sub-prog-bar{height:4px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.sub-prog-fill{height:100%;border-radius:100px;transition:width .4s ease}
+.sub-prog-fill.reading{background:linear-gradient(90deg,var(--blue),#3b82f6)}
+.sub-prog-fill.listening{background:linear-gradient(90deg,var(--purple),#a855f7)}
+.sub-prog-label{font-size:10px;color:var(--text-3);margin-top:4px}
+
+/* Sidebar */
+.sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm);position:sticky;top:80px}
+.sidebar-title{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.sidebar-title::before{content:'';width:3px;height:16px;background:var(--blue);border-radius:2px}
+.sidebar-info-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.sidebar-info-row:last-child{border-bottom:none}
+.sidebar-info-row i{width:16px;text-align:center;color:var(--text-3);font-size:12px}
+.sidebar-cta{width:100%;margin-top:16px;padding:11px;border-radius:10px;background:var(--blue);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;text-align:center;display:block}
+.sidebar-cta:hover{background:var(--blue-dark)}
+.detail-content{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;line-height:1.8;color:var(--text-2)}
+.detail-content h2{font-family:'Noto Serif TC',serif;color:var(--navy);font-size:15px;margin:12px 0 6px}
+.detail-content h3{font-family:'Noto Serif TC',serif;color:var(--navy);font-size:13px;margin:10px 0 4px}
+.detail-content ul{padding-left:1.2rem;margin:.5rem 0}
+.detail-content li{margin-bottom:.3rem}
+.detail-content strong{color:var(--text);font-weight:600}
+
+/* Empty states */
+.skill-section-empty{padding:2rem;text-align:center;background:var(--surface);border:1px dashed var(--border);border-radius:12px;color:var(--text-3);font-size:13px}
 
 /* FOOTER */
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
-.footer-main{padding:48px 1.5rem 40px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
-.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
-.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
-.footer-brand-name em{color:var(--orange);font-style:normal}
-.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
-.footer-socials{display:flex;gap:8px}
-.footer-social{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.6);transition:all .15s}
-.footer-social:hover{background:var(--blue);color:#fff}
-.footer-col-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:.85rem;text-transform:uppercase;letter-spacing:.5px}
-.footer-links{list-style:none;display:flex;flex-direction:column;gap:.5rem}
-.footer-links a{color:rgba(255,255,255,.55);transition:color .15s}
-.footer-links a:hover{color:rgba(255,255,255,.9)}
-.footer-info-row{display:flex;align-items:flex-start;gap:8px;color:rgba(255,255,255,.5);margin-bottom:.5rem}
-.footer-info-row i{width:16px;flex-shrink:0;margin-top:2px;color:rgba(255,255,255,.3)}
-.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
-.footer-bottom-links{display:flex;gap:1.5rem}
-.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s}
-.footer-bottom-links a:hover{color:rgba(255,255,255,.7)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto}
 
-@media(max-width:768px){.hero-inner{grid-template-columns:1fr}.hero-cover,.hero-cover-ph{display:none}.sub-grid{grid-template-columns:1fr}}
-@media(max-width:640px){.nav-link{display:none}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr}.hero-cover-wrap{display:none}.body-layout{grid-template-columns:1fr}}
+@media(max-width:640px){.nav-link{display:none}.subcourse-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <nav class="navbar">
   <div class="container">
-    <a class="nav-brand" href="/about.html">
-      <img src="images/logo.jpg" alt="TOCFL FAFA">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
       <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
     </a>
     <div class="nav-menu">
@@ -108,206 +144,284 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <a class="nav-link active" href="/courses.html">Khóa học</a>
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
-      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      <div id="nav-auth">
+        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      </div>
     </div>
   </div>
 </nav>
 
 <!-- Hero -->
-<div class="course-hero" id="hero">
+<div class="course-hero">
   <div class="hero-inner">
     <div>
+      <button class="hero-back" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i> Quay lại
+      </button>
       <div class="hero-eyebrow" id="hero-eyebrow">🎓 TOCFL FAFA · Khóa học</div>
       <h1 class="hero-title" id="hero-title">Đang tải…</h1>
       <p class="hero-desc" id="hero-desc"></p>
       <div class="hero-tags" id="hero-tags"></div>
     </div>
-    <div id="hero-cover-wrap"></div>
+    <div class="hero-cover-wrap" id="hero-cover-wrap"></div>
   </div>
 </div>
 
 <!-- Body -->
 <div class="page-body">
-  <div class="container" style="display:grid;grid-template-columns:1fr 320px;gap:32px;align-items:start">
+  <div class="container">
+    <div class="body-layout" id="body-layout">
 
-    <div>
-      <!-- Sub-courses -->
-      <div class="section-label">Khóa học trong chương trình này</div>
-      <div class="sub-grid" id="sub-grid">
-        <p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Đang tải…</p>
+      <!-- Left: subcourses by skill -->
+      <div id="subcourses-col">
+        <div style="text-align:center;padding:3rem;color:#9ca3af;font-size:13px">
+          <i class="fas fa-spinner fa-spin" style="font-size:20px;display:block;margin-bottom:10px"></i>
+          Đang tải…
+        </div>
       </div>
+
+      <!-- Right: sidebar -->
+      <aside id="sidebar-col" style="display:none">
+        <div class="sidebar-card">
+          <div class="sidebar-title">Thông tin khóa học</div>
+          <div id="sidebar-info"></div>
+          <a id="sidebar-cta" href="/courses.html" class="sidebar-cta">Bắt đầu học ngay</a>
+          <div id="detail-content" class="detail-content"></div>
+        </div>
+      </aside>
+
     </div>
-
-    <!-- Detail sidebar -->
-    <aside id="detail-sidebar" style="display:none;position:sticky;top:80px">
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px">
-        <div class="section-label" style="margin-bottom:16px;font-size:15px">Thông tin khóa học</div>
-        <div id="detail-content" style="font-size:14px;line-height:1.9;color:#1f2937"></div>
-      </div>
-    </aside>
-
   </div>
 </div>
 
 <footer>
-  <div class="footer-main">
-    <div>
-      <div class="footer-brand">
-        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px">
-        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
-      </div>
-      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt.</p>
-      <div class="footer-socials">
-        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
-        <a class="footer-social" href="/library.html"><i class="fas fa-graduation-cap"></i></a>
-      </div>
-    </div>
-    <div>
-      <div class="footer-col-title">Liên kết</div>
-      <ul class="footer-links">
-        <li><a href="/courses.html">Khóa học</a></li>
-        <li><a href="/blog.html">Blog</a></li>
-        <li><a href="/about.html">Giới thiệu</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-col-title">Thông tin</div>
-      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
-      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
-    </div>
-  </div>
   <div class="footer-bottom">
     <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
-    <div class="footer-bottom-links">
-      <a href="/courses.html">Khóa học</a>
-      <a href="/about.html">Giới thiệu</a>
-    </div>
+    <a href="/courses.html" style="color:rgba(255,255,255,.5)">← Tất cả khóa học</a>
   </div>
 </footer>
 
 <script>
-const db = supabase.createClient(
-  'https://prctmferugkxabyizslx.supabase.co',
-  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
-);
+const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const db   = supabase.createClient(DB_URL, DB_KEY);
+const auth = new AuthService(db);
 
-function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+const GRADIENTS = {
+  reading:   ['linear-gradient(135deg,#0d1b4b,#1e3a8a)','linear-gradient(135deg,#1565c0,#0288d1)'],
+  listening: ['linear-gradient(135deg,#4c1d95,#5b21b6)','linear-gradient(135deg,#064e3b,#065f46)'],
+};
+
+(async () => {
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { document.getElementById('hero-title').textContent = 'Không tìm thấy khóa học.'; return; }
+
+  // Auth (non-blocking for faster page load)
+  auth.init().then(user => {
+    renderNavAuth(user);
+    if (user) renderProgressBars(user);
+  });
+
+  // Load course data in parallel
+  const [{ data: course }, { data: links }] = await Promise.all([
+    db.from('courses').select('*').eq('id', id).single(),
+    db.from('course_books').select('*').eq('course_id', id).order('sort_order'),
+  ]);
+
+  if (!course) { document.getElementById('hero-title').textContent = 'Khóa học không tồn tại.'; return; }
+
+  // Render hero
+  document.title = course.title + ' — TOCFL FAFA';
+  document.getElementById('hero-title').textContent = course.title;
+  if (course.description) document.getElementById('hero-desc').textContent = course.description;
+
+  const isFree = course.is_free || !course.price || course.price === 'Miễn phí';
+  const tags = [];
+  if (course.level) tags.push(`<span class="hero-tag"><i class="fas fa-signal"></i> Cấp ${esc(course.level)}</span>`);
+  tags.push(isFree
+    ? `<span class="hero-tag"><i class="fas fa-check-circle"></i> Miễn phí</span>`
+    : `<span class="hero-tag"><i class="fas fa-tag"></i> ${esc(course.price)}</span>`);
+  document.getElementById('hero-tags').innerHTML = tags.join('');
+
+  const coverWrap = document.getElementById('hero-cover-wrap');
+  coverWrap.innerHTML = course.cover_url
+    ? `<img class="hero-cover" src="${esc(course.cover_url)}" alt="${esc(course.title)}">`
+    : `<div class="hero-cover-ph">學</div>`;
+
+  // Sidebar info
+  const sidebar = document.getElementById('sidebar-col');
+  sidebar.style.display = '';
+  const infoRows = [
+    ['fas fa-signal', `Cấp độ: ${course.level || 'N/A'}`],
+    ['fas fa-tag', isFree ? 'Miễn phí' : course.price],
+    ['fas fa-book-open', `${links?.filter(l=>l.skill_type==='reading').length || 0} khóa Reading`],
+    ['fas fa-headphones', `${links?.filter(l=>l.skill_type==='listening').length || 0} khóa Listening`],
+  ];
+  document.getElementById('sidebar-info').innerHTML = infoRows.map(([icon, text]) =>
+    `<div class="sidebar-info-row"><i class="${icon}"></i><span>${esc(text)}</span></div>`
+  ).join('');
+
+  // Sidebar CTA
+  const firstLink = links?.[0];
+  if (firstLink) {
+    const url = firstLink.skill_type === 'listening'
+      ? `/subcourse-listening.html?b=${encodeURIComponent(firstLink.book_name)}`
+      : `/subcourse.html?b=${encodeURIComponent(firstLink.book_name)}`;
+    document.getElementById('sidebar-cta').href = url;
+  }
+
+  // Detail markdown
+  if (course.detail) {
+    document.getElementById('detail-content').innerHTML = renderMarkdown(course.detail);
+  }
+
+  // Load books metadata + lesson/audio counts
+  if (!links?.length) {
+    document.getElementById('subcourses-col').innerHTML =
+      `<div class="skill-section-empty"><i class="fas fa-book" style="font-size:24px;display:block;margin-bottom:8px;opacity:.3"></i>Chưa có khóa học con nào.</div>`;
+    return;
+  }
+
+  const bookNames = links.map(l => l.book_name);
+  const [{ data: booksMeta }, { data: lessonRows }, { data: audioRows }] = await Promise.all([
+    db.from('books').select('*').in('name', bookNames),
+    db.from('lessons').select('book').in('book', bookNames),
+    db.from('audio_segments').select('book_name').eq('published', true).in('book_name', bookNames),
+  ]);
+
+  const metaMap    = Object.fromEntries((booksMeta || []).map(b => [b.name, b]));
+  const lessonCnt  = {};
+  (lessonRows  || []).forEach(l => { lessonCnt[l.book] = (lessonCnt[l.book] || 0) + 1; });
+  const audioCnt   = {};
+  (audioRows   || []).forEach(s => { audioCnt[s.book_name] = (audioCnt[s.book_name] || 0) + 1; });
+
+  const readingLinks   = links.filter(l => l.skill_type === 'reading');
+  const listeningLinks = links.filter(l => l.skill_type === 'listening');
+
+  let html = '';
+
+  // Reading section
+  if (readingLinks.length) {
+    html += renderSkillSection('reading', '📖 Đọc hiểu · Reading',
+      'Bài đọc tiếng Trung phồn thể với AI từ vựng và luyện viết chữ Hán',
+      readingLinks, metaMap, lessonCnt, audioCnt);
+  }
+
+  // Listening section
+  if (listeningLinks.length) {
+    html += renderSkillSection('listening', '🎧 Nghe chép · Listening',
+      'Luyện nghe và chép chính tả từng đoạn audio với timestamp chính xác',
+      listeningLinks, metaMap, lessonCnt, audioCnt);
+  }
+
+  document.getElementById('subcourses-col').innerHTML = html;
+  window._linkData = { links, metaMap, lessonCnt, audioCnt };
+})();
+
+function renderSkillSection(skill, title, subtitle, sectionLinks, metaMap, lessonCnt, audioCnt) {
+  const iconClass = skill === 'reading' ? 'reading' : 'listening';
+  const icon = skill === 'reading' ? 'fas fa-book-open' : 'fas fa-headphones';
+  const grads = GRADIENTS[skill];
+
+  const cards = sectionLinks.map((link, i) => {
+    const meta  = metaMap[link.book_name] || {};
+    const name  = meta.display_name || link.book_name;
+    const desc  = meta.description  || '';
+    const cover = meta.cover_url    || '';
+    const cnt   = skill === 'reading' ? (lessonCnt[link.book_name] || 0) : (audioCnt[link.book_name] || 0);
+    const unit  = skill === 'reading' ? 'bài đọc' : 'đoạn audio';
+    const url   = skill === 'listening'
+      ? `/subcourse-listening.html?b=${encodeURIComponent(link.book_name)}`
+      : `/subcourse.html?b=${encodeURIComponent(link.book_name)}`;
+    const grad  = grads[i % grads.length];
+
+    const thumb = cover
+      ? `<img src="${esc(cover)}" alt="${esc(name)}">`
+      : `<div class="sub-thumb-ph" style="background:${grad}">${skill==='reading'?'讀':'聽'}</div>`;
+
+    return `<a href="${url}" class="sub-card ${skill}" data-book="${esc(link.book_name)}" data-skill="${skill}">
+      <div class="sub-thumb">${thumb}</div>
+      <div class="sub-body">
+        <div class="sub-title">${esc(name)}</div>
+        ${desc ? `<div class="sub-desc">${esc(desc)}</div>` : ''}
+      </div>
+      <div class="sub-progress-wrap" id="prog-${esc(link.book_name)}" style="display:none">
+        <div class="sub-prog-bar"><div class="sub-prog-fill ${skill}" style="width:0%" data-book="${esc(link.book_name)}" data-total="${cnt}"></div></div>
+        <div class="sub-prog-label">0 / ${cnt} ${unit}</div>
+      </div>
+      <div class="sub-footer">
+        <span class="sub-count"><i class="${icon}" style="font-size:10px"></i> ${cnt} ${unit}</span>
+        <span class="sub-btn ${skill}">Vào học <i class="fas fa-arrow-right"></i></span>
+      </div>
+    </a>`;
+  }).join('');
+
+  return `<div class="skill-section">
+    <div class="skill-section-hd">
+      <div class="skill-section-icon ${iconClass}"><i class="${icon}"></i></div>
+      <div>
+        <div class="skill-section-title">${title}</div>
+        <div class="skill-section-sub">${subtitle}</div>
+      </div>
+      <div class="skill-section-count">${sectionLinks.length} khóa</div>
+    </div>
+    <div class="subcourse-grid">${cards}</div>
+  </div>`;
+}
+
+async function renderProgressBars(user) {
+  try {
+    const { data: readProg } = await db.from('reading_progress')
+      .select('book_name,lesson_id').eq('user_id', user.id).eq('completed', true);
+    const { data: listenProg } = await db.from('listening_progress')
+      .select('book_name,segment_id').eq('user_id', user.id);
+
+    const readMap = {};
+    (readProg || []).forEach(r => { readMap[r.book_name] = (readMap[r.book_name] || 0) + 1; });
+    const listenMap = {};
+    (listenProg || []).forEach(r => { listenMap[r.book_name] = (listenMap[r.book_name] || 0) + 1; });
+
+    document.querySelectorAll('.sub-prog-fill').forEach(fill => {
+      const book  = fill.dataset.book;
+      const skill = fill.closest('.sub-card')?.dataset.skill;
+      const total = parseInt(fill.dataset.total) || 0;
+      const done  = skill === 'listening' ? (listenMap[book] || 0) : (readMap[book] || 0);
+      if (done > 0 && total > 0) {
+        const pct = Math.min(100, Math.round(done / total * 100));
+        fill.style.width = pct + '%';
+        const wrap  = document.getElementById('prog-' + book);
+        const label = wrap?.querySelector('.sub-prog-label');
+        if (wrap)  wrap.style.display = '';
+        if (label) label.textContent = `${done} / ${total} · ${pct}%`;
+      }
+    });
+  } catch(e) {}
+}
+
+function renderNavAuth(user) {
+  const wrap = document.getElementById('nav-auth');
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
+  const profile = auth.profile;
+  const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
+  const initial = auth.avatarInitial();
+  const inner = avatarUrl ? `<img src="${esc(avatarUrl)}" alt="">` : initial;
+  wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${inner}</a>`;
+}
 
 function renderMarkdown(text) {
   return (text || '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/^### (.+)$/gm,'<h3 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:15px;margin:1.2rem 0 .5rem">$1</h3>')
-    .replace(/^## (.+)$/gm,'<h2 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:17px;margin:1.4rem 0 .6rem">$1</h2>')
-    .replace(/^# (.+)$/gm,'<h1 style="font-family:\'Noto Serif TC\',serif;color:#0d1b4b;font-size:20px;margin:1.6rem 0 .7rem">$1</h1>')
-    .replace(/^> (.+)$/gm,'<blockquote style="border-left:3px solid #1a56db;padding:.5rem .8rem;color:#6b7280;font-style:italic;background:#eff6ff;border-radius:0 6px 6px 0;margin:.8rem 0">$1</blockquote>')
-    .replace(/^[-•] (.+)$/gm,'<li style="margin-bottom:.35rem">$1</li>')
-    .replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #e5e7eb;margin:1.2rem 0">')
-    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:#0d1b4b">$1</strong>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*([^*\n]+?)\*/g,'<em>$1</em>')
-    .replace(/__([^_\n]+?)__/g,'<u>$1</u>')
-    .replace(/==r:([^=\n]+)==/g,'<mark style="background:#fecaca;padding:1px 3px;border-radius:3px">$1</mark>')
-    .replace(/==g:([^=\n]+)==/g,'<mark style="background:#bbf7d0;padding:1px 3px;border-radius:3px">$1</mark>')
-    .replace(/==([^=\n:][^=\n]*)==/g,'<mark style="background:#fef08a;padding:1px 3px;border-radius:3px">$1</mark>')
-    .replace(/(<li[^>]*>.*<\/li>\n?)+/g, m => `<ul style="padding-left:1.2rem;margin:.6rem 0">${m}</ul>`)
-    .replace(/\n{2,}/g,'</p><p style="margin-bottom:.8rem">')
+    .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+    .replace(/\n{2,}/g,'<br><br>')
     .replace(/\n/g,'<br>');
 }
-
-const GRADIENTS = ['135deg,#0d1b4b,#1e3a8a','135deg,#064e3b,#065f46','135deg,#4c1d95,#5b21b6','135deg,#7f1d1d,#991b1b'];
-
-async function init() {
-  const id = new URLSearchParams(location.search).get('id');
-  if (!id) { document.getElementById('hero-title').textContent = 'Không tìm thấy khóa học.'; return; }
-
-  const { data: course } = await db.from('courses').select('*').eq('id', id).single();
-  if (!course) { document.getElementById('hero-title').textContent = 'Khóa học không tồn tại.'; return; }
-
-  document.title = course.title + ' — TOCFL FAFA';
-  document.getElementById('hero-title').textContent = course.title;
-  document.getElementById('hero-desc').textContent  = course.description || '';
-
-  if (course.detail) {
-    const sidebar = document.getElementById('detail-sidebar');
-    const content = document.getElementById('detail-content');
-    sidebar.style.display = '';
-    content.innerHTML = `<p style="margin-bottom:.8rem">${renderMarkdown(course.detail)}</p>`;
-    // Switch body to 2-col; if no detail, stays 1-col
-  } else {
-    document.querySelector('.page-body .container').style.gridTemplateColumns = '1fr';
-  }
-
-  const tags = [];
-  if (course.level) tags.push(`<span class="hero-tag"><i class="fa-solid fa-signal"></i> ${esc(course.level)}</span>`);
-  if (course.price) tags.push(`<span class="hero-tag"><i class="fa-solid fa-tag"></i> ${esc(course.price)}</span>`);
-  document.getElementById('hero-tags').innerHTML = tags.join('');
-
-  const coverWrap = document.getElementById('hero-cover-wrap');
-  if (course.cover_url) {
-    coverWrap.innerHTML = `<img class="hero-cover" src="${esc(course.cover_url)}" alt="${esc(course.title)}">`;
-  } else {
-    coverWrap.innerHTML = `<div class="hero-cover-ph">學</div>`;
-  }
-
-  // Load linked books
-  const { data: links } = await db.from('course_books').select('*').eq('course_id', id).order('sort_order');
-  const grid = document.getElementById('sub-grid');
-  if (!links?.length) {
-    grid.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:3rem;grid-column:1/-1">Chưa có khóa học con nào.</p>';
-    return;
-  }
-
-  // Fetch book metadata for each linked book
-  const bookNames = links.map(l => l.book_name);
-  const { data: booksMeta } = await db.from('books').select('*').in('name', bookNames);
-  const metaMap = Object.fromEntries((booksMeta || []).map(b => [b.name, b]));
-
-  // Fetch lesson counts
-  const { data: lessonData } = await db.from('lessons').select('book').in('book', bookNames);
-  const countMap = {};
-  (lessonData || []).forEach(l => { countMap[l.book] = (countMap[l.book] || 0) + 1; });
-
-  grid.innerHTML = links.map((link, i) => {
-    const meta    = metaMap[link.book_name] || {};
-    const title   = meta.display_name || link.book_name;
-    const desc    = meta.description  || '';
-    const cover   = meta.cover_url    || '';
-    const count   = countMap[link.book_name] || 0;
-    const skill      = link.skill_type || 'reading';
-    const isListening= skill === 'listening';
-    const grad       = GRADIENTS[i % GRADIENTS.length];
-    const badgeClass = isListening ? 'listening' : 'reading';
-    const badgeText  = isListening ? '🎧 Listening' : '📖 Reading';
-    const countIcon  = isListening ? 'fa-headphones' : 'fa-book-open';
-    const countLabel = isListening ? 'đoạn audio' : 'bài đọc';
-    const targetUrl  = isListening
-      ? `/subcourse-listening.html?b=${encodeURIComponent(link.book_name)}`
-      : `/subcourse.html?b=${encodeURIComponent(link.book_name)}`;
-
-    const thumbHtml = cover
-      ? `<img class="sub-card-thumb" src="${esc(cover)}" alt="${esc(title)}">`
-      : `<div class="sub-card-thumb-ph" style="background:linear-gradient(${grad})">${isListening?'聽':'讀'}</div>`;
-
-    const cardContent = `
-      <div class="sub-card">
-        ${thumbHtml}
-        <div class="sub-card-body">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="sub-skill-badge ${badgeClass}">${badgeText}</span>
-          </div>
-          <div class="sub-card-title">${esc(title)}</div>
-          ${desc ? `<div class="sub-card-desc">${esc(desc)}</div>` : ''}
-          <div class="sub-card-foot">
-            <span class="sub-card-count"><i class="fa-solid ${countIcon}" style="font-size:11px;margin-right:4px"></i>${count} ${countLabel}</span>
-            <span class="sub-card-btn">Vào học <i class="fa-solid fa-arrow-right"></i></span>
-          </div>
-        </div>
-      </div>`;
-
-    return `<a href="${targetUrl}" style="display:contents">${cardContent}</a>`;
-  }).join('');
-}
-
-init();
 </script>
 </body>
 </html>
