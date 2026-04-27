@@ -22,10 +22,8 @@ async function loadListeningAdmin() {
   window._lsAllLessons = lessons || [];
   window._lsAllBooks   = books   || [];
 
-  const bookNames = [...new Set([
-    ...(books||[]).map(b=>b.name),
-    ...(lessons||[]).map(l=>l.book),
-  ])].sort();
+  // Only show books from the books table (source of truth for subcourses)
+  const bookNames = (books||[]).map(b=>b.name).sort();
 
   document.getElementById('ls-book-list').innerHTML = bookNames.map(name => {
     const meta  = (books||[]).find(b=>b.name===name)||{};
