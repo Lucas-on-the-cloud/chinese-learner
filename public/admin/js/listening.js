@@ -312,9 +312,13 @@ function lsRenderPendingSegs(segs) {
     </div>`).join('');
 
   area.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
       <div class="s-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:#7c3aed"></i> Kết quả STT — ${segs.length} đoạn (chưa lưu)</div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="ls-ai-fill-btn" onclick="lsAIFillPending()"
+          style="background:#f47b20;color:#fff;border:none;padding:8px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px">
+          <i class="fa-solid fa-sparkles"></i> Tạo Pinyin & Nghĩa với AI
+        </button>
         <button onclick="lsSaveAllPending()"
           style="background:#16a34a;color:#fff;border:none;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">
           💾 Lưu tất cả
@@ -326,6 +330,57 @@ function lsRenderPendingSegs(segs) {
       </div>
     </div>
     ${rows}`;
+}
+
+async function lsAIFillPending() {
+  const key = lsGetOpenAIKey();
+  if (!key) { lsMsg('Chưa có OpenAI key — vào Settings → AI & API để thêm.', 'err'); return; }
+
+  // Collect texts from pending rows
+  const texts = lsPendingSegs.map((_, i) => document.getElementById('ls-pt-' + i)?.value.trim()).filter(Boolean);
+  if (!texts.length) { lsMsg('Không có transcript nào để xử lý.', 'err'); return; }
+
+  const btn = document.getElementById('ls-ai-fill-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI đang xử lý…'; }
+  lsMsg('Đang gửi cho AI tạo Pinyin & Nghĩa tiếng Việt…', 'info');
+
+  const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, hãy cung cấp:
+1. Pinyin có dấu thanh (tone marks, không dùng số)
+2. Nghĩa tiếng Việt tự nhiên
+
+Trả về JSON thuần (KHÔNG markdown, KHÔNG giải thích):
+[{"pinyin":"...","vi":"..."}, ...]
+
+Đúng số phần tử, đúng thứ tự.`;
+
+  const userMsg = texts.map((t, i) => `${i + 1}. ${t}`).join('\n');
+
+  try {
+    const raw = await window.app.ai.call(SYSTEM, userMsg, 2000);
+    if (!raw) throw new Error('AI không trả về kết quả');
+
+    const cleaned = raw.trim().replace(/^```json\s*/,'').replace(/\s*```$/,'');
+    const match   = cleaned.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('Không tìm thấy JSON array trong phản hồi');
+    const results = JSON.parse(match[0]);
+
+    // Fill inputs
+    let filled = 0;
+    lsPendingSegs.forEach((_, i) => {
+      const r = results[i];
+      if (!r) return;
+      const pyEl = document.getElementById('ls-pp-' + i);
+      const viEl = document.getElementById('ls-pv-' + i);
+      if (pyEl && r.pinyin) { pyEl.value = r.pinyin; filled++; }
+      if (viEl && r.vi)     { viEl.value = r.vi; }
+    });
+
+    lsMsg(`✓ AI đã điền Pinyin & Nghĩa cho ${filled} đoạn. Xem lại rồi lưu.`, 'ok');
+  } catch(e) {
+    lsMsg('Lỗi AI: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-sparkles"></i> Tạo Pinyin & Nghĩa với AI'; }
+  }
 }
 
 function lsPlaySegmentLocal(startSec, endSec) {
