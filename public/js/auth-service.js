@@ -1,15 +1,17 @@
 class AuthService {
   constructor(client) {
-    this.client   = client;
-    this._profile = null;
-    this._user    = null;
-    this._ready   = false;
-    this._listeners = {};
+    this.client      = client;
+    this._profile    = null;
+    this._user       = null;
+    this._ready      = false;
+    this._listeners  = {};
 
+    // Handles subsequent auth events AFTER init() has resolved
     client.auth.onAuthStateChange(async (event, session) => {
+      if (!this._ready) return; // init() owns the first event
       this._user = session?.user || null;
       if (this._user) {
-        await this._syncProfile(this._user);
+        try { await this._syncProfile(this._user); } catch(e) {}
       } else {
         this._profile = null;
       }
@@ -17,13 +19,49 @@ class AuthService {
     });
   }
 
-  // Call once on page load — resolves to current user (or null)
-  async init() {
-    const { data: { session } } = await this.client.auth.getSession();
-    this._user = session?.user || null;
-    if (this._user) await this._syncProfile(this._user);
-    this._ready = true;
-    return this._user;
+  // Call once on page load. Uses onAuthStateChange so it works after
+  // OAuth redirects (PKCE flow: getSession() may be null before code exchange).
+  init() {
+    return new Promise(resolve => {
+      let resolved = false;
+
+      const finish = async (session) => {
+        if (resolved) return;
+        resolved = true;
+        this._user = session?.user || null;
+        if (this._user) {
+          try { await this._syncProfile(this._user); } catch(e) {
+            console.warn('[AuthService] profile sync failed:', e);
+          }
+        }
+        this._ready = true;
+        resolve(this._user);
+      };
+
+      const { data: { subscription } } = this.client.auth.onAuthStateChange((event, session) => {
+        if (event === 'INITIAL_SESSION') {
+          if (session) {
+            subscription.unsubscribe();
+            finish(session);
+          } else {
+            // No session — check if a PKCE code is being exchanged
+            const hasCode = typeof window !== 'undefined'
+              && new URLSearchParams(window.location.search).has('code');
+            if (!hasCode) {
+              subscription.unsubscribe();
+              finish(null); // definitely not logged in
+            }
+            // else: wait for SIGNED_IN which fires after code exchange
+          }
+        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          subscription.unsubscribe();
+          finish(event === 'SIGNED_IN' ? session : null);
+        }
+      });
+
+      // Hard timeout — should never trigger in normal flow
+      setTimeout(() => finish(null), 8000);
+    });
   }
 
   get user()    { return this._user; }
@@ -56,7 +94,6 @@ class AuthService {
     window.location.href = '/login.html';
   }
 
-  // Redirect to login if not authenticated; returns false if user should wait
   requireAuth(redirectAfter) {
     if (!this._user) {
       const target = redirectAfter || window.location.href;
@@ -66,7 +103,6 @@ class AuthService {
     return true;
   }
 
-  // Redirect to login if not admin
   requireAdmin() {
     if (!this.isAdmin) {
       window.location.href = '/courses.html';
@@ -81,26 +117,22 @@ class AuthService {
     return this;
   }
 
-  // ── Internal ────────────────────────────────────
+  // ── Internal ──────────────────────────────────────
   async _syncProfile(user) {
     const { data } = await this.client
       .from('profiles').select('*').eq('id', user.id).single();
 
-    if (data) {
-      this._profile = data;
-      return;
-    }
+    if (data) { this._profile = data; return; }
 
-    // First login — create profile (DB trigger should handle this, but fallback here)
-    const insert = {
+    // profiles table missing or first login — create row
+    const { data: created } = await this.client.from('profiles').insert({
       id:         user.id,
       email:      user.email,
       full_name:  user.user_metadata?.full_name  || user.email?.split('@')[0] || 'Học viên',
       avatar_url: user.user_metadata?.avatar_url || null,
       role:       'user',
-    };
-    const { data: created } = await this.client.from('profiles').insert(insert).select().single();
-    this._profile = created;
+    }).select().single();
+    this._profile = created; // may still be null if table missing — handled gracefully
   }
 
   _emit(event, data) {

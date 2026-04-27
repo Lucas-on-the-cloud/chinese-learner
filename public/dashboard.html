@@ -617,20 +617,27 @@ const auth         = new AuthService(db);
 const userSession  = new UserSession(db);
 
 (async () => {
-  const user = await auth.init();
+  try {
+    const user = await auth.init();
 
-  // Not logged in → redirect to login
-  if (!user) {
-    window.location.href = '/login.html';
-    return;
+    if (!user) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    await userSession.init();
+    renderUser();
+    hideSplash();
+    await loadDashboard();
+  } catch(e) {
+    console.error('[dashboard] init error:', e);
+    hideSplash();
+    document.getElementById('app-main').insertAdjacentHTML('afterbegin',
+      `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:1.5rem;margin-bottom:20px;color:#dc2626;font-size:13px">
+        <i class="fas fa-exclamation-circle"></i> Lỗi khởi động: ${e.message}
+      </div>`
+    );
   }
-
-  // Sync anonymous progress if needed
-  await userSession.init();
-
-  renderUser();
-  hideSplash();
-  await loadDashboard();
 })();
 
 // ── Render user info ─────────────────────────────
