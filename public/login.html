@@ -208,9 +208,12 @@ const SUPABASE_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const params   = new URLSearchParams(location.search);
+const nextUrl  = params.get('next') || '/dashboard.html';
+
 // Already logged in → skip login
 db.auth.getSession().then(({ data }) => {
-  if (data.session) window.location.href = '/library.html';
+  if (data.session) window.location.href = nextUrl;
 });
 
 async function handleGoogleLogin() {
@@ -223,7 +226,7 @@ async function handleGoogleLogin() {
   const { error } = await db.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/library.html',
+      redirectTo: window.location.origin + nextUrl,
     },
   });
 

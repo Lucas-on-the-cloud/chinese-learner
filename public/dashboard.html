@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
+<script src="js/user-session.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{text-decoration:none;color:inherit}
+
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;--purple-dark:#6d28d9;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.08);
+  --sidebar-w:260px;
+  --header-h:60px;
+}
+
+/* ── HEADER ───────────────────────────────────── */
+.app-header{
+  position:fixed;top:0;left:0;right:0;z-index:300;
+  height:var(--header-h);
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.header-inner{
+  width:100%;max-width:none;padding:0 20px;
+  display:flex;align-items:center;gap:16px;
+}
+.header-brand{display:flex;align-items:center;gap:10px;min-width:var(--sidebar-w);padding-right:20px}
+.header-brand img{height:30px;border-radius:5px}
+.header-brand-text{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--navy);white-space:nowrap}
+.header-brand-text em{color:var(--orange);font-style:normal}
+.header-hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;color:var(--text-2)}
+.header-hamburger:hover{background:#f3f4f6;color:var(--text)}
+
+.header-search{
+  flex:1;max-width:420px;
+  display:flex;align-items:center;gap:10px;
+  background:#f3f4f6;border:1px solid var(--border);
+  border-radius:8px;padding:0 14px;height:38px;
+}
+.header-search i{color:var(--text-3);font-size:13px}
+.header-search input{border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);outline:none;flex:1}
+.header-search input::placeholder{color:var(--text-3)}
+
+.header-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+.header-icon-btn{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:none;cursor:pointer;
+  color:var(--text-2);transition:all .15s;position:relative;
+}
+.header-icon-btn:hover{background:#f3f4f6;color:var(--text)}
+.header-notif-dot{
+  position:absolute;top:6px;right:6px;
+  width:7px;height:7px;border-radius:50%;
+  background:#ef4444;border:2px solid #fff;
+}
+.header-user{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 10px;border-radius:9px;cursor:pointer;
+  transition:background .15s;position:relative;
+}
+.header-user:hover{background:#f3f4f6}
+.header-avatar{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),#a855f7);
+}
+.header-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.header-user-name{font-size:13px;font-weight:600;color:var(--text);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
+  min-width:180px;padding:6px;z-index:400;
+  display:none;
+}
+.header-user.open .header-dropdown{display:block}
+.hd-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:7px;
+  font-size:13px;color:var(--text-2);cursor:pointer;transition:all .12s;
+}
+.hd-item:hover{background:#f3f4f6;color:var(--text)}
+.hd-item i{width:16px;text-align:center;font-size:12px}
+.hd-sep{height:1px;background:var(--border);margin:4px 0}
+.hd-item.danger{color:#dc2626}
+.hd-item.danger:hover{background:#fef2f2}
+.hd-admin-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;color:#fff;
+  background:linear-gradient(135deg,var(--orange),#f59e0b);
+  padding:2px 7px;border-radius:50px;margin-left:auto;
+}
+
+/* ── LAYOUT ───────────────────────────────────── */
+.app-layout{
+  display:flex;
+  padding-top:var(--header-h);
+  min-height:100vh;
+}
+
+/* ── SIDEBAR ──────────────────────────────────── */
+.app-sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  position:fixed;
+  top:var(--header-h);
+  left:0;
+  bottom:0;
+  background:#fff;
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:20px 12px 40px;
+  scrollbar-width:none;
+  z-index:200;
+  transition:transform .25s ease;
+}
+.app-sidebar::-webkit-scrollbar{display:none}
+
+/* User card in sidebar */
+.sb-user{
+  background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);
+  border-radius:14px;padding:18px 16px;margin-bottom:20px;
+  position:relative;overflow:hidden;
+}
+.sb-user::after{
+  content:'學';position:absolute;font-family:'Noto Serif TC',serif;
+  font-size:90px;font-weight:700;color:rgba(255,255,255,.06);
+  right:-10px;bottom:-20px;line-height:1;pointer-events:none;
+}
+.sb-avatar{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:700;color:#fff;
+  background:rgba(255,255,255,.2);
+  border:2px solid rgba(255,255,255,.3);
+  margin-bottom:10px;position:relative;z-index:1;
+  overflow:hidden;
+}
+.sb-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.sb-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;position:relative;z-index:1}
+.sb-email{font-size:11px;color:rgba(255,255,255,.6);position:relative;z-index:1;word-break:break-all}
+.sb-role-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10px;font-weight:700;
+  background:rgba(255,255,255,.18);color:rgba(255,255,255,.9);
+  padding:2px 9px;border-radius:50px;
+  margin-top:8px;position:relative;z-index:1;
+}
+
+/* Sidebar stats strip */
+.sb-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  margin-bottom:20px;
+}
+.sb-stat{
+  background:#f8faff;border:1px solid #e8edf8;border-radius:10px;
+  padding:10px 12px;text-align:center;
+}
+.sb-stat-num{font-size:18px;font-weight:700;color:var(--purple)}
+.sb-stat-lbl{font-size:10px;color:var(--text-3);margin-top:2px}
+
+/* Sidebar nav */
+.sb-nav-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;padding:0 8px;margin-bottom:6px}
+.sb-nav{display:flex;flex-direction:column;gap:2px;margin-bottom:20px}
+.sb-link{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:9px;
+  font-size:13px;font-weight:500;color:var(--text-2);
+  cursor:pointer;transition:all .12s;
+  border:none;background:none;width:100%;text-align:left;font-family:inherit;
+}
+.sb-link:hover{background:#f3f4f6;color:var(--text)}
+.sb-link.active{background:var(--purple-lt);color:var(--purple);font-weight:600}
+.sb-link i{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.sb-link .sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:50px}
+.sb-badge.new{background:#fef3c7;color:#92400e}
+.sb-badge.count{background:var(--purple-lt);color:var(--purple)}
+
+/* Admin section */
+.sb-admin-section{border-top:1px solid var(--border);padding-top:14px;margin-top:4px}
+
+/* ── MAIN ─────────────────────────────────────── */
+.app-main{
+  flex:1;
+  margin-left:var(--sidebar-w);
+  min-width:0;
+  padding:28px 28px 60px;
+}
+
+/* ── WELCOME STRIP ────────────────────────────── */
+.welcome-strip{
+  background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 60%,#a855f7 100%);
+  border-radius:16px;padding:24px 28px;margin-bottom:24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  position:relative;overflow:hidden;
+}
+.welcome-strip::after{
+  content:'學習';position:absolute;font-family:'Noto Serif TC',serif;
+  font-size:120px;font-weight:700;color:rgba(255,255,255,.04);
+  right:-10px;bottom:-30px;line-height:1;pointer-events:none;
+}
+.welcome-text h2{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px}
+.welcome-text p{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6}
+.welcome-cta{
+  background:#fff;color:var(--purple);
+  border:none;padding:10px 22px;border-radius:9px;
+  font-family:inherit;font-size:13px;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;
+  display:flex;align-items:center;gap:8px;
+}
+.welcome-cta:hover{background:var(--purple-lt);box-shadow:0 4px 14px rgba(255,255,255,.2)}
+
+/* ── STATS ROW ────────────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  box-shadow:var(--shadow-sm);
+}
+.stat-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.stat-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.stat-icon.blue{background:var(--blue-lt);color:var(--blue)}
+.stat-icon.purple{background:var(--purple-lt);color:var(--purple)}
+.stat-icon.green{background:var(--green-lt);color:var(--green)}
+.stat-icon.orange{background:#fff7ed;color:var(--orange)}
+.stat-num{font-size:26px;font-weight:700;color:var(--text)}
+.stat-label{font-size:12px;color:var(--text-2);margin-top:2px}
+
+/* ── SECTION HEADER ───────────────────────────── */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.sec-link{font-size:12px;color:var(--blue);font-weight:500}
+.sec-link:hover{text-decoration:underline}
+
+/* ── CONTINUE LEARNING ────────────────────────── */
+.continue-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px}
+.cl-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  box-shadow:var(--shadow-sm);cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  display:flex;flex-direction:column;gap:10px;
+}
+.cl-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.cl-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;display:flex;align-items:center;gap:5px}
+.cl-type.reading{color:var(--blue)}
+.cl-type.listening{color:var(--purple)}
+.cl-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
+.cl-prog-wrap{display:flex;align-items:center;gap:10px}
+.cl-prog-bar{flex:1;height:5px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.cl-prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--purple),#a855f7)}
+.cl-prog-pct{font-size:11px;font-weight:600;color:var(--text-2);white-space:nowrap}
+.cl-footer{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #f3f4f6}
+.cl-book{font-size:11px;color:var(--text-3)}
+.cl-btn{
+  font-size:11px;font-weight:700;
+  color:var(--purple);background:var(--purple-lt);
+  border:none;padding:5px 14px;border-radius:6px;cursor:pointer;
+  font-family:inherit;transition:all .12s;
+}
+.cl-btn:hover{background:var(--purple);color:#fff}
+
+/* ── COURSES GRID ─────────────────────────────── */
+.courses-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px}
+.course-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;
+  box-shadow:var(--shadow-sm);cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+}
+.course-card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.course-cover{
+  height:90px;
+  background:linear-gradient(135deg,#4c1d95,#7c3aed);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif TC',serif;font-size:36px;color:rgba(255,255,255,.3);font-weight:700;
+  position:relative;overflow:hidden;
+}
+.course-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.course-body{padding:14px 16px}
+.course-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.4}
+.course-sub{font-size:11px;color:var(--text-3)}
+.course-tags{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.course-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px}
+.course-tag.read{background:var(--blue-lt);color:var(--blue)}
+.course-tag.listen{background:var(--purple-lt);color:var(--purple)}
+.course-tag.free{background:var(--green-lt);color:var(--green)}
+.course-tag.paid{background:#fff7ed;color:var(--orange)}
+
+/* ── FLASHCARD QUICK ACCESS ───────────────────── */
+.fc-strip{
+  background:linear-gradient(135deg,#0d1b4b,#1e3a8a);
+  border-radius:14px;padding:20px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  margin-bottom:24px;
+}
+.fc-strip-left h3{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.fc-strip-left p{font-size:12px;color:rgba(255,255,255,.6)}
+.fc-strip-right{display:flex;gap:10px;flex-shrink:0}
+.fc-btn{
+  padding:9px 20px;border-radius:9px;font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none;
+}
+.fc-btn.primary{background:#fff;color:var(--navy)}
+.fc-btn.primary:hover{background:#f0f4ff}
+.fc-btn.secondary{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.2)}
+.fc-btn.secondary:hover{background:rgba(255,255,255,.18)}
+
+/* ── EMPTY STATE ──────────────────────────────── */
+.empty-state{
+  text-align:center;padding:3rem 2rem;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;color:var(--text-3);font-size:13px;
+}
+.empty-icon{font-size:36px;margin-bottom:12px;color:var(--text-3);opacity:.5}
+
+/* ── LOADING ──────────────────────────────────── */
+.page-loader{
+  position:fixed;inset:0;z-index:999;
+  background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+}
+.page-loader-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--purple);display:inline-block;
+  animation:dotBounce .8s ease-in-out infinite;
+}
+.page-loader-dot:nth-child(2){animation-delay:.16s;background:#a855f7}
+.page-loader-dot:nth-child(3){animation-delay:.32s;background:#c084fc}
+@keyframes dotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+/* ── OVERLAY for mobile sidebar ───────────────── */
+.sidebar-overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.4)}
+
+/* ── RESPONSIVE ───────────────────────────────── */
+@media(max-width:1024px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .courses-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .app-sidebar{transform:translateX(-100%)}
+  .app-sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.open{display:block}
+  .app-main{margin-left:0;padding:20px 16px 60px}
+  .header-brand{min-width:auto}
+  .header-hamburger{display:flex}
+  .header-search{display:none}
+  .continue-grid{grid-template-columns:1fr}
+  .courses-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .welcome-strip{flex-direction:column;align-items:flex-start}
+  .fc-strip{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .header-user-name{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="page-loader" id="page-loader">
+  <div style="display:flex;gap:8px">
+    <div class="page-loader-dot"></div>
+    <div class="page-loader-dot"></div>
+    <div class="page-loader-dot"></div>
+  </div>
+  <div style="font-size:13px;color:#9ca3af;font-family:'Be Vietnam Pro',sans-serif">Đang tải…</div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── HEADER ─────────────────────────────────── -->
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <button class="header-hamburger" onclick="toggleSidebar()" aria-label="Menu">
+        <i class="fas fa-bars" style="font-size:18px"></i>
+      </button>
+      <a href="/dashboard.html" style="display:flex;align-items:center;gap:10px">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+        <span class="header-brand-text">TOCFL <em>FAFA</em></span>
+      </a>
+    </div>
+
+    <div class="header-search">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Tìm bài học, từ vựng…">
+    </div>
+
+    <div class="header-right">
+      <button class="header-icon-btn" title="Thông báo">
+        <i class="fas fa-bell" style="font-size:15px"></i>
+        <div class="header-notif-dot"></div>
+      </button>
+
+      <div class="header-user" id="header-user" onclick="toggleUserDropdown()">
+        <div class="header-avatar" id="header-avatar">?</div>
+        <span class="header-user-name" id="header-user-name">…</span>
+        <i class="fas fa-chevron-down" style="font-size:10px;color:var(--text-3)"></i>
+        <div class="header-dropdown" id="header-dropdown">
+          <a href="/dashboard.html" class="hd-item"><i class="fas fa-home"></i> Dashboard</a>
+          <a href="/courses.html" class="hd-item"><i class="fas fa-book-open"></i> Khóa học</a>
+          <a href="/flashcards.html" class="hd-item"><i class="fas fa-layer-group"></i> Flashcard</a>
+          <div class="hd-sep"></div>
+          <a href="/admin/index.html" class="hd-item" id="hd-admin" style="display:none">
+            <i class="fas fa-cog"></i> Admin Panel
+            <span class="sb-role-badge" style="font-size:9px;margin-left:auto;background:linear-gradient(135deg,#f47b20,#f59e0b);color:#fff">ADMIN</span>
+          </a>
+          <div class="hd-sep" id="hd-admin-sep" style="display:none"></div>
+          <div class="hd-item danger" onclick="auth.signOut()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── LAYOUT ─────────────────────────────────── -->
+<div class="app-layout">
+
+  <!-- ── SIDEBAR ──────────────────────────────── -->
+  <aside class="app-sidebar" id="app-sidebar">
+
+    <!-- User card -->
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">?</div>
+      <div class="sb-name" id="sb-name">Đang tải…</div>
+      <div class="sb-email" id="sb-email"></div>
+      <div id="sb-role-badge" style="display:none" class="sb-role-badge">
+        <i class="fas fa-shield-halved" style="font-size:9px"></i> Admin
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="sb-stats" id="sb-stats">
+      <div class="sb-stat">
+        <div class="sb-stat-num" id="sb-lessons-read">–</div>
+        <div class="sb-stat-lbl">Bài đã đọc</div>
+      </div>
+      <div class="sb-stat">
+        <div class="sb-stat-num" id="sb-segs-done">–</div>
+        <div class="sb-stat-lbl">Đoạn nghe</div>
+      </div>
+    </div>
+
+    <!-- Main nav -->
+    <div class="sb-nav-label">Học tập</div>
+    <nav class="sb-nav">
+      <a href="/dashboard.html" class="sb-link active">
+        <i class="fas fa-home"></i> Tổng quan
+      </a>
+      <a href="/courses.html" class="sb-link">
+        <i class="fas fa-graduation-cap"></i> Khóa học
+      </a>
+      <a href="/library.html" class="sb-link">
+        <i class="fas fa-book-open"></i> Thư viện bài đọc
+      </a>
+      <a href="/flashcards.html" class="sb-link">
+        <i class="fas fa-layer-group"></i> Flashcard
+        <span class="sb-badge count" id="sb-fc-count" style="display:none">0</span>
+      </a>
+      <a href="/listening.html" class="sb-link">
+        <i class="fas fa-headphones"></i> Luyện nghe
+      </a>
+      <a href="/blog.html" class="sb-link">
+        <i class="fas fa-newspaper"></i> Blog
+      </a>
+    </nav>
+
+    <!-- Admin section (hidden if not admin) -->
+    <div class="sb-admin-section" id="sb-admin-section" style="display:none">
+      <div class="sb-nav-label">Quản trị</div>
+      <nav class="sb-nav">
+        <a href="/admin/index.html" class="sb-link">
+          <i class="fas fa-cog"></i> Admin Panel
+          <span class="sb-role-badge" style="font-size:9px;background:linear-gradient(135deg,#f47b20,#f59e0b)">ADMIN</span>
+        </a>
+      </nav>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN CONTENT ──────────────────────────── -->
+  <main class="app-main" id="app-main">
+
+    <!-- Welcome strip -->
+    <div class="welcome-strip">
+      <div class="welcome-text">
+        <h2 id="welcome-h2">Chào mừng trở lại! 👋</h2>
+        <p>Tiếp tục hành trình học tiếng Trung của bạn.<br>Hôm nay học gì nhỉ?</p>
+      </div>
+      <button class="welcome-cta" onclick="location.href='/library.html'">
+        <i class="fas fa-book-open"></i> Tiếp tục học
+      </button>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon blue"><i class="fas fa-book-open"></i></div>
+        </div>
+        <div class="stat-num" id="stat-read">–</div>
+        <div class="stat-label">Bài đọc hoàn thành</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon purple"><i class="fas fa-headphones"></i></div>
+        </div>
+        <div class="stat-num" id="stat-listen">–</div>
+        <div class="stat-label">Đoạn nghe đã luyện</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon green"><i class="fas fa-layer-group"></i></div>
+        </div>
+        <div class="stat-num" id="stat-fc">–</div>
+        <div class="stat-label">Flashcard đang học</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-top">
+          <div class="stat-icon orange"><i class="fas fa-fire"></i></div>
+        </div>
+        <div class="stat-num" id="stat-streak">–</div>
+        <div class="stat-label">Ngày học liên tiếp</div>
+      </div>
+    </div>
+
+    <!-- Continue learning -->
+    <div class="sec-hd">
+      <div class="sec-title"><i class="fas fa-rotate-right" style="color:var(--purple);font-size:14px"></i> Tiếp tục từ lần trước</div>
+      <a href="/library.html" class="sec-link">Xem tất cả →</a>
+    </div>
+    <div class="continue-grid" id="continue-grid">
+      <div class="cl-card" onclick="location.href='/library.html'">
+        <div class="cl-type reading"><i class="fas fa-book-open"></i> Đọc hiểu</div>
+        <div class="cl-title">Khám phá thư viện bài đọc</div>
+        <div class="cl-prog-wrap">
+          <div class="cl-prog-bar"><div class="cl-prog-fill" style="width:0%"></div></div>
+          <div class="cl-prog-pct">Bắt đầu</div>
+        </div>
+        <div class="cl-footer">
+          <div class="cl-book">Thư viện</div>
+          <button class="cl-btn">Vào học →</button>
+        </div>
+      </div>
+      <div class="cl-card" onclick="location.href='/listening.html'">
+        <div class="cl-type listening"><i class="fas fa-headphones"></i> Nghe chép</div>
+        <div class="cl-title">Luyện nghe & chép chính tả</div>
+        <div class="cl-prog-wrap">
+          <div class="cl-prog-bar"><div class="cl-prog-fill" style="width:0%"></div></div>
+          <div class="cl-prog-pct">Bắt đầu</div>
+        </div>
+        <div class="cl-footer">
+          <div class="cl-book">Dictation</div>
+          <button class="cl-btn">Luyện ngay →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses -->
+    <div class="sec-hd">
+      <div class="sec-title"><i class="fas fa-graduation-cap" style="color:var(--blue);font-size:14px"></i> Khóa học của bạn</div>
+      <a href="/courses.html" class="sec-link">Xem tất cả →</a>
+    </div>
+    <div class="courses-grid" id="courses-grid">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fas fa-graduation-cap"></i></div>
+        Đang tải khóa học…
+      </div>
+    </div>
+
+    <!-- Flashcard quick access -->
+    <div class="fc-strip">
+      <div class="fc-strip-left">
+        <h3>Flashcard · 單詞練習</h3>
+        <p id="fc-strip-desc">Ôn lại từ vựng đã học qua flashcard</p>
+      </div>
+      <div class="fc-strip-right">
+        <button class="fc-btn primary" onclick="location.href='/flashcards.html'">
+          <i class="fas fa-layer-group" style="margin-right:6px"></i> Học ngay
+        </button>
+        <button class="fc-btn secondary" onclick="location.href='/flashcards.html?mode=review'">
+          Ôn tập
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const auth         = new AuthService(db);
+const userSession  = new UserSession(db);
+
+(async () => {
+  const user = await auth.init();
+
+  // Not logged in → redirect to login
+  if (!user) {
+    window.location.href = '/login.html';
+    return;
+  }
+
+  // Sync anonymous progress if needed
+  await userSession.init();
+
+  renderUser();
+  hideSplash();
+  await loadDashboard();
+})();
+
+// ── Render user info ─────────────────────────────
+function renderUser() {
+  const name    = auth.displayName();
+  const initial = auth.avatarInitial();
+  const email   = auth.user?.email || '';
+  const profile = auth.profile;
+  const avatarUrl = profile?.avatar_url || auth.user?.user_metadata?.avatar_url;
+
+  // Sidebar
+  if (avatarUrl) {
+    document.getElementById('sb-avatar').innerHTML = `<img src="${avatarUrl}" alt="">`;
+  } else {
+    document.getElementById('sb-avatar').textContent = initial;
+  }
+  document.getElementById('sb-name').textContent  = name;
+  document.getElementById('sb-email').textContent = email;
+
+  // Header
+  if (avatarUrl) {
+    document.getElementById('header-avatar').innerHTML = `<img src="${avatarUrl}" alt="">`;
+  } else {
+    document.getElementById('header-avatar').textContent = initial;
+  }
+  document.getElementById('header-user-name').textContent = name.split(' ').pop();
+
+  // Welcome
+  document.getElementById('welcome-h2').textContent = `Chào mừng, ${name.split(' ').pop()}! 👋`;
+
+  // Admin
+  if (auth.isAdmin) {
+    document.getElementById('sb-role-badge').style.display  = 'flex';
+    document.getElementById('sb-admin-section').style.display = '';
+    document.getElementById('hd-admin').style.display       = 'flex';
+    document.getElementById('hd-admin-sep').style.display   = '';
+  }
+}
+
+// ── Load dashboard data ──────────────────────────
+async function loadDashboard() {
+  const [readProg, listenProg, flashcards, courses] = await Promise.all([
+    userSession.getAllReadProgress(),
+    userSession.getAllListeningProgress(),
+    userSession.getUserFlashcards(),
+    db.from('courses').select('id,display_name,description,cover_url,is_free,level').eq('published', true).order('sort_order', { ascending: false }).limit(6),
+  ]);
+
+  // Stats
+  const readCount   = (readProg   || []).length;
+  const listenCount = (listenProg || []).length;
+  const fcCount     = (flashcards || []).length;
+
+  document.getElementById('stat-read').textContent   = readCount;
+  document.getElementById('stat-listen').textContent = listenCount;
+  document.getElementById('stat-fc').textContent     = fcCount;
+  document.getElementById('stat-streak').textContent = calcStreak();
+
+  // Sidebar mini stats
+  document.getElementById('sb-lessons-read').textContent = readCount;
+  document.getElementById('sb-segs-done').textContent    = listenCount;
+
+  if (fcCount > 0) {
+    const badge = document.getElementById('sb-fc-count');
+    badge.textContent = fcCount;
+    badge.style.display = '';
+  }
+
+  // FC strip desc
+  if (fcCount > 0) {
+    document.getElementById('fc-strip-desc').textContent =
+      `Bạn có ${fcCount} flashcard · ôn lại để không quên!`;
+  }
+
+  // Courses grid
+  const cList = courses.data || [];
+  const grid  = document.getElementById('courses-grid');
+  if (cList.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon"><i class="fas fa-graduation-cap"></i></div>
+      Chưa có khóa học nào. <a href="/courses.html" style="color:var(--blue)">Xem danh sách →</a>
+    </div>`;
+  } else {
+    grid.innerHTML = cList.map(c => {
+      const lvl = c.level ? `Band ${c.level}` : '';
+      return `<div class="course-card" onclick="location.href='/course.html?id=${c.id}'">
+        <div class="course-cover">
+          ${c.cover_url ? `<img src="${c.cover_url}" alt="">` : ''}
+          ${c.display_name?.charAt(0) || '課'}
+        </div>
+        <div class="course-body">
+          <div class="course-name">${c.display_name || 'Khóa học'}</div>
+          <div class="course-sub">${lvl}</div>
+          <div class="course-tags">
+            ${c.is_free ? '<span class="course-tag free">Miễn phí</span>' : '<span class="course-tag paid">Trả phí</span>'}
+            <span class="course-tag read">Đọc</span>
+            <span class="course-tag listen">Nghe</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function calcStreak() {
+  // Simple streak: days since account created (placeholder)
+  // Real streak needs daily activity tracking table
+  return '–';
+}
+
+// ── Sidebar toggle (mobile) ──────────────────────
+function toggleSidebar() {
+  const sb  = document.getElementById('app-sidebar');
+  const ov  = document.getElementById('sidebar-overlay');
+  const open = sb.classList.toggle('open');
+  ov.classList.toggle('open', open);
+}
+function closeSidebar() {
+  document.getElementById('app-sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ── User dropdown toggle ─────────────────────────
+function toggleUserDropdown() {
+  document.getElementById('header-user').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const u = document.getElementById('header-user');
+  if (u && !u.contains(e.target)) u.classList.remove('open');
+});
+
+// ── Hide splash ──────────────────────────────────
+function hideSplash() {
+  const el = document.getElementById('page-loader');
+  if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }
+}
+</script>
+</body>
+</html>
