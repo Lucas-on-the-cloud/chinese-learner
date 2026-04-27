@@ -29,17 +29,39 @@ async function loadSubCourses() {
     const skillBadge  = isListening
       ? '<span style="font-size:10px;font-weight:600;color:#0d1b4b;background:#dbeafe;padding:1px 7px;border-radius:6px">🎧 Listening</span>'
       : '<span style="font-size:10px;font-weight:600;color:#15803d;background:#dcfce7;padding:1px 7px;border-radius:6px">📖 Reading</span>';
-    return `<div class="bl-post-item" style="cursor:pointer" onclick="subSelectBookFromList('${b.name.replace(/'/g,"\\'")}')">
-      <div class="bl-post-info">
+    const safeName = b.name.replace(/'/g,"\\'");
+    return `<div class="bl-post-item">
+      <div class="bl-post-info" style="cursor:pointer" onclick="subSelectBookFromList('${safeName}')">
         <div class="bl-post-title" style="display:flex;align-items:center;gap:6px">${escHtml(b.display_name || b.name)} ${skillBadge}</div>
         <div class="bl-post-meta">
           <span class="bl-post-dot" style="background:#1a56db"></span>
           ${escHtml(b.name)} · ${counts[b.name] || 0} bài học
         </div>
       </div>
-      <button class="table-btn" title="Chọn"><i class="fa-solid fa-pen-to-square" style="color:#1a56db"></i></button>
+      <div class="bl-post-actions">
+        <button class="table-btn" onclick="subSelectBookFromList('${safeName}')" title="Chỉnh sửa"><i class="fa-solid fa-pen-to-square" style="color:#1a56db"></i></button>
+        <button class="table-btn" onclick="subDeleteBook('${safeName}')" title="Xóa"><i class="fa-solid fa-trash" style="color:#c0392b"></i></button>
+      </div>
     </div>`;
   }).join('');
+}
+
+async function subDeleteBook(bookName) {
+  const meta = (await _adminDb.getBooksMeta()).find(b => b.name === bookName) || {};
+  const label = meta.display_name || bookName;
+  if (!confirm(`Xóa khóa học con "${label}"?\n\nTất cả bài học (lessons) và audio segments liên kết sẽ bị xóa.`)) return;
+
+  // Delete in order: audio_segments → lessons → course_books → books
+  await _adminDb.client.from('audio_segments').delete().eq('book_name', bookName);
+  await _adminDb.client.from('lessons').delete().eq('book', bookName);
+  await _adminDb.client.from('course_books').delete().eq('book_name', bookName);
+  const { error } = await _adminDb.client.from('books').delete().eq('name', bookName);
+
+  if (error) { alert('Lỗi xóa sách: ' + error.message); return; }
+
+  // Reset form if this book was being edited
+  if (_subCurrentBook === bookName) subCancelNew();
+  loadSubCourses();
 }
 
 // ── Create new book ───────────────────────────────
