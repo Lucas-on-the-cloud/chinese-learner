@@ -490,7 +490,19 @@ Database client (one shared Supabase instance from db-config.js)
 
 Chi tiết quy tắc OOP, dependency injection, event bus — xem `ENGINEERING_PRINCIPLES.md`.
 
-### 11.3. Quy ước về trang HTML và routing
+### 11.3. Chuẩn font toàn site
+
+Tất cả trang user-facing phải load đúng cặp font sau (thứ tự quan trọng):
+```html
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+```
+
+- **Be Vietnam Pro** — body text, UI chung (`font-family: 'Be Vietnam Pro', sans-serif`)
+- **Noto Serif TC** — brand name, heading, tiêu đề khóa học, chữ Hán trang trí
+
+Admin pages có thể thêm JetBrains Mono cho code/monospace. Test/tool pages nội bộ không áp dụng.
+
+### 11.4. Quy ước về trang HTML và routing
 
 Mỗi trang là một entry point độc lập. Shared scripts import qua `<script src>`:
 - `js/auth-service.js` — `AuthService` class: Google OAuth, session quản lý, profile, role check
