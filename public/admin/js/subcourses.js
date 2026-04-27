@@ -5,7 +5,19 @@ let _subSkillType   = 'reading';  // 'reading' | 'listening'
 
 // ── Book list ────────────────────────────────────
 async function loadSubCourses() {
-  const books = await _adminDb.getBooksMeta();
+  // Warn if skill_type column missing (PostgREST schema cache not refreshed)
+  const probe = await _adminDb.getBooksMeta();
+  if (probe.length > 0 && !('skill_type' in probe[0])) {
+    const listEl = document.getElementById('sub-book-list');
+    if (listEl) listEl.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;font-size:12px;color:#c0392b;line-height:1.7">
+      <b>⚠ Cột <code>skill_type</code> chưa tồn tại trong DB.</b><br>
+      Chạy SQL trong Supabase:<br>
+      <code style="display:block;background:#fff;padding:6px 10px;border-radius:5px;margin-top:6px;font-size:11px">ALTER TABLE books ADD COLUMN IF NOT EXISTS skill_type TEXT DEFAULT 'reading';</code>
+      Sau đó vào <b>Project Settings → API → Reload schema</b>.
+    </div>`;
+    return;
+  }
+  const books = probe;
   const listEl = document.getElementById('sub-book-list');
   const selEl  = document.getElementById('sub-book-select');
 
