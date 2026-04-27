@@ -752,7 +752,7 @@ async function subSaveNewListeningLesson() {
   if (!topic) { adminMsg('sub-add-msg', 'Nhập tên / chủ đề bài học.', 'err'); return; }
   const title = num ? `Bài ${num} — ${topic}` : topic;
   const { error } = await _adminDb.client.from('lessons').insert([{
-    title, book: _subCurrentBook,
+    title, book: _subCurrentBook, chinese: '', pinyin: '', vietnamese: '',
   }]);
   if (error) { adminMsg('sub-add-msg', 'Lỗi: ' + error.message, 'err'); return; }
   adminMsg('sub-add-msg', '✓ Đã tạo: ' + title, 'ok');
