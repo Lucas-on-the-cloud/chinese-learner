@@ -715,6 +715,19 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
             <input type="text" id="sub-code" class="s-input" placeholder="B1, B2, READING_A1…" style="text-transform:uppercase">
           </div>
 
+          <!-- Skill type (chỉ hiện khi tạo mới) -->
+          <div id="sub-skill-row" style="display:none;margin-bottom:14px">
+            <div class="s-label" style="margin-bottom:8px">Loại khóa học <span style="color:#c0392b">*</span></div>
+            <div style="display:flex;gap:8px">
+              <label id="sub-skill-reading-lbl" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:9px 18px;border:1.5px solid #1a56db;border-radius:8px;font-size:13px;font-weight:600;background:#eff6ff;color:#1a56db;flex:1;justify-content:center">
+                <input type="radio" name="sub-skill" id="sub-skill-reading" value="reading" checked onchange="subSkillChange()"> 📖 Reading
+              </label>
+              <label id="sub-skill-listening-lbl" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:9px 18px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;color:#6b7280;flex:1;justify-content:center">
+                <input type="radio" name="sub-skill" id="sub-skill-listening" value="listening" onchange="subSkillChange()"> 🎧 Listening
+              </label>
+            </div>
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
             <div>
               <div class="s-label">Tên hiển thị</div>
@@ -783,43 +796,19 @@ nav{flex:1;padding:8px;overflow-y:auto;overflow-x:hidden}
     <!-- LESSON MANAGER (appears when a book is selected) -->
     <div id="sub-lesson-wrap" style="display:none;margin-top:20px">
       <div class="s-card">
+        <!-- Header: JS fills #sub-lesson-header-actions based on skill type -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <div>
             <div class="s-title" style="margin-bottom:2px" id="sub-lesson-heading">Bài học</div>
-            <div style="font-size:11px;color:#9ca3af">Quản lý từng bài đọc trong khóa học con này</div>
+            <div style="font-size:11px;color:#9ca3af" id="sub-lesson-subhead">Quản lý bài học trong khóa học con này</div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="s-btn" onclick="subOpenImport()" style="font-size:12px;padding:7px 14px;background:#f47b20">📂 Import .txt</button>
-            <button class="s-btn" onclick="subToggleAddLesson()" id="sub-add-btn" style="font-size:12px;padding:7px 14px">+ Thêm bài học</button>
-          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="sub-lesson-header-actions"></div>
         </div>
 
-        <!-- Add lesson form -->
+        <!-- Add form: JS fills #sub-add-form-content based on skill type -->
         <div id="sub-add-form" style="display:none;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:16px">
-          <div class="s-label" style="margin-bottom:6px">Thêm bài học mới</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div style="grid-column:1/-1">
-              <div class="s-label">Tên bài học</div>
-              <input type="text" id="sub-new-title" class="s-input" placeholder="VD: Bài 1 — Giới thiệu bản thân">
-            </div>
-            <div>
-              <div class="s-label">Tiếng Trung 繁體 <span style="color:#9ca3af;font-weight:400">(bắt buộc)</span></div>
-              <textarea id="sub-new-zh" style="width:100%;min-height:100px;border:1px solid #e5e7eb;border-radius:8px;font-family:'Noto Serif TC',serif;font-size:14px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="我叫…"></textarea>
-            </div>
-            <div>
-              <div class="s-label">Pinyin</div>
-              <textarea id="sub-new-py" style="width:100%;min-height:100px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="Wǒ jiào…"></textarea>
-            </div>
-            <div style="grid-column:1/-1">
-              <div class="s-label">Tiếng Việt</div>
-              <textarea id="sub-new-vi" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px;resize:vertical;outline:none;line-height:1.7" placeholder="Tôi tên là…"></textarea>
-            </div>
-          </div>
+          <div id="sub-add-form-content"></div>
           <div id="sub-add-msg" class="s-msg"></div>
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="s-btn" onclick="subSaveNewLesson()" style="flex:1">💾 Thêm bài</button>
-            <button class="s-btn" onclick="subToggleAddLesson()" style="background:#6b7280">Hủy</button>
-          </div>
         </div>
 
         <!-- Lesson list -->
