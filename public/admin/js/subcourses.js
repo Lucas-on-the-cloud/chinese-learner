@@ -646,7 +646,7 @@ async function subLaAIFill(lessonId) {
   const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan. Với mỗi câu, cung cấp Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên. Trả về JSON thuần: [{"pinyin":"...","vi":"..."}]`;
   try {
     const raw = await window.app.ai.call(SYSTEM, texts.map((t,i)=>`${i+1}. ${t}`).join('\n'), 1500);
-    const match = (raw||'').match(/\[\s\S]*\]/);
+    const match = (raw||'').match(/\[[\s\S]*\]/);
     if (!match) throw new Error('Không có JSON');
     JSON.parse(match[0]).forEach((r, i) => {
       const pyEl = document.getElementById(`sub-pp-${lessonId}-${i}`);
