@@ -237,8 +237,8 @@ async function exLoadPDF(file) {
     _ex.ocrTexts = {};
 
     const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
-    const batches = Math.ceil(_ex.ocrTotal / 30); // 10 parallel × 3 pages/call
-    const estSec  = batches * 5;                  // ~5s per batch
+    const batches = Math.ceil(_ex.ocrTotal / 9); // 3 parallel × 3 pages/call
+    const estSec  = batches * 5;                 // ~5s per batch
 
     // Check existing OCR pages
     const { count: existing } = await _adminDb.client
@@ -350,7 +350,7 @@ async function exStartOCR() {
 
   // Group pending into chunks of 3 pages per API call
   const PAGES_PER_CALL = 3;
-  const PARALLEL       = 10; // 10 concurrent calls × 3 pages = 30 pages/batch
+  const PARALLEL       = 3; // 3 concurrent calls × 3 pages = 9 pages/batch (~22K tokens, safe under 200K TPM)
   const groups = [];
   for (let i = 0; i < pending.length; i += PAGES_PER_CALL) {
     groups.push(pending.slice(i, i + PAGES_PER_CALL));
@@ -363,10 +363,8 @@ async function exStartOCR() {
       const last  = batchGroups[batchGroups.length - 1].at(-1);
       detailEl.textContent = `Batch ${Math.ceil((i + 1) / PARALLEL)} · trang ${first}–${last}`;
 
-      // Stagger each call by 700ms to spread token consumption across time
       const batchResults = await Promise.all(
-        batchGroups.map(async (pageNums, idx) => {
-          if (idx > 0) await new Promise(r => setTimeout(r, idx * 700));
+        batchGroups.map(async pageNums => {
           const pageItems = await Promise.all(
             pageNums.map(async pageNum => ({ pageNum, dataUrl: await exRenderPage(pageNum) }))
           );
