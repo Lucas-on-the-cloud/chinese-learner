@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cài đặt — Admin · TOCFL FAFA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">學</div>
+    <div>
+      <div class="sb-brand-name">TOCFL <em>FAFA</em></div>
+      <div class="sb-brand-sub">Admin · 管理面板</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-label">Quản lý · Manage</div>
+    <a class="nav-item" href="index.html">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Tổng quan</span><span class="nav-item-en">Dashboard</span></span>
+    </a>
+    <a class="nav-item" href="courses.html">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
+    </a>
+    <a class="nav-item" href="subcourses.html">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
+    </a>
+    <a class="nav-item" href="listening.html">
+      <i class="fa-solid fa-headphones"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Listening</span><span class="nav-item-en">Audio &amp; Dictation</span></span>
+    </a>
+    <a class="nav-item" href="flashcards.html">
+      <i class="fa-solid fa-clone"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
+    </a>
+    <a class="nav-item" href="blog.html">
+      <i class="fa-solid fa-pen-nib"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
+    </a>
+    <a class="nav-item active" href="settings.html">
+      <i class="fa-solid fa-key"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">AI &amp; API</span></span>
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="user-chip">
+      <div class="user-av">L</div>
+      <div class="user-info">
+        <div class="user-name">Lucas Hwang</div>
+        <div class="user-role">Founder · Admin</div>
+      </div>
+    </div>
+    <button class="collapse-btn" onclick="toggleSidebar()" title="Thu gọn">
+      <i class="fa-solid fa-angles-left" id="collapse-icon"></i>
+    </button>
+  </div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div>
+      <div class="crumbs">
+        <span>Admin</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;opacity:.5"></i>
+        <span class="active">AI & API / Cài đặt</span>
+      </div>
+      <h1 class="page-title">Cài đặt AI & API</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px"></i>
+        <input placeholder="Tìm kiếm…">
+        <span class="kbd">⌘K</span>
+      </div>
+      <a href="/courses.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+    </div>
+  </header>
+  <div class="content">
+    <div class="s-wrap">
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-key" style="color:#f47b20"></i> API Provider</div>
+        <div class="s-sub">Chọn nhà cung cấp AI và dán key. App gọi qua proxy server — key không bị lộ ra browser.</div>
+        <div class="s-row">
+          <select id="api-provider" class="s-select">
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI (GPT)</option>
+          </select>
+          <input type="text" id="api-key-input" class="s-input" placeholder="Dán API key..." style="flex:2">
+          <button class="s-btn" onclick="adminSaveKey()">Lưu</button>
+        </div>
+        <div class="s-key-status" id="key-status"></div>
+      </div>
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-chart-pie" style="color:#1a56db"></i> Chi phí AI · AI cost</div>
+        <div class="s-sub">Tháng 4, 2026 · April 2026</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
+          <span style="font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700">$24.71</span>
+          <span style="font-size:13px;color:#6b7280">/ $50.00 ngân sách</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:49.4%"></div></div>
+        <div style="margin-top:18px">
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">Anthropic Claude</span><span class="pv-mono">claude-sonnet</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">1,284 calls</span><span class="pv-amt">$16.81</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:68%;background:#f47b20"></div></div>
+          </div>
+          <div class="provider-row">
+            <div class="pv-hd">
+              <div><span class="pv-name">OpenAI GPT-4o</span><span class="pv-mono">gpt-4o-mini</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">612 calls</span><span class="pv-amt">$7.90</span></div>
+            </div>
+            <div class="pv-track"><div class="pv-fill" style="width:32%;background:#10a37f"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/database.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/ai-service.js"></script>
+<script src="js/core.js"></script>
+<script src="js/core.js"></script>
+<script src="js/settings.js"></script>
+<script>
+let collapsed = false;
+function toggleSidebar() {
+  collapsed = !collapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed', collapsed);
+  document.getElementById('collapse-icon').className = collapsed
+    ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khóa học — Admin · TOCFL FAFA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">學</div>
+    <div>
+      <div class="sb-brand-name">TOCFL <em>FAFA</em></div>
+      <div class="sb-brand-sub">Admin · 管理面板</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-label">Quản lý · Manage</div>
+    <a class="nav-item" href="index.html">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Tổng quan</span><span class="nav-item-en">Dashboard</span></span>
+    </a>
+    <a class="nav-item active" href="courses.html">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
+    </a>
+    <a class="nav-item" href="subcourses.html">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
+    </a>
+    <a class="nav-item" href="listening.html">
+      <i class="fa-solid fa-headphones"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Listening</span><span class="nav-item-en">Audio &amp; Dictation</span></span>
+    </a>
+    <a class="nav-item" href="flashcards.html">
+      <i class="fa-solid fa-clone"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
+    </a>
+    <a class="nav-item" href="blog.html">
+      <i class="fa-solid fa-pen-nib"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
+    </a>
+    <a class="nav-item" href="settings.html">
+      <i class="fa-solid fa-key"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">AI &amp; API</span></span>
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="user-chip">
+      <div class="user-av">L</div>
+      <div class="user-info">
+        <div class="user-name">Lucas Hwang</div>
+        <div class="user-role">Founder · Admin</div>
+      </div>
+    </div>
+    <button class="collapse-btn" onclick="toggleSidebar()" title="Thu gọn">
+      <i class="fa-solid fa-angles-left" id="collapse-icon"></i>
+    </button>
+  </div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div>
+      <div class="crumbs">
+        <span>Admin</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;opacity:.5"></i>
+        <span class="active">Khóa học / Courses</span>
+      </div>
+      <h1 class="page-title">Quản lý khóa học</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px"></i>
+        <input placeholder="Tìm kiếm…">
+        <span class="kbd">⌘K</span>
+      </div>
+      <a href="/courses.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+    </div>
+  </header>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+
+      <!-- FORM -->
+      <div class="s-card">
+        <div class="s-title"><i class="fa-solid fa-graduation-cap" style="color:#1a56db"></i> <span id="cr-form-title">Tạo khóa học mới</span></div>
+
+        <!-- Row 1: title full width -->
+        <div class="s-label">Tiêu đề <span style="color:#c0392b">*</span></div>
+        <input type="text" id="cr-title" class="s-input" placeholder="Tên khóa học…">
+
+        <!-- Row 2: level / price / cover in 3 cols -->
+        <div style="display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;margin-top:10px;align-items:end">
+          <div>
+            <div class="s-label">Cấp độ</div>
+            <select id="cr-level" class="s-input" style="height:38px">
+              <option value="">— Cấp độ —</option>
+              <option>A1</option><option>A1–A2</option><option>A2</option>
+              <option>B1</option><option>B1–B2</option><option>B2</option>
+              <option>C1</option>
+            </select>
+          </div>
+          <div>
+            <div class="s-label">Học phí</div>
+            <input type="text" id="cr-price" class="s-input" placeholder="Miễn phí / 299.000đ…" value="Miễn phí">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;justify-content:center;height:38px;margin-top:auto">
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cr-is-free" checked style="accent-color:#16a34a"> Miễn phí
+            </label>
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cr-published" checked style="accent-color:#1a56db"> Xuất bản
+            </label>
+          </div>
+        </div>
+
+        <!-- Row 3: short desc + cover side by side -->
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;margin-top:12px;align-items:start">
+          <div>
+            <div class="s-label">Mô tả ngắn <span style="font-size:11px;font-weight:400;color:#9ca3af">(hiện trên card)</span></div>
+            <textarea id="cr-desc" style="width:100%;min-height:96px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="1-2 câu mô tả ngắn hiển thị trên card khóa học…"></textarea>
+          </div>
+          <div>
+            <div style="display:flex;align-items:baseline;gap:6px">
+              <div class="s-label" style="margin:0">Ảnh bìa</div>
+              <span style="font-size:10px;color:#9ca3af">1280×720 · 16:9</span>
+            </div>
+            <div class="s-img-row" style="margin-top:5px">
+              <input type="text" id="cr-cover" class="s-input" placeholder="URL hoặc chọn file…" oninput="crPreviewUrl(this.value)" style="flex:1;min-width:0">
+              <input type="file" id="cr-cover-file" accept="image/*" style="display:none" onchange="crFileChange(this)">
+              <button class="s-file-btn" onclick="document.getElementById('cr-cover-file').click()">📷</button>
+            </div>
+            <div class="s-img-preview" id="cr-cover-preview" style="margin-top:6px">
+              <img id="cr-cover-preview-img" src="" alt="" style="height:54px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+              <button onclick="crClearCover()" style="background:none;border:none;color:#6b7280;font-size:15px;cursor:pointer">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: detailed content editor with toolbar -->
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:14px">
+          <div class="s-label" style="margin:0">Nội dung chi tiết <span style="font-size:11px;font-weight:400;color:#9ca3af">(Markdown · hiện trên trang khóa học)</span></div>
+        </div>
+        <div class="bl-toolbar" style="margin-top:6px">
+          <button class="bl-tb-btn" onclick="crInsertLine('# ')">H1</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('## ')">H2</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('### ')">H3</button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="crWrap('**','**')"><b>B</b></button>
+          <button class="bl-tb-btn" onclick="crWrap('*','*')"><i>I</i></button>
+          <button class="bl-tb-btn" onclick="crWrap('__','__')"><u>U</u></button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-hl-btn" style="background:#fef08a" onclick="crWrap('==','==')" title="Highlight vàng"></button>
+          <button class="bl-hl-btn" style="background:#bbf7d0" onclick="crWrap('==g:','==')" title="Highlight xanh"></button>
+          <button class="bl-hl-btn" style="background:#fecaca" onclick="crWrap('==r:','==')" title="Highlight đỏ"></button>
+          <span class="bl-tb-sep"></span>
+          <button class="bl-tb-btn" onclick="crInsertLine('- ')">• List</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('> ')">❝ Quote</button>
+          <button class="bl-tb-btn" onclick="crInsertLine('---')">───</button>
+        </div>
+        <textarea id="cr-detail" style="width:100%;min-height:320px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="## Bạn sẽ học được gì?&#10;&#10;- Nắm vững từ vựng TOCFL Band B&#10;- Đọc hiểu văn bản nhật dụng&#10;&#10;## Nội dung khóa học&#10;&#10;**Phần 1**: Từ vựng cơ bản&#10;**Phần 2**: Bài đọc có chú thích&#10;&#10;## Yêu cầu đầu vào&#10;&#10;- Đã học xong Band A hoặc tương đương"></textarea>
+
+        <input type="hidden" id="cr-edit-id">
+        <div id="cr-msg" class="s-msg"></div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="s-btn" id="cr-save-btn" onclick="adminSaveCourse()" style="flex:1">💾 Lưu khóa học</button>
+          <button class="s-btn" id="cr-cancel-btn" onclick="crCancelEdit()" style="background:#6b7280;display:none">✕ Hủy</button>
+        </div>
+
+        <!-- Linked books (shown when editing) -->
+        <div id="cr-books-section" style="display:none;margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px">
+          <div class="s-label" style="margin-bottom:8px">📚 Khóa học con (liên kết sách)</div>
+          <div id="cr-books-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="cr-book-select" class="s-select" style="flex:1;min-width:140px"></select>
+            <select id="cr-skill-select" class="s-select">
+              <option value="reading">📖 Reading</option>
+              <option value="listening">🎧 Listening</option>
+            </select>
+            <button class="s-btn" onclick="addCourseBook()" style="padding:7px 14px;font-size:12px">+ Thêm</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COURSE LIST -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="s-title" style="margin-bottom:0;font-size:14px"><i class="fa-solid fa-list" style="color:#6b7280"></i> Khóa học</div>
+          <button class="s-btn" onclick="loadCourses()" style="padding:5px 12px;font-size:11px">↺</button>
+        </div>
+        <div style="font-size:11px;color:#9ca3af;margin-bottom:8px">Kéo ☰ để sắp xếp thứ tự hiển thị</div>
+        <div id="course-list"><p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Đang tải…</p></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="../js/utils.js"></script>
+<script src="../js/database.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/ai-service.js"></script>
+<script src="js/core.js"></script>
+<script src="js/core.js"></script>
+<script src="js/courses.js"></script>
+<script>
+let collapsed = false;
+function toggleSidebar() {
+  collapsed = !collapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed', collapsed);
+  document.getElementById('collapse-icon').className = collapsed
+    ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+}
+</script>
+</body>
+</html>

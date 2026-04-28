@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khóa học con — Admin · TOCFL FAFA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">學</div>
+    <div>
+      <div class="sb-brand-name">TOCFL <em>FAFA</em></div>
+      <div class="sb-brand-sub">Admin · 管理面板</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-label">Quản lý · Manage</div>
+    <a class="nav-item" href="index.html">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Tổng quan</span><span class="nav-item-en">Dashboard</span></span>
+    </a>
+    <a class="nav-item" href="courses.html">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
+    </a>
+    <a class="nav-item active" href="subcourses.html">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
+    </a>
+    <a class="nav-item" href="listening.html">
+      <i class="fa-solid fa-headphones"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Listening</span><span class="nav-item-en">Audio &amp; Dictation</span></span>
+    </a>
+    <a class="nav-item" href="flashcards.html">
+      <i class="fa-solid fa-clone"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
+    </a>
+    <a class="nav-item" href="blog.html">
+      <i class="fa-solid fa-pen-nib"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
+    </a>
+    <a class="nav-item" href="settings.html">
+      <i class="fa-solid fa-key"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">AI &amp; API</span></span>
+    </a>
+  </nav>
+  <div class="sb-footer">
+    <div class="user-chip">
+      <div class="user-av">L</div>
+      <div class="user-info">
+        <div class="user-name">Lucas Hwang</div>
+        <div class="user-role">Founder · Admin</div>
+      </div>
+    </div>
+    <button class="collapse-btn" onclick="toggleSidebar()" title="Thu gọn">
+      <i class="fa-solid fa-angles-left" id="collapse-icon"></i>
+    </button>
+  </div>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div>
+      <div class="crumbs">
+        <span>Admin</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;opacity:.5"></i>
+        <span class="active">Khóa học con / Sub-courses</span>
+      </div>
+      <h1 class="page-title">Quản lý khóa học con</h1>
+    </div>
+    <div class="topbar-right">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:#9ca3af;font-size:12px"></i>
+        <input placeholder="Tìm kiếm…">
+        <span class="kbd">⌘K</span>
+      </div>
+      <a href="/courses.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+    </div>
+  </header>
+  <div class="content">
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start">
+
+      <!-- BOOK EDITOR FORM -->
+      <div class="s-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div class="s-title" id="sub-form-heading" style="margin-bottom:0"><i class="fa-solid fa-book-bookmark" style="color:#1a56db"></i> Chỉnh sửa khóa học con</div>
+          <button class="s-btn" onclick="subNewBook()" style="font-size:12px;padding:6px 14px">＋ Tạo mới</button>
+        </div>
+
+        <div class="s-label" style="margin-top:10px">Chọn khóa học con có sẵn</div>
+        <select id="sub-book-select" class="s-input" style="height:38px" onchange="subSelectBook(this.value)">
+          <option value="">— Chọn sách để chỉnh sửa —</option>
+        </select>
+
+        <div id="sub-book-form" style="display:none;margin-top:14px">
+          <!-- Mã sách (chỉ hiện khi tạo mới) -->
+          <div id="sub-code-row" style="display:none;margin-bottom:12px">
+            <div class="s-label">Mã sách <span style="color:#c0392b">*</span> <span style="font-size:11px;font-weight:400;color:#9ca3af">— khóa chính, không đổi được sau khi tạo (VD: B1, B2, ADV…)</span></div>
+            <input type="text" id="sub-code" class="s-input" placeholder="B1, B2, READING_A1…" style="text-transform:uppercase">
+          </div>
+
+          <!-- Skill type (chỉ hiện khi tạo mới) -->
+          <div id="sub-skill-row" style="display:none;margin-bottom:14px">
+            <div class="s-label" style="margin-bottom:8px">Loại khóa học <span style="color:#c0392b">*</span></div>
+            <div style="display:flex;gap:8px">
+              <label id="sub-skill-reading-lbl" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:9px 18px;border:1.5px solid #1a56db;border-radius:8px;font-size:13px;font-weight:600;background:#eff6ff;color:#1a56db;flex:1;justify-content:center">
+                <input type="radio" name="sub-skill" id="sub-skill-reading" value="reading" checked onchange="subSkillChange()"> 📖 Reading
+              </label>
+              <label id="sub-skill-listening-lbl" style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:9px 18px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-weight:600;color:#6b7280;flex:1;justify-content:center">
+                <input type="radio" name="sub-skill" id="sub-skill-listening" value="listening" onchange="subSkillChange()"> 🎧 Listening
+              </label>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 260px;gap:14px;align-items:start">
+            <div>
+              <div class="s-label">Tên hiển thị</div>
+              <input type="text" id="sub-name" class="s-input" placeholder="Tên khóa học con hiển thị…">
+              <div class="s-label" style="margin-top:10px">Mô tả ngắn <span style="font-size:11px;font-weight:400;color:#9ca3af">(hiện trên card)</span></div>
+              <textarea id="sub-desc" style="width:100%;min-height:80px;border:1px solid #e5e7eb;border-radius:8px;font-family:inherit;font-size:13px;padding:9px 12px;resize:vertical;outline:none;line-height:1.6" placeholder="1-2 câu mô tả ngắn…"></textarea>
+            </div>
+            <div>
+              <div style="display:flex;align-items:baseline;gap:6px">
+                <div class="s-label" style="margin:0">Ảnh bìa</div>
+                <span style="font-size:10px;color:#9ca3af">1280×720 · 16:9</span>
+              </div>
+              <div class="s-img-row" style="margin-top:5px">
+                <input type="text" id="sub-cover" class="s-input" placeholder="URL hoặc chọn file…" oninput="subCoverPreview(this.value)" style="flex:1;min-width:0">
+                <input type="file" id="sub-cover-file" accept="image/*" style="display:none" onchange="subFileChange(this)">
+                <button class="s-file-btn" onclick="document.getElementById('sub-cover-file').click()">📷</button>
+              </div>
+              <div class="s-img-preview" id="sub-cover-preview" style="margin-top:6px">
+                <img id="sub-cover-preview-img" src="" alt="" style="height:54px;border-radius:6px;object-fit:cover;border:1px solid #e5e7eb">
+                <button onclick="subClearCover()" style="background:none;border:none;color:#6b7280;font-size:15px;cursor:pointer">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:12px">
+            <div class="s-label" style="margin:0">Nội dung chi tiết <span style="font-size:11px;font-weight:400;color:#9ca3af">(Markdown)</span></div>
+          </div>
+          <div class="bl-toolbar" style="margin-top:6px">
+            <button class="bl-tb-btn" onclick="subInsertLine('# ')">H1</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('## ')">H2</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('### ')">H3</button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="subWrap('**','**')"><b>B</b></button>
+            <button class="bl-tb-btn" onclick="subWrap('*','*')"><i>I</i></button>
+            <button class="bl-tb-btn" onclick="subWrap('__','__')"><u>U</u></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-hl-btn" style="background:#fef08a" onclick="subWrap('==','==')"></button>
+            <button class="bl-hl-btn" style="background:#bbf7d0" onclick="subWrap('==g:','==')"></button>
+            <button class="bl-hl-btn" style="background:#fecaca" onclick="subWrap('==r:','==')"></button>
+            <span class="bl-tb-sep"></span>
+            <button class="bl-tb-btn" onclick="subInsertLine('- ')">• List</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('> ')">❝ Quote</button>
+            <button class="bl-tb-btn" onclick="subInsertLine('---')">───</button>
+          </div>
+          <textarea id="sub-detail" style="width:100%;min-height:260px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px;resize:vertical;outline:none;line-height:1.75" placeholder="## Bạn sẽ học được gì?&#10;&#10;- Từ vựng theo chủ đề&#10;- Kỹ năng đọc hiểu&#10;&#10;## Nội dung&#10;&#10;**Phần 1**: Bài đọc cơ bản"></textarea>
+
+          <div id="sub-msg" class="s-msg"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="s-btn" id="sub-save-btn" onclick="saveSubCourse()" style="flex:1">💾 Lưu khóa học con</button>
+            <button class="s-btn" id="sub-cancel-btn" onclick="subCancelNew()" style="background:#6b7280;display:none">✕ Hủy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOK LIST -->
+      <div class="s-card" style="position:sticky;top:80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="s-title" style="margin-bottom:0;font-size:14px"><i class="fa-solid fa-list" style="color:#6b7280"></i> Danh sách sách</div>
+          <button class="s-btn" onclick="loadSubCourses()" style="padding:5px 12px;font-size:11px">↺</button>
+        </div>
+        <div id="sub-book-list"><p style="color:#9ca3af;text-align:center;padding:2rem;font-size:13px">Đang tải…</p></div>
+      </div>
+
+    </div>
+
+    <!-- LESSON MANAGER (appears when a book is selected) -->
+    <div id="sub-lesson-wrap" style="display:none;margin-top:20px">
+      <div class="s-card">
+        <!-- Header: JS fills #sub-lesson-header-actions based on skill type -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="s-title" style="margin-bottom:2px" id="sub-lesson-heading">Bài học</div>
+            <div style="font-size:11px;color:#9ca3af" id="sub-lesson-subhead">Quản lý bài học trong khóa học con này</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="sub-lesson-header-actions"></div>
+        </div>
+
+        <!-- Add form: JS fills #sub-add-form-content based on skill type -->
+        <div id="sub-add-form" style="display:none;background:#f4f5f7;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:16px">
+          <div id="sub-add-form-content"></div>
+          <div id="sub-add-msg" class="s-msg"></div>
+        </div>
+
+        <!-- Lesson list -->
+        <div id="sub-lesson-list"><p style="color:#9ca3af;text-align:center;padding:2rem">Đang tải…</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Import overlay (used by file-importer.js) -->
+<div class="import-overlay" id="import-overlay">
+  <div class="import-modal">
+    <div class="import-modal-hd">
+      <h3>📄 Xem trước — chỉnh sửa trước khi lưu</h3>
+      <button class="hw-close" style="position:static" onclick="app.importer.close()">&#215;</button>
+    </div>
+    <div class="import-lesson-bar">
+      <label class="import-lesson-lbl">Tên bài học:</label>
+      <input class="import-lesson-input" id="import-lesson-name" placeholder="VD: Bài 8.2" oninput="app.importer.lessonName=this.value">
+      <span class="import-lesson-hint">Sẽ được thêm vào trước tiêu đề mỗi bài đọc nhỏ</span>
+    </div>
+    <div class="import-toolbar">
+      <label>Quyển:</label>
+      <select id="import-book" onchange="app.importer.book=this.value"></select>
+      <div class="import-nav">
+        <button class="import-nav-btn" id="import-prev" onclick="app.importer.prevCard()">◀</button>
+        <span id="import-count" class="import-count"></span>
+        <button class="import-nav-btn" id="import-next" onclick="app.importer.nextCard()">▶</button>
+      </div>
+    </div>
+    <div class="import-cards" id="import-cards"></div>
+    <div class="import-footer">
+      <button class="imp-del-cur" onclick="app.importer.removeCurrent()">🗑 Xóa bài này</button>
+      <button class="import-save-btn" id="import-save-btn" onclick="app.importer.saveAll()">💾 Lưu tất cả vào Supabase</button>
+    </div>
+  </div>
+</div>
+<script src="../js/utils.js"></script>
+<script src="../js/database.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/ai-service.js"></script>
+<script src="js/core.js"></script>
+<script src="js/core.js"></script>
+<script src="../js/lesson-manager.js"></script>
+<script src="../js/file-importer.js"></script>
+<script src="js/subcourses.js"></script>
+<script>
+let collapsed = false;
+function toggleSidebar() {
+  collapsed = !collapsed;
+  document.getElementById('sidebar').classList.toggle('collapsed', collapsed);
+  document.getElementById('collapse-icon').className = collapsed
+    ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
+}
+</script>
+</body>
+</html>
