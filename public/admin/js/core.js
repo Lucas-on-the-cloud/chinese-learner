@@ -1,22 +1,19 @@
-const DB = supabase.createClient(
-  'https://prctmferugkxabyizslx.supabase.co',
-  'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
-);
-
-// Mini app object for file-importer.js compatibility
+// Single Supabase instance shared across the page
 const _adminDb = new Database(
   'https://prctmferugkxabyizslx.supabase.co',
   'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ'
 );
+const DB = _adminDb.client; // alias for dashboard queries
+
 window.app = {
-  config: new ConfigManager(),
-  lessons: new LessonManager(_adminDb),
+  config:    new ConfigManager(),
+  lessons:   typeof LessonManager  !== 'undefined' ? new LessonManager(_adminDb)  : { load() {} },
+  importer:  typeof FileImporter   !== 'undefined' ? new FileImporter()            : {},
   selection: { clear() {} },
-  vocab: { items: [] },
+  vocab:     { items: [] },
 };
-window.app.ai       = new AIService(window.app.config);
-window.app.importer = new FileImporter();
-app.lessons.load();
+window.app.ai = new AIService(window.app.config);
+if (window.app.lessons.load) app.lessons.load();
 
 // ── Shared UI utilities ──────────────────────────────────────────────
 function escHtml(s) {

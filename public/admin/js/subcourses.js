@@ -652,22 +652,21 @@ async function subLaAIFill(lessonId) {
   const BATCH = 30;
   const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, tạo Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn. Trả về JSON: {"items":[{"pinyin":"...","vi":"..."}]} — đúng số, đúng thứ tự.`;
 
+  const proxyUrl = location.protocol !== 'file:' ? location.origin + '/api/proxy' : null;
+
   const callBatch = async (chunk, offset) => {
     const userMsg = chunk.map((t, i) => `${offset + i + 1}. ${t}`).join('\n');
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        max_tokens: 4096,
-        temperature: 0,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user', content: userMsg },
-        ],
-      }),
-    });
+    const body = {
+      model: 'gpt-4o-mini', max_tokens: 4096, temperature: 0,
+      response_format: { type: 'json_object' },
+      messages: [{ role: 'system', content: SYSTEM }, { role: 'user', content: userMsg }],
+    };
+    let res;
+    if (proxyUrl) {
+      res = await fetch(proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: 'openai', apiKey: key, body }) });
+    } else {
+      res = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` }, body: JSON.stringify(body) });
+    }
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');

@@ -1,3 +1,34 @@
+// ── OpenAI proxy helper ────────────────────────────────────────────
+// Routes through /api/proxy on Vercel to avoid CORS; direct on localhost/file
+async function exOpenAI(body, timeoutMs = 90000) {
+  const key        = localStorage.getItem('api_key_openai') || '';
+  if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
+  const useProxy   = location.protocol !== 'file:';
+  const controller = new AbortController();
+  const timer      = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res;
+  if (useProxy) {
+    res = await fetch(location.origin + '/api/proxy', {
+      signal: controller.signal,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'openai', apiKey: key, body })
+    });
+  } else {
+    res = await fetch('https://api.openai.com/v1/chat/completions', {
+      signal: controller.signal,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(body)
+    });
+  }
+  clearTimeout(timer);
+  const data = await res.json();
+  if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
+  return data;
+}
+
 // ── State ──────────────────────────────────────────────────────────
 const _ex = {
   book:      null,   // selected exam_books row
@@ -238,13 +269,6 @@ async function exRenderPage(pageNum, maxW = 1024) {
 
 // ── GPT-4o-mini Vision: 3 pages per call ─────────────────────────
 async function exCallVisionBatch(pageItems) {
-  // pageItems: [{pageNum, dataUrl}, ...]
-  const key = localStorage.getItem('api_key_openai') || '';
-  if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 90000);
-
   const pageNums = pageItems.map(p => p.pageNum);
   const content  = pageItems.map(({ dataUrl }) => ({
     type: 'image_url',
@@ -264,20 +288,7 @@ Rules:
 - No translation, no commentary — extracted text only`
   });
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    signal: controller.signal,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      max_tokens: 4096,
-      temperature: 0,
-      messages: [{ role: 'user', content }]
-    })
-  });
-  clearTimeout(timer);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
+  const data = await exOpenAI({ model: 'gpt-4o-mini', max_tokens: 4096, temperature: 0, messages: [{ role: 'user', content }] });
 
   const output  = data.choices?.[0]?.message?.content || '';
   const results = {};
@@ -546,9 +557,6 @@ function exDetectUnitBoundaries(totalPages) {
 
 // ── GPT-4o parse one unit ─────────────────────────────────────────
 async function exCallAIParse(unitText, unitNum) {
-  const key = localStorage.getItem('api_key_openai') || '';
-  if (!key) throw new Error('Chưa có OpenAI key');
-
   const SYSTEM = `You are a TOCFL Chinese exam content extractor. Extract structured content for Unit ${unitNum} from OCR text of a scanned Chinese workbook.
 
 Section A (測驗練習) has subsections:
@@ -585,22 +593,16 @@ Return ONLY valid JSON, no markdown:
   "phrases": [{"source":"一、對話聽力3","phrase":"付稅","example_zh":"進口貨的價錢..."}]
 }`;
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 4096,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: SYSTEM },
-        { role: 'user', content: `OCR text for Unit ${unitNum}:\n\n${unitText.slice(0, 14000)}` }
-      ]
-    })
+  const data = await exOpenAI({
+    model: 'gpt-4o',
+    max_tokens: 4096,
+    temperature: 0,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: SYSTEM },
+      { role: 'user', content: `OCR text for Unit ${unitNum}:\n\n${unitText.slice(0, 14000)}` }
+    ]
   });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
   return JSON.parse(data.choices[0].message.content);
 }
 
