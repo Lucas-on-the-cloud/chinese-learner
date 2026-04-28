@@ -131,7 +131,7 @@ function exRenderOCRPanel() {
       <i class="fa-solid fa-triangle-exclamation"></i> Chưa có OpenAI key —
       <a href="settings.html" style="color:#1a56db;font-weight:600">vào Settings</a> để thêm.
     </div>` : `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 14px;font-size:12px;color:#1e40af;margin-bottom:12px">
-      <i class="fa-solid fa-eye"></i> OCR dùng <strong>GPT-4o vision</strong> · detail:high · ~$0.01–0.015/trang
+      <i class="fa-solid fa-eye"></i> OCR dùng <strong>gpt-4o-mini vision</strong> · 3 trang/call · 10 song song · ~$0.002/trang
     </div>`}
     <div class="s-label">Upload file PDF (ảnh scan)</div>
     <input type="file" id="ex-pdf-input" accept=".pdf" style="display:none" onchange="exFileChange(this)">
@@ -193,8 +193,8 @@ async function exLoadPDF(file) {
     _ex.ocrTexts = {};
 
     const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
-    const batches = Math.ceil(_ex.ocrTotal / 5); // 5 parallel vision calls
-    const estSec  = batches * 8;                 // ~8s per batch
+    const batches = Math.ceil(_ex.ocrTotal / 30); // 10 parallel × 3 pages/call
+    const estSec  = batches * 5;                  // ~5s per batch
 
     // Check existing OCR pages
     const { count: existing } = await _adminDb.client
@@ -236,47 +236,60 @@ async function exRenderPage(pageNum, maxW = 1024) {
   return dataUrl;
 }
 
-// ── GPT-4o Vision OCR ────────────────────────────────────────────
-async function exCallVision(dataUrl) {
+// ── GPT-4o-mini Vision: 3 pages per call ─────────────────────────
+async function exCallVisionBatch(pageItems) {
+  // pageItems: [{pageNum, dataUrl}, ...]
   const key = localStorage.getItem('api_key_openai') || '';
   if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
+
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 60000); // 60s timeout per page
+  const timer = setTimeout(() => controller.abort(), 90000);
+
+  const pageNums = pageItems.map(p => p.pageNum);
+  const content  = pageItems.map(({ dataUrl }) => ({
+    type: 'image_url',
+    image_url: { url: dataUrl, detail: 'high' }
+  }));
+  content.push({
+    type: 'text',
+    text: `You received ${pageItems.length} scanned Chinese exam pages in order.
+For each page output a marker then the extracted text, exactly like:
+[PAGE ${pageNums.join(']\n...\n[PAGE ')}]
+...
+
+Rules:
+- Preserve Traditional Chinese (繁體中文) characters exactly
+- Keep headers like "Unit 1", "一、對話聽力", "A. 測驗練習" exactly as written
+- Keep question numbers and choice labels A B C D
+- No translation, no commentary — extracted text only`
+  });
+
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     signal: controller.signal,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model: 'gpt-4o-mini',
       max_tokens: 4096,
       temperature: 0,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image_url',
-            image_url: { url: dataUrl, detail: 'high' }
-          },
-          {
-            type: 'text',
-            text: `Extract ALL text from this scanned Chinese exam page exactly as written.
-Rules:
-- Preserve Traditional Chinese characters (繁體中文) exactly
-- Keep all numbers, punctuation, and layout structure
-- Preserve line breaks and paragraph separation
-- Keep section headers like "Unit 1", "一、對話聽力", "A. 測驗練習" exactly
-- Keep question numbers (1. 2. 3...) and choice labels (Ⓐ Ⓑ Ⓒ Ⓓ or A B C D)
-- Do NOT translate, interpret, or add any commentary
-- Output only the extracted text, nothing else`
-          }
-        ]
-      }]
+      messages: [{ role: 'user', content }]
     })
   });
   clearTimeout(timer);
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  return data.choices?.[0]?.message?.content || '';
+
+  const output  = data.choices?.[0]?.message?.content || '';
+  const results = {};
+  pageNums.forEach((pn, idx) => {
+    const next    = pageNums[idx + 1];
+    const pattern = next
+      ? new RegExp(`\\[PAGE ${pn}\\]([\\s\\S]*?)(?=\\[PAGE ${next}\\])`)
+      : new RegExp(`\\[PAGE ${pn}\\]([\\s\\S]*?)$`);
+    const m = output.match(pattern);
+    results[pn] = m ? m[1].trim() : '';
+  });
+  return results;
 }
 
 // ── Start OCR ─────────────────────────────────────────────────────
@@ -311,33 +324,41 @@ async function exStartOCR() {
   const pending = Array.from({ length: _ex.ocrTotal }, (_, i) => i + 1)
     .filter(p => !_ex.ocrTexts[p]);
 
-  const PARALLEL = 5; // vision requests are much heavier than text API calls
-  try {
-    for (let i = 0; i < pending.length; i += PARALLEL) {
-      const batch = pending.slice(i, i + PARALLEL);
-      detailEl.textContent = `Batch ${Math.ceil((i + 1) / PARALLEL)} · trang ${batch[0]}–${batch[batch.length - 1]}`;
+  // Group pending into chunks of 3 pages per API call
+  const PAGES_PER_CALL = 3;
+  const PARALLEL       = 10; // 10 concurrent calls × 3 pages = 30 pages/batch
+  const groups = [];
+  for (let i = 0; i < pending.length; i += PAGES_PER_CALL) {
+    groups.push(pending.slice(i, i + PAGES_PER_CALL));
+  }
 
-      const batchRes = await Promise.all(
-        batch.map(async pageNum => {
-          const dataUrl = await exRenderPage(pageNum);
-          const text    = await exCallVision(dataUrl);
-          return { pageNum, text };
+  try {
+    for (let i = 0; i < groups.length; i += PARALLEL) {
+      const batchGroups = groups.slice(i, i + PARALLEL);
+      const first = batchGroups[0][0];
+      const last  = batchGroups[batchGroups.length - 1].at(-1);
+      detailEl.textContent = `Batch ${Math.ceil((i + 1) / PARALLEL)} · trang ${first}–${last}`;
+
+      const batchResults = await Promise.all(
+        batchGroups.map(async pageNums => {
+          const pageItems = await Promise.all(
+            pageNums.map(async pageNum => ({ pageNum, dataUrl: await exRenderPage(pageNum) }))
+          );
+          return exCallVisionBatch(pageItems);
         })
       );
 
-      batchRes.forEach(({ pageNum, text }) => {
-        _ex.ocrTexts[pageNum] = text;
-        _ex.ocrDone++;
-      });
+      // Flatten {pageNum: text} maps
+      const rows = [];
+      for (const pageMap of batchResults) {
+        for (const [pn, text] of Object.entries(pageMap)) {
+          _ex.ocrTexts[parseInt(pn)] = text;
+          _ex.ocrDone++;
+          rows.push({ book_id: _ex.book.id, page_num: parseInt(pn), raw_text: text, ocr_status: 'done' });
+        }
+      }
       updateProg();
-
-      // Persist batch to DB
-      await _adminDb.client.from('exam_ocr_pages').upsert(
-        batchRes.map(({ pageNum, text }) => ({
-          book_id: _ex.book.id, page_num: pageNum, raw_text: text, ocr_status: 'done'
-        })),
-        { onConflict: 'book_id,page_num' }
-      );
+      await _adminDb.client.from('exam_ocr_pages').upsert(rows, { onConflict: 'book_id,page_num' });
     }
 
     await _adminDb.client.from('exam_books')
