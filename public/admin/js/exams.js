@@ -364,13 +364,21 @@ function exRenderParsePanel(ocrPageCount) {
 
 // ── Detect Unit boundaries ────────────────────────────────────────
 function exDetectUnitBoundaries(totalPages) {
-  const seen = new Set();
-  const bounds = [];
+  const maxUnit = parseInt(document.getElementById('ex-total-units')?.value) || 50;
+  const seen    = new Set();
+  const bounds  = [];
+
   for (let p = 1; p <= totalPages; p++) {
-    const m = (_ex.ocrTexts[p] || '').match(/\bUnit\s*(\d+)\b/i);
+    const text = _ex.ocrTexts[p] || '';
+    // Require "Unit N" at start of a line (avoids matching mid-sentence numbers)
+    // Only accept 1–2 digit numbers within the book's unit count
+    const m = text.match(/(?:^|\n)\s*Unit\s*(\d{1,2})\b/i);
     if (m) {
       const n = parseInt(m[1]);
-      if (!seen.has(n)) { seen.add(n); bounds.push({ unitNum: n, startPage: p }); }
+      if (n >= 1 && n <= maxUnit && !seen.has(n)) {
+        seen.add(n);
+        bounds.push({ unitNum: n, startPage: p });
+      }
     }
   }
   return bounds.sort((a, b) => a.unitNum - b.unitNum);
@@ -550,7 +558,7 @@ async function exStartParse() {
 
     // Pool of 8 concurrent GPT-4o calls (avoids rate limit)
     const POOL = 8;
-    const results = [];
+    const failedChunks = [];
     for (let i = 0; i < unitChunks.length; i += POOL) {
       const pool = unitChunks.slice(i, i + POOL);
       const poolRes = await Promise.allSettled(
@@ -558,7 +566,7 @@ async function exStartParse() {
           const parsed = await exCallAIParse(text, unitNum);
           await exSaveUnitData(parsed);
           _ex.parseDone++;
-          const pct  = Math.round(_ex.parseDone / _ex.parseTotal * 100);
+          const pct = Math.round(_ex.parseDone / _ex.parseTotal * 100);
           barEl.style.width = pct + '%';
           pctEl.textContent = pct + '%';
           labelEl.textContent = `Phân tích: ${_ex.parseDone} / ${_ex.parseTotal} Unit…`;
@@ -567,13 +575,30 @@ async function exStartParse() {
           return unitNum;
         })
       );
-      results.push(...poolRes);
+      poolRes.forEach((r, j) => {
+        if (r.status === 'rejected') {
+          const { unitNum, text } = pool[j];
+          failedChunks.push({ unitNum, text, reason: r.reason?.message || 'Lỗi không xác định' });
+          const chip = document.getElementById(`ex-chip-${unitNum}`);
+          if (chip) { chip.style.background = '#fee2e2'; chip.style.color = '#dc2626'; chip.title = r.reason?.message || ''; chip.textContent = `U${unitNum} ✗`; }
+        }
+      });
     }
 
-    const failed = results.filter(r => r.status === 'rejected');
-    if (failed.length) {
-      msgEl.textContent = `${_ex.parseDone}/${_ex.parseTotal} Unit thành công · ${failed.length} Unit lỗi.`;
+    if (failedChunks.length) {
+      // Store for retry
+      _ex._failedChunks = failedChunks;
+      const errList = failedChunks.map(f => `U${f.unitNum}: ${escHtml(f.reason)}`).join('<br>');
+      msgEl.innerHTML = `<strong>${_ex.parseDone}/${_ex.parseTotal} Unit thành công · ${failedChunks.length} Unit lỗi:</strong><br>
+        <div style="margin-top:6px;font-size:11px;color:#dc2626">${errList}</div>`;
       msgEl.className = 's-msg err';
+      // Show retry button
+      const retryBtn = document.createElement('button');
+      retryBtn.className = 's-btn';
+      retryBtn.style.cssText = 'width:100%;margin-top:10px;background:#dc2626';
+      retryBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Thử lại ${failedChunks.length} Unit lỗi`;
+      retryBtn.onclick = () => exRetryFailed(failedChunks);
+      msgEl.after(retryBtn);
       btn.disabled = false;
     } else {
       msgEl.textContent = `✓ Phân tích hoàn tất ${_ex.parseTotal} Unit.`;
@@ -593,6 +618,52 @@ async function exStartParse() {
 }
 
 // ── Unit list ──────────────────────────────────────────────────────
+// ── Retry failed units ────────────────────────────────────────────
+async function exRetryFailed(chunks) {
+  const msgEl = document.getElementById('ex-parse-msg');
+  // Remove old retry button
+  msgEl.nextElementSibling?.remove();
+  msgEl.textContent = `Đang thử lại ${chunks.length} Unit…`;
+  msgEl.className = 's-msg info';
+
+  const stillFailed = [];
+  const POOL = 4;
+  for (let i = 0; i < chunks.length; i += POOL) {
+    const pool = chunks.slice(i, i + POOL);
+    const res = await Promise.allSettled(
+      pool.map(async ({ unitNum, text }) => {
+        const parsed = await exCallAIParse(text, unitNum);
+        await exSaveUnitData(parsed);
+        const chip = document.getElementById(`ex-chip-${unitNum}`);
+        if (chip) { chip.style.background = '#dcfce7'; chip.style.color = '#15803d'; chip.textContent = `U${unitNum} ✓`; }
+        return unitNum;
+      })
+    );
+    res.forEach((r, j) => {
+      if (r.status === 'rejected') stillFailed.push({ ...pool[j], reason: r.reason?.message || '?' });
+    });
+  }
+
+  if (stillFailed.length) {
+    msgEl.innerHTML = `Vẫn còn ${stillFailed.length} Unit lỗi: ${stillFailed.map(f => `U${f.unitNum}`).join(', ')}`;
+    msgEl.className = 's-msg err';
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 's-btn';
+    retryBtn.style.cssText = 'width:100%;margin-top:10px;background:#dc2626';
+    retryBtn.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Thử lại lần nữa`;
+    retryBtn.onclick = () => exRetryFailed(stillFailed);
+    msgEl.after(retryBtn);
+  } else {
+    msgEl.textContent = '✓ Tất cả Unit đã phân tích xong.';
+    msgEl.className = 's-msg ok';
+    setTimeout(() => {
+      exShowPanel('ex-panel-units');
+      document.getElementById('ex-units-title').textContent = _ex.book.title;
+      exLoadUnits(_ex.book.id);
+    }, 1000);
+  }
+}
+
 async function exLoadUnits(bookId) {
   const { data: units } = await _adminDb.client
     .from('exam_units').select('id,unit_number,title_zh,status')
