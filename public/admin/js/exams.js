@@ -344,7 +344,7 @@ function exRenderParsePanel(ocrPageCount) {
 
     <!-- OCR Preview -->
     <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9fafb;border-bottom:1px solid #e5e7eb">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-wrap:wrap">
         <i class="fa-solid fa-magnifying-glass" style="color:#6b7280;font-size:12px"></i>
         <span style="font-size:13px;font-weight:600;flex:1">Xem chất lượng OCR</span>
         <button onclick="exPreviewPage(-1)" style="width:26px;height:26px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:13px">‹</button>
@@ -354,10 +354,19 @@ function exRenderParsePanel(ocrPageCount) {
                style="width:54px;height:26px;border:1px solid #e5e7eb;border-radius:5px;text-align:center;font-size:12px;padding:0 4px">
         <span style="font-size:12px;color:#6b7280">/ ${ocrPageCount}</span>
         <button onclick="exPreviewPage(1)" style="width:26px;height:26px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:13px">›</button>
+        <button onclick="exCopyPage()" title="Copy text trang này"
+          style="height:26px;padding:0 8px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:11px;color:#374151">
+          <i class="fa-solid fa-copy"></i> Copy
+        </button>
+        <button onclick="exShowBoundaries()" title="Xem ranh giới Unit được phát hiện"
+          style="height:26px;padding:0 8px;border:1px solid #7c3aed;border-radius:5px;background:#f5f3ff;cursor:pointer;font-size:11px;color:#7c3aed;white-space:nowrap">
+          <i class="fa-solid fa-sitemap"></i> Ranh giới Unit
+        </button>
       </div>
       <textarea id="ex-preview-text" readonly
         style="width:100%;height:220px;border:none;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.7;resize:vertical;outline:none;color:#374151;background:#fff"
         placeholder="Chọn trang để xem text OCR…"></textarea>
+      <div id="ex-boundary-result" style="display:none;border-top:1px solid #e5e7eb;padding:10px 12px;font-size:12px;background:#fafafa;max-height:180px;overflow-y:auto"></div>
     </div>
 
     <div style="font-size:13px;color:#4b5563;margin-bottom:14px">
@@ -411,6 +420,62 @@ function exPreviewPage(delta) {
       });
     textEl.value = 'Đang tải…';
   }
+}
+
+function exCopyPage() {
+  const textEl = document.getElementById('ex-preview-text');
+  if (!textEl?.value) return;
+  navigator.clipboard.writeText(textEl.value).then(() => {
+    const btn = document.querySelector('[onclick="exCopyPage()"]');
+    if (btn) { btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy'; }, 1500); }
+  });
+}
+
+async function exShowBoundaries() {
+  const resultEl = document.getElementById('ex-boundary-result');
+  if (!resultEl) return;
+
+  // Toggle off
+  if (resultEl.style.display !== 'none') { resultEl.style.display = 'none'; return; }
+
+  resultEl.style.display = '';
+  resultEl.innerHTML = '<span style="color:#9ca3af">Đang phân tích…</span>';
+
+  // Load all OCR texts from DB if not in memory
+  const missing = [];
+  const totalPages = parseInt(document.getElementById('ex-preview-page')?.max) || 0;
+  for (let p = 1; p <= totalPages; p++) {
+    if (!_ex.ocrTexts[p]) missing.push(p);
+  }
+  if (missing.length) {
+    const { data } = await _adminDb.client.from('exam_ocr_pages')
+      .select('page_num,raw_text').eq('book_id', _ex.book.id).in('page_num', missing);
+    (data || []).forEach(r => { _ex.ocrTexts[r.page_num] = r.raw_text; });
+  }
+
+  const bounds = exDetectUnitBoundaries(totalPages);
+  if (!bounds.length) {
+    resultEl.innerHTML = '<span style="color:#dc2626">Không tìm thấy "Unit X" ở đầu dòng nào. Thử xem một vài trang để kiểm tra format.</span>';
+    return;
+  }
+
+  const rows = bounds.map((b, i) => {
+    const endPage = i + 1 < bounds.length ? bounds[i + 1].startPage - 1 : totalPages;
+    const pages   = endPage - b.startPage + 1;
+    // Show first line of the unit page as context
+    const preview = (_ex.ocrTexts[b.startPage] || '').split('\n').find(l => l.trim()) || '';
+    return `<tr>
+      <td style="padding:3px 8px;font-weight:700;color:#1a56db;white-space:nowrap">Unit ${b.unitNum}</td>
+      <td style="padding:3px 8px;color:#6b7280;white-space:nowrap">trang ${b.startPage}–${endPage} (${pages} tr.)</td>
+      <td style="padding:3px 8px;color:#374151;font-family:'JetBrains Mono',monospace;font-size:10.5px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(preview.slice(0, 80))}</td>
+      <td style="padding:3px 8px"><button onclick="document.getElementById('ex-preview-page').value=${b.startPage};exPreviewPage(0)" style="font-size:10px;padding:2px 7px;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;background:#fff">Xem</button></td>
+    </tr>`;
+  }).join('');
+
+  resultEl.innerHTML = `
+    <div style="font-weight:600;margin-bottom:6px;color:#374151">Phát hiện ${bounds.length} Unit:</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">${rows}</table>
+  `;
 }
 
 // ── Detect Unit boundaries ────────────────────────────────────────
