@@ -26,13 +26,15 @@ async function exOpenAI(body, timeoutMs = 90000) {
     const data = await res.json();
 
     if (res.status === 429 || data.error?.code === 'rate_limit_exceeded') {
-      const msg     = typeof data.error === 'object' ? (data.error.message || '') : '';
-      const secM    = msg.match(/try again in (\d+(?:\.\d+)?)s/i);
-      const msM     = msg.match(/try again in (\d+)ms/i);
-      const waitMs  = secM ? Math.ceil(parseFloat(secM[1]) * 1000) + 300
-                   : msM  ? parseInt(msM[1]) + 300
-                   : 2000 * (attempt + 1);
-      await new Promise(r => setTimeout(r, waitMs));
+      const msg    = typeof data.error === 'object' ? (data.error.message || '') : '';
+      const secM   = msg.match(/try again in (\d+(?:\.\d+)?)s/i);
+      const msM    = msg.match(/try again in (\d+)ms/i);
+      const base   = secM ? Math.ceil(parseFloat(secM[1]) * 1000)
+                   : msM  ? parseInt(msM[1])
+                   : 3000 * (attempt + 1);
+      // Add jitter so parallel calls don't all retry at the same instant
+      const jitter = Math.random() * 2000;
+      await new Promise(r => setTimeout(r, base + 500 + jitter));
       continue;
     }
 
@@ -383,6 +385,8 @@ async function exStartOCR() {
       }
       updateProg();
       await _adminDb.client.from('exam_ocr_pages').upsert(rows, { onConflict: 'book_id,page_num' });
+      // Pause between batches so the TPM window can recover
+      if (i + PARALLEL < groups.length) await new Promise(r => setTimeout(r, 4000));
     }
 
     await _adminDb.client.from('exam_books')
