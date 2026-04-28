@@ -177,7 +177,7 @@ function exRenderOCRPanel() {
       <i class="fa-solid fa-triangle-exclamation"></i> Chưa có OpenAI key —
       <a href="settings.html" style="color:#1a56db;font-weight:600">vào Settings</a> để thêm.
     </div>` : `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 14px;font-size:12px;color:#1e40af;margin-bottom:12px">
-      <i class="fa-solid fa-eye"></i> OCR dùng <strong>gpt-4o-mini vision</strong> · 3 trang/call · 10 song song · ~$0.002/trang
+      <i class="fa-solid fa-eye"></i> OCR dùng <strong>gpt-4o-mini vision</strong> · 3 trang/call · tuần tự · ~$0.002/trang
     </div>`}
     <div class="s-label">Upload file PDF (ảnh scan)</div>
     <input type="file" id="ex-pdf-input" accept=".pdf" style="display:none" onchange="exFileChange(this)">
@@ -239,8 +239,8 @@ async function exLoadPDF(file) {
     _ex.ocrTexts = {};
 
     const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
-    const batches = Math.ceil(_ex.ocrTotal / 9); // 3 parallel × 3 pages/call
-    const estSec  = batches * 5;                 // ~5s per batch
+    const batches = Math.ceil(_ex.ocrTotal / 3); // sequential, 3 pages/call
+    const estMin  = Math.ceil(batches * 6 / 60); // ~6s/call
 
     // Check existing OCR pages
     const { count: existing } = await _adminDb.client
@@ -253,7 +253,7 @@ async function exLoadPDF(file) {
         <i class="fa-solid fa-file-pdf" style="color:#dc2626;font-size:22px"></i>
         <div>
           <div style="font-weight:600">${escHtml(file.name)}</div>
-          <div style="color:#6b7280;margin-top:2px">${_ex.ocrTotal} trang · ${sizeMB} MB · ước tính ~${estSec}s</div>
+          <div style="color:#6b7280;margin-top:2px">${_ex.ocrTotal} trang · ${sizeMB} MB · ước tính ~${estMin} phút</div>
         </div>
       </div>
     `;
@@ -350,9 +350,9 @@ async function exStartOCR() {
   const pending = Array.from({ length: _ex.ocrTotal }, (_, i) => i + 1)
     .filter(p => !_ex.ocrTexts[p]);
 
-  // Group pending into chunks of 3 pages per API call
+  // Sequential: 1 call at a time, 3 pages per call → ~150K TPM, well under 200K limit
   const PAGES_PER_CALL = 3;
-  const PARALLEL       = 3; // 3 concurrent calls × 3 pages = 9 pages/batch (~22K tokens, safe under 200K TPM)
+  const PARALLEL       = 1;
   const groups = [];
   for (let i = 0; i < pending.length; i += PAGES_PER_CALL) {
     groups.push(pending.slice(i, i + PAGES_PER_CALL));
@@ -385,8 +385,6 @@ async function exStartOCR() {
       }
       updateProg();
       await _adminDb.client.from('exam_ocr_pages').upsert(rows, { onConflict: 'book_id,page_num' });
-      // Pause between batches so the TPM window can recover
-      if (i + PARALLEL < groups.length) await new Promise(r => setTimeout(r, 4000));
     }
 
     await _adminDb.client.from('exam_books')
