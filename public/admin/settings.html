@@ -33,6 +33,10 @@
       <i class="fa-solid fa-book-bookmark"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
     </a>
+    <a class="nav-item" href="exams.html">
+      <i class="fa-solid fa-file-pen"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Đề thi</span><span class="nav-item-en">Exam papers</span></span>
+    </a>
     <a class="nav-item" href="flashcards.html">
       <i class="fa-solid fa-clone"></i>
       <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
@@ -95,6 +99,15 @@
         <div class="s-key-status" id="key-status"></div>
       </div>
       <div class="s-card">
+        <div class="s-title"><i class="fa-brands fa-google" style="color:#4285f4"></i> Google Cloud Vision</div>
+        <div class="s-sub">Dùng để OCR ảnh scan đề thi. Lấy key tại Google Cloud Console → Vision API → Credentials.</div>
+        <div class="s-row">
+          <input type="text" id="gcp-key-input" class="s-input" placeholder="AIzaSy…" style="flex:1">
+          <button class="s-btn" onclick="saveGCPKey()">Lưu</button>
+        </div>
+        <div class="s-key-status" id="gcp-key-status"></div>
+      </div>
+      <div class="s-card">
         <div class="s-title"><i class="fa-solid fa-chart-pie" style="color:#1a56db"></i> Chi phí AI · AI cost</div>
         <div class="s-sub">Tháng 4, 2026 · April 2026</div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
@@ -138,7 +151,6 @@ function toggleSidebar() {
     ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
 }
 </script>
-<script>adminInitSettings();</script>
 <!-- auto-init:settings --><script>adminInitSettings();</script>
 </body>
 </html>

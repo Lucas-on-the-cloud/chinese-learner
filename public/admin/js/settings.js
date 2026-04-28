@@ -11,6 +11,21 @@ function adminInitSettings() {
     statusEl.textContent = k ? '✓ Đã lưu API key' : 'Chưa có API key';
     statusEl.className   = 's-key-status ' + (k ? 'ok' : 'miss');
   }
+  const gcpKey    = localStorage.getItem('api_key_gcp') || '';
+  const gcpKeyEl  = document.getElementById('gcp-key-input');
+  const gcpStatus = document.getElementById('gcp-key-status');
+  if (gcpKeyEl && gcpKey) gcpKeyEl.value = gcpKey.slice(0, 8) + '…';
+  if (gcpStatus) {
+    gcpStatus.textContent = gcpKey ? '✓ Đã lưu GCP Vision key' : 'Chưa có GCP key';
+    gcpStatus.className   = 's-key-status ' + (gcpKey ? 'ok' : 'miss');
+  }
+}
+
+function saveGCPKey() {
+  const k = document.getElementById('gcp-key-input').value.trim();
+  if (!k) return;
+  localStorage.setItem('api_key_gcp', k);
+  showMsg('gcp-key-status', '✓ Đã lưu GCP Vision key', 'ok');
 }
 
 function adminSaveKey() {
