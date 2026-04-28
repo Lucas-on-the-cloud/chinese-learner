@@ -11,13 +11,13 @@ class AIService {
 
     let reqBody;
     if (p === 'anthropic') {
-      reqBody = { model: 'claude-sonnet-4-6', max_tokens: maxTokens || 1200, system: systemPrompt, temperature };
+      reqBody = { model: 'claude-sonnet-4-6', max_tokens: maxTokens || 4096, system: systemPrompt, temperature };
       reqBody.messages = chatMsgs || [{ role: 'user', content: userMsg }];
     } else {
       const msgs = [{ role: 'system', content: systemPrompt }];
       if (chatMsgs) msgs.push(...chatMsgs);
       else msgs.push({ role: 'user', content: userMsg });
-      reqBody = { model: 'gpt-4o-mini', max_tokens: maxTokens || 1200, temperature, messages: msgs };
+      reqBody = { model: 'gpt-4o-mini', max_tokens: maxTokens || 4096, temperature, messages: msgs };
     }
 
     let data;

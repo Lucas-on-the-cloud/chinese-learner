@@ -659,7 +659,7 @@ async function subLaAIFill(lessonId) {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 1200,
+        max_tokens: 4096,
         temperature: 0,
         response_format: { type: 'json_object' },
         messages: [
