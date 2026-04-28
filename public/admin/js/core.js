@@ -129,12 +129,3 @@ if (document.getElementById('chart')) {
   })();
 }
 
-// Auto-init section on page load
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof loadCourses   === 'function') loadCourses();
-  if (typeof loadSubCourses=== 'function') loadSubCourses();
-  if (typeof loadBlogPosts === 'function') loadBlogPosts();
-  if (typeof loadFCAdmin   === 'function') loadFCAdmin();
-  if (typeof loadListeningAdmin === 'function') loadListeningAdmin();
-  if (typeof adminInitSettings  === 'function') adminInitSettings();
-});
