@@ -193,8 +193,8 @@ async function exLoadPDF(file) {
     _ex.ocrTexts = {};
 
     const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
-    const batches = Math.ceil(_ex.ocrTotal / 15);
-    const estSec  = batches * 3;
+    const batches = Math.ceil(_ex.ocrTotal / 5); // 5 parallel vision calls
+    const estSec  = batches * 8;                 // ~8s per batch
 
     // Check existing OCR pages
     const { count: existing } = await _adminDb.client
@@ -223,7 +223,7 @@ async function exLoadPDF(file) {
 }
 
 // ── Render one page to base64 JPEG ────────────────────────────────
-async function exRenderPage(pageNum, maxW = 1500) {
+async function exRenderPage(pageNum, maxW = 1024) {
   const page     = await _ex.pdf.getPage(pageNum);
   const scale    = maxW / page.getViewport({ scale: 1 }).width;
   const viewport = page.getViewport({ scale });
@@ -231,7 +231,7 @@ async function exRenderPage(pageNum, maxW = 1500) {
   canvas.width   = viewport.width;
   canvas.height  = viewport.height;
   await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  const dataUrl  = canvas.toDataURL('image/jpeg', 0.85);
+  const dataUrl  = canvas.toDataURL('image/jpeg', 0.80);
   canvas.width = 0; canvas.height = 0; // free GPU memory
   return dataUrl;
 }
@@ -240,7 +240,10 @@ async function exRenderPage(pageNum, maxW = 1500) {
 async function exCallVision(dataUrl) {
   const key = localStorage.getItem('api_key_openai') || '';
   if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 60000); // 60s timeout per page
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    signal: controller.signal,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
     body: JSON.stringify({
@@ -270,6 +273,7 @@ Rules:
       }]
     })
   });
+  clearTimeout(timer);
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.choices?.[0]?.message?.content || '';
@@ -307,7 +311,7 @@ async function exStartOCR() {
   const pending = Array.from({ length: _ex.ocrTotal }, (_, i) => i + 1)
     .filter(p => !_ex.ocrTexts[p]);
 
-  const PARALLEL = 15;
+  const PARALLEL = 5; // vision requests are much heavier than text API calls
   try {
     for (let i = 0; i < pending.length; i += PARALLEL) {
       const batch = pending.slice(i, i + PARALLEL);
