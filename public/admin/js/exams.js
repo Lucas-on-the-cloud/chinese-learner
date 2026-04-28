@@ -122,15 +122,17 @@ async function exDeleteBook() {
 
 // ── OCR Panel ──────────────────────────────────────────────────────
 function exRenderOCRPanel() {
-  const gcpKey = localStorage.getItem('api_key_gcp') || '';
-  const label  = document.getElementById('ex-ocr-book-label');
+  const openaiKey = localStorage.getItem('api_key_openai') || '';
+  const label     = document.getElementById('ex-ocr-book-label');
   if (label && _ex.book) label.textContent = _ex.book.title;
 
   document.getElementById('ex-ocr-content').innerHTML = `
-    ${!gcpKey ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px">
-      <i class="fa-solid fa-triangle-exclamation"></i> Chưa có GCP Vision key —
+    ${!openaiKey ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#dc2626;margin-bottom:12px">
+      <i class="fa-solid fa-triangle-exclamation"></i> Chưa có OpenAI key —
       <a href="settings.html" style="color:#1a56db;font-weight:600">vào Settings</a> để thêm.
-    </div>` : ''}
+    </div>` : `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 14px;font-size:12px;color:#1e40af;margin-bottom:12px">
+      <i class="fa-solid fa-eye"></i> OCR dùng <strong>GPT-4o vision</strong> · detail:high · ~$0.01–0.015/trang
+    </div>`}
     <div class="s-label">Upload file PDF (ảnh scan)</div>
     <input type="file" id="ex-pdf-input" accept=".pdf" style="display:none" onchange="exFileChange(this)">
     <div id="ex-drop-zone"
@@ -234,26 +236,43 @@ async function exRenderPage(pageNum, maxW = 1500) {
   return dataUrl;
 }
 
-// ── GCP Vision API ────────────────────────────────────────────────
+// ── GPT-4o Vision OCR ────────────────────────────────────────────
 async function exCallVision(dataUrl) {
-  const key = localStorage.getItem('api_key_gcp') || '';
-  if (!key) throw new Error('Chưa có GCP Vision key — vào Settings.');
-  const res = await fetch(
-    `https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(key)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requests: [{
-          image: { content: dataUrl.split(',')[1] },
-          features: [{ type: 'DOCUMENT_TEXT_DETECTION', maxResults: 1 }]
-        }]
-      })
-    }
-  );
+  const key = localStorage.getItem('api_key_openai') || '';
+  if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 4096,
+      temperature: 0,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image_url',
+            image_url: { url: dataUrl, detail: 'high' }
+          },
+          {
+            type: 'text',
+            text: `Extract ALL text from this scanned Chinese exam page exactly as written.
+Rules:
+- Preserve Traditional Chinese characters (繁體中文) exactly
+- Keep all numbers, punctuation, and layout structure
+- Preserve line breaks and paragraph separation
+- Keep section headers like "Unit 1", "一、對話聽力", "A. 測驗練習" exactly
+- Keep question numbers (1. 2. 3...) and choice labels (Ⓐ Ⓑ Ⓒ Ⓓ or A B C D)
+- Do NOT translate, interpret, or add any commentary
+- Output only the extracted text, nothing else`
+          }
+        ]
+      }]
+    })
+  });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
-  return data.responses?.[0]?.fullTextAnnotation?.text || '';
+  return data.choices?.[0]?.message?.content || '';
 }
 
 // ── Start OCR ─────────────────────────────────────────────────────
