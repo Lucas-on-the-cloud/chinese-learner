@@ -1,32 +1,45 @@
-// ── OpenAI proxy helper ────────────────────────────────────────────
-// Routes through /api/proxy on Vercel to avoid CORS; direct on localhost/file
+// ── OpenAI proxy helper (auto-retry on rate limit) ────────────────
 async function exOpenAI(body, timeoutMs = 90000) {
-  const key        = localStorage.getItem('api_key_openai') || '';
+  const key      = localStorage.getItem('api_key_openai') || '';
   if (!key) throw new Error('Chưa có OpenAI key — vào Settings.');
-  const useProxy   = location.protocol !== 'file:';
-  const controller = new AbortController();
-  const timer      = setTimeout(() => controller.abort(), timeoutMs);
+  const useProxy = location.protocol !== 'file:';
 
-  let res;
-  if (useProxy) {
-    res = await fetch(location.origin + '/api/proxy', {
-      signal: controller.signal,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ provider: 'openai', apiKey: key, body })
-    });
-  } else {
-    res = await fetch('https://api.openai.com/v1/chat/completions', {
-      signal: controller.signal,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-      body: JSON.stringify(body)
-    });
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const controller = new AbortController();
+    const timer      = setTimeout(() => controller.abort(), timeoutMs);
+
+    let res;
+    if (useProxy) {
+      res = await fetch(location.origin + '/api/proxy', {
+        signal: controller.signal, method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'openai', apiKey: key, body })
+      });
+    } else {
+      res = await fetch('https://api.openai.com/v1/chat/completions', {
+        signal: controller.signal, method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+        body: JSON.stringify(body)
+      });
+    }
+    clearTimeout(timer);
+    const data = await res.json();
+
+    if (res.status === 429 || data.error?.code === 'rate_limit_exceeded') {
+      const msg     = typeof data.error === 'object' ? (data.error.message || '') : '';
+      const secM    = msg.match(/try again in (\d+(?:\.\d+)?)s/i);
+      const msM     = msg.match(/try again in (\d+)ms/i);
+      const waitMs  = secM ? Math.ceil(parseFloat(secM[1]) * 1000) + 300
+                   : msM  ? parseInt(msM[1]) + 300
+                   : 2000 * (attempt + 1);
+      await new Promise(r => setTimeout(r, waitMs));
+      continue;
+    }
+
+    if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
+    return data;
   }
-  clearTimeout(timer);
-  const data = await res.json();
-  if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
-  return data;
+  throw new Error('Vượt quá rate limit sau 6 lần retry. Thử lại sau vài giây.');
 }
 
 // ── State ──────────────────────────────────────────────────────────
