@@ -34,7 +34,6 @@ def sidebar(active):
         ('index',       'fa-gauge-high',    'Tổng quan',    'Dashboard'),
         ('courses',     'fa-graduation-cap','Khóa học',     'Courses'),
         ('subcourses',  'fa-book-bookmark', 'Khóa học con', 'Sub-courses'),
-        ('listening',   'fa-headphones',    'Listening',    'Audio &amp; Dictation'),
         ('flashcards',  'fa-clone',         'Flashcard',    'Flashcard sets'),
         ('blog',        'fa-pen-nib',       'Blog',         'Blog posts'),
         ('settings',    'fa-key',           'Cài đặt',      'AI &amp; API'),
