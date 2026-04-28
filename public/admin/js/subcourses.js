@@ -648,38 +648,48 @@ async function subLaAIFill(lessonId) {
   const btn = document.getElementById(`sub-la-ai-btn-${lessonId}`);
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI…'; }
 
-  // Use OpenAI directly (same key as Whisper) — batch 20/call
-  const BATCH = 20;
-  const results = new Array(texts.length).fill(null);
-  let filled = 0;
+  // Batch 30/call, all batches run in parallel for max speed
+  const BATCH = 30;
+  const SYSTEM = `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, tạo Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn. Trả về JSON: {"items":[{"pinyin":"...","vi":"..."}]} — đúng số, đúng thứ tự.`;
+
+  const callBatch = async (chunk, offset) => {
+    const userMsg = chunk.map((t, i) => `${offset + i + 1}. ${t}`).join('\n');
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 1200,
+        temperature: 0,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: SYSTEM },
+          { role: 'user', content: userMsg },
+        ],
+      }),
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+    const items  = parsed.items || parsed;
+    return { items: Array.isArray(items) ? items : [], offset };
+  };
 
   try {
-    for (let start = 0; start < texts.length; start += BATCH) {
-      const chunk = texts.slice(start, start + BATCH);
-      subLaMsg(lessonId, `Đang xử lý ${start + 1}–${Math.min(start + BATCH, texts.length)} / ${texts.length}…`, 'info');
+    subLaMsg(lessonId, `Đang xử lý ${texts.length} đoạn song song…`, 'info');
 
-      const userMsg = chunk.map((t, i) => `${start + i + 1}. ${t}`).join('\n');
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          max_tokens: 2000,
-          response_format: { type: 'json_object' },
-          messages: [
-            { role: 'system', content: `Bạn là chuyên gia tiếng Trung phồn thể Đài Loan (繁體中文). Với mỗi câu được đánh số, tạo Pinyin có dấu thanh và nghĩa tiếng Việt tự nhiên ngắn gọn. Trả về JSON: {"items":[{"pinyin":"...","vi":"..."}]} — đúng số, đúng thứ tự.` },
-            { role: 'user', content: userMsg },
-          ],
-        }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error.message);
-      const content = data.choices?.[0]?.message?.content || '';
-      const parsed  = JSON.parse(content);
-      const items   = parsed.items || parsed;
-      (Array.isArray(items) ? items : []).forEach((r, i) => { results[start + i] = r; });
-      filled += (Array.isArray(items) ? items : []).length;
+    const batches = [];
+    for (let s = 0; s < texts.length; s += BATCH) {
+      batches.push(callBatch(texts.slice(s, s + BATCH), s));
     }
+
+    const results = new Array(texts.length).fill(null);
+    let filled = 0;
+    const batchResults = await Promise.all(batches);
+    batchResults.forEach(({ items, offset }) => {
+      items.forEach((r, i) => { results[offset + i] = r; });
+      filled += items.length;
+    });
 
     results.forEach((r, i) => {
       if (!r) return;

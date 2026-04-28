@@ -233,7 +233,7 @@ level: "cơ bản" / "trung cấp" / "nâng cao"`;
     const raw = await window.app.ai.call(
       SYSTEM_PROMPT,
       `Bài đọc tiếng Trung:\n${lesson.zh}\n\nPinyin:\n${lesson.py}\n\nDịch tiếng Việt:\n${lesson.vi}\n\nHãy tạo 15-25 từ/cụm từ THIẾT YẾU giúp hiểu ngữ cảnh bài. JSON thuần.`,
-      3500
+      2000
     );
     if (!raw) throw new Error('AI không trả về kết quả');
     const cleaned = raw.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
