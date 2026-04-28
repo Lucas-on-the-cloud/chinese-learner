@@ -363,8 +363,10 @@ async function exStartOCR() {
       const last  = batchGroups[batchGroups.length - 1].at(-1);
       detailEl.textContent = `Batch ${Math.ceil((i + 1) / PARALLEL)} · trang ${first}–${last}`;
 
+      // Stagger each call by 700ms to spread token consumption across time
       const batchResults = await Promise.all(
-        batchGroups.map(async pageNums => {
+        batchGroups.map(async (pageNums, idx) => {
+          if (idx > 0) await new Promise(r => setTimeout(r, idx * 700));
           const pageItems = await Promise.all(
             pageNums.map(async pageNum => ({ pageNum, dataUrl: await exRenderPage(pageNum) }))
           );
