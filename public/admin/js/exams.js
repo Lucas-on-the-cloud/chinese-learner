@@ -341,6 +341,25 @@ function exRenderParsePanel(ocrPageCount) {
       <i class="fa-solid fa-circle-check" style="color:#16a34a"></i>
       OCR hoàn tất · <strong>${ocrPageCount}</strong> trang đã quét
     </div>
+
+    <!-- OCR Preview -->
+    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9fafb;border-bottom:1px solid #e5e7eb">
+        <i class="fa-solid fa-magnifying-glass" style="color:#6b7280;font-size:12px"></i>
+        <span style="font-size:13px;font-weight:600;flex:1">Xem chất lượng OCR</span>
+        <button onclick="exPreviewPage(-1)" style="width:26px;height:26px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:13px">‹</button>
+        <span style="font-size:12px;color:#6b7280">Trang</span>
+        <input id="ex-preview-page" type="number" min="1" max="${ocrPageCount}" value="1"
+               oninput="exPreviewPage(0)"
+               style="width:54px;height:26px;border:1px solid #e5e7eb;border-radius:5px;text-align:center;font-size:12px;padding:0 4px">
+        <span style="font-size:12px;color:#6b7280">/ ${ocrPageCount}</span>
+        <button onclick="exPreviewPage(1)" style="width:26px;height:26px;border:1px solid #e5e7eb;border-radius:5px;background:#fff;cursor:pointer;font-size:13px">›</button>
+      </div>
+      <textarea id="ex-preview-text" readonly
+        style="width:100%;height:220px;border:none;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.7;resize:vertical;outline:none;color:#374151;background:#fff"
+        placeholder="Chọn trang để xem text OCR…"></textarea>
+    </div>
+
     <div style="font-size:13px;color:#4b5563;margin-bottom:14px">
       AI sẽ tự tìm header <code style="background:#f3f4f6;padding:1px 5px;border-radius:4px">Unit X</code> trong text,
       chia thành các chunk và phân tích <strong>song song</strong> — Section A (câu hỏi) + Section B (từ vựng).
@@ -360,6 +379,38 @@ function exRenderParsePanel(ocrPageCount) {
       <i class="fa-solid fa-sparkles"></i> Phân tích tất cả Unit với AI
     </button>
   `;
+  // Auto-load page 1
+  exPreviewPage(0);
+}
+
+function exPreviewPage(delta) {
+  const input  = document.getElementById('ex-preview-page');
+  const textEl = document.getElementById('ex-preview-text');
+  if (!input || !textEl) return;
+
+  const max = parseInt(input.max) || 1;
+  let   p   = parseInt(input.value) + delta;
+  if (p < 1) p = 1;
+  if (p > max) p = max;
+  input.value = p;
+
+  const raw = _ex.ocrTexts[p];
+  if (raw) {
+    textEl.value = raw;
+  } else {
+    // Load from DB if not in memory
+    _adminDb.client.from('exam_ocr_pages')
+      .select('raw_text').eq('book_id', _ex.book.id).eq('page_num', p).single()
+      .then(({ data }) => {
+        if (data) {
+          _ex.ocrTexts[p] = data.raw_text;
+          textEl.value = data.raw_text || '(Trang trống)';
+        } else {
+          textEl.value = '(Không có dữ liệu OCR cho trang này)';
+        }
+      });
+    textEl.value = 'Đang tải…';
+  }
 }
 
 // ── Detect Unit boundaries ────────────────────────────────────────
