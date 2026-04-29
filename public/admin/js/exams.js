@@ -239,14 +239,19 @@ async function exRenderPage(pageNum, maxW = 1200) {
   return b64;
 }
 
-// ── Call Document AI via proxy ─────────────────────────────────────
-async function exCallDocAI(base64) {
-  const res = await fetch('/api/docai', {
+// ── Call Document AI via proxy (with retry on 429) ────────────────
+async function exCallDocAI(base64, attempt = 0) {
+  const res  = await fetch('/api/docai', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify({ imageBase64: base64 }),
   });
   const data = await res.json();
+  if (res.status === 429 || data.error?.includes?.('RESOURCE_EXHAUSTED')) {
+    if (attempt >= 4) throw new Error('Document AI rate limit sau 4 lần retry');
+    await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    return exCallDocAI(base64, attempt + 1);
+  }
   if (data.error) throw new Error(data.error);
   return data;
 }
@@ -285,39 +290,60 @@ async function exStartOCR() {
   const pending = Array.from({ length: _ex.ocrTotal }, (_, i) => i + 1)
     .filter(p => !donePages.has(p));
 
-  const PARALLEL = 3;
+  const PARALLEL = 5; // concurrency pool — 5 pages in flight at any time
   try {
-    for (let i = 0; i < pending.length; i += PARALLEL) {
-      const batch = pending.slice(i, i + PARALLEL);
-      detailEl.textContent = `Trang ${batch[0]}–${batch[batch.length - 1]}`;
+    // Semaphore-based pool: slot frees immediately when a page finishes
+    let active = 0;
+    const waiters = [];
+    const acquire = () => new Promise(resolve => {
+      if (active < PARALLEL) { active++; resolve(); }
+      else waiters.push(resolve);
+    });
+    const release = () => {
+      active--;
+      if (waiters.length) { active++; waiters.shift()(); }
+    };
 
-      const results = await Promise.all(
-        batch.map(async pageNum => {
-          const b64      = await exRenderPage(pageNum);
-          const response = await exCallDocAI(b64);
-          return { pageNum, response };
-        })
-      );
+    // Save buffer — flush every 5 completed pages
+    const saveBuffer = [];
+    const flushBuffer = async () => {
+      if (!saveBuffer.length) return;
+      const rows = saveBuffer.splice(0);
+      await Promise.all([
+        _adminDb.client.from('exam_ocr_pages').upsert(
+          rows.map(r => ({ book_id: _ex.book.id, page_num: r.pageNum, raw_text: r.text, ocr_status: 'done' })),
+          { onConflict: 'book_id,page_num' }
+        ),
+        _adminDb.client.from('exam_doc_ai_pages').upsert(
+          rows.map(r => ({
+            book_id: _ex.book.id, page_num: r.pageNum, layout_json: r.response, raw_text: r.text,
+            has_table: (r.response.document?.pages?.[0]?.tables?.length || 0) > 0,
+            has_visual_element: (r.response.document?.pages?.[0]?.visualElements?.length || 0) > 0,
+          })),
+          { onConflict: 'book_id,page_num' }
+        ),
+      ]);
+    };
 
-      const textRows  = [];
-      const docAiRows = [];
-      results.forEach(({ pageNum, response }) => {
-        const text = daPageText(response);
+    await Promise.all(pending.map(async pageNum => {
+      await acquire();
+      try {
+        const b64      = await exRenderPage(pageNum);
+        const response = await exCallDocAI(b64);
+        const text     = daPageText(response);
         _ex.docAi[pageNum] = response;
         _ex.ocrDone++;
-        textRows.push({ book_id: _ex.book.id, page_num: pageNum, raw_text: text, ocr_status: 'done' });
-        docAiRows.push({ book_id: _ex.book.id, page_num: pageNum, layout_json: response,
-          raw_text: text, has_table: (response.document?.pages?.[0]?.tables?.length || 0) > 0,
-          has_visual_element: (response.document?.pages?.[0]?.visualElements?.length || 0) > 0 });
-      });
+        detailEl.textContent = `Trang ${pageNum} xong`;
+        updateProg();
 
-      await Promise.all([
-        _adminDb.client.from('exam_ocr_pages').upsert(textRows, { onConflict: 'book_id,page_num' }),
-        _adminDb.client.from('exam_doc_ai_pages').upsert(docAiRows, { onConflict: 'book_id,page_num' }),
-      ]);
+        saveBuffer.push({ pageNum, text, response });
+        if (saveBuffer.length >= 5) await flushBuffer();
+      } finally {
+        release();
+      }
+    }));
 
-      updateProg();
-    }
+    await flushBuffer(); // flush remaining
 
     await _adminDb.client.from('exam_books').update({ total_pages: _ex.ocrTotal }).eq('id', _ex.book.id);
     msgEl.textContent = `✓ OCR hoàn tất ${_ex.ocrTotal} trang.`;
