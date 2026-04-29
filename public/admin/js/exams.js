@@ -189,19 +189,24 @@ async function exUploadPDF() {
   progEl.style.display = '';
 
   try {
-    // Build storage path
-    const ts   = Date.now();
-    const safe = _ex.selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const path = `${ts}_${safe}`;
+    labelEl.textContent = 'Đang lấy upload URL…';
+
+    // Get signed upload URL from server (uses service role key, bypasses RLS)
+    const urlRes = await fetch('/api/admin/exam-books/upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: _ex.selectedFile.name }),
+    });
+    const urlData = await urlRes.json();
+    if (!urlRes.ok) throw new Error(urlData.error || 'Không lấy được upload URL');
 
     labelEl.textContent = 'Đang upload lên Supabase Storage…';
 
-    // Upload to Supabase Storage with progress tracking
-    const { data: uploadData, error: uploadErr } = await _adminDb.client.storage
+    // Upload via signed URL — no auth required, bypasses RLS
+    const { error: uploadErr } = await _adminDb.client.storage
       .from('exam-books')
-      .upload(path, _ex.selectedFile, {
+      .uploadToSignedUrl(urlData.path, urlData.token, _ex.selectedFile, {
         cacheControl: '3600',
-        upsert: false,
         onUploadProgress: (e) => {
           const pct = Math.round((e.loaded / e.total) * 100);
           barEl.style.width = pct + '%';
@@ -210,6 +215,7 @@ async function exUploadPDF() {
       });
 
     if (uploadErr) throw new Error(uploadErr.message);
+    const path = urlData.path;
 
     barEl.style.width = '100%';
     pctEl.textContent = '100%';
