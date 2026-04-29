@@ -1,5 +1,5 @@
-import { getServerDb } from '../../../lib/supabase-server.js';
-import { inngest } from '../../../lib/inngest-client.js';
+import { createClient } from '@supabase/supabase-js';
+import { Inngest } from 'inngest';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,23 +8,25 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { title, level, total_units, source_pdf_path, total_pages } = req.body;
+  const { title, level, total_units, source_pdf_path } = req.body;
   if (!title || !source_pdf_path) {
     return res.status(400).json({ error: 'Thiếu title hoặc source_pdf_path' });
   }
 
-  const db = getServerDb();
+  const db = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
 
   // Create exam_books record
   const { data: book, error: bookErr } = await db
     .from('exam_books')
     .insert({
       title,
-      level:         level || null,
-      total_units:   parseInt(total_units) || 30,
-      total_pages:   parseInt(total_pages) || null,
+      level:           level || null,
+      total_units:     parseInt(total_units) || 30,
       source_pdf_path,
-      status:        'draft',
+      status:          'draft',
     })
     .select()
     .single();
@@ -47,14 +49,17 @@ export default async function handler(req, res) {
 
   if (jobErr) return res.status(500).json({ error: jobErr.message });
 
-  // Trigger Inngest job
+  // Trigger Inngest (non-fatal if fails)
   try {
+    const inngest = new Inngest({
+      id: 'tocfl-fafa',
+      eventKey: process.env.INNGEST_EVENT_KEY,
+    });
     await inngest.send({
       name: 'exam/book.process',
       data: { book_id: book.id, job_id: job.id },
     });
   } catch (e) {
-    // Non-fatal: job is in DB, can be triggered manually
     console.error('Inngest send failed:', e.message);
   }
 

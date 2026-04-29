@@ -1,4 +1,4 @@
-import { getServerDb } from '../../../lib/supabase-server.js';
+import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,8 +10,12 @@ export default async function handler(req, res) {
   const { filename } = req.body;
   if (!filename) return res.status(400).json({ error: 'Missing filename' });
 
+  const db = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
   const path = `${Date.now()}_${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const db   = getServerDb();
 
   const { data, error } = await db.storage
     .from('exam-books')
