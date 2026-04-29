@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="css/admin.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 </head>
 <body>
 
@@ -122,35 +121,49 @@
           </div>
           <div id="ex-create-msg" class="s-msg" style="margin-top:10px"></div>
           <button id="ex-save-btn" class="s-btn" onclick="exSaveBook()" style="margin-top:12px;width:100%">
-            <i class="fa-solid fa-plus"></i> Tạo bộ đề &amp; tiến đến OCR
+            <i class="fa-solid fa-arrow-right"></i> Tiếp theo: Upload PDF
           </button>
         </div>
 
-        <!-- Panel 2: OCR -->
-        <div id="ex-panel-ocr" class="s-card" style="display:none">
+        <!-- Panel 2: Upload PDF -->
+        <div id="ex-panel-upload" class="s-card" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div class="s-title" style="margin:0"><i class="fa-solid fa-eye" style="color:#dc2626"></i> OCR · Quét văn bản</div>
-            <span id="ex-ocr-book-label" style="font-size:12px;color:#6b7280"></span>
+            <div class="s-title" style="margin:0">
+              <i class="fa-solid fa-cloud-arrow-up" style="color:#1a56db"></i> Upload PDF
+            </div>
+            <span id="ex-upload-book-label" style="font-size:12px;color:#6b7280;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
           </div>
-          <div id="ex-ocr-content"></div>
+          <div id="ex-upload-content"></div>
         </div>
 
-        <!-- Panel 3: AI Parse -->
-        <div id="ex-panel-parse" class="s-card" style="display:none">
+        <!-- Panel 3: Job monitor -->
+        <div id="ex-panel-monitor" class="s-card" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div class="s-title" style="margin:0"><i class="fa-solid fa-sparkles" style="color:#7c3aed"></i> Phân tích cấu trúc với AI</div>
-            <button class="s-btn" onclick="exShowOCRPanel()" style="padding:5px 12px;font-size:11px;background:#6b7280">← OCR lại</button>
+            <div class="s-title" style="margin:0">
+              <i class="fa-solid fa-gears" style="color:#7c3aed"></i> Đang xử lý
+            </div>
+            <button class="s-btn" onclick="exDeleteBook()"
+                    style="padding:5px 12px;font-size:11px;background:#dc2626">
+              <i class="fa-solid fa-trash"></i> Xóa
+            </button>
           </div>
-          <div id="ex-parse-content"></div>
+          <div id="ex-monitor-content"></div>
         </div>
 
         <!-- Panel 4: Units review -->
         <div id="ex-panel-units" class="s-card" style="display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-            <div class="s-title" style="margin:0"><i class="fa-solid fa-list-check" style="color:#1a56db"></i> <span id="ex-units-title"></span></div>
+            <div class="s-title" style="margin:0">
+              <i class="fa-solid fa-list-check" style="color:#1a56db"></i>
+              <span id="ex-units-title"></span>
+            </div>
             <div style="display:flex;gap:8px">
-              <button class="s-btn" onclick="exShowOCRPanel()" style="padding:5px 12px;font-size:11px;background:#6b7280">↑ Xử lý lại</button>
-              <button class="s-btn" onclick="exDeleteBook()" style="padding:5px 12px;font-size:11px;background:#dc2626"><i class="fa-solid fa-trash"></i> Xóa</button>
+              <button class="s-btn" onclick="exShowPanel('ex-panel-monitor')"
+                      style="padding:5px 12px;font-size:11px;background:#6b7280">← Job</button>
+              <button class="s-btn" onclick="exDeleteBook()"
+                      style="padding:5px 12px;font-size:11px;background:#dc2626">
+                <i class="fa-solid fa-trash"></i> Xóa
+              </button>
             </div>
           </div>
           <div id="ex-units-list"></div>

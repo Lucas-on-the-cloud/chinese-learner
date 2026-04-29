@@ -1,5 +1,9 @@
 {
   "name": "chinese-learner",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "inngest": "^3.22.0",
+    "@supabase/supabase-js": "^2.49.0"
+  }
 }
