@@ -133,13 +133,25 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Allow anon key to upload (admin panel uses anon key without auth)
-CREATE POLICY IF NOT EXISTS "exam-books anon upload"
-  ON storage.objects FOR INSERT
-  TO anon
-  WITH CHECK (bucket_id = 'exam-books');
+-- Allow anon key to upload/read (admin panel uses anon key without auth)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'exam-books anon upload'
+  ) THEN
+    CREATE POLICY "exam-books anon upload"
+      ON storage.objects FOR INSERT TO anon
+      WITH CHECK (bucket_id = 'exam-books');
+  END IF;
 
-CREATE POLICY IF NOT EXISTS "exam-books anon read"
-  ON storage.objects FOR SELECT
-  TO anon
-  USING (bucket_id = 'exam-books');
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+    AND policyname = 'exam-books anon read'
+  ) THEN
+    CREATE POLICY "exam-books anon read"
+      ON storage.objects FOR SELECT TO anon
+      USING (bucket_id = 'exam-books');
+  END IF;
+END $$;
