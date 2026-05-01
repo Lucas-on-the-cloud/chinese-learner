@@ -685,7 +685,7 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
     </div>
     <div class="chat-input-row">
       <input id="exam-chat-input" class="chat-input" placeholder="Nhập câu hỏi…"
-             onkeydown="if(event.key==='Enter')chatSend()">
+             onkeydown="if(event.key==='Enter'&&!event.isComposing)chatSend()">
       <button class="chat-send" onclick="chatSend()">Gửi</button>
     </div>
   </div>
@@ -1159,7 +1159,7 @@ let _selRange = null;
   });
 
   document.addEventListener('mousedown', e => {
-    if (!e.target.closest('#sel-popup')) selDismiss();
+    if (!e.target.closest('#sel-popup') && !e.target.closest('#exam-chat-widget')) selDismiss();
   });
 })();
 
