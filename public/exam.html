@@ -75,11 +75,6 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
         </span>
       </template>
     </div>
-    <!-- Mobile nav toggle -->
-    <button @click="navOpen=!navOpen" x-show="view==='exam'"
-      class="ml-auto md:hidden flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5">
-      <i class="fa-solid fa-list text-[10px]"></i> Mục lục
-    </button>
     <div class="ml-auto" id="nav-auth">
       <a href="/login.html" class="text-sm font-semibold text-white bg-blue hover:bg-blue-dark px-4 py-2 rounded-lg transition">Bắt đầu học</a>
     </div>
@@ -95,70 +90,10 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
 </div>
 
 <!-- MAIN LAYOUT -->
-<div class="flex min-h-[calc(100vh-62px)]">
-
-  <!-- ── LEFT NAV ────────────────────────────────── -->
-  <aside :class="navOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-         class="fixed md:sticky top-[62px] left-0 z-40 h-[calc(100vh-62px)]
-                w-72 bg-white border-r border-gray-200 flex flex-col
-                un-scroll overflow-y-auto transition-transform md:transition-none">
-
-    <!-- Book header -->
-    <div class="p-4 border-b border-gray-100">
-      <a href="/exams.html" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue mb-3 transition">
-        <i class="fa-solid fa-arrow-left text-[9px]"></i> Tất cả đề thi
-      </a>
-      <div class="zh font-bold text-navy text-[13px] leading-snug mb-1.5" x-text="book?.title || '…'"></div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <span x-show="book?.level" x-text="book?.level"
-              class="text-[10px] font-bold text-white bg-blue px-2 py-0.5 rounded-md"></span>
-        <span class="text-[11px] text-gray-400" x-text="units.length + ' sub-unit'"></span>
-      </div>
-    </div>
-
-    <!-- Unit list -->
-    <div class="flex-1 py-2 overflow-y-auto un-scroll">
-      <template x-for="group in unitGroups" :key="group.num">
-        <div>
-          <div class="flex items-center gap-2 px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-            <i class="fa-solid fa-book text-[8px]"></i>
-            Unit <span x-text="group.num"></span>
-            <span class="zh font-normal normal-case tracking-normal text-gray-300 ml-1" x-text="group.titleZh"></span>
-          </div>
-          <template x-for="u in group.items" :key="u.id">
-            <button @click="selectUnit(u)"
-              :class="activeUnit?.id===u.id
-                ? 'bg-blue-lt text-blue border-l-[3px] border-blue'
-                : 'text-gray-700 border-l-[3px] border-transparent hover:bg-gray-50'"
-              class="w-full text-left px-4 py-2.5 flex items-center gap-2.5 transition relative">
-              <span class="text-[11px] font-bold min-w-[28px] tabular-nums"
-                    :class="activeUnit?.id===u.id ? 'text-blue' : 'text-gray-400'"
-                    x-text="`${u.unit_number}-${u.sub_number}`"></span>
-              <span class="zh text-[12px] flex-1 truncate font-medium"
-                    x-text="u.sub_title_zh || u.title_zh || '—'"></span>
-              <!-- Result badge -->
-              <template x-if="unitResults[u.id]">
-                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-                      :class="(unitResults[u.id].score/unitResults[u.id].total) >= 0.6
-                               ? 'bg-green-lt text-green' : 'bg-orange/10 text-orange'"
-                      x-text="`${unitResults[u.id].score}/${unitResults[u.id].total}`"></span>
-              </template>
-              <template x-if="!unitResults[u.id]">
-                <span class="text-[10px] text-gray-300 flex-shrink-0">—</span>
-              </template>
-            </button>
-          </template>
-        </div>
-      </template>
-    </div>
-  </aside>
-
-  <!-- Backdrop for mobile nav -->
-  <div x-show="navOpen" @click="navOpen=false"
-       class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
+<div class="min-h-[calc(100vh-62px)]">
 
   <!-- ── MAIN CONTENT ──────────────────────────── -->
-  <main class="flex-1 min-w-0 overflow-x-hidden">
+  <main class="overflow-x-hidden">
 
     <!-- ── BOOK VIEW ──────────────────── -->
     <div x-show="view==='book' && !loading">
@@ -243,10 +178,11 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
               <span x-text="sectionNumZh(sec.section_number)"></span>
             </button>
           </template>
-          <!-- Progress pill -->
-          <div class="ml-auto flex-shrink-0 flex items-center gap-2 text-xs font-semibold text-gray-500">
-            <span :class="allAnswered ? 'text-green' : 'text-blue'"
-                  x-text="`${answeredQ}/${totalQ} câu`"></span>
+          <!-- Timer -->
+          <div class="ml-auto flex-shrink-0 flex items-center gap-1.5 font-mono text-sm font-bold tabular-nums"
+               :class="timerUrgent ? 'text-red-500' : 'text-gray-600'">
+            <i class="fa-regular fa-clock text-[11px]"></i>
+            <span x-text="timerDisplay"></span>
           </div>
         </div>
       </div>
@@ -264,16 +200,29 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
                 Unit <span x-text="activeUnit && `${activeUnit.unit_number}-${activeUnit.sub_number}`"></span>
                 · <span class="zh" x-text="activeUnit?.title_zh || ''"></span>
               </div>
+
               <h2 class="zh text-2xl font-bold text-white leading-snug"
                   x-text="activeUnit?.sub_title_zh || activeUnit?.title_zh || '—'"></h2>
             </div>
             <div class="text-right flex-shrink-0">
-              <div class="text-3xl font-black text-white leading-none"
-                   x-text="submitted ? `${examScore}/${totalQ}` : `${answeredQ}/${totalQ}`"></div>
-              <div class="text-[11px] text-white/50 mt-1" x-text="submitted ? 'điểm' : 'đã trả lời'"></div>
+              <template x-if="!submitted">
+                <div>
+                  <div class="font-mono text-3xl font-black leading-none tabular-nums"
+                       :class="timerUrgent ? 'text-red-300' : 'text-white'"
+                       x-text="timerDisplay"></div>
+                  <div class="text-[11px] text-white/50 mt-1">còn lại</div>
+                </div>
+              </template>
+              <template x-if="submitted">
+                <div>
+                  <div class="text-3xl font-black text-white leading-none"
+                       x-text="`${examScore}/${totalQ}`"></div>
+                  <div class="text-[11px] text-white/50 mt-1">điểm</div>
+                </div>
+              </template>
             </div>
           </div>
-          <!-- Progress bar -->
+          <!-- Progress bar (answers) -->
           <div class="mt-4 relative z-10">
             <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div class="h-full rounded-full transition-all duration-300"
@@ -478,22 +427,14 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
 
       <!-- Sticky submit bar -->
       <div x-show="!submitted"
-           class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur border-t border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
-        <div class="flex items-center gap-2 text-sm">
-          <div class="h-2 w-32 bg-gray-100 rounded-full overflow-hidden">
-            <div class="h-full bg-blue rounded-full transition-all"
-                 :style="`width:${totalQ ? Math.round(answeredQ/totalQ*100) : 0}%`"></div>
-          </div>
-          <span class="text-gray-500 text-xs" x-text="`${answeredQ}/${totalQ} câu đã trả lời`"></span>
-        </div>
+           class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
+        <span class="text-gray-400 text-xs">
+          <span x-text="answeredQ" class="font-bold text-gray-700"></span>/<span x-text="totalQ"></span> câu đã chọn
+        </span>
         <button @click="submitExam()"
-          :disabled="!allAnswered"
-          :class="allAnswered
-            ? 'bg-blue hover:bg-blue-dark shadow-lg shadow-blue/30 cursor-pointer'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
-          class="flex items-center gap-2 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition">
+          class="flex items-center gap-2 bg-blue hover:bg-blue-dark text-white text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue/20 cursor-pointer">
           <i class="fa-solid fa-check-double text-xs"></i>
-          Kiểm tra đáp án
+          Nộp bài
         </button>
       </div>
 
@@ -518,7 +459,6 @@ function examApp() {
   return {
     // ── State ──────────────────────────────────────────
     loading:  true,
-    navOpen:  false,
     view:     'book',   // 'book' | 'exam'
     book:     null,
     units:    [],
@@ -537,10 +477,19 @@ function examApp() {
     secBOpen:  false,
     activeSectionId: null,
 
+    // Timer
+    timer:       60 * 60,   // 60 phút tính bằng giây
+    timerHandle: null,
+
     // ── Computed ───────────────────────────────────────
-    get totalQ()     { return Object.values(this.questionsBySection).flat().length },
-    get answeredQ()  { return Object.keys(this.answers).length },
-    get allAnswered() { return this.answeredQ === this.totalQ && this.totalQ > 0 },
+    get totalQ()    { return Object.values(this.questionsBySection).flat().length },
+    get answeredQ() { return Object.keys(this.answers).length },
+    get timerDisplay() {
+      const m = Math.floor(this.timer / 60);
+      const s = this.timer % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    },
+    get timerUrgent() { return this.timer <= 600; },   // đỏ khi < 10 phút
     get examScore() {
       if (!this.submitted) return 0;
       return Object.values(this.questionsBySection).flat()
@@ -563,6 +512,7 @@ function examApp() {
 
     // ── Init ───────────────────────────────────────────
     async init() {
+      this.initPickListener();
       if (_auth) {
         _auth.init().then(u => {
           _user = u;
@@ -667,6 +617,20 @@ function examApp() {
       this.view = 'exam';
 
       this.$nextTick(() => { this.setupObserver(); window.scrollTo(0,0); });
+      this.startTimer();
+    },
+
+    // ── Timer ──────────────────────────────────────────
+    startTimer() {
+      this.stopTimer();
+      this.timer = 60 * 60;
+      this.timerHandle = setInterval(() => {
+        if (this.timer <= 0) { this.stopTimer(); this.submitExam(); return; }
+        this.timer--;
+      }, 1000);
+    },
+    stopTimer() {
+      if (this.timerHandle) { clearInterval(this.timerHandle); this.timerHandle = null; }
     },
 
     // ── Question helpers ───────────────────────────────
@@ -690,7 +654,7 @@ function examApp() {
         if (sub && l !== corr && l === ans)       cls += ' c-wrong';
         if (sub && l === corr && l !== ans)       cls += ' c-miss';
         const disabled = sub ? 'disabled' : '';
-        return `<button class="${cls}" onclick="window._app.pick(${q.id},'${l}')" ${disabled}>
+        return `<button class="${cls}" onclick="pickAnswer(${q.id},'${l}')" ${disabled}>
           <span class="lbl text-xs font-black min-w-[14px] mt-0.5 flex-shrink-0">${l}</span>
           <span class="zh text-[13px] leading-relaxed">${esc(text)}</span>
         </button>`;
@@ -719,9 +683,14 @@ function examApp() {
       this.answers = { ...this.answers, [qId]: label };
     },
 
+    initPickListener() {
+      document.addEventListener('pick-answer', e => this.pick(e.detail.qId, e.detail.label));
+    },
+
     async submitExam() {
-      if (!this.allAnswered || this.submitted) return;
+      if (this.submitted) return;
       this.submitted = true;
+      this.stopTimer();
 
       // Save to DB if logged in
       if (_user && this.activeUnit) {
@@ -742,6 +711,7 @@ function examApp() {
     retry() {
       this.answers = {}; this.submitted = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.startTimer();
     },
 
     async goNext() {
@@ -778,13 +748,10 @@ function examApp() {
   };
 }
 
-// Expose pick() globally for inline onclick in renderQuestion
-document.addEventListener('alpine:init', () => {
-  window._app = document.querySelector('[x-data]')._x_dataStack?.[0];
-});
-document.addEventListener('alpine:initialized', () => {
-  window._app = Alpine.$data(document.querySelector('[x-data]'));
-});
+// Global pick() for inline onclick inside x-html rendered question HTML
+function pickAnswer(qId, label) {
+  document.dispatchEvent(new CustomEvent('pick-answer', { detail: { qId, label } }));
+}
 
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
