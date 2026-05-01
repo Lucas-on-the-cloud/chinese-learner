@@ -1126,7 +1126,7 @@ let _selRange = null;
 
 (function initSelection() {
   document.addEventListener('mouseup', e => {
-    if (e.target.closest('#sel-popup') || e.target.closest('#ai-panel')) return;
+    if (e.target.closest('#sel-popup') || e.target.closest('#ai-panel') || e.target.closest('#exam-chat-widget')) return;
     setTimeout(() => {
       const sel = window.getSelection();
       const txt = sel?.toString().trim();
@@ -1165,7 +1165,11 @@ let _selRange = null;
 
 function selDismiss() {
   document.getElementById('sel-popup')?.classList.remove('show');
-  window.getSelection()?.removeAllRanges();
+  // Don't remove ranges if an input/textarea is focused — avoids stealing focus from chat
+  const ae = document.activeElement;
+  if (!ae || (ae.tagName !== 'INPUT' && ae.tagName !== 'TEXTAREA')) {
+    window.getSelection()?.removeAllRanges();
+  }
   _selRange = null;
 }
 
