@@ -806,10 +806,16 @@ async function exToggleUnit(unitId) {
     .eq('unit_id', unitId).order('section_number');
 
   const sectionIds = (sections || []).map(s => s.id);
-  const { data: questions } = await _adminDb.client
-    .from('exam_questions')
-    .select('id,section_id,question_number,question_text,correct_answer,flag_warnings')
-    .in('section_id', sectionIds).order('question_number');
+
+  const [{ data: questions }, { data: passagesArr }] = await Promise.all([
+    _adminDb.client.from('exam_questions')
+      .select('id,section_id,question_number,question_text,correct_answer,flag_warnings')
+      .in('section_id', sectionIds).order('question_number'),
+    sectionIds.length
+      ? _adminDb.client.from('exam_passages')
+          .select('id,section_id,label,content_text').in('section_id', sectionIds).order('id')
+      : { data: [] },
+  ]);
 
   const qIds = (questions || []).map(q => q.id);
   const { data: choicesArr } = qIds.length
@@ -831,21 +837,35 @@ async function exToggleUnit(unitId) {
     if (!qsBySection[q.section_id]) qsBySection[q.section_id] = [];
     qsBySection[q.section_id].push(q);
   });
+  const passagesBySection = {};
+  (passagesArr || []).forEach(p => {
+    if (!passagesBySection[p.section_id]) passagesBySection[p.section_id] = [];
+    passagesBySection[p.section_id].push(p);
+  });
 
   let html = '<div style="padding:0 14px 16px">';
   if (sections?.length) {
     html += '<div style="font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.06em;margin:12px 0 8px;text-transform:uppercase">A · 測驗練習</div>';
     for (const sec of sections) {
       const qs         = qsBySection[sec.id] || [];
+      const passes     = passagesBySection[sec.id] || [];
       const unanswered = qs.filter(q => !q.correct_answer).length;
       const flagged    = qs.filter(q => q.flag_warnings?.some(f => f.level === 'red')).length;
+      const passHtml   = passes.map(p => `
+        <div style="background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;
+                    padding:8px 12px;margin-bottom:8px;font-size:12px;color:#166534">
+          ${p.label ? `<span style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;color:#15803d">${escHtml(p.label)}</span>` : ''}
+          <div style="white-space:pre-wrap;line-height:1.7;font-family:'Noto Serif TC',serif">${escHtml(p.content_text || '')}</div>
+        </div>`).join('');
       html += `<div style="margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">
           ${escHtml(sec.title || sec.section_type)}
           <span style="font-weight:400;color:#9ca3af">${qs.length} câu</span>
+          ${passes.length ? `<span style="font-size:11px;color:#16a34a;background:#f0fdf4;padding:1px 8px;border-radius:999px">${passes.length} đoạn đọc</span>` : ''}
           ${unanswered ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">${unanswered} chưa đáp án</span>` : ''}
           ${flagged ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">⚠ ${flagged}</span>` : ''}
         </div>
+        ${passHtml}
         ${qs.map(q => exQRow(q, choicesByQ[q.id] || {})).join('')}
       </div>`;
     }
@@ -1276,6 +1296,13 @@ async function exStartMdImport() {
   try {
     const answers = parseMdAnswers(_md.answerText);
     const units   = parseMdExercise(_md.exerciseText, answers);
+    console.log('[MD] parsed', units.length, 'units');
+    units.forEach(u => {
+      (u.sections || []).forEach(s => {
+        console.log(`[MD] ${u.unit_number}-${u.sub_number} §${s.section_number}(${s.type}): ${s.passages?.length||0} passages, ${s.questions?.length||0} qs`);
+        (s.passages||[]).forEach((p,i) => console.log(`  passage[${i}] label="${p.label}" text="${p.text?.slice(0,60)}…"`));
+      });
+    });
     if (!units.length) {
       showMsg('md-msg', 'Không tìm thấy Unit nào trong file. Kiểm tra lại định dạng.', 'err');
       btn.disabled = false;
