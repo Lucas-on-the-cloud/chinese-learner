@@ -21,8 +21,12 @@ async function loadExams() {
     return `<div onclick="exSelectBook(${b.id})"
       style="padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;
              border:1.5px solid ${active ? '#1a56db' : '#e5e7eb'};
-             background:${active ? '#eff6ff' : '#fff'}">
-      <div style="font-weight:600;font-size:13px">${escHtml(b.title)}</div>
+             background:${active ? '#eff6ff' : '#fff'};position:relative">
+      <button onclick="event.stopPropagation();exQuickDeleteBook(${b.id},${JSON.stringify(escHtml(b.title))})"
+        title="Xóa" style="position:absolute;top:6px;right:6px;background:none;border:none;
+               cursor:pointer;color:#d1d5db;font-size:13px;line-height:1;padding:2px 4px;border-radius:4px"
+        onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">✕</button>
+      <div style="font-weight:600;font-size:13px;padding-right:18px">${escHtml(b.title)}</div>
       <div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">
         ${b.level ? `<span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">${b.level}</span>` : ''}
         <span style="font-size:11px;color:#6b7280">${b.total_units || 30} units</span>
@@ -35,6 +39,13 @@ async function loadExams() {
       </div>
     </div>`;
   }).join('');
+}
+
+async function exQuickDeleteBook(bookId, title) {
+  if (!confirm(`Xóa "${title}"?\nTất cả unit, câu hỏi, đoạn đọc sẽ bị xóa vĩnh viễn.`)) return;
+  await _adminDb.client.from('exam_books').delete().eq('id', bookId);
+  if (_ex.book?.id === bookId) { _ex.book = null; exShowPanel('ex-panel-create'); }
+  await loadExams();
 }
 
 async function exPublishBook(bookId) {
