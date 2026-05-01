@@ -1301,28 +1301,62 @@ async function chatSend() {
     return;
   }
 
-  // Build context from current Alpine state
+  // Build full section context from current Alpine state
   let ctx = '';
   try {
     const data = Alpine.$data(document.querySelector('[x-data]'));
     const sec  = data.currentSection;
     const unit = data.activeUnit;
+    const submitted = data.submitted;
+
     if (unit) ctx += `Đề thi: ${unit.sub_title_zh || unit.title_zh || ''}\n`;
-    if (sec)  ctx += `Phần hiện tại: ${sec.title || ''}\n`;
+    if (sec)  ctx += `Phần: ${sec.title || ''} | Loại: ${sec.section_type || ''}\n`;
+    if (submitted) ctx += `[Đã nộp bài]\n`;
+    ctx += '\n';
+
+    // All passages
     const passes = data.passagesBySection[sec?.id] || [];
-    if (passes.length) ctx += `Đoạn văn:\n${passes.map(p=>p.content_text).join('\n\n').slice(0,600)}`;
+    if (passes.length) {
+      ctx += `--- Đoạn văn ---\n`;
+      passes.forEach(p => {
+        if (p.label) ctx += `[${p.label}]\n`;
+        ctx += `${p.content_text || ''}\n\n`;
+      });
+    }
+
+    // All questions with choices + user's answer
+    const qs = data.questionsBySection[sec?.id] || [];
+    if (qs.length) {
+      ctx += `--- Câu hỏi ---\n`;
+      qs.forEach(q => {
+        const choices = data.choicesForQ[q.id] || {};
+        const picked  = _answers[q.id];
+        ctx += `${q.question_number}. ${q.question_text || '(câu nghe)'}\n`;
+        ['A','B','C','D'].forEach(l => {
+          if (choices[l]) ctx += `  ${l}: ${choices[l]}\n`;
+        });
+        if (picked) ctx += `  → Người dùng chọn: ${picked}${submitted ? ` | Đáp án đúng: ${q.correct_answer||'?'}` : ''}\n`;
+        ctx += '\n';
+      });
+    }
+
+    // Vocab / phrases (brief)
+    if (data.vocab?.length) {
+      ctx += `--- Từ vựng phần này ---\n`;
+      data.vocab.slice(0, 30).forEach(v => ctx += `${v.word}${v.pinyin?' ('+v.pinyin+')':''}: ${v.meaning_vi||''}\n`);
+    }
   } catch(_) {}
 
   _chatHistory.push({ role: 'user', content: msg });
 
-  const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文) cho người Việt học TOCFL. Trả lời ngắn gọn, thực tế, dùng tiếng Việt, kèm chú thích chữ Hán/pinyin khi cần.${ctx ? '\n\nNgữ cảnh bài thi:\n' + ctx : ''}`;
+  const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文) cho người Việt học TOCFL. Trả lời ngắn gọn, thực tế, dùng tiếng Việt, kèm chú thích chữ Hán/pinyin khi cần. KHÔNG tiết lộ đáp án đúng trừ khi người dùng đã nộp bài.${ctx ? '\n\nNgữ cảnh section hiện tại:\n' + ctx : ''}`;
 
   const id = 'cm-' + Date.now();
   msgs.innerHTML += `<div class="chat-msg bot" id="${id}"><i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i></div>`;
   msgs.scrollTop = msgs.scrollHeight;
 
   try {
-    const reply = await _ai.call(sys, null, 700, _chatHistory);
+    const reply = await _ai.call(sys, null, 1200, _chatHistory);
     _chatHistory.push({ role: 'assistant', content: reply });
     const el = document.getElementById(id);
     if (el) el.textContent = reply;
