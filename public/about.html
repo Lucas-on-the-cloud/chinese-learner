@@ -404,17 +404,19 @@ footer {
 <!-- ── NAVBAR ─────────────────────────────────── -->
 <nav class="navbar">
   <div class="container">
-    <a class="nav-brand" href="/">
-      <img src="images/logo.jpg" alt="TOCFL FAFA">
-      TOCFL <em>FAFA</em>
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
     </a>
-    <div class="nav-links">
+    <div class="nav-menu">
       <a class="nav-link" href="/flashcards.html">Flashcard</a>
       <a class="nav-link" href="/courses.html">Khóa học</a>
       <a class="nav-link" href="/exams.html">Đề thi</a>
       <a class="nav-link active" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
-      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      </div>
     </div>
   </div>
 </nav>
@@ -622,8 +624,8 @@ footer {
       <ul class="footer-links">
         <li><a href="/flashcards.html">Flashcard</a></li>
         <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/blog.html">Blog</a></li>
         <li><a href="/about.html">Giới thiệu</a></li>
-        <li><a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook</a></li>
       </ul>
     </div>
     <div>

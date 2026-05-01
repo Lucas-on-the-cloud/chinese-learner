@@ -216,22 +216,45 @@ img{display:block;max-width:100%}
   .chat-float-panel{width:calc(100vw - 24px)}
   #rp-text-area.split { grid-template-columns: 1fr; }
 }
+/* ── Footer ── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.footer-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:12px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{color:rgba(255,255,255,.6);transition:color .15s}
+.footer-links a:hover,.footer-links a:hover{color:#fff}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:13px;transition:.15s}
+.footer-social:hover{background:rgba(255,255,255,.15);color:#fff}
+.footer-info-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px}
+.footer-info-row i{width:14px;flex-shrink:0;color:rgba(255,255,255,.3)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
+@media(max-width:720px){.footer-main{grid-template-columns:1fr;gap:1.5rem}}
 </style>
 </head>
 <body>
 
 <nav class="navbar">
   <div class="container">
-    <a class="nav-brand" href="/about.html">
-      <img src="images/logo.jpg" alt="TOCFL FAFA">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
       <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
     </a>
     <div class="nav-menu">
       <a class="nav-link" href="/flashcards.html">Flashcard</a>
       <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
-      <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      </div>
     </div>
   </div>
 </nav>
@@ -375,5 +398,42 @@ img{display:block;max-width:100%}
   await window.userSession.migrateFromLocalStorage();
 })();
 </script>
+<footer>
+  <div class="footer-main">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px" onerror="this.style.display='none'">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/courses.html" title="Khóa học"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="footer-info-row"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/courses.html">Khóa học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
 </body>
 </html>
