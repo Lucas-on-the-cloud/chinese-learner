@@ -280,6 +280,26 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   .modal-card{border-radius:16px}
   .modal-score-val{font-size:44px}
 }
+
+/* ── Floating chat widget ─────────────────────────────── */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-bubble-btn{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s}
+.chat-bubble-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(26,86,219,.45)}
+.chat-float-panel{width:360px;max-width:calc(100vw - 32px);background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;height:420px}
+.chat-float-panel.open{display:flex}
+.chat-head{background:linear-gradient(135deg,var(--navy),#1e3a8a);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-head .dot{width:8px;height:8px;border-radius:50%;background:#34d399}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1}
+.chat-close-btn:hover{color:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-msg.sys{background:#fffbeb;border:1px solid #fde68a;align-self:center;font-size:11px;color:#92400e;text-align:center;border-radius:8px}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none}
+.chat-send{background:var(--blue);color:#fff;border:none;padding:0 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.chat-send:hover{background:var(--blue-dark)}
 </style>
 </head>
 <body x-data="examApp()" x-init="init()">
@@ -628,6 +648,9 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     </div>
     <!-- Actions -->
     <div class="modal-actions">
+      <button class="modal-btn" @click="viewReview()">
+        <i class="fa-solid fa-eye" style="font-size:11px"></i> Xem lại bài
+      </button>
       <button class="modal-btn" @click="retry()">
         <i class="fa-solid fa-rotate-right" style="font-size:11px"></i> Làm lại
       </button>
@@ -639,6 +662,28 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </button>
     </div>
   </div>
+</div>
+
+<!-- ── FLOATING CHAT ────────────────────────────────────────── -->
+<div class="chat-widget" id="exam-chat-widget">
+  <div class="chat-float-panel" id="exam-chat-panel">
+    <div class="chat-head">
+      <div class="dot"></div>
+      <span>Hỏi AI về đề thi</span>
+      <button class="chat-close-btn" onclick="chatToggle()">×</button>
+    </div>
+    <div class="chat-msgs" id="exam-chat-msgs">
+      <div class="chat-msg sys">Hỏi bất kỳ điều gì về đề thi đang làm — từ vựng, ngữ pháp, đáp án…</div>
+    </div>
+    <div class="chat-input-row">
+      <input id="exam-chat-input" class="chat-input" placeholder="Nhập câu hỏi…"
+             onkeydown="if(event.key==='Enter')chatSend()">
+      <button class="chat-send" onclick="chatSend()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" onclick="chatToggle()" title="Hỏi AI">
+    <i class="fa-solid fa-comment-dots"></i>
+  </button>
 </div>
 
 <!-- ── SELECTION POPUP ─────────────────────────────────────── -->
@@ -1005,6 +1050,13 @@ function examApp() {
       this.showResult = true;
     },
 
+    viewReview() {
+      // Close modal but keep submitted state so user can read correct/wrong marks
+      this.showResult = false;
+      this.currentSectionIdx = 0;
+      window.scrollTo(0,0);
+    },
+
     retry() {
       this.answers = {}; this.submitted = false;
       this.showResult = false; this.aiResult = '';
@@ -1061,9 +1113,11 @@ let _selContext = '';
       const txt = sel?.toString().trim();
       if (!txt || txt.length < 2) { selDismiss(); return; }
 
-      // Only trigger within passage text
+      // commonAncestorContainer can be a Text node — walk up to Element
       const range   = sel.getRangeAt(0);
-      const passage = range.commonAncestorContainer?.closest?.('.passage-text, .passage-block');
+      const anchor  = range.commonAncestorContainer;
+      const el      = anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement;
+      const passage = el?.closest('.passage-text, .passage-block');
       if (!passage) { selDismiss(); return; }
 
       _selText    = txt;
@@ -1144,6 +1198,65 @@ Giải thích ngắn gọn, thực tế. Dùng tiếng Việt, kèm chú thích 
 
 function closeAiPanel() {
   document.getElementById('ai-panel')?.classList.remove('open');
+}
+
+// ── Floating chat ────────────────────────────────────────────
+const _chatHistory = [];
+
+function chatToggle() {
+  const panel = document.getElementById('exam-chat-panel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) {
+    setTimeout(() => document.getElementById('exam-chat-input')?.focus(), 60);
+  }
+}
+
+async function chatSend() {
+  const inp = document.getElementById('exam-chat-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  const msgs = document.getElementById('exam-chat-msgs');
+  msgs.innerHTML += `<div class="chat-msg user">${esc(msg)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  if (!_ai) {
+    msgs.innerHTML += `<div class="chat-msg sys">⚠ Chưa cấu hình API key. Vào Admin → Cài đặt.</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  // Build context from current Alpine state
+  let ctx = '';
+  try {
+    const data = Alpine.$data(document.querySelector('[x-data]'));
+    const sec  = data.currentSection;
+    const unit = data.activeUnit;
+    if (unit) ctx += `Đề thi: ${unit.sub_title_zh || unit.title_zh || ''}\n`;
+    if (sec)  ctx += `Phần hiện tại: ${sec.title || ''}\n`;
+    const passes = data.passagesBySection[sec?.id] || [];
+    if (passes.length) ctx += `Đoạn văn:\n${passes.map(p=>p.content_text).join('\n\n').slice(0,600)}`;
+  } catch(_) {}
+
+  _chatHistory.push({ role: 'user', content: msg });
+
+  const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文) cho người Việt học TOCFL. Trả lời ngắn gọn, thực tế, dùng tiếng Việt, kèm chú thích chữ Hán/pinyin khi cần.${ctx ? '\n\nNgữ cảnh bài thi:\n' + ctx : ''}`;
+
+  const id = 'cm-' + Date.now();
+  msgs.innerHTML += `<div class="chat-msg bot" id="${id}"><i class="fa-solid fa-spinner fa-spin" style="font-size:11px"></i></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const reply = await _ai.call(sys, null, 700, _chatHistory);
+    _chatHistory.push({ role: 'assistant', content: reply });
+    const el = document.getElementById(id);
+    if (el) el.textContent = reply;
+  } catch (e) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '❌ ' + e.message;
+  }
+  msgs.scrollTop = msgs.scrollHeight;
 }
 </script>
 </body>
