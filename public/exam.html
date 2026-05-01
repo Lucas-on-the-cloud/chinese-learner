@@ -6,443 +6,639 @@
 <title>Luyện đề thi — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config = {
-  theme: { extend: {
-    colors: {
-      navy:   '#0d1b4b',
-      blue:   { DEFAULT:'#1a56db', dark:'#1544b8', lt:'#eff6ff' },
-      orange: '#f47b20',
-      purple: { DEFAULT:'#7c3aed', lt:'#f5f3ff' },
-      green:  { DEFAULT:'#16a34a', lt:'#f0fdf4' },
-    },
-    fontFamily: { serif:['"Noto Serif TC"','serif'], sans:['"Be Vietnam Pro"','sans-serif'] },
-  }}
-}
-</script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
+<script src="js/config.js"></script>
+<script src="js/ai-service.js"></script>
 <style>
+/* ── Reset & Base ─────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
 .zh{font-family:'Noto Serif TC',serif}
 
-/* Choice button states */
-.choice-btn            {transition:all .12s;text-align:left;cursor:pointer}
-.choice-btn.selected   {border-color:#1a56db!important;background:#eff6ff!important;color:#1a56db}
-.choice-btn.selected .lbl{color:#1a56db}
-.choice-btn.c-correct  {border-color:#16a34a!important;background:#f0fdf4!important;color:#166534}
-.choice-btn.c-correct .lbl{color:#16a34a}
-.choice-btn.c-wrong    {border-color:#dc2626!important;background:#fef2f2!important;color:#dc2626}
-.choice-btn.c-wrong .lbl{color:#dc2626}
-.choice-btn.c-miss     {border-color:#16a34a!important;border-style:dashed!important;color:#166534}
-.choice-btn.c-miss .lbl{color:#16a34a}
+/* ── Tokens ───────────────────────────────────────────── */
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.14);
+  --r:12px;
+  --nav-h:62px;
+}
 
-/* Passage block */
-.passage-block{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:14px}
+/* ── Navbar ───────────────────────────────────────────── */
+.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;transition:.15s}
+.nav-btn:hover{background:var(--blue-dark)}
+.nav-user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7)}
+
+/* ── Exam top bar (sticky below navbar) ──────────────── */
+.exam-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.eb-inner{max-width:860px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;gap:12px;min-height:52px;flex-wrap:wrap}
+.eb-crumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);flex-shrink:0}
+.eb-crumb a{color:var(--text-3);transition:.15s}
+.eb-crumb a:hover{color:var(--blue)}
+.eb-crumb .sep{font-size:9px;opacity:.5}
+.eb-crumb .cur{color:var(--text-2);font-weight:600}
+.eb-sections{display:flex;gap:5px;flex:1;justify-content:center;flex-wrap:wrap}
+.sec-pill{font-size:12px;font-weight:600;padding:4px 13px;border-radius:20px;border:1.5px solid var(--border);color:var(--text-3);background:transparent;cursor:pointer;transition:.12s;font-family:inherit;white-space:nowrap}
+.sec-pill:hover{border-color:var(--blue);color:var(--blue)}
+.sec-pill.active{border-color:var(--blue);background:var(--blue);color:#fff}
+.sec-pill.done{border-color:var(--green);background:var(--green-lt);color:var(--green)}
+.eb-right{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
+.eb-timer{font-variant-numeric:tabular-nums;font-size:14px;font-weight:700;color:var(--text-2);display:flex;align-items:center;gap:5px}
+.eb-timer.urgent{color:var(--red)}
+.eb-timer i{font-size:12px}
+.eb-count{font-size:12px;color:var(--text-3);white-space:nowrap}
+.eb-count strong{color:var(--blue)}
+.eb-submit{font-size:13px;font-weight:700;color:#fff;background:var(--blue);padding:6px 18px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.eb-submit:hover{background:var(--blue-dark)}
+
+/* ── Page body ────────────────────────────────────────── */
+.exam-body{flex:1;padding:32px 0 80px}
+
+/* ── Book overview ────────────────────────────────────── */
+.book-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 60%,var(--blue) 100%);padding:52px 1.5rem 60px;position:relative;overflow:hidden}
+.book-hero::before{content:'試';position:absolute;font-family:'Noto Serif TC',serif;font-size:400px;font-weight:700;color:rgba(255,255,255,.03);bottom:-120px;right:-30px;pointer-events:none;line-height:1}
+.bh-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.bh-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;padding:4px 14px;border-radius:50px;margin-bottom:16px}
+.bh-title{font-family:'Noto Serif TC',serif;font-size:clamp(24px,4vw,42px);font-weight:700;color:#fff;line-height:1.2;margin-bottom:12px}
+.bh-sub{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:28px}
+.bh-stats{display:flex;gap:28px;flex-wrap:wrap}
+.bh-stat{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.75);font-size:13px}
+.bh-stat strong{font-size:22px;font-weight:800;color:#fff}
+.unit-grid-wrap{max-width:1100px;margin:0 auto;padding:32px 1.5rem}
+.unit-group-label{display:flex;align-items:center;gap:10px;margin-bottom:16px;margin-top:8px}
+.ugl-badge{width:28px;height:28px;border-radius:8px;background:var(--blue);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.ugl-title{font-weight:700;font-size:14px;color:var(--text)}
+.ugl-sub{font-size:13px;color:var(--text-3);font-family:'Noto Serif TC',serif}
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.unit-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .15s;text-align:left}
+.unit-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow)}
+.uc-num{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.uc-title{font-size:13px;font-weight:600;color:var(--navy);font-family:'Noto Serif TC',serif;line-height:1.4;margin-bottom:10px}
+.uc-status{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px}
+.uc-bar{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-bottom:4px}
+.uc-bar-fill{height:100%;border-radius:2px;transition:.3s}
+
+/* ── Section card ─────────────────────────────────────── */
+.section-wrap{max-width:860px;margin:0 auto;padding:0 1.5rem}
+.section-card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
+.sc-head{display:flex;align-items:center;gap:14px;padding:16px 24px;border-bottom:1px solid var(--border)}
+.sc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sc-title{font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px;color:var(--text);flex:1}
+.sc-meta{font-size:12px;color:var(--text-3);background:#f3f4f6;padding:3px 12px;border-radius:20px}
+.sc-body{padding:20px 24px}
+.sc-body.sm{padding:16px 20px}
+
+/* ── Audio ────────────────────────────────────────────── */
+.audio-wrap{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:12px;padding:14px 18px;margin-bottom:20px}
+.audio-icon{width:40px;height:40px;border-radius:10px;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.audio-info{flex:1;min-width:0}
+.audio-label{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px}
+audio{accent-color:var(--purple);width:100%;height:32px}
+.audio-missing{font-size:12px;color:var(--text-3);font-style:italic}
+
+/* ── Passage ──────────────────────────────────────────── */
+.passage-block{background:linear-gradient(135deg,var(--green-lt),#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.passage-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
 
-/* Audio */
-audio{accent-color:#7c3aed;width:100%;height:32px}
+/* ── Questions ────────────────────────────────────────── */
+.q-block{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #f3f4f6}
+.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-stem{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.q-num{font-size:13px;font-weight:800;color:var(--blue);min-width:28px;flex-shrink:0;padding-top:1px}
+.q-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:1.7;color:var(--text)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choice-btn{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:#fff;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);transition:all .12s;text-align:left;width:100%;line-height:1.5}
+.choice-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
+.choice-lbl{font-weight:800;color:var(--text-3);min-width:16px;flex-shrink:0;font-family:'Be Vietnam Pro',sans-serif;margin-top:1px}
+.choice-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.choice-btn.selected .choice-lbl{color:var(--blue)}
+.choice-btn.c-correct{border-color:var(--green)!important;background:var(--green-lt)!important;color:#166534!important}
+.choice-btn.c-correct .choice-lbl{color:var(--green)!important}
+.choice-btn.c-wrong{border-color:var(--red)!important;background:var(--red-lt)!important;color:var(--red)!important}
+.choice-btn.c-wrong .choice-lbl{color:var(--red)!important}
+.choice-btn.c-miss{border-color:var(--green)!important;border-style:dashed!important;color:#166534}
+.choice-btn.c-miss .choice-lbl{color:var(--green)!important}
+.choice-btn:disabled{cursor:default}
+.q-feedback{font-size:12px;font-weight:700;margin-top:8px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.ok{color:var(--green)}
+.q-feedback.err{color:var(--red)}
 
-/* Scrollbar */
-.un-scroll::-webkit-scrollbar{width:3px}
-.un-scroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+/* ── Section navigation ───────────────────────────────── */
+.sec-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-top:1px solid var(--border);gap:12px}
+.sec-nav-btn{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--text-2);transition:.15s}
+.sec-nav-btn:hover{border-color:var(--blue);color:var(--blue)}
+.sec-nav-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.sec-nav-btn.primary:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.sec-nav-btn.submit{background:linear-gradient(135deg,var(--blue),#3b82f6);border-color:var(--blue);color:#fff;box-shadow:0 4px 14px rgba(26,86,219,.3)}
+.sec-nav-btn.submit:hover{box-shadow:0 6px 20px rgba(26,86,219,.4);transform:translateY(-1px)}
+.sec-nav-mid{font-size:12px;color:var(--text-3);text-align:center}
+.sec-nav-mid strong{color:var(--text);font-weight:600}
 
-/* Jump bar active */
-.jump-active{color:#1a56db;border-color:#1a56db;background:#eff6ff}
+/* ── Section B (vocab) ────────────────────────────────── */
+.vocab-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;cursor:pointer;background:var(--surface);border:none;width:100%;font-family:inherit}
+.vocab-toggle:hover{background:#f9fafb}
+.vocab-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--text)}
+.vocab-icon{width:34px;height:34px;border-radius:9px;background:#fef9c3;color:#a16207;display:flex;align-items:center;justify-content:center;font-size:13px}
+.vocab-body{padding:0 24px 20px;display:none}
+.vocab-body.open{display:block}
+.vocab-sub{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;margin:16px 0 10px;display:flex;align-items:center;gap:6px}
+table.vtable{width:100%;font-size:13px;border-collapse:collapse}
+table.vtable th{background:#f9fafb;font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.4px;padding:7px 12px;border-bottom:1px solid var(--border);text-align:left}
+table.vtable td{padding:7px 12px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+table.vtable tr:last-child td{border-bottom:none}
+
+/* ── Result modal ─────────────────────────────────────── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+.modal-card{background:#fff;border-radius:20px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hero{padding:28px 28px 20px;position:relative;overflow:hidden}
+.modal-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--navy),#1e3a8a,var(--blue));opacity:.9}
+.modal-hero-content{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.modal-score{text-align:center}
+.modal-score-val{font-size:54px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.modal-score-total{font-size:14px;color:rgba(255,255,255,.65);margin-top:4px}
+.modal-score-pct{font-size:28px;font-weight:800;color:#fff;margin-top:2px}
+.modal-grade{text-align:right}
+.modal-grade-icon{font-size:48px;line-height:1;margin-bottom:4px}
+.modal-grade-label{font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.modal-stat{background:#fff;padding:12px;text-align:center}
+.modal-stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.modal-stat-lbl{font-size:11px;color:var(--text-3);margin-top:2px}
+.modal-stat-val.good{color:var(--green)}
+.modal-stat-val.bad{color:var(--red)}
+.modal-body{padding:20px 24px}
+.modal-section-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:4px;background:#f9fafb}
+.msr-title{flex:1;font-weight:500}
+.msr-score{font-weight:700;font-size:12px;padding:2px 10px;border-radius:20px}
+.msr-score.good{background:var(--green-lt);color:var(--green)}
+.msr-score.bad{background:var(--red-lt);color:var(--red)}
+.modal-actions{display:flex;gap:10px;padding:0 24px 24px;flex-wrap:wrap}
+.modal-btn{flex:1;min-width:120px;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--text-2);transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.modal-btn:hover{border-color:var(--blue);color:var(--blue)}
+.modal-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.modal-btn.primary:hover{background:var(--blue-dark)}
+.modal-btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.modal-btn.green:hover{background:#15803d}
+.modal-ai{padding:0 24px 20px}
+.modal-ai-box{background:var(--purple-lt);border:1.5px solid #ddd6fe;border-radius:12px;padding:14px 16px}
+.modal-ai-btn{display:flex;align-items:center;gap:8px;background:var(--purple);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:.15s;width:100%;justify-content:center}
+.modal-ai-btn:hover{background:#6d28d9}
+.modal-ai-result{font-size:13px;line-height:1.8;color:#4c1d95;white-space:pre-wrap;margin-top:12px;display:none}
+.modal-ai-result.show{display:block}
+
+/* ── Loading ──────────────────────────────────────────── */
+.loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Footer ───────────────────────────────────────────── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-inner{max-width:1100px;margin:0 auto;padding:40px 1.5rem 32px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:14px;max-width:320px}
+.footer-col-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:6px}
+.footer-links a{color:rgba(255,255,255,.5);transition:color .15s}
+.footer-links a:hover{color:rgba(255,255,255,.85)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media(max-width:768px){
+  .choices{grid-template-columns:1fr}
+  .eb-sections{display:none}
+  .eb-crumb .cur{display:none}
+  .footer-inner{grid-template-columns:1fr 1fr}
+  .modal-stats{grid-template-columns:repeat(3,1fr)}
+  .section-wrap{padding:0 1rem}
+  .sc-head,.sc-body,.sec-nav{padding-left:16px;padding-right:16px}
+}
+@media(max-width:480px){
+  .footer-inner{grid-template-columns:1fr;gap:1.5rem}
+  .nav-link{display:none}
+  .modal-card{border-radius:16px}
+  .modal-score-val{font-size:44px}
+}
 </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen" x-data="examApp()" x-init="init()">
+<body x-data="examApp()" x-init="init()">
 
-<!-- NAVBAR -->
-<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm h-[62px] flex items-center">
-  <div class="max-w-none w-full px-5 flex items-center gap-4">
-    <a href="/exams.html" class="flex items-center gap-2 flex-shrink-0">
-      <span class="zh text-[17px] font-bold text-navy">TOCFL <em class="text-orange not-italic">FAFA</em></span>
+<!-- ── NAVBAR ──────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
     </a>
-    <!-- Breadcrumb -->
-    <div class="flex items-center gap-1.5 text-sm text-gray-400 min-w-0 overflow-hidden">
-      <a href="/exams.html" class="hover:text-blue transition flex-shrink-0">Đề thi</a>
-      <i class="fa-solid fa-chevron-right text-[8px] flex-shrink-0"></i>
-      <span class="text-gray-600 truncate zh" x-show="book" x-text="book?.title || '…'"></span>
-      <template x-if="activeUnit && view==='exam'">
-        <span class="flex items-center gap-1.5 flex-shrink-0">
-          <i class="fa-solid fa-chevron-right text-[8px]"></i>
-          <span class="text-gray-800 font-medium" x-text="`${activeUnit.unit_number}-${activeUnit.sub_number}`"></span>
-        </span>
-      </template>
-    </div>
-    <div class="ml-auto" id="nav-auth">
-      <a href="/login.html" class="text-sm font-semibold text-white bg-blue hover:bg-blue-dark px-4 py-2 rounded-lg transition">Bắt đầu học</a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link active" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      </div>
     </div>
   </div>
 </nav>
 
-<!-- LOADING OVERLAY -->
-<div x-show="loading" x-transition class="fixed inset-0 bg-white z-[100] flex items-center justify-center">
-  <div class="text-center">
-    <div class="w-10 h-10 border-4 border-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-    <div class="text-sm text-gray-500">Đang tải…</div>
+<!-- ── EXAM TOP BAR ─────────────────────────────────────── -->
+<div class="exam-bar" x-show="view==='exam' && !loading">
+  <div class="eb-inner">
+    <!-- Breadcrumb -->
+    <div class="eb-crumb">
+      <a href="/exams.html"><i class="fa-solid fa-arrow-left" style="font-size:10px"></i></a>
+      <span class="sep">›</span>
+      <span x-text="book?.title || '…'" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <span class="sep">›</span>
+      <span class="cur" x-text="activeUnit ? `${activeUnit.unit_number}-${activeUnit.sub_number}` : ''"></span>
+    </div>
+    <!-- Section pills -->
+    <div class="eb-sections">
+      <template x-for="(sec, i) in sections" :key="sec.id">
+        <button class="sec-pill"
+          :class="i===currentSectionIdx ? 'active' : (sectionDone(i) ? 'done' : '')"
+          @click="currentSectionIdx=i"
+          x-text="zhNum(sec.section_number)">
+        </button>
+      </template>
+    </div>
+    <!-- Timer + count + submit -->
+    <div class="eb-right">
+      <div class="eb-timer" :class="timerUrgent ? 'urgent' : ''">
+        <i class="fa-regular fa-clock"></i>
+        <span x-text="timerDisplay"></span>
+      </div>
+      <div class="eb-count">
+        <strong x-text="answeredQ"></strong>/<span x-text="totalQ"></span> câu
+      </div>
+      <button class="eb-submit" @click="submitExam()" x-show="!submitted">
+        <i class="fa-solid fa-paper-plane" style="font-size:11px"></i> Nộp bài
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- MAIN LAYOUT -->
-<div class="min-h-[calc(100vh-62px)]">
-
-  <!-- ── MAIN CONTENT ──────────────────────────── -->
-  <main class="overflow-x-hidden">
-
-    <!-- ── BOOK VIEW ──────────────────── -->
-    <div x-show="view==='book' && !loading">
-      <!-- Book hero -->
-      <div class="bg-gradient-to-br from-navy via-[#1e3a8a] to-blue py-12 px-8 relative overflow-hidden">
-        <div class="absolute inset-0 pointer-events-none select-none flex items-center justify-end">
-          <span class="zh text-[280px] font-bold text-white/[.04] leading-none pr-8">試</span>
-        </div>
-        <div class="relative z-10 max-w-3xl">
-          <div class="text-[11px] font-bold uppercase tracking-widest text-white/50 mb-3">
-            <i class="fa-solid fa-file-pen text-[9px] mr-1"></i>
-            <span x-text="book?.level || 'TOCFL'"></span> · Bộ đề thi
-          </div>
-          <h1 class="zh text-3xl font-bold text-white leading-snug mb-2" x-text="book?.title || '—'"></h1>
-          <p class="text-white/60 text-sm mb-6">Chọn sub-unit bên dưới để bắt đầu luyện tập</p>
-          <div class="flex gap-5 flex-wrap">
-            <div class="text-white/70 text-sm flex items-center gap-2">
-              <span class="text-2xl font-black text-white" x-text="units.length"></span> sub-unit
-            </div>
-            <div class="text-white/70 text-sm flex items-center gap-2">
-              <span class="text-2xl font-black text-white" x-text="Object.keys(unitResults).length"></span> đã hoàn thành
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Unit grid -->
-      <div class="p-8 max-w-4xl">
-        <template x-for="group in unitGroups" :key="group.num">
-          <div class="mb-8">
-            <div class="flex items-center gap-2 mb-4">
-              <div class="w-7 h-7 rounded-lg bg-blue flex items-center justify-center">
-                <span class="text-xs font-black text-white" x-text="group.num"></span>
-              </div>
-              <span class="font-bold text-gray-700 text-sm">Unit <span x-text="group.num"></span></span>
-              <span class="zh text-gray-400 text-sm" x-text="group.titleZh"></span>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              <template x-for="u in group.items" :key="u.id">
-                <button @click="selectUnit(u)"
-                  class="bg-white border border-gray-200 rounded-xl p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md hover:border-blue group">
-                  <div class="text-[11px] font-bold text-blue mb-2" x-text="`${u.unit_number}-${u.sub_number}`"></div>
-                  <div class="zh text-[13px] font-semibold text-navy leading-snug mb-3"
-                       x-text="u.sub_title_zh || u.title_zh || '—'"></div>
-                  <template x-if="unitResults[u.id]">
-                    <div class="flex items-center gap-1.5">
-                      <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all"
-                             :class="(unitResults[u.id].score/unitResults[u.id].total)>=0.6 ? 'bg-green' : 'bg-orange'"
-                             :style="`width:${Math.round(unitResults[u.id].score/unitResults[u.id].total*100)}%`"></div>
-                      </div>
-                      <span class="text-[11px] font-bold"
-                            :class="(unitResults[u.id].score/unitResults[u.id].total)>=0.6 ? 'text-green' : 'text-orange'"
-                            x-text="`${unitResults[u.id].score}/${unitResults[u.id].total}`"></span>
-                    </div>
-                  </template>
-                  <template x-if="!unitResults[u.id]">
-                    <div class="flex items-center gap-1 text-[11px] text-gray-400">
-                      <i class="fa-solid fa-play text-[9px] text-blue"></i> Bắt đầu
-                    </div>
-                  </template>
-                </button>
-              </template>
-            </div>
-          </div>
-        </template>
-      </div>
-    </div>
-
-    <!-- ── EXAM VIEW ───────────────────── -->
-    <div x-show="view==='exam' && !loading">
-
-      <!-- Section jump bar -->
-      <div class="sticky top-[62px] z-30 bg-white border-b border-gray-200 shadow-sm">
-        <div class="px-6 flex items-center gap-2 min-h-[48px] overflow-x-auto">
-          <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex-shrink-0 mr-1">Phần</span>
-          <template x-for="sec in sections" :key="sec.id">
-            <button @click="scrollToSection(sec.id)"
-              :id="`jump-${sec.id}`"
-              :title="sec.title"
-              class="flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200 text-gray-500 hover:border-blue hover:text-blue transition zh">
-              <span x-text="sectionNumZh(sec.section_number)"></span>
-            </button>
-          </template>
-          <!-- Timer -->
-          <div class="ml-auto flex-shrink-0 flex items-center gap-1.5 font-mono text-sm font-bold tabular-nums"
-               :class="timerUrgent ? 'text-red-500' : 'text-gray-600'">
-            <i class="fa-regular fa-clock text-[11px]"></i>
-            <span x-text="timerDisplay"></span>
-          </div>
-        </div>
-      </div>
-
-      <div class="max-w-3xl mx-auto px-4 md:px-8 py-6 pb-32">
-
-        <!-- Unit header -->
-        <div class="bg-gradient-to-br from-navy via-[#1e3a8a] to-blue rounded-2xl p-6 mb-6 relative overflow-hidden">
-          <div class="absolute bottom-0 right-0 pointer-events-none select-none">
-            <span class="zh text-[180px] font-bold text-white/[.05] leading-none">學</span>
-          </div>
-          <div class="relative z-10 flex items-start justify-between gap-4">
-            <div>
-              <div class="text-[11px] font-bold uppercase tracking-widest text-white/50 mb-2">
-                Unit <span x-text="activeUnit && `${activeUnit.unit_number}-${activeUnit.sub_number}`"></span>
-                · <span class="zh" x-text="activeUnit?.title_zh || ''"></span>
-              </div>
-
-              <h2 class="zh text-2xl font-bold text-white leading-snug"
-                  x-text="activeUnit?.sub_title_zh || activeUnit?.title_zh || '—'"></h2>
-            </div>
-            <div class="text-right flex-shrink-0">
-              <template x-if="!submitted">
-                <div>
-                  <div class="font-mono text-3xl font-black leading-none tabular-nums"
-                       :class="timerUrgent ? 'text-red-300' : 'text-white'"
-                       x-text="timerDisplay"></div>
-                  <div class="text-[11px] text-white/50 mt-1">còn lại</div>
-                </div>
-              </template>
-              <template x-if="submitted">
-                <div>
-                  <div class="text-3xl font-black text-white leading-none"
-                       x-text="`${examScore}/${totalQ}`"></div>
-                  <div class="text-[11px] text-white/50 mt-1">điểm</div>
-                </div>
-              </template>
-            </div>
-          </div>
-          <!-- Progress bar (answers) -->
-          <div class="mt-4 relative z-10">
-            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div class="h-full rounded-full transition-all duration-300"
-                   :class="submitted ? 'bg-green' : 'bg-white/40'"
-                   :style="`width:${totalQ ? Math.round((submitted ? examScore : answeredQ)/totalQ*100) : 0}%`"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Result banner -->
-        <div x-show="submitted" x-transition
-             :class="(examScore/totalQ) >= 0.6
-               ? 'bg-green-lt border-green/30'
-               : 'bg-[#fff7ed] border-orange/30'"
-             class="rounded-2xl border p-5 mb-6 flex items-center gap-4">
-          <div class="text-4xl" x-text="(examScore/totalQ)>=0.6 ? '🎉' : '📚'"></div>
-          <div class="flex-1">
-            <div class="font-bold text-gray-800 text-base"
-                 x-text="(examScore/totalQ)>=0.6 ? 'Xuất sắc! Bạn đã vượt qua!' : 'Hãy luyện tập thêm nhé!'"></div>
-            <div class="text-sm text-gray-500 mt-0.5"
-                 x-text="`Đúng ${examScore}/${totalQ} câu — ${Math.round(examScore/totalQ*100)}% chính xác`"></div>
-          </div>
-          <div class="flex flex-col gap-2 flex-shrink-0">
-            <button @click="retry()" class="flex items-center gap-2 bg-blue text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-dark transition">
-              <i class="fa-solid fa-rotate-right text-[10px]"></i> Làm lại
-            </button>
-            <button x-show="nextUnitItem" @click="goNext()"
-              class="flex items-center gap-2 bg-green text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-green/90 transition">
-              Tiếp theo <i class="fa-solid fa-arrow-right text-[10px]"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Sections -->
-        <template x-for="sec in sections" :key="sec.id">
-          <div :id="`sec-${sec.id}`" class="bg-white rounded-2xl border border-gray-200 mb-5 overflow-hidden">
-
-            <!-- Section header -->
-            <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100"
-                 :class="{
-                   'bg-purple-lt/50': sec.section_type==='listening',
-                   'bg-blue-lt/40':   sec.section_type==='completion',
-                   'bg-[#fff7ed]/60': sec.section_type==='cloze',
-                   'bg-green-lt/40':  sec.section_type==='reading' || sec.section_type==='essay',
-                 }">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                   :class="{
-                     'bg-purple text-white':  sec.section_type==='listening',
-                     'bg-blue text-white':    sec.section_type==='completion',
-                     'bg-orange text-white':  sec.section_type==='cloze',
-                     'bg-green text-white':   sec.section_type==='reading'||sec.section_type==='essay',
-                     'bg-blue text-white':    sec.section_type==='mcq',
-                   }">
-                <i :class="{
-                     'fa-headphones':  sec.section_type==='listening',
-                     'fa-pen-nib':     sec.section_type==='completion',
-                     'fa-fill-drip':   sec.section_type==='cloze',
-                     'fa-book-open':   sec.section_type==='reading'||sec.section_type==='essay',
-                     'fa-list-ul':     sec.section_type==='mcq',
-                   }" class="fa-solid text-sm"></i>
-              </div>
-              <div class="zh font-bold text-gray-800 flex-1 text-[14px]" x-text="sec.title || sec.section_type"></div>
-              <span class="text-[11px] font-medium text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full"
-                    x-text="(questionsBySection[sec.id]||[]).length + ' câu'"></span>
-            </div>
-
-            <div class="p-5">
-
-              <!-- Audio block (listening) -->
-              <template x-if="sec.section_type==='listening'">
-                <div>
-                  <template x-if="sec.audio_url">
-                    <div class="flex items-center gap-4 bg-gradient-to-r from-purple-lt to-purple/5 border border-purple/20 rounded-xl p-4 mb-5">
-                      <div class="w-10 h-10 rounded-xl bg-purple flex items-center justify-center flex-shrink-0">
-                        <i class="fa-solid fa-headphones text-white text-base"></i>
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="text-xs font-bold text-purple mb-2">🔊 Đoạn hội thoại — Nghe và trả lời</div>
-                        <audio controls :src="sec.audio_url" preload="metadata" class="w-full"></audio>
-                      </div>
-                    </div>
-                  </template>
-                  <template x-if="!sec.audio_url">
-                    <div class="flex items-center gap-3 bg-gray-50 border border-dashed border-gray-200 rounded-xl p-4 mb-5">
-                      <i class="fa-solid fa-headphones text-gray-300 text-xl"></i>
-                      <span class="text-sm text-gray-400 italic">Audio chưa có — sẽ được cập nhật sớm</span>
-                    </div>
-                  </template>
-                </div>
-              </template>
-
-              <!-- Passages + questions interleaved -->
-              <template x-if="(passagesBySection[sec.id]||[]).length > 0">
-                <div>
-                  <template x-for="p in passagesBySection[sec.id]" :key="p.id">
-                    <div>
-                      <div class="passage-block">
-                        <template x-if="p.label">
-                          <div class="text-[11px] font-extrabold text-green uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                            <i class="fa-solid fa-paragraph text-[9px]"></i>
-                            <span x-text="p.label"></span>
-                          </div>
-                        </template>
-                        <div class="passage-text" x-text="p.content_text || ''"></div>
-                      </div>
-                      <!-- Questions for this passage -->
-                      <template x-for="q in questionsFor(sec.id, p.id)" :key="q.id">
-                        <div x-html="renderQuestion(q)" class="mb-4"></div>
-                      </template>
-                    </div>
-                  </template>
-                  <!-- Questions not linked to any passage -->
-                  <template x-for="q in questionsFor(sec.id, null)" :key="q.id">
-                    <div x-html="renderQuestion(q)" class="mb-4"></div>
-                  </template>
-                </div>
-              </template>
-
-              <!-- Sections with no passages -->
-              <template x-if="!(passagesBySection[sec.id]||[]).length">
-                <div>
-                  <template x-for="q in (questionsBySection[sec.id]||[])" :key="q.id">
-                    <div x-html="renderQuestion(q)" class="mb-4"></div>
-                  </template>
-                </div>
-              </template>
-
-            </div>
-          </div>
-        </template>
-
-        <!-- Section B: vocab + phrases -->
-        <template x-if="vocab.length || phrases.length">
-          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-5">
-            <button @click="secBOpen=!secBOpen"
-              class="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition">
-              <div class="w-9 h-9 rounded-xl bg-yellow-50 flex items-center justify-center flex-shrink-0">
-                <i class="fa-solid fa-book-bookmark text-yellow-600 text-sm"></i>
-              </div>
-              <span class="zh font-bold text-gray-800 text-[14px] flex-1 text-left">B · 關鍵詞語 — Từ vựng &amp; Cụm từ</span>
-              <i :class="secBOpen ? 'fa-chevron-up' : 'fa-chevron-down'"
-                 class="fa-solid text-gray-400 text-[11px]"></i>
-            </button>
-            <div x-show="secBOpen" style="display:none" class="px-5 pb-5">
-              <!-- Vocab -->
-              <template x-if="vocab.length">
-                <div class="mb-5">
-                  <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-book text-[10px]"></i> 一、主題相關詞語
-                  </div>
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead><tr class="bg-gray-50">
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Xuất xứ</th>
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Từ</th>
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Từ liên quan</th>
-                      </tr></thead>
-                      <tbody>
-                        <template x-for="v in vocab" :key="v.id">
-                          <tr class="border-b border-gray-50">
-                            <td class="px-3 py-2 text-[11px] text-gray-400" x-text="v.source_section||''"></td>
-                            <td class="px-3 py-2 zh font-semibold text-[14px]" x-text="v.word_zh||''"></td>
-                            <td class="px-3 py-2 text-xs text-gray-500" x-text="v.related_words||''"></td>
-                          </tr>
-                        </template>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </template>
-              <!-- Phrases -->
-              <template x-if="phrases.length">
-                <div>
-                  <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-pen-nib text-[10px]"></i> 二、常用詞組
-                  </div>
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead><tr class="bg-gray-50">
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Xuất xứ</th>
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Cụm từ</th>
-                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Ví dụ</th>
-                      </tr></thead>
-                      <tbody>
-                        <template x-for="p in phrases" :key="p.id">
-                          <tr class="border-b border-gray-50">
-                            <td class="px-3 py-2 text-[11px] text-gray-400" x-text="p.source_section||''"></td>
-                            <td class="px-3 py-2 zh text-[14px]" x-text="p.phrase_zh||''"></td>
-                            <td class="px-3 py-2 text-xs text-gray-500 zh" x-text="p.example_zh||''"></td>
-                          </tr>
-                        </template>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
-        </template>
-
-      </div>
-
-      <!-- Sticky submit bar -->
-      <div x-show="!submitted"
-           class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
-        <span class="text-gray-400 text-xs">
-          <span x-text="answeredQ" class="font-bold text-gray-700"></span>/<span x-text="totalQ"></span> câu đã chọn
-        </span>
-        <button @click="submitExam()"
-          class="flex items-center gap-2 bg-blue hover:bg-blue-dark text-white text-sm font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-blue/20 cursor-pointer">
-          <i class="fa-solid fa-check-double text-xs"></i>
-          Nộp bài
-        </button>
-      </div>
-
-    </div>
-    <!-- end exam view -->
-
-  </main>
+<!-- ── LOADING ──────────────────────────────────────────── -->
+<div class="loading-overlay" x-show="loading" x-transition>
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text-3)">Đang tải…</div>
+  </div>
 </div>
+
+<!-- ── MAIN ─────────────────────────────────────────────── -->
+<div class="exam-body">
+
+  <!-- BOOK VIEW -->
+  <div x-show="view==='book' && !loading">
+    <div class="book-hero">
+      <div class="bh-inner">
+        <div class="bh-eyebrow">
+          <i class="fa-solid fa-file-pen" style="font-size:9px"></i>
+          <span x-text="(book?.level || 'TOCFL') + ' · Bộ đề thi'"></span>
+        </div>
+        <h1 class="bh-title zh" x-text="book?.title || '—'"></h1>
+        <p class="bh-sub">Chọn sub-unit để bắt đầu luyện tập · tự chấm điểm ngay sau khi nộp</p>
+        <div class="bh-stats">
+          <div class="bh-stat"><strong x-text="units.length"></strong> sub-unit</div>
+          <div class="bh-stat"><strong x-text="Object.keys(unitResults).length"></strong> đã hoàn thành</div>
+        </div>
+      </div>
+    </div>
+    <div class="unit-grid-wrap">
+      <template x-for="group in unitGroups" :key="group.num">
+        <div>
+          <div class="unit-group-label">
+            <div class="ugl-badge" x-text="group.num"></div>
+            <span class="ugl-title">Unit <span x-text="group.num"></span></span>
+            <span class="ugl-sub" x-text="group.titleZh"></span>
+          </div>
+          <div class="unit-grid">
+            <template x-for="u in group.items" :key="u.id">
+              <button class="unit-card" @click="selectUnit(u)">
+                <div class="uc-num" x-text="`${u.unit_number}-${u.sub_number}`"></div>
+                <div class="uc-title" x-text="u.sub_title_zh || u.title_zh || '—'"></div>
+                <template x-if="unitResults[u.id]">
+                  <div>
+                    <div class="uc-bar">
+                      <div class="uc-bar-fill"
+                        :style="`width:${Math.round(unitResults[u.id].score/unitResults[u.id].total*100)}%;background:${unitResults[u.id].score/unitResults[u.id].total>=0.6?'var(--green)':'var(--orange)'}`"></div>
+                    </div>
+                    <div class="uc-status">
+                      <i class="fa-solid fa-check-circle" style="color:var(--green);font-size:10px"></i>
+                      <span x-text="`${unitResults[u.id].score}/${unitResults[u.id].total} câu`"></span>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="!unitResults[u.id]">
+                  <div class="uc-status">
+                    <i class="fa-solid fa-play" style="color:var(--blue);font-size:9px"></i> Bắt đầu
+                  </div>
+                </template>
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- EXAM VIEW -->
+  <div x-show="view==='exam' && !loading">
+    <div class="section-wrap">
+
+      <!-- Section card -->
+      <template x-if="currentSection">
+        <div class="section-card" style="margin-top:24px">
+
+          <!-- Section header -->
+          <div class="sc-head"
+            :style="`background:${sectionBg(currentSection.section_type)}`">
+            <div class="sc-icon" :style="`background:${sectionColor(currentSection.section_type)};color:#fff`">
+              <i :class="'fa-solid ' + sectionIcon(currentSection.section_type)"></i>
+            </div>
+            <div class="sc-title zh" x-text="currentSection.title || currentSection.section_type"></div>
+            <div class="sc-meta">
+              <span x-text="(questionsBySection[currentSection.id]||[]).length + ' câu'"></span>
+              · <span x-text="`${sectionAnswered(currentSection.id)}/${(questionsBySection[currentSection.id]||[]).length} đã chọn`"></span>
+            </div>
+          </div>
+
+          <div class="sc-body">
+
+            <!-- Audio (listening) -->
+            <template x-if="currentSection.section_type==='listening'">
+              <div>
+                <template x-if="currentSection.audio_url">
+                  <div class="audio-wrap">
+                    <div class="audio-icon"><i class="fa-solid fa-headphones"></i></div>
+                    <div class="audio-info">
+                      <div class="audio-label">🔊 Nghe đoạn hội thoại trước khi trả lời</div>
+                      <audio controls :src="currentSection.audio_url" preload="metadata"></audio>
+                    </div>
+                  </div>
+                </template>
+                <template x-if="!currentSection.audio_url">
+                  <div class="audio-wrap" style="background:#f9fafb;border-color:var(--border)">
+                    <div class="audio-icon" style="background:var(--text-3)"><i class="fa-solid fa-headphones"></i></div>
+                    <div class="audio-info">
+                      <div class="audio-missing">Audio chưa có — câu hỏi sẽ được cập nhật sớm</div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <!-- Passages + questions -->
+            <template x-if="(passagesBySection[currentSection.id]||[]).length">
+              <div>
+                <template x-for="p in passagesBySection[currentSection.id]" :key="p.id">
+                  <div>
+                    <div class="passage-block">
+                      <template x-if="p.label">
+                        <div class="passage-label">
+                          <i class="fa-solid fa-paragraph" style="font-size:9px"></i>
+                          <span x-text="p.label"></span>
+                        </div>
+                      </template>
+                      <div class="passage-text zh" x-text="p.content_text || ''"></div>
+                    </div>
+                    <template x-for="q in questionsFor(currentSection.id, p.id)" :key="q.id">
+                      <div x-html="renderQ(q)" class="q-block"></div>
+                    </template>
+                  </div>
+                </template>
+                <template x-for="q in questionsFor(currentSection.id, null)" :key="q.id">
+                  <div x-html="renderQ(q)" class="q-block"></div>
+                </template>
+              </div>
+            </template>
+
+            <!-- No passages -->
+            <template x-if="!(passagesBySection[currentSection.id]||[]).length">
+              <div>
+                <template x-for="q in (questionsBySection[currentSection.id]||[])" :key="q.id">
+                  <div x-html="renderQ(q)" class="q-block"></div>
+                </template>
+              </div>
+            </template>
+
+          </div><!-- /sc-body -->
+
+          <!-- Navigation -->
+          <div class="sec-nav">
+            <button class="sec-nav-btn" @click="prevSection()"
+              x-show="currentSectionIdx > 0">
+              <i class="fa-solid fa-arrow-left" style="font-size:11px"></i> Phần trước
+            </button>
+            <div x-show="currentSectionIdx === 0"></div>
+            <div class="sec-nav-mid">
+              Phần <strong x-text="currentSectionIdx+1"></strong>/<span x-text="sections.length"></span>
+            </div>
+            <template x-if="currentSectionIdx < sections.length - 1">
+              <button class="sec-nav-btn primary" @click="nextSection()">
+                Phần tiếp <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+              </button>
+            </template>
+            <template x-if="currentSectionIdx === sections.length - 1">
+              <button class="sec-nav-btn submit" @click="submitExam()" x-show="!submitted">
+                <i class="fa-solid fa-paper-plane" style="font-size:11px"></i> Nộp bài
+              </button>
+            </template>
+          </div>
+
+        </div><!-- /section-card -->
+      </template>
+
+      <!-- Section B vocab (always last) -->
+      <template x-if="(vocab.length || phrases.length) && view==='exam'">
+        <div class="section-card">
+          <button class="vocab-toggle" @click="vocabOpen=!vocabOpen">
+            <span class="vocab-title">
+              <span class="vocab-icon"><i class="fa-solid fa-book-bookmark"></i></span>
+              B · 關鍵詞語 — Từ vựng &amp; Cụm từ
+            </span>
+            <i :class="vocabOpen ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid" style="font-size:12px;color:var(--text-3)"></i>
+          </button>
+          <div class="vocab-body" :class="vocabOpen ? 'open' : ''">
+            <template x-if="vocab.length">
+              <div>
+                <div class="vocab-sub"><i class="fa-solid fa-book" style="font-size:10px"></i> 一、主題相關詞語</div>
+                <div style="overflow-x:auto">
+                  <table class="vtable">
+                    <thead><tr><th>Xuất xứ</th><th>Từ</th><th>Từ liên quan</th></tr></thead>
+                    <tbody>
+                      <template x-for="v in vocab" :key="v.id">
+                        <tr>
+                          <td style="color:var(--text-3);font-size:11px" x-text="v.source_section||''"></td>
+                          <td class="zh" style="font-weight:600;font-size:14px" x-text="v.word_zh||''"></td>
+                          <td style="font-size:12px" x-text="v.related_words||''"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </template>
+            <template x-if="phrases.length">
+              <div>
+                <div class="vocab-sub" style="margin-top:20px"><i class="fa-solid fa-pen-nib" style="font-size:10px"></i> 二、常用詞組</div>
+                <div style="overflow-x:auto">
+                  <table class="vtable">
+                    <thead><tr><th>Xuất xứ</th><th>Cụm từ</th><th>Ví dụ</th></tr></thead>
+                    <tbody>
+                      <template x-for="p in phrases" :key="p.id">
+                        <tr>
+                          <td style="color:var(--text-3);font-size:11px" x-text="p.source_section||''"></td>
+                          <td class="zh" style="font-size:14px" x-text="p.phrase_zh||''"></td>
+                          <td class="zh" style="font-size:12px;color:var(--text-2)" x-text="p.example_zh||''"></td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+    </div><!-- /section-wrap -->
+  </div><!-- /exam view -->
+
+</div><!-- /exam-body -->
+
+<!-- ── RESULT MODAL ─────────────────────────────────────── -->
+<div class="modal-backdrop" x-show="showResult" x-transition style="display:none">
+  <div class="modal-card">
+    <!-- Hero with score -->
+    <div class="modal-hero">
+      <div class="modal-hero-content">
+        <div class="modal-score">
+          <div class="modal-score-val" x-text="examScore"></div>
+          <div class="modal-score-total">/ <span x-text="totalQ"></span> câu</div>
+          <div class="modal-score-pct" x-text="`${scorePct}%`"></div>
+        </div>
+        <div class="modal-grade">
+          <div class="modal-grade-icon" x-text="scorePct>=80?'🏆':scorePct>=60?'🎉':'📚'"></div>
+          <div class="modal-grade-label" x-text="scorePct>=80?'Xuất sắc!':scorePct>=60?'Đạt!':'Cần luyện thêm'"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Stats row -->
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-val good" x-text="examScore"></div>
+        <div class="modal-stat-lbl">Câu đúng</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val bad" x-text="totalQ - examScore"></div>
+        <div class="modal-stat-lbl">Câu sai</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" x-text="timeUsed"></div>
+        <div class="modal-stat-lbl">Thời gian</div>
+      </div>
+    </div>
+    <!-- Section breakdown -->
+    <div class="modal-body">
+      <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Kết quả từng phần</div>
+      <template x-for="sec in sections" :key="sec.id">
+        <div class="modal-section-row">
+          <span class="zh" style="font-size:12px;min-width:28px" x-text="zhNum(sec.section_number)"></span>
+          <span class="msr-title" x-text="sec.title||sec.section_type"></span>
+          <span class="msr-score"
+            :class="sectionScore(sec.id).pct>=60 ? 'good' : 'bad'"
+            x-text="`${sectionScore(sec.id).correct}/${sectionScore(sec.id).total}`"></span>
+        </div>
+      </template>
+    </div>
+    <!-- AI explanation -->
+    <div class="modal-ai" x-show="wrongQs.length > 0">
+      <div class="modal-ai-box">
+        <button class="modal-ai-btn" @click="getAiExplanation()" :disabled="aiLoading">
+          <i class="fa-solid fa-sparkles" style="font-size:12px"></i>
+          <span x-text="aiLoading ? 'AI đang phân tích…' : 'AI giải thích câu sai'"></span>
+        </button>
+        <div class="modal-ai-result" :class="aiResult ? 'show' : ''" x-text="aiResult"></div>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="modal-btn" @click="retry()">
+        <i class="fa-solid fa-rotate-right" style="font-size:11px"></i> Làm lại
+      </button>
+      <a class="modal-btn" href="/exams.html">
+        <i class="fa-solid fa-arrow-left" style="font-size:11px"></i> Đề thi
+      </a>
+      <button class="modal-btn green" @click="goNext()" x-show="nextUnitItem">
+        Bài tiếp <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="" style="height:26px;border-radius:5px">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/exams.html">Đề thi</a></li>
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <ul class="footer-links">
+        <li><span>Taoyuan, Taiwan</span></li>
+        <li><a href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener">Facebook · TOCFL FAFA</a></li>
+        <li><span>Since 2026</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+  </div>
+</footer>
 
 <script>
 const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
@@ -450,69 +646,97 @@ const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const _db   = supabase.createClient(_DB_URL, _DB_KEY);
 const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
 let _user   = null;
+let _ai     = null;
 
 function esc(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+const ZH = {1:'一',2:'二',3:'三',4:'四',5:'五'};
 
-const ZH_NUMS = {1:'一',2:'二',3:'三',4:'四',5:'五'};
+// Section UI helpers
+const SEC_ICON  = {listening:'fa-headphones',completion:'fa-pen-nib',cloze:'fa-fill-drip',reading:'fa-book-open',essay:'fa-scroll',mcq:'fa-list-ul'};
+const SEC_COLOR = {listening:'var(--purple)',completion:'var(--blue)',cloze:'var(--orange)',reading:'var(--green)',essay:'var(--green)',mcq:'var(--blue)'};
+const SEC_BG    = {listening:'#fdf4ff',completion:'var(--blue-lt)',cloze:'#fffbeb',reading:'var(--green-lt)',essay:'var(--green-lt)',mcq:'var(--blue-lt)'};
+
+// Global pick handler (called from rendered HTML)
+function pickAnswer(qId, label) {
+  document.dispatchEvent(new CustomEvent('pick-answer', { detail: { qId, label } }));
+}
 
 function examApp() {
   return {
-    // ── State ──────────────────────────────────────────
-    loading:  true,
-    view:     'book',   // 'book' | 'exam'
-    book:     null,
-    units:    [],
-    unitResults: {},     // unit_id → {score, total}
+    // ── State ────────────────────────────
+    loading:      true,
+    view:         'book',
+    book:         null,
+    units:        [],
+    unitResults:  {},
 
-    // Exam state
-    activeUnit:       null,
-    sections:         [],
-    passagesBySection:{},  // secId → [passage]
-    questionsBySection:{}, // secId → [question]
-    choicesForQ:      {},  // qId → {A,B,C,D}
-    vocab:   [],
-    phrases: [],
-    answers: {},     // qId → label
-    submitted: false,
-    secBOpen:  false,
-    activeSectionId: null,
+    activeUnit:          null,
+    sections:            [],
+    passagesBySection:   {},
+    questionsBySection:  {},
+    choicesForQ:         {},
+    vocab: [], phrases: [],
+    answers:      {},
+    submitted:    false,
+    vocabOpen:    false,
+    currentSectionIdx: 0,
+    showResult:   false,
+    timeUsedSec:  0,
 
     // Timer
-    timer:       60 * 60,   // 60 phút tính bằng giây
+    timer:       60*60,
     timerHandle: null,
 
-    // ── Computed ───────────────────────────────────────
-    get totalQ()    { return Object.values(this.questionsBySection).flat().length },
-    get answeredQ() { return Object.keys(this.answers).length },
-    get timerDisplay() {
-      const m = Math.floor(this.timer / 60);
-      const s = this.timer % 60;
-      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    // AI
+    aiLoading: false,
+    aiResult:  '',
+
+    // ── Computed ─────────────────────────
+    get totalQ()     { return Object.values(this.questionsBySection).flat().length },
+    get answeredQ()  { return Object.keys(this.answers).length },
+    get currentSection(){ return this.sections[this.currentSectionIdx] || null },
+    get timerDisplay(){
+      const m = String(Math.floor(this.timer/60)).padStart(2,'0');
+      const s = String(this.timer%60).padStart(2,'0');
+      return `${m}:${s}`;
     },
-    get timerUrgent() { return this.timer <= 600; },   // đỏ khi < 10 phút
-    get examScore() {
+    get timerUrgent(){ return this.timer <= 600 },
+    get timeUsed(){
+      const elapsed = 60*60 - this.timer;
+      const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+      const s = String(elapsed%60).padStart(2,'0');
+      return `${m}:${s}`;
+    },
+    get examScore(){
       if (!this.submitted) return 0;
       return Object.values(this.questionsBySection).flat()
         .filter(q => this.answers[q.id] === q.correct_answer).length;
     },
-    get unitGroups() {
-      const groups = {};
-      this.units.forEach(u => {
-        if (!groups[u.unit_number]) groups[u.unit_number] = { num: u.unit_number, titleZh: u.title_zh, items: [] };
-        groups[u.unit_number].items.push(u);
-      });
-      return Object.values(groups);
+    get scorePct(){
+      return this.totalQ ? Math.round(this.examScore/this.totalQ*100) : 0;
     },
-    get nextUnitItem() {
-      if (!this.activeUnit) return null;
+    get wrongQs(){
+      return Object.values(this.questionsBySection).flat()
+        .filter(q => this.answers[q.id] !== q.correct_answer);
+    },
+    get unitGroups(){
+      const g = {};
+      this.units.forEach(u => {
+        if (!g[u.unit_number]) g[u.unit_number] = { num:u.unit_number, titleZh:u.title_zh, items:[] };
+        g[u.unit_number].items.push(u);
+      });
+      return Object.values(g);
+    },
+    get nextUnitItem(){
       const flat = this.units;
-      const idx  = flat.findIndex(u => u.id === this.activeUnit.id);
-      return idx >= 0 && idx + 1 < flat.length ? flat[idx + 1] : null;
+      const idx  = flat.findIndex(u => u.id === this.activeUnit?.id);
+      return idx >= 0 && idx+1 < flat.length ? flat[idx+1] : null;
     },
 
-    // ── Init ───────────────────────────────────────────
+    // ── Init ─────────────────────────────
     async init() {
-      this.initPickListener();
+      document.addEventListener('pick-answer', e => this.pick(e.detail.qId, e.detail.label));
+
       if (_auth) {
         _auth.init().then(u => {
           _user = u;
@@ -521,47 +745,49 @@ function examApp() {
         });
       }
 
-      const params = new URLSearchParams(location.search);
-      const bookId  = params.get('book');
-      const unitNum = params.get('unit');
-      const subNum  = params.get('sub');
+      // Init AI
+      if (typeof ConfigManager !== 'undefined' && typeof AIService !== 'undefined') {
+        const cfg = new ConfigManager();
+        _ai = new AIService(cfg);
+      }
 
+      const p = new URLSearchParams(location.search);
+      const bookId = p.get('book');
       if (!bookId) { location.href = '/exams.html'; return; }
 
       const [{ data: book }, { data: units }] = await Promise.all([
         _db.from('exam_books').select('*').eq('id', bookId).single(),
-        _db.from('exam_units').select('id,book_id,unit_number,sub_number,title_zh,sub_title_zh,status')
-           .eq('book_id', bookId).eq('status','published').order('unit_number').order('sub_number'),
+        _db.from('exam_units')
+           .select('id,book_id,unit_number,sub_number,title_zh,sub_title_zh,status')
+           .eq('book_id', bookId).eq('status','published')
+           .order('unit_number').order('sub_number'),
       ]);
 
       this.book  = book;
       this.units = units || [];
-
       document.title = `${book?.title || 'Đề thi'} — TOCFL FAFA`;
-
       this.loading = false;
 
+      const unitNum = p.get('unit'), subNum = p.get('sub');
       if (unitNum && subNum) {
-        const unit = this.units.find(u => u.unit_number===+unitNum && u.sub_number===+subNum);
-        if (unit) { await this.loadUnit(unit); return; }
+        const u = this.units.find(u => u.unit_number===+unitNum && u.sub_number===+subNum);
+        if (u) { await this.loadUnit(u); return; }
       }
       this.view = 'book';
     },
 
     async loadAllResults(userId) {
-      const { data } = await _db.from('exam_results')
-        .select('unit_id,score,total').eq('user_id', userId);
+      const { data } = await _db.from('exam_results').select('unit_id,score,total').eq('user_id', userId);
       const map = {};
-      (data||[]).forEach(r => { map[r.unit_id] = { score: r.score, total: r.total }; });
+      (data||[]).forEach(r => { map[r.unit_id] = { score:r.score, total:r.total }; });
       this.unitResults = map;
     },
 
-    // ── Select unit ────────────────────────────────────
+    // ── Select / load unit ───────────────
     async selectUnit(unit) {
-      this.navOpen = false;
       const p = new URLSearchParams(location.search);
       p.set('unit', unit.unit_number); p.set('sub', unit.sub_number);
-      history.pushState({}, '', '?' + p.toString());
+      history.pushState({}, '', '?'+p.toString());
       await this.loadUnit(unit);
     },
 
@@ -570,44 +796,39 @@ function examApp() {
       this.activeUnit = unit;
       this.sections = []; this.passagesBySection = {}; this.questionsBySection = {};
       this.choicesForQ = {}; this.vocab = []; this.phrases = [];
-      this.answers = {}; this.submitted = false; this.secBOpen = false;
+      this.answers = {}; this.submitted = false; this.vocabOpen = false;
+      this.currentSectionIdx = 0; this.showResult = false; this.aiResult = '';
 
       const { data: sections } = await _db.from('exam_sections')
         .select('id,section_number,section_type,title,audio_url')
         .eq('unit_id', unit.id).order('section_number');
       this.sections = sections || [];
 
-      const secIds = this.sections.map(s => s.id);
-      if (!secIds.length) { this.loading = false; this.view = 'exam'; return; }
+      const secIds = this.sections.map(s=>s.id);
+      if (!secIds.length) { this.loading = false; this.view = 'exam'; this.startTimer(); return; }
 
-      // Parallel queries
       const [{ data: passArr }, { data: qArr }, { data: vocabArr }, { data: phrasesArr }] = await Promise.all([
         _db.from('exam_passages').select('id,section_id,label,content_text').in('section_id', secIds).order('id'),
-        _db.from('exam_questions')
-           .select('id,section_id,passage_id,question_number,question_text,correct_answer')
+        _db.from('exam_questions').select('id,section_id,passage_id,question_number,question_text,correct_answer')
            .in('section_id', secIds).order('question_number'),
         _db.from('exam_vocab').select('*').eq('unit_id', unit.id),
         _db.from('exam_phrases').select('*').eq('unit_id', unit.id),
       ]);
 
-      // Fetch choices separately once we have question IDs
       const qIds = (qArr||[]).map(q=>q.id);
       const { data: choicesArr } = qIds.length
-        ? await _db.from('exam_choices').select('question_id,label,text').in('question_id',qIds).order('label')
+        ? await _db.from('exam_choices').select('question_id,label,text').in('question_id', qIds).order('label')
         : { data: [] };
 
-      // Index passages
-      const pByS = {};
+      const pByS={};
       (passArr||[]).forEach(p => { if(!pByS[p.section_id]) pByS[p.section_id]=[]; pByS[p.section_id].push(p); });
       this.passagesBySection = pByS;
 
-      // Index choices
-      const cByQ = {};
+      const cByQ={};
       (choicesArr||[]).forEach(c => { if(!cByQ[c.question_id]) cByQ[c.question_id]={}; cByQ[c.question_id][c.label]=c.text; });
       this.choicesForQ = cByQ;
 
-      // Index questions
-      const qByS = {};
+      const qByS={};
       (qArr||[]).forEach(q => { if(!qByS[q.section_id]) qByS[q.section_id]=[]; qByS[q.section_id].push(q); });
       this.questionsBySection = qByS;
 
@@ -615,15 +836,83 @@ function examApp() {
       this.phrases = phrasesArr || [];
       this.loading = false;
       this.view = 'exam';
-
-      this.$nextTick(() => { this.setupObserver(); window.scrollTo(0,0); });
       this.startTimer();
+      window.scrollTo(0,0);
     },
 
-    // ── Timer ──────────────────────────────────────────
+    // ── Helpers ───────────────────────────
+    questionsFor(secId, passId) {
+      return (this.questionsBySection[secId]||[])
+        .filter(q => String(q.passage_id ?? '__none__') === String(passId ?? '__none__'));
+    },
+    sectionDone(idx) {
+      const sec = this.sections[idx];
+      if (!sec) return false;
+      const qs = this.questionsBySection[sec.id] || [];
+      return qs.length > 0 && qs.every(q => this.answers[q.id]);
+    },
+    sectionAnswered(secId) {
+      return (this.questionsBySection[secId]||[]).filter(q => this.answers[q.id]).length;
+    },
+    sectionScore(secId) {
+      const qs = this.questionsBySection[secId] || [];
+      const correct = qs.filter(q => this.answers[q.id] === q.correct_answer).length;
+      return { correct, total: qs.length, pct: qs.length ? Math.round(correct/qs.length*100) : 0 };
+    },
+    zhNum(n)         { return ZH[n] || String(n) },
+    sectionIcon(t)   { return SEC_ICON[t]  || 'fa-list-ul' },
+    sectionColor(t)  { return SEC_COLOR[t] || 'var(--blue)' },
+    sectionBg(t)     { return SEC_BG[t]    || 'var(--blue-lt)' },
+
+    // ── Render question ──────────────────
+    renderQ(q) {
+      const choices = this.choicesForQ[q.id] || {};
+      const ans = this.answers[q.id], corr = q.correct_answer, sub = this.submitted;
+      const btns = ['A','B','C','D'].map(l => {
+        const txt = choices[l] || '';
+        let cls = 'choice-btn';
+        if (!sub && ans===l)             cls += ' selected';
+        if (sub && l===corr && l===ans)  cls += ' c-correct';
+        if (sub && l!==corr && l===ans)  cls += ' c-wrong';
+        if (sub && l===corr && l!==ans)  cls += ' c-miss';
+        return `<button class="${cls}" onclick="pickAnswer(${q.id},'${l}')" ${sub?'disabled':''}>
+          <span class="choice-lbl">${l}</span>
+          <span class="zh">${esc(txt)}</span>
+        </button>`;
+      }).join('');
+
+      const fb = sub ? (() => {
+        const ok = ans === corr;
+        return `<div class="q-feedback show ${ok?'ok':'err'}">
+          ${ok ? '<i class="fa-solid fa-check"></i> Chính xác!'
+               : `<i class="fa-solid fa-xmark"></i> Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`}
+        </div>`;
+      })() : '';
+
+      return `<div class="q-stem">
+          <span class="q-num">${q.question_number}.</span>
+          <span class="q-text zh">${esc(q.question_text||'')}</span>
+        </div>
+        <div class="choices">${btns}</div>${fb}`;
+    },
+
+    // ── Interaction ───────────────────────
+    pick(qId, label) {
+      if (this.submitted) return;
+      this.answers = { ...this.answers, [qId]: label };
+    },
+
+    prevSection() {
+      if (this.currentSectionIdx > 0) { this.currentSectionIdx--; window.scrollTo({top:0,behavior:'smooth'}); }
+    },
+    nextSection() {
+      if (this.currentSectionIdx < this.sections.length-1) { this.currentSectionIdx++; window.scrollTo({top:0,behavior:'smooth'}); }
+    },
+
+    // ── Timer ─────────────────────────────
     startTimer() {
       this.stopTimer();
-      this.timer = 60 * 60;
+      this.timer = 60*60;
       this.timerHandle = setInterval(() => {
         if (this.timer <= 0) { this.stopTimer(); this.submitExam(); return; }
         this.timer--;
@@ -633,131 +922,68 @@ function examApp() {
       if (this.timerHandle) { clearInterval(this.timerHandle); this.timerHandle = null; }
     },
 
-    // ── Question helpers ───────────────────────────────
-    questionsFor(secId, passId) {
-      const qs = this.questionsBySection[secId] || [];
-      return qs.filter(q => String(q.passage_id ?? '__none__') === String(passId ?? '__none__'));
-    },
-
-    renderQuestion(q) {
-      const choices = this.choicesForQ[q.id] || {};
-      const ans     = this.answers[q.id];
-      const corr    = q.correct_answer;
-      const sub     = this.submitted;
-      const ABCD    = ['A','B','C','D'];
-
-      const choiceHtml = ABCD.map(l => {
-        const text = choices[l] || '';
-        let cls = 'choice-btn w-full flex items-start gap-2.5 p-3 border-[1.5px] border-gray-200 rounded-xl text-sm bg-white';
-        if (!sub && ans === l)                    cls += ' selected';
-        if (sub && l === corr && l === ans)       cls += ' c-correct';
-        if (sub && l !== corr && l === ans)       cls += ' c-wrong';
-        if (sub && l === corr && l !== ans)       cls += ' c-miss';
-        const disabled = sub ? 'disabled' : '';
-        return `<button class="${cls}" onclick="pickAnswer(${q.id},'${l}')" ${disabled}>
-          <span class="lbl text-xs font-black min-w-[14px] mt-0.5 flex-shrink-0">${l}</span>
-          <span class="zh text-[13px] leading-relaxed">${esc(text)}</span>
-        </button>`;
-      }).join('');
-
-      const resultHtml = sub ? (() => {
-        const ok = ans === corr;
-        return `<div class="text-[11px] font-bold mt-2 ${ok ? 'text-green' : 'text-red-500'}">
-          ${ok ? '<i class="fa-solid fa-check mr-1"></i>Chính xác!' : `<i class="fa-solid fa-xmark mr-1"></i>Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`}
-        </div>`;
-      })() : '';
-
-      return `<div class="mb-4" id="q-${q.id}">
-        <div class="flex items-start gap-2.5 mb-2.5">
-          <span class="text-sm font-extrabold text-blue min-w-[26px] pt-0.5 flex-shrink-0">${q.question_number}.</span>
-          <span class="zh text-sm leading-relaxed text-gray-800">${esc(q.question_text||'')}</span>
-        </div>
-        <div class="grid grid-cols-2 gap-2">${choiceHtml}</div>
-        ${resultHtml}
-      </div>`;
-    },
-
-    // ── Interaction ────────────────────────────────────
-    pick(qId, label) {
-      if (this.submitted) return;
-      this.answers = { ...this.answers, [qId]: label };
-    },
-
-    initPickListener() {
-      document.addEventListener('pick-answer', e => this.pick(e.detail.qId, e.detail.label));
-    },
-
+    // ── Submit ────────────────────────────
     async submitExam() {
       if (this.submitted) return;
       this.submitted = true;
       this.stopTimer();
 
-      // Save to DB if logged in
       if (_user && this.activeUnit) {
         const score = this.examScore;
         await _db.from('exam_results').upsert({
-          user_id: _user.id,
-          unit_id: this.activeUnit.id,
-          answers: this.answers,
-          score,
-          total: this.totalQ,
+          user_id: _user.id, unit_id: this.activeUnit.id,
+          answers: this.answers, score, total: this.totalQ,
         }, { onConflict: 'user_id,unit_id' });
         this.unitResults = { ...this.unitResults, [this.activeUnit.id]: { score, total: this.totalQ } };
       }
 
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Short delay then show modal
+      await new Promise(r => setTimeout(r, 400));
+      this.showResult = true;
     },
 
     retry() {
       this.answers = {}; this.submitted = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.showResult = false; this.aiResult = '';
+      this.currentSectionIdx = 0;
+      window.scrollTo(0,0);
       this.startTimer();
     },
 
     async goNext() {
       const next = this.nextUnitItem;
-      if (next) await this.selectUnit(next);
+      if (next) { this.showResult = false; await this.selectUnit(next); }
     },
 
-    // ── Section jump + observer ────────────────────────
-    sectionNumZh(n) { return ZH_NUMS[n] || String(n); },
+    // ── AI explanation ────────────────────
+    async getAiExplanation() {
+      if (this.aiLoading || !_ai) return;
+      this.aiLoading = true;
+      const wrongList = this.wrongQs.slice(0, 8).map(q => {
+        const choices = this.choicesForQ[q.id] || {};
+        const choiceStr = ['A','B','C','D'].map(l => `${l}: ${choices[l]||''}`).join('; ');
+        return `Q${q.question_number}: ${q.question_text||'(Nghe)'}\n  Lựa chọn: ${choiceStr}\n  Bạn chọn: ${this.answers[q.id]||'(chưa chọn)'} | Đáp án đúng: ${q.correct_answer||'?'}`;
+      }).join('\n\n');
 
-    scrollToSection(secId) {
-      const el = document.getElementById(`sec-${secId}`);
-      if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
-    },
+      const sysPrompt = `Bạn là giáo viên TOCFL dạy tiếng Trung Quốc phồn thể (繁體中文) cho người Việt.
+Giải thích ngắn gọn tại sao đáp án đúng là đúng cho từng câu. Dùng tiếng Việt, thêm chú thích chữ Hán khi cần. Tối đa 3-4 câu mỗi bài.`;
+      const userMsg = `Giải thích những câu trả lời sai sau:\n\n${wrongList}`;
 
-    setupObserver() {
-      if (this._observer) this._observer.disconnect();
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          const btn = document.getElementById(`jump-${e.target.id.replace('sec-','')}`);
-          if (!btn) return;
-          if (e.isIntersecting) {
-            document.querySelectorAll('[id^="jump-"]').forEach(b => b.classList.remove('jump-active'));
-            btn.classList.add('jump-active');
-          }
-        });
-      }, { rootMargin: '-62px 0px -60% 0px', threshold: 0 });
-      this.sections.forEach(s => {
-        const el = document.getElementById(`sec-${s.id}`);
-        if (el) io.observe(el);
-      });
-      this._observer = io;
+      try {
+        this.aiResult = await _ai.call(sysPrompt, userMsg, 1200);
+      } catch (e) {
+        this.aiResult = 'Không thể kết nối AI. Vui lòng kiểm tra API key trong phần Cài đặt.';
+      }
+      this.aiLoading = false;
     },
   };
 }
 
-// Global pick() for inline onclick inside x-html rendered question HTML
-function pickAnswer(qId, label) {
-  document.dispatchEvent(new CustomEvent('pick-answer', { detail: { qId, label } }));
-}
-
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a href="/login.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
-  const init = user.email?.[0]?.toUpperCase()||'U';
-  wrap.innerHTML = `<a href="/dashboard.html" class="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white" title="Dashboard">${init}</a>`;
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
+  const init = user.email?.[0]?.toUpperCase() || 'U';
+  wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${init}</a>`;
 }
 </script>
 </body>
