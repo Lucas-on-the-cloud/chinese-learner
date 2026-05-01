@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện đề thi — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{text-decoration:none;color:inherit}
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.1);
+  --nav-h:62px;
+}
+
+/* ── NAVBAR ──────────────────────────────────────── */
+.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .inner{max-width:none;width:100%;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);white-space:nowrap}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;transition:.15s}
+.nav-btn:hover{background:var(--blue-dark)}
+.nav-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7);cursor:pointer}
+
+/* ── LAYOUT ──────────────────────────────────────── */
+.exam-layout{display:grid;grid-template-columns:284px 1fr;min-height:calc(100vh - var(--nav-h));align-items:start}
+
+/* ── LEFT NAV ────────────────────────────────────── */
+.unit-nav{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column}
+.unit-nav::-webkit-scrollbar{width:4px}
+.unit-nav::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+
+.un-book{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.un-book-back{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);margin-bottom:10px;cursor:pointer;width:fit-content}
+.un-book-back:hover{color:var(--blue)}
+.un-book-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4;margin-bottom:6px}
+.un-book-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.un-level{font-size:11px;font-weight:700;color:#fff;background:var(--blue);padding:2px 10px;border-radius:4px}
+.un-progress{font-size:11px;color:var(--text-3)}
+
+.un-list{flex:1;padding:10px 0}
+.un-group{padding:0}
+.un-group-label{font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.8px;text-transform:uppercase;padding:10px 16px 4px;display:flex;align-items:center;gap:6px}
+.un-item{display:flex;align-items:center;gap:0;padding:0;cursor:pointer;transition:.12s;position:relative}
+.un-item:hover .un-item-inner{background:#f8f9fa}
+.un-item.active .un-item-inner{background:var(--blue-lt)}
+.un-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
+.un-item-inner{flex:1;padding:8px 16px 8px 18px;border-radius:0;display:flex;align-items:center;gap:8px}
+.un-num{font-size:11px;font-weight:700;color:var(--text-3);min-width:28px;font-variant-numeric:tabular-nums}
+.un-item.active .un-num{color:var(--blue)}
+.un-subtitle{font-size:12px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Noto Serif TC',serif}
+.un-item.active .un-subtitle{color:var(--blue);font-weight:600}
+.un-check{font-size:10px;color:var(--green);flex-shrink:0}
+
+/* ── MAIN CONTENT ────────────────────────────────── */
+.exam-main{padding:28px 32px 64px;min-width:0}
+
+/* Skeleton / loading */
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── UNIT HEADER ─────────────────────────────────── */
+.unit-hdr{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 60%,var(--blue) 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden}
+.unit-hdr::before{content:'學';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-70px;right:-10px;pointer-events:none;line-height:1}
+.unit-hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.unit-hdr-left{}
+.unit-hdr-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
+.unit-hdr-title{font-family:'Noto Serif TC',serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:4px}
+.unit-hdr-sub{font-size:13px;color:rgba(255,255,255,.6)}
+.unit-hdr-right{}
+.score-ring{text-align:center}
+.score-ring-val{font-size:28px;font-weight:800;color:#fff;line-height:1}
+.score-ring-label{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px}
+.unit-hdr-bottom{display:flex;align-items:center;gap:10px;margin-top:14px;position:relative;z-index:1;flex-wrap:wrap}
+.hdr-pill{font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
+.hdr-pill.listening{background:rgba(124,58,237,.35);color:#c4b5fd}
+.hdr-pill.reading{background:rgba(22,163,74,.3);color:#86efac}
+.hdr-pill.answered{background:rgba(255,255,255,.15);color:#fff}
+
+/* ── SECTION ─────────────────────────────────────── */
+.section-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
+.section-hdr{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.sec-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.sec-type-listening .sec-icon{background:#ede9fe;color:var(--purple)}
+.sec-type-completion .sec-icon{background:var(--blue-lt);color:var(--blue)}
+.sec-type-cloze .sec-icon{background:#fff7ed;color:var(--orange)}
+.sec-type-reading .sec-icon,.sec-type-essay .sec-icon{background:var(--green-lt);color:var(--green)}
+.sec-title{font-size:14px;font-weight:700;color:var(--text);flex:1;font-family:'Noto Serif TC',serif}
+.sec-count{font-size:11px;color:var(--text-3);font-weight:500;background:#f3f4f6;padding:2px 10px;border-radius:20px;flex-shrink:0}
+.section-body{padding:16px 20px}
+
+/* ── AUDIO PLAYER ────────────────────────────────── */
+.audio-block{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.audio-icon{width:40px;height:40px;border-radius:10px;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}
+.audio-info{flex:1;min-width:0}
+.audio-label{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:4px}
+.audio-player{width:100%;height:32px;accent-color:var(--purple)}
+.audio-missing{font-size:12px;color:var(--text-3);font-style:italic}
+
+/* ── PASSAGE ─────────────────────────────────────── */
+.passage-block{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.passage-label{font-size:11px;font-weight:800;color:var(--green);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
+
+/* ── QUESTION ────────────────────────────────────── */
+.q-block{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f3f4f6}
+.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.q-num{font-size:13px;font-weight:800;color:var(--blue);min-width:30px;padding-top:1px;flex-shrink:0}
+.q-text{font-size:14px;color:var(--text);line-height:1.6;font-family:'Noto Serif TC',serif}
+.q-text:empty::before{content:'（聽力題）';color:var(--text-3);font-style:italic;font-family:'Be Vietnam Pro',sans-serif;font-size:12px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.choice-btn{display:flex;align-items:flex-start;gap:8px;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;background:#fff;text-align:left;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);transition:all .12s;width:100%;line-height:1.5}
+.choice-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
+.choice-lbl{font-weight:800;color:var(--text-3);min-width:16px;flex-shrink:0;font-family:'Be Vietnam Pro',sans-serif}
+.choice-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.choice-btn.selected .choice-lbl{color:var(--blue)}
+.choice-btn.correct{border-color:var(--green);background:var(--green-lt);color:#166534}
+.choice-btn.correct .choice-lbl{color:var(--green)}
+.choice-btn.wrong{border-color:var(--red);background:var(--red-lt);color:var(--red)}
+.choice-btn.wrong .choice-lbl{color:var(--red)}
+.choice-btn.correct-miss{border-color:var(--green);border-style:dashed;color:#166534}
+.choice-btn.correct-miss .choice-lbl{color:var(--green)}
+.choice-btn:disabled{cursor:default}
+.q-result{font-size:11px;font-weight:700;margin-top:6px;padding:3px 0;display:none}
+.q-result.show{display:block}
+.q-result.ok{color:var(--green)}
+.q-result.err{color:var(--red)}
+
+/* ── VOCAB / PHRASES ─────────────────────────────── */
+.section-b-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
+.sb-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sb-hdr-icon{width:34px;height:34px;border-radius:9px;background:#fef9c3;color:#a16207;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sb-hdr-title{font-size:14px;font-weight:700;font-family:'Noto Serif TC',serif;color:var(--text);flex:1}
+.sb-toggle{font-size:12px;color:var(--text-3);cursor:pointer;display:flex;align-items:center;gap:4px;background:none;border:none;font-family:inherit}
+.sb-toggle:hover{color:var(--text)}
+.sb-body{padding:0 20px 16px;display:none}
+.sb-body.open{display:block}
+.sb-sub{font-size:12px;font-weight:700;color:var(--text-2);margin:14px 0 8px;display:flex;align-items:center;gap:6px}
+table.word-table{width:100%;font-size:13px;border-collapse:collapse}
+table.word-table th{background:#f9fafb;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.4px;text-transform:uppercase;padding:7px 12px;text-align:left;border-bottom:1px solid var(--border)}
+table.word-table td{padding:7px 12px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+table.word-table tr:last-child td{border-bottom:none}
+.word-zh{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600}
+.phrase-zh{font-family:'Noto Serif TC',serif;font-size:14px}
+.phrase-ex{font-size:12px;color:var(--text-2);margin-top:2px}
+
+/* ── SUBMIT BAR ──────────────────────────────────── */
+.submit-bar{position:sticky;bottom:24px;margin-top:24px;display:flex;justify-content:flex-end}
+.submit-btn{display:flex;align-items:center;gap:10px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:13px 28px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(26,86,219,.35);transition:all .18s}
+.submit-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 6px 24px rgba(26,86,219,.4)}
+.submit-btn:disabled{background:#9ca3af;box-shadow:none;transform:none;cursor:not-allowed}
+.submit-btn .answered-count{font-size:12px;font-weight:500;opacity:.8}
+
+/* ── RESULT BANNER ───────────────────────────────── */
+.result-banner{border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.result-banner.pass{background:linear-gradient(135deg,var(--green-lt),#d1fae5);border:1.5px solid #6ee7b7}
+.result-banner.fail{background:linear-gradient(135deg,#fff7ed,#fed7aa);border:1.5px solid #fbbf24}
+.rb-icon{font-size:32px;flex-shrink:0}
+.rb-title{font-size:18px;font-weight:800;color:var(--navy)}
+.rb-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+.rb-right{margin-left:auto;text-align:right}
+.rb-score{font-size:36px;font-weight:900;color:var(--blue);line-height:1}
+.rb-score-label{font-size:12px;color:var(--text-3)}
+.retry-btn{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.retry-btn:hover{background:var(--blue-dark)}
+
+/* ── CATALOG (no unit selected) ──────────────────── */
+.catalog{padding:0}
+.catalog-hero{background:linear-gradient(135deg,var(--navy),#1e3a8a,var(--blue));border-radius:16px;padding:28px;position:relative;overflow:hidden;margin-bottom:24px}
+.catalog-hero::before{content:'試';position:absolute;font-family:'Noto Serif TC',serif;font-size:240px;font-weight:700;color:rgba(255,255,255,.04);bottom:-60px;right:0;pointer-events:none}
+.ch-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
+.ch-title{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:#fff;margin-bottom:6px}
+.ch-sub{font-size:13px;color:rgba(255,255,255,.65)}
+.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.unit-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
+.unit-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow)}
+.uc-num{font-size:11px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.uc-sub{font-size:13px;font-weight:600;color:var(--navy);font-family:'Noto Serif TC',serif;line-height:1.4}
+.uc-status{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* ── EMPTY / LOADING ─────────────────────────────── */
+.center-msg{text-align:center;padding:4rem 2rem;color:var(--text-3);font-size:13px}
+.center-msg i{font-size:36px;display:block;margin-bottom:12px;opacity:.4}
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media(max-width:900px){
+  .exam-layout{grid-template-columns:1fr}
+  .unit-nav{display:none;position:fixed;inset:var(--nav-h) 0 0 0;height:auto;z-index:200;border-right:none;border-top:1px solid var(--border)}
+  .unit-nav.open{display:flex}
+  .exam-main{padding:20px 16px 80px}
+  .choices{grid-template-columns:1fr}
+  .hamburger{display:flex!important}
+}
+@media(max-width:600px){
+  .unit-hdr{padding:18px 18px}
+  .unit-hdr-title{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="inner">
+    <a class="nav-brand" href="/courses.html">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div style="display:flex;align-items:center;gap:4px">
+      <button class="hamburger" id="hamburger" onclick="toggleNav()"
+        style="display:none;background:none;border:1px solid var(--border);border-radius:7px;
+               padding:6px 10px;cursor:pointer;font-size:13px;color:var(--text-2);align-items:center;gap:6px">
+        <i class="fa-solid fa-list"></i> Danh sách
+      </button>
+      <div class="nav-menu">
+        <a class="nav-link" href="/courses.html">Khóa học</a>
+        <a class="nav-link active" href="#">Đề thi</a>
+        <a class="nav-link" href="/flashcards.html">Flashcard</a>
+        <a class="nav-link" href="/about.html">Giới thiệu</a>
+      </div>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="exam-layout">
+
+  <!-- LEFT: Unit navigator -->
+  <aside class="unit-nav" id="unit-nav">
+    <div class="un-book" id="un-book">
+      <div class="un-book-back" onclick="goBack()">
+        <i class="fa-solid fa-arrow-left" style="font-size:10px"></i> Tất cả đề thi
+      </div>
+      <div class="un-book-title" id="un-book-title">Đang tải…</div>
+      <div class="un-book-meta">
+        <span class="un-level" id="un-level" style="display:none"></span>
+        <span class="un-progress" id="un-progress"></span>
+      </div>
+    </div>
+    <div class="un-list" id="un-list">
+      <div style="padding:24px 16px;color:var(--text-3);font-size:13px;text-align:center">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT: Exam content -->
+  <main class="exam-main" id="exam-main">
+    <div id="exam-view">
+      <div class="center-msg" id="loading-msg">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Đang tải…
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+<script>
+// ── Setup ──────────────────────────────────────────────────────────
+const DB_URL = window.SUPABASE_URL || 'https://prctmferugkxabyizslx.supabase.co';
+const DB_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const db  = supabase.createClient(DB_URL, DB_KEY);
+const auth = typeof AuthService !== 'undefined' ? new AuthService(db) : null;
+
+function esc(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+const SEC_META = {
+  listening:  { icon:'fa-headphones',  color:'var(--purple)', label:'Nghe' },
+  completion: { icon:'fa-pen-nib',     color:'var(--blue)',   label:'Hoàn thành câu' },
+  cloze:      { icon:'fa-fill-drip',   color:'var(--orange)', label:'Chọn từ điền vào' },
+  reading:    { icon:'fa-book-open',   color:'var(--green)',  label:'Đọc hiểu' },
+  essay:      { icon:'fa-scroll',      color:'var(--green)',  label:'Đọc ngắn' },
+  mcq:        { icon:'fa-list-ul',     color:'var(--blue)',   label:'Trắc nghiệm' },
+};
+
+// ── State ──────────────────────────────────────────────────────────
+const _s = {
+  bookId: null, book: null, units: [],
+  activeKey: null,   // "unitNum-subNum"
+  sections: [],
+  passages: {},      // sectionId → [passage]
+  questions: {},     // sectionId → [question with choices]
+  vocab: [], phrases: [],
+  answers: {},       // questionId → label
+  submitted: false,
+  totalQ: 0, answeredQ: 0,
+};
+
+// ── URL helpers ───────────────────────────────────────────────────
+function getParams(){
+  const p = new URLSearchParams(location.search);
+  return { bookId: p.get('book'), unitNum: p.get('unit'), subNum: p.get('sub') };
+}
+function setParam(key, val){
+  const p = new URLSearchParams(location.search);
+  if(val==null) p.delete(key); else p.set(key,val);
+  history.pushState({}, '', '?' + p.toString());
+}
+function goBack(){
+  const p = new URLSearchParams(location.search);
+  p.delete('unit'); p.delete('sub');
+  history.pushState({}, '', '?' + p.toString());
+  renderCatalog();
+}
+function toggleNav(){
+  document.getElementById('unit-nav').classList.toggle('open');
+}
+
+// ── Init ───────────────────────────────────────────────────────────
+(async()=>{
+  if(auth) auth.init().then(u => renderNavAuth(u));
+
+  const { bookId, unitNum, subNum } = getParams();
+  if(!bookId){ renderNoBook(); return; }
+
+  _s.bookId = bookId;
+  await loadBook();
+  await loadUnits();
+  renderUnitNav();
+
+  if(unitNum && subNum) loadUnit(parseInt(unitNum), parseInt(subNum));
+  else renderCatalog();
+})();
+
+async function loadBook(){
+  const { data } = await db.from('exam_books').select('*').eq('id', _s.bookId).single();
+  _s.book = data;
+  const el = document.getElementById('un-book-title');
+  if(el) el.textContent = data?.title || '—';
+  const lv = document.getElementById('un-level');
+  if(lv && data?.level){ lv.textContent = data.level; lv.style.display=''; }
+}
+
+async function loadUnits(){
+  const { data } = await db.from('exam_units')
+    .select('id,unit_number,sub_number,title_zh,sub_title_zh,status')
+    .eq('book_id', _s.bookId).eq('status','published')
+    .order('unit_number').order('sub_number');
+  _s.units = data || [];
+  document.getElementById('un-progress').textContent = `${_s.units.length} sub-unit`;
+}
+
+// ── Unit Navigator ─────────────────────────────────────────────────
+function renderUnitNav(){
+  const list = document.getElementById('un-list');
+  if(!_s.units.length){ list.innerHTML = '<div class="center-msg" style="padding:20px">Chưa có bài nào được xuất bản.</div>'; return; }
+
+  // Group by unit_number
+  const groups = {};
+  _s.units.forEach(u => {
+    if(!groups[u.unit_number]) groups[u.unit_number] = { titleZh: u.title_zh, items: [] };
+    groups[u.unit_number].items.push(u);
+  });
+
+  list.innerHTML = Object.entries(groups).map(([num, g]) => `
+    <div class="un-group">
+      <div class="un-group-label">
+        <i class="fa-solid fa-book" style="font-size:8px"></i>
+        Unit ${esc(num)} · ${esc(g.titleZh||'')}
+      </div>
+      ${g.items.map(u => {
+        const key = `${u.unit_number}-${u.sub_number}`;
+        const isActive = _s.activeKey === key;
+        return `<div class="un-item${isActive?' active':''}" id="un-item-${key}"
+                     onclick="loadUnit(${u.unit_number},${u.sub_number})">
+          <div class="un-item-inner">
+            <span class="un-num">${u.unit_number}-${u.sub_number}</span>
+            <span class="un-subtitle" title="${esc(u.sub_title_zh||u.title_zh||'')}">${esc(u.sub_title_zh||u.title_zh||'—')}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`
+  ).join('');
+}
+
+function setActiveUnit(key){
+  document.querySelectorAll('.un-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`un-item-${key}`);
+  if(el){ el.classList.add('active'); el.scrollIntoView({ block:'nearest', behavior:'smooth' }); }
+  _s.activeKey = key;
+}
+
+// ── Catalog (no unit selected) ─────────────────────────────────────
+function renderCatalog(){
+  _s.activeKey = null;
+  renderUnitNav();
+  const view = document.getElementById('exam-view');
+  view.innerHTML = `
+    <div class="catalog">
+      <div class="catalog-hero">
+        <div class="ch-eyebrow"><i class="fa-solid fa-file-pen" style="font-size:9px"></i> ${esc(_s.book?.level||'TOCFL')} · Bộ đề thi</div>
+        <div class="ch-title">${esc(_s.book?.title||'—')}</div>
+        <div class="ch-sub">Chọn sub-unit bên dưới để bắt đầu luyện tập</div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px">
+        ${_s.units.length} Sub-unit · Nhấn để luyện thi
+      </div>
+      <div class="unit-grid">
+        ${_s.units.map(u => `
+          <div class="unit-card" onclick="loadUnit(${u.unit_number},${u.sub_number})">
+            <div class="uc-num">${u.unit_number}-${u.sub_number}</div>
+            <div class="uc-sub">${esc(u.sub_title_zh||u.title_zh||'—')}</div>
+            <div class="uc-status"><i class="fa-solid fa-circle-play" style="color:var(--blue);font-size:10px"></i> Luyện thi</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderNoBook(){
+  document.getElementById('exam-view').innerHTML = `
+    <div class="center-msg">
+      <i class="fa-solid fa-file-pen"></i>
+      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Chưa chọn bộ đề thi</div>
+      <p>Vào <a href="/courses.html" style="color:var(--blue)">Khóa học</a> để tìm bộ đề phù hợp.</p>
+    </div>`;
+}
+
+// ── Load Unit ──────────────────────────────────────────────────────
+async function loadUnit(unitNum, subNum){
+  // Reset state
+  _s.sections=[]; _s.passages={}; _s.questions={}; _s.vocab=[]; _s.phrases=[];
+  _s.answers={}; _s.submitted=false; _s.totalQ=0; _s.answeredQ=0;
+
+  const key = `${unitNum}-${subNum}`;
+  setActiveUnit(key);
+  setParam('unit', unitNum); setParam('sub', subNum);
+  document.getElementById('unit-nav').classList.remove('open');
+
+  document.getElementById('exam-view').innerHTML =
+    `<div class="center-msg" id="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</div>`;
+
+  // Find unit
+  const unit = _s.units.find(u => u.unit_number===unitNum && u.sub_number===subNum);
+  if(!unit){ document.getElementById('exam-view').innerHTML='<div class="center-msg"><i class="fa-solid fa-triangle-exclamation"></i> Không tìm thấy bài.</div>'; return; }
+
+  // Load sections
+  const { data: sections } = await db.from('exam_sections')
+    .select('id,section_number,section_type,title,audio_url')
+    .eq('unit_id', unit.id).order('section_number');
+  _s.sections = sections || [];
+
+  const secIds = _s.sections.map(s=>s.id);
+  if(!secIds.length){ renderExam(unit); return; }
+
+  // Load passages + questions in parallel
+  const [{ data: passagesArr }, { data: questionsArr }, { data: choicesArr }, { data: vocab }, { data: phrases }] = await Promise.all([
+    db.from('exam_passages').select('id,section_id,label,content_text').in('section_id', secIds).order('id'),
+    db.from('exam_questions').select('id,section_id,passage_id,question_number,question_text,correct_answer').in('section_id', secIds).order('question_number'),
+    db.from('exam_choices').select('id,question_id,label,text')
+      .in('question_id', (await db.from('exam_questions').select('id').in('section_id', secIds)).data?.map(q=>q.id)||[]).order('label'),
+    db.from('exam_vocab').select('*').eq('unit_id', unit.id),
+    db.from('exam_phrases').select('*').eq('unit_id', unit.id),
+  ]);
+
+  // Index passages by section
+  (passagesArr||[]).forEach(p => {
+    if(!_s.passages[p.section_id]) _s.passages[p.section_id]=[];
+    _s.passages[p.section_id].push(p);
+  });
+
+  // Index choices by question
+  const choicesByQ = {};
+  (choicesArr||[]).forEach(c => {
+    if(!choicesByQ[c.question_id]) choicesByQ[c.question_id]={};
+    choicesByQ[c.question_id][c.label]=c.text;
+  });
+
+  // Attach choices + group by section
+  (questionsArr||[]).forEach(q => {
+    q.choiceMap = choicesByQ[q.id] || {};
+    if(!_s.questions[q.section_id]) _s.questions[q.section_id]=[];
+    _s.questions[q.section_id].push(q);
+  });
+
+  _s.vocab   = vocab   || [];
+  _s.phrases = phrases || [];
+  _s.totalQ  = (questionsArr||[]).length;
+
+  renderExam(unit);
+}
+
+// ── Render Exam ────────────────────────────────────────────────────
+function renderExam(unit){
+  const view = document.getElementById('exam-view');
+  const secAHtml = _s.sections.map(sec => renderSection(sec)).join('');
+  const secBHtml = renderSectionB();
+
+  view.innerHTML = `
+    <div id="result-banner-slot"></div>
+
+    <div class="unit-hdr">
+      <div class="unit-hdr-top">
+        <div class="unit-hdr-left">
+          <div class="unit-hdr-eyebrow">Unit ${unit.unit_number}-${unit.sub_number} · ${esc(unit.title_zh||'')}</div>
+          <h1 class="unit-hdr-title">${esc(unit.sub_title_zh||unit.title_zh||'—')}</h1>
+          <div class="unit-hdr-sub">${esc(_s.book?.title||'')}</div>
+        </div>
+        <div class="unit-hdr-right">
+          <div class="score-ring">
+            <div class="score-ring-val" id="score-display">0/${_s.totalQ}</div>
+            <div class="score-ring-label">đã trả lời</div>
+          </div>
+        </div>
+      </div>
+      <div class="unit-hdr-bottom">
+        ${_s.book?.level ? `<span class="hdr-pill">${esc(_s.book.level)}</span>` : ''}
+        <span class="hdr-pill answered" id="hdr-answered">0/${_s.totalQ} câu</span>
+      </div>
+    </div>
+
+    ${secAHtml}
+    ${secBHtml}
+
+    <div class="submit-bar">
+      <button class="submit-btn" id="submit-btn" onclick="submitExam()" disabled>
+        <i class="fa-solid fa-check-double"></i>
+        Kiểm tra đáp án
+        <span class="answered-count" id="submit-count">(0/${_s.totalQ})</span>
+      </button>
+    </div>`;
+}
+
+function renderSection(sec){
+  const meta  = SEC_META[sec.section_type] || SEC_META.mcq;
+  const qs    = _s.questions[sec.id] || [];
+  const passes= _s.passages[sec.id]  || [];
+
+  // Audio block for listening sections
+  const audioHtml = sec.section_type==='listening'
+    ? renderAudioBlock(sec.audio_url) : '';
+
+  // Group questions by passage_id
+  const qsByPass = {};
+  qs.forEach(q => {
+    const k = q.passage_id != null ? String(q.passage_id) : '__none__';
+    if(!qsByPass[k]) qsByPass[k]=[];
+    qsByPass[k].push(q);
+  });
+
+  let body = audioHtml;
+  if(passes.length){
+    for(const p of passes){
+      body += renderPassage(p);
+      (qsByPass[String(p.id)]||[]).forEach(q => { body += renderQuestion(q); });
+    }
+    (qsByPass['__none__']||[]).forEach(q => { body += renderQuestion(q); });
+  } else {
+    qs.forEach(q => { body += renderQuestion(q); });
+  }
+
+  return `
+    <div class="section-card">
+      <div class="section-hdr sec-type-${sec.section_type}">
+        <div class="sec-icon"><i class="fa-solid ${meta.icon}"></i></div>
+        <div class="sec-title">${esc(sec.title||meta.label)}</div>
+        <div class="sec-count">${qs.length} câu</div>
+      </div>
+      <div class="section-body">${body}</div>
+    </div>`;
+}
+
+function renderAudioBlock(url){
+  if(url) return `
+    <div class="audio-block">
+      <div class="audio-icon"><i class="fa-solid fa-headphones"></i></div>
+      <div class="audio-info">
+        <div class="audio-label">🔊 Đoạn hội thoại — Nghe và trả lời câu hỏi</div>
+        <audio class="audio-player" controls src="${esc(url)}" preload="metadata"></audio>
+      </div>
+    </div>`;
+  return `
+    <div class="audio-block" style="background:#f9fafb;border-color:var(--border)">
+      <div class="audio-icon" style="background:var(--text-3)"><i class="fa-solid fa-headphones"></i></div>
+      <div class="audio-info">
+        <div class="audio-missing">Audio chưa có — câu hỏi sẽ được cập nhật sớm</div>
+      </div>
+    </div>`;
+}
+
+function renderPassage(p){
+  return `
+    <div class="passage-block">
+      ${p.label ? `<div class="passage-label"><i class="fa-solid fa-paragraph" style="font-size:9px"></i> ${esc(p.label)}</div>` : ''}
+      <div class="passage-text">${esc(p.content_text||'')}</div>
+    </div>`;
+}
+
+function renderQuestion(q){
+  const ABCD = ['A','B','C','D'];
+  const choices = ABCD.map(l => `
+    <button class="choice-btn" id="ch-${q.id}-${l}" onclick="pick(${q.id},'${l}')" data-qid="${q.id}" data-label="${l}">
+      <span class="choice-lbl">${l}</span>
+      <span>${esc(q.choiceMap[l]||'')}</span>
+    </button>`).join('');
+
+  return `
+    <div class="q-block" id="q-${q.id}">
+      <div class="q-row">
+        <span class="q-num">${q.question_number}.</span>
+        <span class="q-text">${esc(q.question_text||'')}</span>
+      </div>
+      <div class="choices">${choices}</div>
+      <div class="q-result" id="qr-${q.id}"></div>
+    </div>`;
+}
+
+function renderSectionB(){
+  if(!_s.vocab.length && !_s.phrases.length) return '';
+  const vocHtml = _s.vocab.length ? `
+    <div class="sb-sub"><i class="fa-solid fa-book" style="font-size:10px"></i> 一、主題相關詞語</div>
+    <table class="word-table">
+      <thead><tr><th>Xuất xứ</th><th>Từ</th><th>Từ liên quan</th></tr></thead>
+      <tbody>${_s.vocab.map(v=>`<tr>
+        <td style="color:var(--text-3);font-size:11px">${esc(v.source_section||'')}</td>
+        <td><span class="word-zh">${esc(v.word_zh||'')}</span></td>
+        <td style="font-size:12px">${esc(v.related_words||'')}</td>
+      </tr>`).join('')}</tbody>
+    </table>` : '';
+  const phrHtml = _s.phrases.length ? `
+    <div class="sb-sub" style="margin-top:16px"><i class="fa-solid fa-pen-nib" style="font-size:10px"></i> 二、常用詞組</div>
+    <table class="word-table">
+      <thead><tr><th>Xuất xứ</th><th>Cụm từ</th><th>Ví dụ</th></tr></thead>
+      <tbody>${_s.phrases.map(p=>`<tr>
+        <td style="color:var(--text-3);font-size:11px">${esc(p.source_section||'')}</td>
+        <td><span class="phrase-zh">${esc(p.phrase_zh||'')}</span></td>
+        <td><span class="phrase-ex">${esc(p.example_zh||'')}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>` : '';
+  return `
+    <div class="section-b-card">
+      <div class="sb-hdr">
+        <div class="sb-hdr-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+        <div class="sb-hdr-title">B · 關鍵詞語 — Từ vựng &amp; Cụm từ</div>
+        <button class="sb-toggle" onclick="toggleSectionB(this)">
+          <i class="fa-solid fa-chevron-down" style="font-size:10px" id="sb-chev"></i> Mở rộng
+        </button>
+      </div>
+      <div class="sb-body" id="sb-body">${vocHtml}${phrHtml}</div>
+    </div>`;
+}
+
+function toggleSectionB(btn){
+  const body = document.getElementById('sb-body');
+  const chev = document.getElementById('sb-chev');
+  const open = body.classList.toggle('open');
+  btn.innerHTML = `<i class="fa-solid fa-chevron-${open?'up':'down'}" style="font-size:10px" id="sb-chev"></i> ${open?'Thu gọn':'Mở rộng'}`;
+}
+
+// ── Interaction ────────────────────────────────────────────────────
+function pick(qId, label){
+  if(_s.submitted) return;
+
+  const prev = _s.answers[qId];
+  if(prev){
+    const prevBtn = document.getElementById(`ch-${qId}-${prev}`);
+    if(prevBtn) prevBtn.classList.remove('selected');
+  } else {
+    _s.answeredQ++;
+  }
+
+  _s.answers[qId] = label;
+  const btn = document.getElementById(`ch-${qId}-${label}`);
+  if(btn) btn.classList.add('selected');
+
+  updateProgress();
+}
+
+function updateProgress(){
+  const val = `${_s.answeredQ}/${_s.totalQ}`;
+  const scoreEl   = document.getElementById('score-display');
+  const answeredEl= document.getElementById('hdr-answered');
+  const countEl   = document.getElementById('submit-count');
+  const submitBtn = document.getElementById('submit-btn');
+  if(scoreEl)    scoreEl.textContent  = val;
+  if(answeredEl) answeredEl.textContent= val + ' câu';
+  if(countEl)    countEl.textContent  = `(${val})`;
+  if(submitBtn)  submitBtn.disabled   = (_s.answeredQ < _s.totalQ);
+}
+
+// ── Submit ─────────────────────────────────────────────────────────
+function submitExam(){
+  if(_s.submitted) return;
+  _s.submitted = true;
+
+  let correct = 0;
+  const allQs = Object.values(_s.questions).flat();
+
+  allQs.forEach(q => {
+    const ans  = _s.answers[q.id];
+    const corr = q.correct_answer;
+    const ABCD = ['A','B','C','D'];
+
+    ABCD.forEach(l => {
+      const btn = document.getElementById(`ch-${q.id}-${l}`);
+      if(!btn) return;
+      btn.disabled = true;
+      btn.classList.remove('selected');
+      if(l === corr && l === ans){ btn.classList.add('correct'); }
+      else if(l === ans && l !== corr){ btn.classList.add('wrong'); }
+      else if(l === corr && l !== ans){ btn.classList.add('correct-miss'); }
+    });
+
+    const resEl = document.getElementById(`qr-${q.id}`);
+    if(resEl){
+      resEl.classList.add('show');
+      if(ans === corr){
+        correct++;
+        resEl.className = 'q-result show ok';
+        resEl.innerHTML = '<i class="fa-solid fa-check"></i> Chính xác!';
+      } else {
+        resEl.className = 'q-result show err';
+        resEl.innerHTML = `<i class="fa-solid fa-xmark"></i> Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`;
+      }
+    }
+  });
+
+  // Update score
+  const scoreEl = document.getElementById('score-display');
+  if(scoreEl) scoreEl.textContent = `${correct}/${_s.totalQ}`;
+
+  // Swap submit button to retry
+  const bar = document.querySelector('.submit-bar');
+  if(bar) bar.innerHTML = `
+    <button class="retry-btn" onclick="retryExam()">
+      <i class="fa-solid fa-rotate-right"></i> Làm lại từ đầu
+    </button>`;
+
+  // Result banner
+  const pct  = _s.totalQ ? Math.round(correct/_s.totalQ*100) : 0;
+  const pass = pct >= 60;
+  const slot = document.getElementById('result-banner-slot');
+  if(slot){
+    slot.innerHTML = `
+      <div class="result-banner ${pass?'pass':'fail'}">
+        <div class="rb-icon">${pass?'🎉':'📚'}</div>
+        <div>
+          <div class="rb-title">${pass?'Xuất sắc! Bạn đã vượt qua!':'Hãy luyện tập thêm nhé!'}</div>
+          <div class="rb-sub">${pass?'Tỉ lệ đúng trên 60% — kết quả tốt!':'Đọc lại phần sai và thử làm lại.'}</div>
+        </div>
+        <div class="rb-right">
+          <div class="rb-score">${correct}/${_s.totalQ}</div>
+          <div class="rb-score-label">${pct}% chính xác</div>
+        </div>
+      </div>`;
+    slot.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+}
+
+function retryExam(){
+  _s.answers = {}; _s.submitted = false; _s.answeredQ = 0;
+  const unit = _s.units.find(u => u.unit_number+'-'+u.sub_number === _s.activeKey);
+  if(unit) renderExam(unit);
+}
+
+// ── Navbar auth ────────────────────────────────────────────────────
+function renderNavAuth(user){
+  const wrap = document.getElementById('nav-auth');
+  if(!user){ wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
+  const initial = user.email?.[0]?.toUpperCase()||'U';
+  wrap.innerHTML = `<a href="/dashboard.html" class="nav-avatar" title="Dashboard">${initial}</a>`;
+}
+</script>
+</body>
+</html>
