@@ -534,7 +534,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </template>
 
       <!-- Section B vocab (always last) -->
-      <template x-if="(vocab.length || phrases.length) && view==='exam'">
+      <template x-if="(vocab.length || phrases.length) && view==='exam' && submitted">
         <div class="section-card">
           <button class="vocab-toggle" @click="vocabOpen=!vocabOpen">
             <span class="vocab-title">
