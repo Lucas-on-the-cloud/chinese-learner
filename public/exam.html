@@ -6,780 +6,791 @@
 <title>Luyện đề thi — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: {
+      navy:   '#0d1b4b',
+      blue:   { DEFAULT:'#1a56db', dark:'#1544b8', lt:'#eff6ff' },
+      orange: '#f47b20',
+      purple: { DEFAULT:'#7c3aed', lt:'#f5f3ff' },
+      green:  { DEFAULT:'#16a34a', lt:'#f0fdf4' },
+    },
+    fontFamily: { serif:['"Noto Serif TC"','serif'], sans:['"Be Vietnam Pro"','sans-serif'] },
+  }}
+}
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;min-height:100vh}
-a{text-decoration:none;color:inherit}
-:root{
-  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
-  --orange:#f47b20;--navy:#0d1b4b;
-  --purple:#7c3aed;--purple-lt:#f5f3ff;
-  --green:#16a34a;--green-lt:#f0fdf4;
-  --red:#dc2626;--red-lt:#fef2f2;
-  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
-  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
-  --shadow-sm:0 1px 3px rgba(0,0,0,.08);--shadow:0 4px 16px rgba(0,0,0,.1);
-  --nav-h:62px;
-}
+body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased}
+.zh{font-family:'Noto Serif TC',serif}
 
-/* ── NAVBAR ──────────────────────────────────────── */
-.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.navbar .inner{max-width:none;width:100%;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.nav-brand{display:flex;align-items:center;gap:10px}
-.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);white-space:nowrap}
-.nav-brand-text em{color:var(--orange);font-style:normal}
-.nav-menu{display:flex;align-items:center;gap:2px}
-.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
-.nav-link:hover{color:var(--text);background:#f3f4f6}
-.nav-link.active{color:var(--blue);font-weight:600}
-.nav-auth{display:flex;align-items:center;gap:8px}
-.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;transition:.15s}
-.nav-btn:hover{background:var(--blue-dark)}
-.nav-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7);cursor:pointer}
+/* Choice button states */
+.choice-btn            {transition:all .12s;text-align:left;cursor:pointer}
+.choice-btn.selected   {border-color:#1a56db!important;background:#eff6ff!important;color:#1a56db}
+.choice-btn.selected .lbl{color:#1a56db}
+.choice-btn.c-correct  {border-color:#16a34a!important;background:#f0fdf4!important;color:#166534}
+.choice-btn.c-correct .lbl{color:#16a34a}
+.choice-btn.c-wrong    {border-color:#dc2626!important;background:#fef2f2!important;color:#dc2626}
+.choice-btn.c-wrong .lbl{color:#dc2626}
+.choice-btn.c-miss     {border-color:#16a34a!important;border-style:dashed!important;color:#166534}
+.choice-btn.c-miss .lbl{color:#16a34a}
 
-/* ── LAYOUT ──────────────────────────────────────── */
-.exam-layout{display:grid;grid-template-columns:284px 1fr;min-height:calc(100vh - var(--nav-h));align-items:start}
-
-/* ── LEFT NAV ────────────────────────────────────── */
-.unit-nav{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;background:#fff;border-right:1px solid var(--border);display:flex;flex-direction:column}
-.unit-nav::-webkit-scrollbar{width:4px}
-.unit-nav::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
-
-.un-book{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
-.un-book-back{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);margin-bottom:10px;cursor:pointer;width:fit-content}
-.un-book-back:hover{color:var(--blue)}
-.un-book-title{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:700;color:var(--navy);line-height:1.4;margin-bottom:6px}
-.un-book-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.un-level{font-size:11px;font-weight:700;color:#fff;background:var(--blue);padding:2px 10px;border-radius:4px}
-.un-progress{font-size:11px;color:var(--text-3)}
-
-.un-list{flex:1;padding:10px 0}
-.un-group{padding:0}
-.un-group-label{font-size:10px;font-weight:800;color:var(--text-3);letter-spacing:.8px;text-transform:uppercase;padding:10px 16px 4px;display:flex;align-items:center;gap:6px}
-.un-item{display:flex;align-items:center;gap:0;padding:0;cursor:pointer;transition:.12s;position:relative}
-.un-item:hover .un-item-inner{background:#f8f9fa}
-.un-item.active .un-item-inner{background:var(--blue-lt)}
-.un-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
-.un-item-inner{flex:1;padding:8px 16px 8px 18px;border-radius:0;display:flex;align-items:center;gap:8px}
-.un-num{font-size:11px;font-weight:700;color:var(--text-3);min-width:28px;font-variant-numeric:tabular-nums}
-.un-item.active .un-num{color:var(--blue)}
-.un-subtitle{font-size:12px;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Noto Serif TC',serif}
-.un-item.active .un-subtitle{color:var(--blue);font-weight:600}
-.un-check{font-size:10px;color:var(--green);flex-shrink:0}
-
-/* ── MAIN CONTENT ────────────────────────────────── */
-.exam-main{padding:28px 32px 64px;min-width:0}
-
-/* Skeleton / loading */
-.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-/* ── UNIT HEADER ─────────────────────────────────── */
-.unit-hdr{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 60%,var(--blue) 100%);border-radius:16px;padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden}
-.unit-hdr::before{content:'學';position:absolute;font-family:'Noto Serif TC',serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.04);bottom:-70px;right:-10px;pointer-events:none;line-height:1}
-.unit-hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
-.unit-hdr-left{}
-.unit-hdr-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
-.unit-hdr-title{font-family:'Noto Serif TC',serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:4px}
-.unit-hdr-sub{font-size:13px;color:rgba(255,255,255,.6)}
-.unit-hdr-right{}
-.score-ring{text-align:center}
-.score-ring-val{font-size:28px;font-weight:800;color:#fff;line-height:1}
-.score-ring-label{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px}
-.unit-hdr-bottom{display:flex;align-items:center;gap:10px;margin-top:14px;position:relative;z-index:1;flex-wrap:wrap}
-.hdr-pill{font-size:11px;font-weight:600;padding:3px 12px;border-radius:20px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
-.hdr-pill.listening{background:rgba(124,58,237,.35);color:#c4b5fd}
-.hdr-pill.reading{background:rgba(22,163,74,.3);color:#86efac}
-.hdr-pill.answered{background:rgba(255,255,255,.15);color:#fff}
-
-/* ── SECTION ─────────────────────────────────────── */
-.section-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
-.section-hdr{padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
-.sec-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.sec-type-listening .sec-icon{background:#ede9fe;color:var(--purple)}
-.sec-type-completion .sec-icon{background:var(--blue-lt);color:var(--blue)}
-.sec-type-cloze .sec-icon{background:#fff7ed;color:var(--orange)}
-.sec-type-reading .sec-icon,.sec-type-essay .sec-icon{background:var(--green-lt);color:var(--green)}
-.sec-title{font-size:14px;font-weight:700;color:var(--text);flex:1;font-family:'Noto Serif TC',serif}
-.sec-count{font-size:11px;color:var(--text-3);font-weight:500;background:#f3f4f6;padding:2px 10px;border-radius:20px;flex-shrink:0}
-.section-body{padding:16px 20px}
-
-/* ── AUDIO PLAYER ────────────────────────────────── */
-.audio-block{background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
-.audio-icon{width:40px;height:40px;border-radius:10px;background:var(--purple);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0}
-.audio-info{flex:1;min-width:0}
-.audio-label{font-size:12px;font-weight:700;color:var(--purple);margin-bottom:4px}
-.audio-player{width:100%;height:32px;accent-color:var(--purple)}
-.audio-missing{font-size:12px;color:var(--text-3);font-style:italic}
-
-/* ── PASSAGE ─────────────────────────────────────── */
+/* Passage block */
 .passage-block{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:14px}
-.passage-label{font-size:11px;font-weight:800;color:var(--green);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
 
-/* ── QUESTION ────────────────────────────────────── */
-.q-block{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f3f4f6}
-.q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.q-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
-.q-num{font-size:13px;font-weight:800;color:var(--blue);min-width:30px;padding-top:1px;flex-shrink:0}
-.q-text{font-size:14px;color:var(--text);line-height:1.6;font-family:'Noto Serif TC',serif}
-.q-text:empty::before{content:'（聽力題）';color:var(--text-3);font-style:italic;font-family:'Be Vietnam Pro',sans-serif;font-size:12px}
-.choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.choice-btn{display:flex;align-items:flex-start;gap:8px;padding:9px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;background:#fff;text-align:left;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);transition:all .12s;width:100%;line-height:1.5}
-.choice-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
-.choice-lbl{font-weight:800;color:var(--text-3);min-width:16px;flex-shrink:0;font-family:'Be Vietnam Pro',sans-serif}
-.choice-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
-.choice-btn.selected .choice-lbl{color:var(--blue)}
-.choice-btn.correct{border-color:var(--green);background:var(--green-lt);color:#166534}
-.choice-btn.correct .choice-lbl{color:var(--green)}
-.choice-btn.wrong{border-color:var(--red);background:var(--red-lt);color:var(--red)}
-.choice-btn.wrong .choice-lbl{color:var(--red)}
-.choice-btn.correct-miss{border-color:var(--green);border-style:dashed;color:#166534}
-.choice-btn.correct-miss .choice-lbl{color:var(--green)}
-.choice-btn:disabled{cursor:default}
-.q-result{font-size:11px;font-weight:700;margin-top:6px;padding:3px 0;display:none}
-.q-result.show{display:block}
-.q-result.ok{color:var(--green)}
-.q-result.err{color:var(--red)}
+/* Audio */
+audio{accent-color:#7c3aed;width:100%;height:32px}
 
-/* ── VOCAB / PHRASES ─────────────────────────────── */
-.section-b-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
-.sb-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.sb-hdr-icon{width:34px;height:34px;border-radius:9px;background:#fef9c3;color:#a16207;display:flex;align-items:center;justify-content:center;font-size:14px}
-.sb-hdr-title{font-size:14px;font-weight:700;font-family:'Noto Serif TC',serif;color:var(--text);flex:1}
-.sb-toggle{font-size:12px;color:var(--text-3);cursor:pointer;display:flex;align-items:center;gap:4px;background:none;border:none;font-family:inherit}
-.sb-toggle:hover{color:var(--text)}
-.sb-body{padding:0 20px 16px;display:none}
-.sb-body.open{display:block}
-.sb-sub{font-size:12px;font-weight:700;color:var(--text-2);margin:14px 0 8px;display:flex;align-items:center;gap:6px}
-table.word-table{width:100%;font-size:13px;border-collapse:collapse}
-table.word-table th{background:#f9fafb;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.4px;text-transform:uppercase;padding:7px 12px;text-align:left;border-bottom:1px solid var(--border)}
-table.word-table td{padding:7px 12px;border-bottom:1px solid #f3f4f6;vertical-align:top}
-table.word-table tr:last-child td{border-bottom:none}
-.word-zh{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600}
-.phrase-zh{font-family:'Noto Serif TC',serif;font-size:14px}
-.phrase-ex{font-size:12px;color:var(--text-2);margin-top:2px}
+/* Scrollbar */
+.un-scroll::-webkit-scrollbar{width:3px}
+.un-scroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
 
-/* ── SUBMIT BAR ──────────────────────────────────── */
-.submit-bar{position:sticky;bottom:24px;margin-top:24px;display:flex;justify-content:flex-end}
-.submit-btn{display:flex;align-items:center;gap:10px;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:13px 28px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 20px rgba(26,86,219,.35);transition:all .18s}
-.submit-btn:hover{background:var(--blue-dark);transform:translateY(-2px);box-shadow:0 6px 24px rgba(26,86,219,.4)}
-.submit-btn:disabled{background:#9ca3af;box-shadow:none;transform:none;cursor:not-allowed}
-.submit-btn .answered-count{font-size:12px;font-weight:500;opacity:.8}
-
-/* ── RESULT BANNER ───────────────────────────────── */
-.result-banner{border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
-.result-banner.pass{background:linear-gradient(135deg,var(--green-lt),#d1fae5);border:1.5px solid #6ee7b7}
-.result-banner.fail{background:linear-gradient(135deg,#fff7ed,#fed7aa);border:1.5px solid #fbbf24}
-.rb-icon{font-size:32px;flex-shrink:0}
-.rb-title{font-size:18px;font-weight:800;color:var(--navy)}
-.rb-sub{font-size:13px;color:var(--text-2);margin-top:2px}
-.rb-right{margin-left:auto;text-align:right}
-.rb-score{font-size:36px;font-weight:900;color:var(--blue);line-height:1}
-.rb-score-label{font-size:12px;color:var(--text-3)}
-.retry-btn{margin-top:12px;display:inline-flex;align-items:center;gap:6px;background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-.retry-btn:hover{background:var(--blue-dark)}
-
-/* ── CATALOG (no unit selected) ──────────────────── */
-.catalog{padding:0}
-.catalog-hero{background:linear-gradient(135deg,var(--navy),#1e3a8a,var(--blue));border-radius:16px;padding:28px;position:relative;overflow:hidden;margin-bottom:24px}
-.catalog-hero::before{content:'試';position:absolute;font-family:'Noto Serif TC',serif;font-size:240px;font-weight:700;color:rgba(255,255,255,.04);bottom:-60px;right:0;pointer-events:none}
-.ch-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px}
-.ch-title{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:#fff;margin-bottom:6px}
-.ch-sub{font-size:13px;color:rgba(255,255,255,.65)}
-.unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
-.unit-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
-.unit-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow)}
-.uc-num{font-size:11px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
-.uc-sub{font-size:13px;font-weight:600;color:var(--navy);font-family:'Noto Serif TC',serif;line-height:1.4}
-.uc-status{font-size:11px;color:var(--text-3);margin-top:2px}
-
-/* ── EMPTY / LOADING ─────────────────────────────── */
-.center-msg{text-align:center;padding:4rem 2rem;color:var(--text-3);font-size:13px}
-.center-msg i{font-size:36px;display:block;margin-bottom:12px;opacity:.4}
-
-/* ── RESPONSIVE ──────────────────────────────────── */
-@media(max-width:900px){
-  .exam-layout{grid-template-columns:1fr}
-  .unit-nav{display:none;position:fixed;inset:var(--nav-h) 0 0 0;height:auto;z-index:200;border-right:none;border-top:1px solid var(--border)}
-  .unit-nav.open{display:flex}
-  .exam-main{padding:20px 16px 80px}
-  .choices{grid-template-columns:1fr}
-  .hamburger{display:flex!important}
-}
-@media(max-width:600px){
-  .unit-hdr{padding:18px 18px}
-  .unit-hdr-title{font-size:18px}
-}
+/* Jump bar active */
+.jump-active{color:#1a56db;border-color:#1a56db;background:#eff6ff}
 </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 min-h-screen" x-data="examApp()" x-init="init()">
 
-<nav class="navbar">
-  <div class="inner">
-    <a class="nav-brand" href="/courses.html">
-      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+<!-- NAVBAR -->
+<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm h-[62px] flex items-center">
+  <div class="max-w-none w-full px-5 flex items-center gap-4">
+    <a href="/exams.html" class="flex items-center gap-2 flex-shrink-0">
+      <span class="zh text-[17px] font-bold text-navy">TOCFL <em class="text-orange not-italic">FAFA</em></span>
     </a>
-    <div style="display:flex;align-items:center;gap:4px">
-      <button class="hamburger" id="hamburger" onclick="toggleNav()"
-        style="display:none;background:none;border:1px solid var(--border);border-radius:7px;
-               padding:6px 10px;cursor:pointer;font-size:13px;color:var(--text-2);align-items:center;gap:6px">
-        <i class="fa-solid fa-list"></i> Danh sách
-      </button>
-      <div class="nav-menu">
-        <a class="nav-link" href="/courses.html">Khóa học</a>
-        <a class="nav-link active" href="#">Đề thi</a>
-        <a class="nav-link" href="/flashcards.html">Flashcard</a>
-        <a class="nav-link" href="/about.html">Giới thiệu</a>
-      </div>
-      <div class="nav-auth" id="nav-auth">
-        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
-      </div>
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-1.5 text-sm text-gray-400 min-w-0 overflow-hidden">
+      <a href="/exams.html" class="hover:text-blue transition flex-shrink-0">Đề thi</a>
+      <i class="fa-solid fa-chevron-right text-[8px] flex-shrink-0"></i>
+      <span class="text-gray-600 truncate zh" x-show="book" x-text="book?.title || '…'"></span>
+      <template x-if="activeUnit && view==='exam'">
+        <span class="flex items-center gap-1.5 flex-shrink-0">
+          <i class="fa-solid fa-chevron-right text-[8px]"></i>
+          <span class="text-gray-800 font-medium" x-text="`${activeUnit.unit_number}-${activeUnit.sub_number}`"></span>
+        </span>
+      </template>
+    </div>
+    <!-- Mobile nav toggle -->
+    <button @click="navOpen=!navOpen" x-show="view==='exam'"
+      class="ml-auto md:hidden flex items-center gap-1.5 text-xs font-medium text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5">
+      <i class="fa-solid fa-list text-[10px]"></i> Mục lục
+    </button>
+    <div class="ml-auto" id="nav-auth">
+      <a href="/login.html" class="text-sm font-semibold text-white bg-blue hover:bg-blue-dark px-4 py-2 rounded-lg transition">Bắt đầu học</a>
     </div>
   </div>
 </nav>
 
-<div class="exam-layout">
+<!-- LOADING OVERLAY -->
+<div x-show="loading" x-transition class="fixed inset-0 bg-white z-[100] flex items-center justify-center">
+  <div class="text-center">
+    <div class="w-10 h-10 border-4 border-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+    <div class="text-sm text-gray-500">Đang tải…</div>
+  </div>
+</div>
 
-  <!-- LEFT: Unit navigator -->
-  <aside class="unit-nav" id="unit-nav">
-    <div class="un-book" id="un-book">
-      <div class="un-book-back" onclick="goBack()">
-        <i class="fa-solid fa-arrow-left" style="font-size:10px"></i> Tất cả đề thi
-      </div>
-      <div class="un-book-title" id="un-book-title">Đang tải…</div>
-      <div class="un-book-meta">
-        <span class="un-level" id="un-level" style="display:none"></span>
-        <span class="un-progress" id="un-progress"></span>
+<!-- MAIN LAYOUT -->
+<div class="flex min-h-[calc(100vh-62px)]">
+
+  <!-- ── LEFT NAV ────────────────────────────────── -->
+  <aside :class="navOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+         class="fixed md:sticky top-[62px] left-0 z-40 h-[calc(100vh-62px)]
+                w-72 bg-white border-r border-gray-200 flex flex-col
+                un-scroll overflow-y-auto transition-transform md:transition-none">
+
+    <!-- Book header -->
+    <div class="p-4 border-b border-gray-100">
+      <a href="/exams.html" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue mb-3 transition">
+        <i class="fa-solid fa-arrow-left text-[9px]"></i> Tất cả đề thi
+      </a>
+      <div class="zh font-bold text-navy text-[13px] leading-snug mb-1.5" x-text="book?.title || '…'"></div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <span x-show="book?.level" x-text="book?.level"
+              class="text-[10px] font-bold text-white bg-blue px-2 py-0.5 rounded-md"></span>
+        <span class="text-[11px] text-gray-400" x-text="units.length + ' sub-unit'"></span>
       </div>
     </div>
-    <div class="un-list" id="un-list">
-      <div style="padding:24px 16px;color:var(--text-3);font-size:13px;text-align:center">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-      </div>
+
+    <!-- Unit list -->
+    <div class="flex-1 py-2 overflow-y-auto un-scroll">
+      <template x-for="group in unitGroups" :key="group.num">
+        <div>
+          <div class="flex items-center gap-2 px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+            <i class="fa-solid fa-book text-[8px]"></i>
+            Unit <span x-text="group.num"></span>
+            <span class="zh font-normal normal-case tracking-normal text-gray-300 ml-1" x-text="group.titleZh"></span>
+          </div>
+          <template x-for="u in group.items" :key="u.id">
+            <button @click="selectUnit(u)"
+              :class="activeUnit?.id===u.id
+                ? 'bg-blue-lt text-blue border-l-[3px] border-blue'
+                : 'text-gray-700 border-l-[3px] border-transparent hover:bg-gray-50'"
+              class="w-full text-left px-4 py-2.5 flex items-center gap-2.5 transition relative">
+              <span class="text-[11px] font-bold min-w-[28px] tabular-nums"
+                    :class="activeUnit?.id===u.id ? 'text-blue' : 'text-gray-400'"
+                    x-text="`${u.unit_number}-${u.sub_number}`"></span>
+              <span class="zh text-[12px] flex-1 truncate font-medium"
+                    x-text="u.sub_title_zh || u.title_zh || '—'"></span>
+              <!-- Result badge -->
+              <template x-if="unitResults[u.id]">
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+                      :class="(unitResults[u.id].score/unitResults[u.id].total) >= 0.6
+                               ? 'bg-green-lt text-green' : 'bg-orange/10 text-orange'"
+                      x-text="`${unitResults[u.id].score}/${unitResults[u.id].total}`"></span>
+              </template>
+              <template x-if="!unitResults[u.id]">
+                <span class="text-[10px] text-gray-300 flex-shrink-0">—</span>
+              </template>
+            </button>
+          </template>
+        </div>
+      </template>
     </div>
   </aside>
 
-  <!-- RIGHT: Exam content -->
-  <main class="exam-main" id="exam-main">
-    <div id="exam-view">
-      <div class="center-msg" id="loading-msg">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        Đang tải…
-      </div>
-    </div>
-  </main>
+  <!-- Backdrop for mobile nav -->
+  <div x-show="navOpen" @click="navOpen=false"
+       class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
 
-</div>
+  <!-- ── MAIN CONTENT ──────────────────────────── -->
+  <main class="flex-1 min-w-0 overflow-x-hidden">
 
-<script src="js/utils.js"></script>
-<script src="js/config.js"></script>
-<script>
-// ── Setup ──────────────────────────────────────────────────────────
-const DB_URL = window.SUPABASE_URL || 'https://prctmferugkxabyizslx.supabase.co';
-const DB_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
-const db  = supabase.createClient(DB_URL, DB_KEY);
-const auth = typeof AuthService !== 'undefined' ? new AuthService(db) : null;
-
-function esc(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
-
-const SEC_META = {
-  listening:  { icon:'fa-headphones',  color:'var(--purple)', label:'Nghe' },
-  completion: { icon:'fa-pen-nib',     color:'var(--blue)',   label:'Hoàn thành câu' },
-  cloze:      { icon:'fa-fill-drip',   color:'var(--orange)', label:'Chọn từ điền vào' },
-  reading:    { icon:'fa-book-open',   color:'var(--green)',  label:'Đọc hiểu' },
-  essay:      { icon:'fa-scroll',      color:'var(--green)',  label:'Đọc ngắn' },
-  mcq:        { icon:'fa-list-ul',     color:'var(--blue)',   label:'Trắc nghiệm' },
-};
-
-// ── State ──────────────────────────────────────────────────────────
-const _s = {
-  bookId: null, book: null, units: [],
-  activeKey: null,   // "unitNum-subNum"
-  sections: [],
-  passages: {},      // sectionId → [passage]
-  questions: {},     // sectionId → [question with choices]
-  vocab: [], phrases: [],
-  answers: {},       // questionId → label
-  submitted: false,
-  totalQ: 0, answeredQ: 0,
-};
-
-// ── URL helpers ───────────────────────────────────────────────────
-function getParams(){
-  const p = new URLSearchParams(location.search);
-  return { bookId: p.get('book'), unitNum: p.get('unit'), subNum: p.get('sub') };
-}
-function setParam(key, val){
-  const p = new URLSearchParams(location.search);
-  if(val==null) p.delete(key); else p.set(key,val);
-  history.pushState({}, '', '?' + p.toString());
-}
-function goBack(){
-  const p = new URLSearchParams(location.search);
-  p.delete('unit'); p.delete('sub');
-  history.pushState({}, '', '?' + p.toString());
-  renderCatalog();
-}
-function toggleNav(){
-  document.getElementById('unit-nav').classList.toggle('open');
-}
-
-// ── Init ───────────────────────────────────────────────────────────
-(async()=>{
-  if(auth) auth.init().then(u => renderNavAuth(u));
-
-  const { bookId, unitNum, subNum } = getParams();
-  if(!bookId){ renderNoBook(); return; }
-
-  _s.bookId = bookId;
-  await loadBook();
-  await loadUnits();
-  renderUnitNav();
-
-  if(unitNum && subNum) loadUnit(parseInt(unitNum), parseInt(subNum));
-  else renderCatalog();
-})();
-
-async function loadBook(){
-  const { data } = await db.from('exam_books').select('*').eq('id', _s.bookId).single();
-  _s.book = data;
-  const el = document.getElementById('un-book-title');
-  if(el) el.textContent = data?.title || '—';
-  const lv = document.getElementById('un-level');
-  if(lv && data?.level){ lv.textContent = data.level; lv.style.display=''; }
-}
-
-async function loadUnits(){
-  const { data } = await db.from('exam_units')
-    .select('id,unit_number,sub_number,title_zh,sub_title_zh,status')
-    .eq('book_id', _s.bookId).eq('status','published')
-    .order('unit_number').order('sub_number');
-  _s.units = data || [];
-  document.getElementById('un-progress').textContent = `${_s.units.length} sub-unit`;
-}
-
-// ── Unit Navigator ─────────────────────────────────────────────────
-function renderUnitNav(){
-  const list = document.getElementById('un-list');
-  if(!_s.units.length){ list.innerHTML = '<div class="center-msg" style="padding:20px">Chưa có bài nào được xuất bản.</div>'; return; }
-
-  // Group by unit_number
-  const groups = {};
-  _s.units.forEach(u => {
-    if(!groups[u.unit_number]) groups[u.unit_number] = { titleZh: u.title_zh, items: [] };
-    groups[u.unit_number].items.push(u);
-  });
-
-  list.innerHTML = Object.entries(groups).map(([num, g]) => `
-    <div class="un-group">
-      <div class="un-group-label">
-        <i class="fa-solid fa-book" style="font-size:8px"></i>
-        Unit ${esc(num)} · ${esc(g.titleZh||'')}
-      </div>
-      ${g.items.map(u => {
-        const key = `${u.unit_number}-${u.sub_number}`;
-        const isActive = _s.activeKey === key;
-        return `<div class="un-item${isActive?' active':''}" id="un-item-${key}"
-                     onclick="loadUnit(${u.unit_number},${u.sub_number})">
-          <div class="un-item-inner">
-            <span class="un-num">${u.unit_number}-${u.sub_number}</span>
-            <span class="un-subtitle" title="${esc(u.sub_title_zh||u.title_zh||'')}">${esc(u.sub_title_zh||u.title_zh||'—')}</span>
-          </div>
-        </div>`;
-      }).join('')}
-    </div>`
-  ).join('');
-}
-
-function setActiveUnit(key){
-  document.querySelectorAll('.un-item').forEach(el => el.classList.remove('active'));
-  const el = document.getElementById(`un-item-${key}`);
-  if(el){ el.classList.add('active'); el.scrollIntoView({ block:'nearest', behavior:'smooth' }); }
-  _s.activeKey = key;
-}
-
-// ── Catalog (no unit selected) ─────────────────────────────────────
-function renderCatalog(){
-  _s.activeKey = null;
-  renderUnitNav();
-  const view = document.getElementById('exam-view');
-  view.innerHTML = `
-    <div class="catalog">
-      <div class="catalog-hero">
-        <div class="ch-eyebrow"><i class="fa-solid fa-file-pen" style="font-size:9px"></i> ${esc(_s.book?.level||'TOCFL')} · Bộ đề thi</div>
-        <div class="ch-title">${esc(_s.book?.title||'—')}</div>
-        <div class="ch-sub">Chọn sub-unit bên dưới để bắt đầu luyện tập</div>
-      </div>
-      <div style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px">
-        ${_s.units.length} Sub-unit · Nhấn để luyện thi
-      </div>
-      <div class="unit-grid">
-        ${_s.units.map(u => `
-          <div class="unit-card" onclick="loadUnit(${u.unit_number},${u.sub_number})">
-            <div class="uc-num">${u.unit_number}-${u.sub_number}</div>
-            <div class="uc-sub">${esc(u.sub_title_zh||u.title_zh||'—')}</div>
-            <div class="uc-status"><i class="fa-solid fa-circle-play" style="color:var(--blue);font-size:10px"></i> Luyện thi</div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-function renderNoBook(){
-  document.getElementById('exam-view').innerHTML = `
-    <div class="center-msg">
-      <i class="fa-solid fa-file-pen"></i>
-      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px">Chưa chọn bộ đề thi</div>
-      <p>Vào <a href="/courses.html" style="color:var(--blue)">Khóa học</a> để tìm bộ đề phù hợp.</p>
-    </div>`;
-}
-
-// ── Load Unit ──────────────────────────────────────────────────────
-async function loadUnit(unitNum, subNum){
-  // Reset state
-  _s.sections=[]; _s.passages={}; _s.questions={}; _s.vocab=[]; _s.phrases=[];
-  _s.answers={}; _s.submitted=false; _s.totalQ=0; _s.answeredQ=0;
-
-  const key = `${unitNum}-${subNum}`;
-  setActiveUnit(key);
-  setParam('unit', unitNum); setParam('sub', subNum);
-  document.getElementById('unit-nav').classList.remove('open');
-
-  document.getElementById('exam-view').innerHTML =
-    `<div class="center-msg" id="loading-msg"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</div>`;
-
-  // Find unit
-  const unit = _s.units.find(u => u.unit_number===unitNum && u.sub_number===subNum);
-  if(!unit){ document.getElementById('exam-view').innerHTML='<div class="center-msg"><i class="fa-solid fa-triangle-exclamation"></i> Không tìm thấy bài.</div>'; return; }
-
-  // Load sections
-  const { data: sections } = await db.from('exam_sections')
-    .select('id,section_number,section_type,title,audio_url')
-    .eq('unit_id', unit.id).order('section_number');
-  _s.sections = sections || [];
-
-  const secIds = _s.sections.map(s=>s.id);
-  if(!secIds.length){ renderExam(unit); return; }
-
-  // Load passages + questions in parallel
-  const [{ data: passagesArr }, { data: questionsArr }, { data: choicesArr }, { data: vocab }, { data: phrases }] = await Promise.all([
-    db.from('exam_passages').select('id,section_id,label,content_text').in('section_id', secIds).order('id'),
-    db.from('exam_questions').select('id,section_id,passage_id,question_number,question_text,correct_answer').in('section_id', secIds).order('question_number'),
-    db.from('exam_choices').select('id,question_id,label,text')
-      .in('question_id', (await db.from('exam_questions').select('id').in('section_id', secIds)).data?.map(q=>q.id)||[]).order('label'),
-    db.from('exam_vocab').select('*').eq('unit_id', unit.id),
-    db.from('exam_phrases').select('*').eq('unit_id', unit.id),
-  ]);
-
-  // Index passages by section
-  (passagesArr||[]).forEach(p => {
-    if(!_s.passages[p.section_id]) _s.passages[p.section_id]=[];
-    _s.passages[p.section_id].push(p);
-  });
-
-  // Index choices by question
-  const choicesByQ = {};
-  (choicesArr||[]).forEach(c => {
-    if(!choicesByQ[c.question_id]) choicesByQ[c.question_id]={};
-    choicesByQ[c.question_id][c.label]=c.text;
-  });
-
-  // Attach choices + group by section
-  (questionsArr||[]).forEach(q => {
-    q.choiceMap = choicesByQ[q.id] || {};
-    if(!_s.questions[q.section_id]) _s.questions[q.section_id]=[];
-    _s.questions[q.section_id].push(q);
-  });
-
-  _s.vocab   = vocab   || [];
-  _s.phrases = phrases || [];
-  _s.totalQ  = (questionsArr||[]).length;
-
-  renderExam(unit);
-}
-
-// ── Render Exam ────────────────────────────────────────────────────
-function renderExam(unit){
-  const view = document.getElementById('exam-view');
-  const secAHtml = _s.sections.map(sec => renderSection(sec)).join('');
-  const secBHtml = renderSectionB();
-
-  view.innerHTML = `
-    <div id="result-banner-slot"></div>
-
-    <div class="unit-hdr">
-      <div class="unit-hdr-top">
-        <div class="unit-hdr-left">
-          <div class="unit-hdr-eyebrow">Unit ${unit.unit_number}-${unit.sub_number} · ${esc(unit.title_zh||'')}</div>
-          <h1 class="unit-hdr-title">${esc(unit.sub_title_zh||unit.title_zh||'—')}</h1>
-          <div class="unit-hdr-sub">${esc(_s.book?.title||'')}</div>
+    <!-- ── BOOK VIEW ──────────────────── -->
+    <div x-show="view==='book' && !loading">
+      <!-- Book hero -->
+      <div class="bg-gradient-to-br from-navy via-[#1e3a8a] to-blue py-12 px-8 relative overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none select-none flex items-center justify-end">
+          <span class="zh text-[280px] font-bold text-white/[.04] leading-none pr-8">試</span>
         </div>
-        <div class="unit-hdr-right">
-          <div class="score-ring">
-            <div class="score-ring-val" id="score-display">0/${_s.totalQ}</div>
-            <div class="score-ring-label">đã trả lời</div>
+        <div class="relative z-10 max-w-3xl">
+          <div class="text-[11px] font-bold uppercase tracking-widest text-white/50 mb-3">
+            <i class="fa-solid fa-file-pen text-[9px] mr-1"></i>
+            <span x-text="book?.level || 'TOCFL'"></span> · Bộ đề thi
+          </div>
+          <h1 class="zh text-3xl font-bold text-white leading-snug mb-2" x-text="book?.title || '—'"></h1>
+          <p class="text-white/60 text-sm mb-6">Chọn sub-unit bên dưới để bắt đầu luyện tập</p>
+          <div class="flex gap-5 flex-wrap">
+            <div class="text-white/70 text-sm flex items-center gap-2">
+              <span class="text-2xl font-black text-white" x-text="units.length"></span> sub-unit
+            </div>
+            <div class="text-white/70 text-sm flex items-center gap-2">
+              <span class="text-2xl font-black text-white" x-text="Object.keys(unitResults).length"></span> đã hoàn thành
+            </div>
           </div>
         </div>
       </div>
-      <div class="unit-hdr-bottom">
-        ${_s.book?.level ? `<span class="hdr-pill">${esc(_s.book.level)}</span>` : ''}
-        <span class="hdr-pill answered" id="hdr-answered">0/${_s.totalQ} câu</span>
+
+      <!-- Unit grid -->
+      <div class="p-8 max-w-4xl">
+        <template x-for="group in unitGroups" :key="group.num">
+          <div class="mb-8">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-7 h-7 rounded-lg bg-blue flex items-center justify-center">
+                <span class="text-xs font-black text-white" x-text="group.num"></span>
+              </div>
+              <span class="font-bold text-gray-700 text-sm">Unit <span x-text="group.num"></span></span>
+              <span class="zh text-gray-400 text-sm" x-text="group.titleZh"></span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <template x-for="u in group.items" :key="u.id">
+                <button @click="selectUnit(u)"
+                  class="bg-white border border-gray-200 rounded-xl p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md hover:border-blue group">
+                  <div class="text-[11px] font-bold text-blue mb-2" x-text="`${u.unit_number}-${u.sub_number}`"></div>
+                  <div class="zh text-[13px] font-semibold text-navy leading-snug mb-3"
+                       x-text="u.sub_title_zh || u.title_zh || '—'"></div>
+                  <template x-if="unitResults[u.id]">
+                    <div class="flex items-center gap-1.5">
+                      <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all"
+                             :class="(unitResults[u.id].score/unitResults[u.id].total)>=0.6 ? 'bg-green' : 'bg-orange'"
+                             :style="`width:${Math.round(unitResults[u.id].score/unitResults[u.id].total*100)}%`"></div>
+                      </div>
+                      <span class="text-[11px] font-bold"
+                            :class="(unitResults[u.id].score/unitResults[u.id].total)>=0.6 ? 'text-green' : 'text-orange'"
+                            x-text="`${unitResults[u.id].score}/${unitResults[u.id].total}`"></span>
+                    </div>
+                  </template>
+                  <template x-if="!unitResults[u.id]">
+                    <div class="flex items-center gap-1 text-[11px] text-gray-400">
+                      <i class="fa-solid fa-play text-[9px] text-blue"></i> Bắt đầu
+                    </div>
+                  </template>
+                </button>
+              </template>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
 
-    ${secAHtml}
-    ${secBHtml}
+    <!-- ── EXAM VIEW ───────────────────── -->
+    <div x-show="view==='exam' && !loading">
 
-    <div class="submit-bar">
-      <button class="submit-btn" id="submit-btn" onclick="submitExam()" disabled>
-        <i class="fa-solid fa-check-double"></i>
-        Kiểm tra đáp án
-        <span class="answered-count" id="submit-count">(0/${_s.totalQ})</span>
-      </button>
-    </div>`;
-}
-
-function renderSection(sec){
-  const meta  = SEC_META[sec.section_type] || SEC_META.mcq;
-  const qs    = _s.questions[sec.id] || [];
-  const passes= _s.passages[sec.id]  || [];
-
-  // Audio block for listening sections
-  const audioHtml = sec.section_type==='listening'
-    ? renderAudioBlock(sec.audio_url) : '';
-
-  // Group questions by passage_id
-  const qsByPass = {};
-  qs.forEach(q => {
-    const k = q.passage_id != null ? String(q.passage_id) : '__none__';
-    if(!qsByPass[k]) qsByPass[k]=[];
-    qsByPass[k].push(q);
-  });
-
-  let body = audioHtml;
-  if(passes.length){
-    for(const p of passes){
-      body += renderPassage(p);
-      (qsByPass[String(p.id)]||[]).forEach(q => { body += renderQuestion(q); });
-    }
-    (qsByPass['__none__']||[]).forEach(q => { body += renderQuestion(q); });
-  } else {
-    qs.forEach(q => { body += renderQuestion(q); });
-  }
-
-  return `
-    <div class="section-card">
-      <div class="section-hdr sec-type-${sec.section_type}">
-        <div class="sec-icon"><i class="fa-solid ${meta.icon}"></i></div>
-        <div class="sec-title">${esc(sec.title||meta.label)}</div>
-        <div class="sec-count">${qs.length} câu</div>
+      <!-- Section jump bar -->
+      <div class="sticky top-[62px] z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div class="px-6 flex items-center gap-2 min-h-[48px] overflow-x-auto">
+          <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex-shrink-0 mr-1">Phần</span>
+          <template x-for="sec in sections" :key="sec.id">
+            <button @click="scrollToSection(sec.id)"
+              :id="`jump-${sec.id}`"
+              :title="sec.title"
+              class="flex-shrink-0 text-xs font-semibold px-3 py-1 rounded-full border border-gray-200 text-gray-500 hover:border-blue hover:text-blue transition zh">
+              <span x-text="sectionNumZh(sec.section_number)"></span>
+            </button>
+          </template>
+          <!-- Progress pill -->
+          <div class="ml-auto flex-shrink-0 flex items-center gap-2 text-xs font-semibold text-gray-500">
+            <span :class="allAnswered ? 'text-green' : 'text-blue'"
+                  x-text="`${answeredQ}/${totalQ} câu`"></span>
+          </div>
+        </div>
       </div>
-      <div class="section-body">${body}</div>
-    </div>`;
-}
 
-function renderAudioBlock(url){
-  if(url) return `
-    <div class="audio-block">
-      <div class="audio-icon"><i class="fa-solid fa-headphones"></i></div>
-      <div class="audio-info">
-        <div class="audio-label">🔊 Đoạn hội thoại — Nghe và trả lời câu hỏi</div>
-        <audio class="audio-player" controls src="${esc(url)}" preload="metadata"></audio>
+      <div class="max-w-3xl mx-auto px-4 md:px-8 py-6 pb-32">
+
+        <!-- Unit header -->
+        <div class="bg-gradient-to-br from-navy via-[#1e3a8a] to-blue rounded-2xl p-6 mb-6 relative overflow-hidden">
+          <div class="absolute bottom-0 right-0 pointer-events-none select-none">
+            <span class="zh text-[180px] font-bold text-white/[.05] leading-none">學</span>
+          </div>
+          <div class="relative z-10 flex items-start justify-between gap-4">
+            <div>
+              <div class="text-[11px] font-bold uppercase tracking-widest text-white/50 mb-2">
+                Unit <span x-text="activeUnit && `${activeUnit.unit_number}-${activeUnit.sub_number}`"></span>
+                · <span class="zh" x-text="activeUnit?.title_zh || ''"></span>
+              </div>
+              <h2 class="zh text-2xl font-bold text-white leading-snug"
+                  x-text="activeUnit?.sub_title_zh || activeUnit?.title_zh || '—'"></h2>
+            </div>
+            <div class="text-right flex-shrink-0">
+              <div class="text-3xl font-black text-white leading-none"
+                   x-text="submitted ? `${examScore}/${totalQ}` : `${answeredQ}/${totalQ}`"></div>
+              <div class="text-[11px] text-white/50 mt-1" x-text="submitted ? 'điểm' : 'đã trả lời'"></div>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div class="mt-4 relative z-10">
+            <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300"
+                   :class="submitted ? 'bg-green' : 'bg-white/40'"
+                   :style="`width:${totalQ ? Math.round((submitted ? examScore : answeredQ)/totalQ*100) : 0}%`"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result banner -->
+        <div x-show="submitted" x-transition
+             :class="(examScore/totalQ) >= 0.6
+               ? 'bg-green-lt border-green/30'
+               : 'bg-[#fff7ed] border-orange/30'"
+             class="rounded-2xl border p-5 mb-6 flex items-center gap-4">
+          <div class="text-4xl" x-text="(examScore/totalQ)>=0.6 ? '🎉' : '📚'"></div>
+          <div class="flex-1">
+            <div class="font-bold text-gray-800 text-base"
+                 x-text="(examScore/totalQ)>=0.6 ? 'Xuất sắc! Bạn đã vượt qua!' : 'Hãy luyện tập thêm nhé!'"></div>
+            <div class="text-sm text-gray-500 mt-0.5"
+                 x-text="`Đúng ${examScore}/${totalQ} câu — ${Math.round(examScore/totalQ*100)}% chính xác`"></div>
+          </div>
+          <div class="flex flex-col gap-2 flex-shrink-0">
+            <button @click="retry()" class="flex items-center gap-2 bg-blue text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-dark transition">
+              <i class="fa-solid fa-rotate-right text-[10px]"></i> Làm lại
+            </button>
+            <button x-show="nextUnitItem" @click="goNext()"
+              class="flex items-center gap-2 bg-green text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-green/90 transition">
+              Tiếp theo <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sections -->
+        <template x-for="sec in sections" :key="sec.id">
+          <div :id="`sec-${sec.id}`" class="bg-white rounded-2xl border border-gray-200 mb-5 overflow-hidden">
+
+            <!-- Section header -->
+            <div class="flex items-center gap-3 px-5 py-4 border-b border-gray-100"
+                 :class="{
+                   'bg-purple-lt/50': sec.section_type==='listening',
+                   'bg-blue-lt/40':   sec.section_type==='completion',
+                   'bg-[#fff7ed]/60': sec.section_type==='cloze',
+                   'bg-green-lt/40':  sec.section_type==='reading' || sec.section_type==='essay',
+                 }">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                   :class="{
+                     'bg-purple text-white':  sec.section_type==='listening',
+                     'bg-blue text-white':    sec.section_type==='completion',
+                     'bg-orange text-white':  sec.section_type==='cloze',
+                     'bg-green text-white':   sec.section_type==='reading'||sec.section_type==='essay',
+                     'bg-blue text-white':    sec.section_type==='mcq',
+                   }">
+                <i :class="{
+                     'fa-headphones':  sec.section_type==='listening',
+                     'fa-pen-nib':     sec.section_type==='completion',
+                     'fa-fill-drip':   sec.section_type==='cloze',
+                     'fa-book-open':   sec.section_type==='reading'||sec.section_type==='essay',
+                     'fa-list-ul':     sec.section_type==='mcq',
+                   }" class="fa-solid text-sm"></i>
+              </div>
+              <div class="zh font-bold text-gray-800 flex-1 text-[14px]" x-text="sec.title || sec.section_type"></div>
+              <span class="text-[11px] font-medium text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full"
+                    x-text="(questionsBySection[sec.id]||[]).length + ' câu'"></span>
+            </div>
+
+            <div class="p-5">
+
+              <!-- Audio block (listening) -->
+              <template x-if="sec.section_type==='listening'">
+                <div>
+                  <template x-if="sec.audio_url">
+                    <div class="flex items-center gap-4 bg-gradient-to-r from-purple-lt to-purple/5 border border-purple/20 rounded-xl p-4 mb-5">
+                      <div class="w-10 h-10 rounded-xl bg-purple flex items-center justify-center flex-shrink-0">
+                        <i class="fa-solid fa-headphones text-white text-base"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-xs font-bold text-purple mb-2">🔊 Đoạn hội thoại — Nghe và trả lời</div>
+                        <audio controls :src="sec.audio_url" preload="metadata" class="w-full"></audio>
+                      </div>
+                    </div>
+                  </template>
+                  <template x-if="!sec.audio_url">
+                    <div class="flex items-center gap-3 bg-gray-50 border border-dashed border-gray-200 rounded-xl p-4 mb-5">
+                      <i class="fa-solid fa-headphones text-gray-300 text-xl"></i>
+                      <span class="text-sm text-gray-400 italic">Audio chưa có — sẽ được cập nhật sớm</span>
+                    </div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Passages + questions interleaved -->
+              <template x-if="(passagesBySection[sec.id]||[]).length > 0">
+                <div>
+                  <template x-for="p in passagesBySection[sec.id]" :key="p.id">
+                    <div>
+                      <div class="passage-block">
+                        <template x-if="p.label">
+                          <div class="text-[11px] font-extrabold text-green uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                            <i class="fa-solid fa-paragraph text-[9px]"></i>
+                            <span x-text="p.label"></span>
+                          </div>
+                        </template>
+                        <div class="passage-text" x-text="p.content_text || ''"></div>
+                      </div>
+                      <!-- Questions for this passage -->
+                      <template x-for="q in questionsFor(sec.id, p.id)" :key="q.id">
+                        <div x-html="renderQuestion(q)" class="mb-4"></div>
+                      </template>
+                    </div>
+                  </template>
+                  <!-- Questions not linked to any passage -->
+                  <template x-for="q in questionsFor(sec.id, null)" :key="q.id">
+                    <div x-html="renderQuestion(q)" class="mb-4"></div>
+                  </template>
+                </div>
+              </template>
+
+              <!-- Sections with no passages -->
+              <template x-if="!(passagesBySection[sec.id]||[]).length">
+                <div>
+                  <template x-for="q in (questionsBySection[sec.id]||[])" :key="q.id">
+                    <div x-html="renderQuestion(q)" class="mb-4"></div>
+                  </template>
+                </div>
+              </template>
+
+            </div>
+          </div>
+        </template>
+
+        <!-- Section B: vocab + phrases -->
+        <template x-if="vocab.length || phrases.length">
+          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-5">
+            <button @click="secBOpen=!secBOpen"
+              class="w-full flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition">
+              <div class="w-9 h-9 rounded-xl bg-yellow-50 flex items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-book-bookmark text-yellow-600 text-sm"></i>
+              </div>
+              <span class="zh font-bold text-gray-800 text-[14px] flex-1 text-left">B · 關鍵詞語 — Từ vựng &amp; Cụm từ</span>
+              <i :class="secBOpen ? 'fa-chevron-up' : 'fa-chevron-down'"
+                 class="fa-solid text-gray-400 text-[11px]"></i>
+            </button>
+            <div x-show="secBOpen" x-collapse class="px-5 pb-5">
+              <!-- Vocab -->
+              <template x-if="vocab.length">
+                <div class="mb-5">
+                  <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-book text-[10px]"></i> 一、主題相關詞語
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead><tr class="bg-gray-50">
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Xuất xứ</th>
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Từ</th>
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Từ liên quan</th>
+                      </tr></thead>
+                      <tbody>
+                        <template x-for="v in vocab" :key="v.id">
+                          <tr class="border-b border-gray-50">
+                            <td class="px-3 py-2 text-[11px] text-gray-400" x-text="v.source_section||''"></td>
+                            <td class="px-3 py-2 zh font-semibold text-[14px]" x-text="v.word_zh||''"></td>
+                            <td class="px-3 py-2 text-xs text-gray-500" x-text="v.related_words||''"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </template>
+              <!-- Phrases -->
+              <template x-if="phrases.length">
+                <div>
+                  <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-[10px]"></i> 二、常用詞組
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                      <thead><tr class="bg-gray-50">
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Xuất xứ</th>
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Cụm từ</th>
+                        <th class="text-left text-[11px] font-bold text-gray-400 uppercase px-3 py-2 border-b border-gray-100">Ví dụ</th>
+                      </tr></thead>
+                      <tbody>
+                        <template x-for="p in phrases" :key="p.id">
+                          <tr class="border-b border-gray-50">
+                            <td class="px-3 py-2 text-[11px] text-gray-400" x-text="p.source_section||''"></td>
+                            <td class="px-3 py-2 zh text-[14px]" x-text="p.phrase_zh||''"></td>
+                            <td class="px-3 py-2 text-xs text-gray-500 zh" x-text="p.example_zh||''"></td>
+                          </tr>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+
       </div>
-    </div>`;
-  return `
-    <div class="audio-block" style="background:#f9fafb;border-color:var(--border)">
-      <div class="audio-icon" style="background:var(--text-3)"><i class="fa-solid fa-headphones"></i></div>
-      <div class="audio-info">
-        <div class="audio-missing">Audio chưa có — câu hỏi sẽ được cập nhật sớm</div>
-      </div>
-    </div>`;
-}
 
-function renderPassage(p){
-  return `
-    <div class="passage-block">
-      ${p.label ? `<div class="passage-label"><i class="fa-solid fa-paragraph" style="font-size:9px"></i> ${esc(p.label)}</div>` : ''}
-      <div class="passage-text">${esc(p.content_text||'')}</div>
-    </div>`;
-}
-
-function renderQuestion(q){
-  const ABCD = ['A','B','C','D'];
-  const choices = ABCD.map(l => `
-    <button class="choice-btn" id="ch-${q.id}-${l}" onclick="pick(${q.id},'${l}')" data-qid="${q.id}" data-label="${l}">
-      <span class="choice-lbl">${l}</span>
-      <span>${esc(q.choiceMap[l]||'')}</span>
-    </button>`).join('');
-
-  return `
-    <div class="q-block" id="q-${q.id}">
-      <div class="q-row">
-        <span class="q-num">${q.question_number}.</span>
-        <span class="q-text">${esc(q.question_text||'')}</span>
-      </div>
-      <div class="choices">${choices}</div>
-      <div class="q-result" id="qr-${q.id}"></div>
-    </div>`;
-}
-
-function renderSectionB(){
-  if(!_s.vocab.length && !_s.phrases.length) return '';
-  const vocHtml = _s.vocab.length ? `
-    <div class="sb-sub"><i class="fa-solid fa-book" style="font-size:10px"></i> 一、主題相關詞語</div>
-    <table class="word-table">
-      <thead><tr><th>Xuất xứ</th><th>Từ</th><th>Từ liên quan</th></tr></thead>
-      <tbody>${_s.vocab.map(v=>`<tr>
-        <td style="color:var(--text-3);font-size:11px">${esc(v.source_section||'')}</td>
-        <td><span class="word-zh">${esc(v.word_zh||'')}</span></td>
-        <td style="font-size:12px">${esc(v.related_words||'')}</td>
-      </tr>`).join('')}</tbody>
-    </table>` : '';
-  const phrHtml = _s.phrases.length ? `
-    <div class="sb-sub" style="margin-top:16px"><i class="fa-solid fa-pen-nib" style="font-size:10px"></i> 二、常用詞組</div>
-    <table class="word-table">
-      <thead><tr><th>Xuất xứ</th><th>Cụm từ</th><th>Ví dụ</th></tr></thead>
-      <tbody>${_s.phrases.map(p=>`<tr>
-        <td style="color:var(--text-3);font-size:11px">${esc(p.source_section||'')}</td>
-        <td><span class="phrase-zh">${esc(p.phrase_zh||'')}</span></td>
-        <td><span class="phrase-ex">${esc(p.example_zh||'')}</span></td>
-      </tr>`).join('')}</tbody>
-    </table>` : '';
-  return `
-    <div class="section-b-card">
-      <div class="sb-hdr">
-        <div class="sb-hdr-icon"><i class="fa-solid fa-book-bookmark"></i></div>
-        <div class="sb-hdr-title">B · 關鍵詞語 — Từ vựng &amp; Cụm từ</div>
-        <button class="sb-toggle" onclick="toggleSectionB(this)">
-          <i class="fa-solid fa-chevron-down" style="font-size:10px" id="sb-chev"></i> Mở rộng
+      <!-- Sticky submit bar -->
+      <div x-show="!submitted"
+           class="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur border-t border-gray-200 px-6 py-3 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-sm">
+          <div class="h-2 w-32 bg-gray-100 rounded-full overflow-hidden">
+            <div class="h-full bg-blue rounded-full transition-all"
+                 :style="`width:${totalQ ? Math.round(answeredQ/totalQ*100) : 0}%`"></div>
+          </div>
+          <span class="text-gray-500 text-xs" x-text="`${answeredQ}/${totalQ} câu đã trả lời`"></span>
+        </div>
+        <button @click="submitExam()"
+          :disabled="!allAnswered"
+          :class="allAnswered
+            ? 'bg-blue hover:bg-blue-dark shadow-lg shadow-blue/30 cursor-pointer'
+            : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+          class="flex items-center gap-2 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition">
+          <i class="fa-solid fa-check-double text-xs"></i>
+          Kiểm tra đáp án
         </button>
       </div>
-      <div class="sb-body" id="sb-body">${vocHtml}${phrHtml}</div>
-    </div>`;
-}
 
-function toggleSectionB(btn){
-  const body = document.getElementById('sb-body');
-  const chev = document.getElementById('sb-chev');
-  const open = body.classList.toggle('open');
-  btn.innerHTML = `<i class="fa-solid fa-chevron-${open?'up':'down'}" style="font-size:10px" id="sb-chev"></i> ${open?'Thu gọn':'Mở rộng'}`;
-}
+    </div>
+    <!-- end exam view -->
 
-// ── Interaction ────────────────────────────────────────────────────
-function pick(qId, label){
-  if(_s.submitted) return;
+  </main>
+</div>
 
-  const prev = _s.answers[qId];
-  if(prev){
-    const prevBtn = document.getElementById(`ch-${qId}-${prev}`);
-    if(prevBtn) prevBtn.classList.remove('selected');
-  } else {
-    _s.answeredQ++;
-  }
+<script>
+const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const _db   = supabase.createClient(_DB_URL, _DB_KEY);
+const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
+let _user   = null;
 
-  _s.answers[qId] = label;
-  const btn = document.getElementById(`ch-${qId}-${label}`);
-  if(btn) btn.classList.add('selected');
+function esc(t){ return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
 
-  updateProgress();
-}
+const ZH_NUMS = {1:'一',2:'二',3:'三',4:'四',5:'五'};
 
-function updateProgress(){
-  const val = `${_s.answeredQ}/${_s.totalQ}`;
-  const scoreEl   = document.getElementById('score-display');
-  const answeredEl= document.getElementById('hdr-answered');
-  const countEl   = document.getElementById('submit-count');
-  const submitBtn = document.getElementById('submit-btn');
-  if(scoreEl)    scoreEl.textContent  = val;
-  if(answeredEl) answeredEl.textContent= val + ' câu';
-  if(countEl)    countEl.textContent  = `(${val})`;
-  if(submitBtn)  submitBtn.disabled   = (_s.answeredQ < _s.totalQ);
-}
+function examApp() {
+  return {
+    // ── State ──────────────────────────────────────────
+    loading:  true,
+    navOpen:  false,
+    view:     'book',   // 'book' | 'exam'
+    book:     null,
+    units:    [],
+    unitResults: {},     // unit_id → {score, total}
 
-// ── Submit ─────────────────────────────────────────────────────────
-function submitExam(){
-  if(_s.submitted) return;
-  _s.submitted = true;
+    // Exam state
+    activeUnit:       null,
+    sections:         [],
+    passagesBySection:{},  // secId → [passage]
+    questionsBySection:{}, // secId → [question]
+    choicesForQ:      {},  // qId → {A,B,C,D}
+    vocab:   [],
+    phrases: [],
+    answers: {},     // qId → label
+    submitted: false,
+    secBOpen:  false,
+    activeSectionId: null,
 
-  let correct = 0;
-  const allQs = Object.values(_s.questions).flat();
+    // ── Computed ───────────────────────────────────────
+    get totalQ()     { return Object.values(this.questionsBySection).flat().length },
+    get answeredQ()  { return Object.keys(this.answers).length },
+    get allAnswered() { return this.answeredQ === this.totalQ && this.totalQ > 0 },
+    get examScore() {
+      if (!this.submitted) return 0;
+      return Object.values(this.questionsBySection).flat()
+        .filter(q => this.answers[q.id] === q.correct_answer).length;
+    },
+    get unitGroups() {
+      const groups = {};
+      this.units.forEach(u => {
+        if (!groups[u.unit_number]) groups[u.unit_number] = { num: u.unit_number, titleZh: u.title_zh, items: [] };
+        groups[u.unit_number].items.push(u);
+      });
+      return Object.values(groups);
+    },
+    get nextUnitItem() {
+      if (!this.activeUnit) return null;
+      const flat = this.units;
+      const idx  = flat.findIndex(u => u.id === this.activeUnit.id);
+      return idx >= 0 && idx + 1 < flat.length ? flat[idx + 1] : null;
+    },
 
-  allQs.forEach(q => {
-    const ans  = _s.answers[q.id];
-    const corr = q.correct_answer;
-    const ABCD = ['A','B','C','D'];
-
-    ABCD.forEach(l => {
-      const btn = document.getElementById(`ch-${q.id}-${l}`);
-      if(!btn) return;
-      btn.disabled = true;
-      btn.classList.remove('selected');
-      if(l === corr && l === ans){ btn.classList.add('correct'); }
-      else if(l === ans && l !== corr){ btn.classList.add('wrong'); }
-      else if(l === corr && l !== ans){ btn.classList.add('correct-miss'); }
-    });
-
-    const resEl = document.getElementById(`qr-${q.id}`);
-    if(resEl){
-      resEl.classList.add('show');
-      if(ans === corr){
-        correct++;
-        resEl.className = 'q-result show ok';
-        resEl.innerHTML = '<i class="fa-solid fa-check"></i> Chính xác!';
-      } else {
-        resEl.className = 'q-result show err';
-        resEl.innerHTML = `<i class="fa-solid fa-xmark"></i> Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`;
+    // ── Init ───────────────────────────────────────────
+    async init() {
+      if (_auth) {
+        _auth.init().then(u => {
+          _user = u;
+          renderNavAuth(u);
+          if (u) this.loadAllResults(u.id);
+        });
       }
-    }
-  });
 
-  // Update score
-  const scoreEl = document.getElementById('score-display');
-  if(scoreEl) scoreEl.textContent = `${correct}/${_s.totalQ}`;
+      const params = new URLSearchParams(location.search);
+      const bookId  = params.get('book');
+      const unitNum = params.get('unit');
+      const subNum  = params.get('sub');
 
-  // Swap submit button to retry
-  const bar = document.querySelector('.submit-bar');
-  if(bar) bar.innerHTML = `
-    <button class="retry-btn" onclick="retryExam()">
-      <i class="fa-solid fa-rotate-right"></i> Làm lại từ đầu
-    </button>`;
+      if (!bookId) { location.href = '/exams.html'; return; }
 
-  // Result banner
-  const pct  = _s.totalQ ? Math.round(correct/_s.totalQ*100) : 0;
-  const pass = pct >= 60;
-  const slot = document.getElementById('result-banner-slot');
-  if(slot){
-    slot.innerHTML = `
-      <div class="result-banner ${pass?'pass':'fail'}">
-        <div class="rb-icon">${pass?'🎉':'📚'}</div>
-        <div>
-          <div class="rb-title">${pass?'Xuất sắc! Bạn đã vượt qua!':'Hãy luyện tập thêm nhé!'}</div>
-          <div class="rb-sub">${pass?'Tỉ lệ đúng trên 60% — kết quả tốt!':'Đọc lại phần sai và thử làm lại.'}</div>
+      const [{ data: book }, { data: units }] = await Promise.all([
+        _db.from('exam_books').select('*').eq('id', bookId).single(),
+        _db.from('exam_units').select('id,book_id,unit_number,sub_number,title_zh,sub_title_zh,status')
+           .eq('book_id', bookId).eq('status','published').order('unit_number').order('sub_number'),
+      ]);
+
+      this.book  = book;
+      this.units = units || [];
+
+      document.title = `${book?.title || 'Đề thi'} — TOCFL FAFA`;
+
+      this.loading = false;
+
+      if (unitNum && subNum) {
+        const unit = this.units.find(u => u.unit_number===+unitNum && u.sub_number===+subNum);
+        if (unit) { await this.loadUnit(unit); return; }
+      }
+      this.view = 'book';
+    },
+
+    async loadAllResults(userId) {
+      const { data } = await _db.from('exam_results')
+        .select('unit_id,score,total').eq('user_id', userId);
+      const map = {};
+      (data||[]).forEach(r => { map[r.unit_id] = { score: r.score, total: r.total }; });
+      this.unitResults = map;
+    },
+
+    // ── Select unit ────────────────────────────────────
+    async selectUnit(unit) {
+      this.navOpen = false;
+      const p = new URLSearchParams(location.search);
+      p.set('unit', unit.unit_number); p.set('sub', unit.sub_number);
+      history.pushState({}, '', '?' + p.toString());
+      await this.loadUnit(unit);
+    },
+
+    async loadUnit(unit) {
+      this.loading = true;
+      this.activeUnit = unit;
+      this.sections = []; this.passagesBySection = {}; this.questionsBySection = {};
+      this.choicesForQ = {}; this.vocab = []; this.phrases = [];
+      this.answers = {}; this.submitted = false; this.secBOpen = false;
+
+      const { data: sections } = await _db.from('exam_sections')
+        .select('id,section_number,section_type,title,audio_url')
+        .eq('unit_id', unit.id).order('section_number');
+      this.sections = sections || [];
+
+      const secIds = this.sections.map(s => s.id);
+      if (!secIds.length) { this.loading = false; this.view = 'exam'; return; }
+
+      // Parallel queries
+      const [{ data: passArr }, { data: qArr }, { data: vocabArr }, { data: phrasesArr }] = await Promise.all([
+        _db.from('exam_passages').select('id,section_id,label,content_text').in('section_id', secIds).order('id'),
+        _db.from('exam_questions')
+           .select('id,section_id,passage_id,question_number,question_text,correct_answer')
+           .in('section_id', secIds).order('question_number'),
+        _db.from('exam_vocab').select('*').eq('unit_id', unit.id),
+        _db.from('exam_phrases').select('*').eq('unit_id', unit.id),
+      ]);
+
+      // Fetch choices separately once we have question IDs
+      const qIds = (qArr||[]).map(q=>q.id);
+      const { data: choicesArr } = qIds.length
+        ? await _db.from('exam_choices').select('question_id,label,text').in('question_id',qIds).order('label')
+        : { data: [] };
+
+      // Index passages
+      const pByS = {};
+      (passArr||[]).forEach(p => { if(!pByS[p.section_id]) pByS[p.section_id]=[]; pByS[p.section_id].push(p); });
+      this.passagesBySection = pByS;
+
+      // Index choices
+      const cByQ = {};
+      (choicesArr||[]).forEach(c => { if(!cByQ[c.question_id]) cByQ[c.question_id]={}; cByQ[c.question_id][c.label]=c.text; });
+      this.choicesForQ = cByQ;
+
+      // Index questions
+      const qByS = {};
+      (qArr||[]).forEach(q => { if(!qByS[q.section_id]) qByS[q.section_id]=[]; qByS[q.section_id].push(q); });
+      this.questionsBySection = qByS;
+
+      this.vocab   = vocabArr   || [];
+      this.phrases = phrasesArr || [];
+      this.loading = false;
+      this.view = 'exam';
+
+      this.$nextTick(() => { this.setupObserver(); window.scrollTo(0,0); });
+    },
+
+    // ── Question helpers ───────────────────────────────
+    questionsFor(secId, passId) {
+      const qs = this.questionsBySection[secId] || [];
+      return qs.filter(q => String(q.passage_id ?? '__none__') === String(passId ?? '__none__'));
+    },
+
+    renderQuestion(q) {
+      const choices = this.choicesForQ[q.id] || {};
+      const ans     = this.answers[q.id];
+      const corr    = q.correct_answer;
+      const sub     = this.submitted;
+      const ABCD    = ['A','B','C','D'];
+
+      const choiceHtml = ABCD.map(l => {
+        const text = choices[l] || '';
+        let cls = 'choice-btn w-full flex items-start gap-2.5 p-3 border-[1.5px] border-gray-200 rounded-xl text-sm bg-white';
+        if (!sub && ans === l)                    cls += ' selected';
+        if (sub && l === corr && l === ans)       cls += ' c-correct';
+        if (sub && l !== corr && l === ans)       cls += ' c-wrong';
+        if (sub && l === corr && l !== ans)       cls += ' c-miss';
+        const disabled = sub ? 'disabled' : '';
+        return `<button class="${cls}" onclick="window._app.pick(${q.id},'${l}')" ${disabled}>
+          <span class="lbl text-xs font-black min-w-[14px] mt-0.5 flex-shrink-0">${l}</span>
+          <span class="zh text-[13px] leading-relaxed">${esc(text)}</span>
+        </button>`;
+      }).join('');
+
+      const resultHtml = sub ? (() => {
+        const ok = ans === corr;
+        return `<div class="text-[11px] font-bold mt-2 ${ok ? 'text-green' : 'text-red-500'}">
+          ${ok ? '<i class="fa-solid fa-check mr-1"></i>Chính xác!' : `<i class="fa-solid fa-xmark mr-1"></i>Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`}
+        </div>`;
+      })() : '';
+
+      return `<div class="mb-4" id="q-${q.id}">
+        <div class="flex items-start gap-2.5 mb-2.5">
+          <span class="text-sm font-extrabold text-blue min-w-[26px] pt-0.5 flex-shrink-0">${q.question_number}.</span>
+          <span class="zh text-sm leading-relaxed text-gray-800">${esc(q.question_text||'')}</span>
         </div>
-        <div class="rb-right">
-          <div class="rb-score">${correct}/${_s.totalQ}</div>
-          <div class="rb-score-label">${pct}% chính xác</div>
-        </div>
+        <div class="grid grid-cols-2 gap-2">${choiceHtml}</div>
+        ${resultHtml}
       </div>`;
-    slot.scrollIntoView({ behavior:'smooth', block:'start' });
-  }
+    },
+
+    // ── Interaction ────────────────────────────────────
+    pick(qId, label) {
+      if (this.submitted) return;
+      this.answers = { ...this.answers, [qId]: label };
+    },
+
+    async submitExam() {
+      if (!this.allAnswered || this.submitted) return;
+      this.submitted = true;
+
+      // Save to DB if logged in
+      if (_user && this.activeUnit) {
+        const score = this.examScore;
+        await _db.from('exam_results').upsert({
+          user_id: _user.id,
+          unit_id: this.activeUnit.id,
+          answers: this.answers,
+          score,
+          total: this.totalQ,
+        }, { onConflict: 'user_id,unit_id' });
+        this.unitResults = { ...this.unitResults, [this.activeUnit.id]: { score, total: this.totalQ } };
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    retry() {
+      this.answers = {}; this.submitted = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    async goNext() {
+      const next = this.nextUnitItem;
+      if (next) await this.selectUnit(next);
+    },
+
+    // ── Section jump + observer ────────────────────────
+    sectionNumZh(n) { return ZH_NUMS[n] || String(n); },
+
+    scrollToSection(secId) {
+      const el = document.getElementById(`sec-${secId}`);
+      if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+    },
+
+    setupObserver() {
+      if (this._observer) this._observer.disconnect();
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          const btn = document.getElementById(`jump-${e.target.id.replace('sec-','')}`);
+          if (!btn) return;
+          if (e.isIntersecting) {
+            document.querySelectorAll('[id^="jump-"]').forEach(b => b.classList.remove('jump-active'));
+            btn.classList.add('jump-active');
+          }
+        });
+      }, { rootMargin: '-62px 0px -60% 0px', threshold: 0 });
+      this.sections.forEach(s => {
+        const el = document.getElementById(`sec-${s.id}`);
+        if (el) io.observe(el);
+      });
+      this._observer = io;
+    },
+  };
 }
 
-function retryExam(){
-  _s.answers = {}; _s.submitted = false; _s.answeredQ = 0;
-  const unit = _s.units.find(u => u.unit_number+'-'+u.sub_number === _s.activeKey);
-  if(unit) renderExam(unit);
-}
+// Expose pick() globally for inline onclick in renderQuestion
+document.addEventListener('alpine:init', () => {
+  window._app = document.querySelector('[x-data]')._x_dataStack?.[0];
+});
+document.addEventListener('alpine:initialized', () => {
+  window._app = Alpine.$data(document.querySelector('[x-data]'));
+});
 
-// ── Navbar auth ────────────────────────────────────────────────────
-function renderNavAuth(user){
+function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if(!user){ wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
-  const initial = user.email?.[0]?.toUpperCase()||'U';
-  wrap.innerHTML = `<a href="/dashboard.html" class="nav-avatar" title="Dashboard">${initial}</a>`;
+  if (!user) { wrap.innerHTML = `<a href="/login.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
+  const init = user.email?.[0]?.toUpperCase()||'U';
+  wrap.innerHTML = `<a href="/dashboard.html" class="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white" title="Dashboard">${init}</a>`;
 }
 </script>
 </body>
