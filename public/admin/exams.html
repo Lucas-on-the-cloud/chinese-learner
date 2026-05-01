@@ -92,7 +92,12 @@
       <div class="s-card" style="position:sticky;top:80px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
           <div class="s-title" style="margin:0;font-size:14px"><i class="fa-solid fa-book-open" style="color:#6b7280"></i> Bộ đề thi</div>
-          <button class="s-btn" onclick="exShowCreate()" style="padding:5px 12px;font-size:11px">+ Tạo mới</button>
+          <div style="display:flex;gap:6px">
+            <button class="s-btn" onclick="exShowCreate()" style="padding:5px 12px;font-size:11px">+ Tạo mới</button>
+            <button class="s-btn" onclick="exShowMarkdown()" style="padding:5px 10px;font-size:11px;background:#7c3aed" title="Import từ Markdown">
+              <i class="fa-brands fa-markdown"></i>
+            </button>
+          </div>
         </div>
         <div id="ex-book-list"><p style="color:#9ca3af;text-align:center;padding:24px;font-size:13px">Đang tải…</p></div>
       </div>
@@ -147,6 +152,69 @@
                     style="padding:5px 12px;font-size:11px;background:#6b7280">← OCR lại</button>
           </div>
           <div id="ex-parse-content"></div>
+        </div>
+
+        <!-- Panel 5: Markdown Import -->
+        <div id="ex-panel-markdown" class="s-card" style="display:none">
+          <div class="s-title"><i class="fa-brands fa-markdown" style="color:#7c3aed"></i> Import từ Markdown</div>
+          <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:8px 14px;font-size:12px;color:#5b21b6;margin-bottom:16px">
+            <i class="fa-solid fa-circle-info"></i> Không cần OCR — upload trực tiếp <code>.md</code> đã format sẵn · đáp án được embed tự động
+          </div>
+          <div class="s-label">Tên bộ đề <span style="color:#c0392b">*</span></div>
+          <input type="text" id="md-title" class="s-input" placeholder="Ví dụ: 華語文能力測驗關鍵詞彙 進階篇…">
+          <div style="display:grid;grid-template-columns:140px 1fr;gap:12px;margin-top:10px">
+            <div>
+              <div class="s-label">Cấp độ</div>
+              <select id="md-level" class="s-input" style="height:38px">
+                <option value="">— Chọn —</option>
+                <option>A1</option><option>A2</option>
+                <option>B1</option><option>B2</option>
+                <option>C1</option>
+              </select>
+            </div>
+            <div>
+              <div class="s-label">Số Unit</div>
+              <input type="number" id="md-total-units" class="s-input" value="30" min="1" max="50">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px">
+            <div>
+              <div class="s-label">Bài tập <code>.md</code> <span style="color:#c0392b">*</span></div>
+              <input type="file" id="md-exercise-input" accept=".md,.txt" style="display:none" onchange="mdFileChange(this,'exercise')">
+              <div id="md-exercise-drop" onclick="document.getElementById('md-exercise-input').click()"
+                   style="border:2px dashed #d1d5db;border-radius:8px;padding:20px 12px;text-align:center;cursor:pointer;background:#f9fafb;transition:.15s">
+                <i class="fa-brands fa-markdown" style="font-size:22px;color:#7c3aed;display:block;margin-bottom:6px"></i>
+                <div style="font-size:12px;font-weight:600;color:#374151">exercise.md</div>
+                <div id="md-exercise-name" style="font-size:11px;color:#9ca3af;margin-top:3px">Chưa chọn</div>
+              </div>
+            </div>
+            <div>
+              <div class="s-label">Đáp án <code>.md</code> <span style="color:#c0392b">*</span></div>
+              <input type="file" id="md-answer-input" accept=".md,.txt" style="display:none" onchange="mdFileChange(this,'answer')">
+              <div id="md-answer-drop" onclick="document.getElementById('md-answer-input').click()"
+                   style="border:2px dashed #d1d5db;border-radius:8px;padding:20px 12px;text-align:center;cursor:pointer;background:#f9fafb;transition:.15s">
+                <i class="fa-brands fa-markdown" style="font-size:22px;color:#7c3aed;display:block;margin-bottom:6px"></i>
+                <div style="font-size:12px;font-weight:600;color:#374151">answers.md</div>
+                <div id="md-answer-name" style="font-size:11px;color:#9ca3af;margin-top:3px">Chưa chọn</div>
+              </div>
+            </div>
+          </div>
+          <div id="md-progress" style="display:none;margin-top:14px">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+              <span id="md-progress-label">Đang import…</span>
+              <span id="md-progress-pct" style="font-weight:700;color:#7c3aed">0%</span>
+            </div>
+            <div style="background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden">
+              <div id="md-progress-bar" style="height:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);
+                   border-radius:999px;width:0%;transition:width .4s"></div>
+            </div>
+            <div id="md-progress-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px"></div>
+          </div>
+          <div id="md-msg" class="s-msg" style="margin-top:10px"></div>
+          <button id="md-import-btn" class="s-btn" onclick="exStartMdImport()"
+                  style="margin-top:12px;width:100%;background:#7c3aed">
+            <i class="fa-solid fa-file-import"></i> Import tất cả Unit
+          </button>
         </div>
 
         <!-- Panel 4: Units review -->

@@ -1,3 +1,10 @@
 node_modules/
 .env*
 .vercel
+.vercel
+.env*.local
+
+# Google Cloud service account credentials
+arc-ocr-project-ce42b37a6656.json
+*-credentials.json
+*-service-account.json

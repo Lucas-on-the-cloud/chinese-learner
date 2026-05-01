@@ -2,7 +2,7 @@
 const _ex = {
   book:     null,   // selected exam_books row
   pdf:      null,   // pdfjs document
-  docAi:    {},     // { pageNum: docAiResponse }
+  docAi:    {},     // { pageNum: synthetic single-page response }
   ocrDone:  0,
   ocrTotal: 0,
 };
@@ -21,12 +21,39 @@ function daPageText(response) {
 }
 
 function daExtractTables(response) {
-  const full   = response.document?.text || '';
+  // _fullText holds original doc text when response is a synthetic per-page slice
+  const full   = response.document?._fullText || response.document?.text || '';
   const tables = response.document?.pages?.[0]?.tables || [];
   return tables.map(t => {
     const rows = [...(t.headerRows || []), ...(t.bodyRows || [])];
     return rows.map(r => (r.cells || []).map(c => daText(c.layout?.textAnchor, full).trim()));
   });
+}
+
+// Extract page-specific text from a multi-page Document AI response
+function daPageTextAt(doc, pageIdx) {
+  const full   = doc?.text || '';
+  const page   = doc?.pages?.[pageIdx];
+  const anchor = page?.layout?.textAnchor;
+  if (!anchor?.textSegments?.length) return full.trim();
+  return anchor.textSegments
+    .map(s => full.slice(parseInt(s.startIndex) || 0, parseInt(s.endIndex) || 0))
+    .join('').trim();
+}
+
+// Build a synthetic single-page response compatible with daPageText() and daExtractTables()
+function exMakePageResponse(multiResponse, pageIdx) {
+  const doc  = multiResponse.document || {};
+  const full = doc.text || '';
+  const page = (doc.pages || [])[pageIdx];
+  if (!page) return null;
+  return {
+    document: {
+      text:      daPageTextAt(doc, pageIdx),
+      _fullText: full,   // for table cell index lookups
+      pages:     [page],
+    },
+  };
 }
 
 // ── Boot ───────────────────────────────────────────────────────────
@@ -63,7 +90,7 @@ async function loadExams() {
 
 // ── Panel helpers ──────────────────────────────────────────────────
 function exShowPanel(id) {
-  ['ex-panel-create', 'ex-panel-ocr', 'ex-panel-parse', 'ex-panel-units']
+  ['ex-panel-create', 'ex-panel-ocr', 'ex-panel-parse', 'ex-panel-units', 'ex-panel-markdown']
     .forEach(p => { document.getElementById(p).style.display = p === id ? '' : 'none'; });
 }
 
@@ -199,9 +226,7 @@ async function exSetFile(file) {
     _ex.docAi    = {};
 
     const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-    const estMin = Math.ceil(_ex.ocrTotal / 3 / 60);
 
-    // Check existing OCR pages
     const { count: existing } = await _adminDb.client
       .from('exam_ocr_pages').select('*', { count: 'exact', head: true })
       .eq('book_id', _ex.book.id);
@@ -211,7 +236,7 @@ async function exSetFile(file) {
         <i class="fa-solid fa-file-pdf" style="color:#dc2626;font-size:22px"></i>
         <div>
           <div style="font-weight:600">${escHtml(file.name)}</div>
-          <div style="color:#6b7280;margin-top:2px">${_ex.ocrTotal} trang · ${sizeMB} MB · ước tính ~${estMin} phút</div>
+          <div style="color:#6b7280;margin-top:2px">${_ex.ocrTotal} trang · ${sizeMB} MB</div>
         </div>
       </div>`;
 
@@ -219,14 +244,13 @@ async function exSetFile(file) {
     btn.innerHTML = existing > 0
       ? `<i class="fa-solid fa-eye"></i> Tiếp tục OCR (${existing}/${_ex.ocrTotal} trang đã xong)`
       : `<i class="fa-solid fa-eye"></i> Bắt đầu OCR ${_ex.ocrTotal} trang`;
-
   } catch (e) {
     infoEl.innerHTML = `<span style="color:#dc2626">Lỗi load PDF: ${e.message}</span>`;
   }
 }
 
-// ── Render page to JPEG base64 ─────────────────────────────────────
-async function exRenderPage(pageNum, maxW = 1200) {
+// ── Render one page to JPEG base64 via pdf.js ─────────────────────
+async function exRenderPage(pageNum, maxW = 1400) {
   const page     = await _ex.pdf.getPage(pageNum);
   const scale    = maxW / page.getViewport({ scale: 1 }).width;
   const viewport = page.getViewport({ scale });
@@ -234,29 +258,63 @@ async function exRenderPage(pageNum, maxW = 1200) {
   canvas.width   = viewport.width;
   canvas.height  = viewport.height;
   await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  const b64 = canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+  const b64 = canvas.toDataURL('image/jpeg', 0.90).split(',')[1];
   canvas.width = 0; canvas.height = 0;
   return b64;
 }
 
-// ── Call Document AI via proxy (with retry on 429) ────────────────
-async function exCallDocAI(base64, attempt = 0) {
-  const res  = await fetch('/api/docai', {
+// ── Call Cloud Vision API (DOCUMENT_TEXT_DETECTION) ───────────────
+async function exCallVision(imageBase64, attempt = 0) {
+  const res  = await fetch('/api/vision', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ imageBase64: base64 }),
+    body:    JSON.stringify({ imageBase64 }),
   });
-  const data = await res.json();
+  const raw = await res.text();
+  let data;
+  try { data = JSON.parse(raw); } catch { throw new Error(raw.slice(0, 200)); }
   if (res.status === 429 || data.error?.includes?.('RESOURCE_EXHAUSTED')) {
-    if (attempt >= 4) throw new Error('Document AI rate limit sau 4 lần retry');
-    await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
-    return exCallDocAI(base64, attempt + 1);
+    if (attempt >= 4) throw new Error('Vision API rate limit sau 4 lần retry');
+    await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+    return exCallVision(imageBase64, attempt + 1);
   }
-  if (data.error) throw new Error(data.error);
+  if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
   return data;
 }
 
-// ── Start OCR ─────────────────────────────────────────────────────
+// Reconstruct structured text from Vision symbol-level break info
+// This preserves line breaks, paragraph separation — much better than raw .text
+function visionSynthetic(visionResponse) {
+  const fullAnnotation = visionResponse.responses?.[0]?.fullTextAnnotation;
+  if (!fullAnnotation) return { document: { text: '', pages: [{ tables: [], visualElements: [] }] } };
+
+  const vPage = fullAnnotation.pages?.[0];
+  if (!vPage) return { document: { text: fullAnnotation.text || '', pages: [{ tables: [], visualElements: [] }] } };
+
+  const parts = [];
+  for (const block of (vPage.blocks || [])) {
+    const blockLines = [];
+    for (const para of (block.paragraphs || [])) {
+      let line = '';
+      for (const word of (para.words || [])) {
+        for (const sym of (word.symbols || [])) {
+          line += sym.text;
+          const brk = sym.property?.detectedBreak?.type;
+          if (brk === 'SPACE' || brk === 'SURE_SPACE')       line += ' ';
+          if (brk === 'EOL_SURE_SPACE' || brk === 'LINE_BREAK') { blockLines.push(line.trim()); line = ''; }
+          if (brk === 'HYPHEN') { line += '-'; blockLines.push(line.trim()); line = ''; }
+        }
+      }
+      if (line.trim()) blockLines.push(line.trim());
+    }
+    if (blockLines.length) parts.push(blockLines.join('\n'));
+  }
+
+  const text = parts.join('\n\n').replace(/\n{3,}/g, '\n\n').trim();
+  return { document: { text, pages: [{ tables: [], visualElements: [] }] } };
+}
+
+// ── Start OCR — page-by-page via Cloud Vision ─────────────────────
 async function exStartOCR() {
   const btn      = document.getElementById('ex-start-ocr-btn');
   const progEl   = document.getElementById('ex-ocr-progress');
@@ -266,88 +324,85 @@ async function exStartOCR() {
   const detailEl = document.getElementById('ex-ocr-detail');
   const msgEl    = document.getElementById('ex-ocr-msg');
 
+  if (!_ex.pdf) { showMsg('ex-ocr-msg', 'Chưa chọn file.', 'err'); return; }
   btn.disabled = true;
   progEl.style.display = '';
 
   const updateProg = () => {
     const pct = Math.round(_ex.ocrDone / _ex.ocrTotal * 100);
-    barEl.style.width = pct + '%';
-    pctEl.textContent = pct + '%';
+    barEl.style.width   = pct + '%';
+    pctEl.textContent   = pct + '%';
     labelEl.textContent = `OCR: ${_ex.ocrDone} / ${_ex.ocrTotal} trang`;
   };
 
-  // Load already-done pages
+  // Resume: load already-done pages
   const { data: existing } = await _adminDb.client
-    .from('exam_ocr_pages').select('page_num,raw_text').eq('book_id', _ex.book.id);
-  const existingDocAi = await _adminDb.client
+    .from('exam_ocr_pages').select('page_num').eq('book_id', _ex.book.id);
+  const { data: existingDocAi } = await _adminDb.client
     .from('exam_doc_ai_pages').select('page_num,layout_json').eq('book_id', _ex.book.id);
 
-  (existing || []).forEach(r => { _ex.ocrDone++; });
   const donePages = new Set((existing || []).map(r => r.page_num));
-  (existingDocAi.data || []).forEach(r => { _ex.docAi[r.page_num] = r.layout_json; });
+  _ex.ocrDone = donePages.size;
+  (existingDocAi || []).forEach(r => { _ex.docAi[r.page_num] = r.layout_json; });
   updateProg();
 
   const pending = Array.from({ length: _ex.ocrTotal }, (_, i) => i + 1)
     .filter(p => !donePages.has(p));
 
-  const PARALLEL = 5; // concurrency pool — 5 pages in flight at any time
+  const PARALLEL = 10; // Cloud Vision allows 1800 QPM; 10 concurrent is safe
+  let active = 0;
+  const waiters = [];
+  const acquire = () => new Promise(resolve => {
+    if (active < PARALLEL) { active++; resolve(); }
+    else waiters.push(resolve);
+  });
+  const release = () => {
+    active--;
+    if (waiters.length) { active++; waiters.shift()(); }
+  };
+
+  const saveBuffer = [];
+  const flushBuffer = async () => {
+    if (!saveBuffer.length) return;
+    const rows = saveBuffer.splice(0);
+    await Promise.all([
+      _adminDb.client.from('exam_ocr_pages').upsert(
+        rows.map(r => ({ book_id: _ex.book.id, page_num: r.pageNum, raw_text: r.text, ocr_status: 'done' })),
+        { onConflict: 'book_id,page_num' }
+      ),
+      _adminDb.client.from('exam_doc_ai_pages').upsert(
+        rows.map(r => ({ book_id: _ex.book.id, page_num: r.pageNum, layout_json: r.synth, raw_text: r.text, has_table: false, has_visual_element: false })),
+        { onConflict: 'book_id,page_num' }
+      ),
+    ]);
+  };
+
   try {
-    // Semaphore-based pool: slot frees immediately when a page finishes
-    let active = 0;
-    const waiters = [];
-    const acquire = () => new Promise(resolve => {
-      if (active < PARALLEL) { active++; resolve(); }
-      else waiters.push(resolve);
-    });
-    const release = () => {
-      active--;
-      if (waiters.length) { active++; waiters.shift()(); }
-    };
-
-    // Save buffer — flush every 5 completed pages
-    const saveBuffer = [];
-    const flushBuffer = async () => {
-      if (!saveBuffer.length) return;
-      const rows = saveBuffer.splice(0);
-      await Promise.all([
-        _adminDb.client.from('exam_ocr_pages').upsert(
-          rows.map(r => ({ book_id: _ex.book.id, page_num: r.pageNum, raw_text: r.text, ocr_status: 'done' })),
-          { onConflict: 'book_id,page_num' }
-        ),
-        _adminDb.client.from('exam_doc_ai_pages').upsert(
-          rows.map(r => ({
-            book_id: _ex.book.id, page_num: r.pageNum, layout_json: r.response, raw_text: r.text,
-            has_table: (r.response.document?.pages?.[0]?.tables?.length || 0) > 0,
-            has_visual_element: (r.response.document?.pages?.[0]?.visualElements?.length || 0) > 0,
-          })),
-          { onConflict: 'book_id,page_num' }
-        ),
-      ]);
-    };
-
     await Promise.all(pending.map(async pageNum => {
       await acquire();
       try {
-        const b64      = await exRenderPage(pageNum);
-        const response = await exCallDocAI(b64);
-        const text     = daPageText(response);
-        _ex.docAi[pageNum] = response;
+        const b64    = await exRenderPage(pageNum);
+        const vision = await exCallVision(b64);
+        const synth  = visionSynthetic(vision);
+        const text   = daPageText(synth);
+        _ex.docAi[pageNum] = synth;
         _ex.ocrDone++;
         detailEl.textContent = `Trang ${pageNum} xong`;
         updateProg();
-
-        saveBuffer.push({ pageNum, text, response });
+        saveBuffer.push({ pageNum, text, synth });
         if (saveBuffer.length >= 5) await flushBuffer();
       } finally {
         release();
       }
     }));
 
-    await flushBuffer(); // flush remaining
-
+    await flushBuffer();
     await _adminDb.client.from('exam_books').update({ total_pages: _ex.ocrTotal }).eq('id', _ex.book.id);
-    msgEl.textContent = `✓ OCR hoàn tất ${_ex.ocrTotal} trang.`;
-    msgEl.className = 's-msg ok';
+
+    barEl.style.width   = '100%';
+    pctEl.textContent   = '100%';
+    msgEl.textContent   = `✓ OCR hoàn tất ${_ex.ocrTotal} trang.`;
+    msgEl.className     = 's-msg ok';
 
     setTimeout(() => {
       exShowPanel('ex-panel-parse');
@@ -356,8 +411,8 @@ async function exStartOCR() {
 
   } catch (e) {
     msgEl.textContent = 'Lỗi OCR: ' + e.message;
-    msgEl.className = 's-msg err';
-    btn.disabled = false;
+    msgEl.className   = 's-msg err';
+    btn.disabled      = false;
   }
 }
 
@@ -921,4 +976,326 @@ async function exPublishUnit(unitId, currentStatus) {
   const next = currentStatus === 'published' ? 'draft' : 'published';
   await _adminDb.client.from('exam_units').update({ status: next }).eq('id', unitId);
   exLoadUnits(_ex.book.id);
+}
+
+// ── Markdown Import ────────────────────────────────────────────────
+const _md = { exerciseText: null, answerText: null };
+
+function exShowMarkdown() {
+  _ex.book = null;
+  _md.exerciseText = null;
+  _md.answerText   = null;
+  loadExams();
+  exShowPanel('ex-panel-markdown');
+}
+
+function mdFileChange(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  const key    = type === 'exercise' ? 'exerciseText' : 'answerText';
+  const nameEl = document.getElementById(`md-${type}-name`);
+  const dropEl = document.getElementById(`md-${type}-drop`);
+  nameEl.textContent = 'Đang đọc…';
+  const reader = new FileReader();
+  reader.onload = e => {
+    _md[key]                 = e.target.result;
+    nameEl.textContent       = file.name;
+    dropEl.style.borderColor = '#7c3aed';
+    dropEl.style.background  = '#f5f3ff';
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ── Answer markdown parser ─────────────────────────────────────────
+// Input: text of answers.md
+// Returns: { "unitNum-subNum": { qNum: "A"|"B"|"C"|"D", ... }, ... }
+function parseMdAnswers(text) {
+  const answers = {};
+  const unitRe  = /^#{1,3}\s+Unit\s+(\d+)\s+(\d+)-(\d+)/gm;
+  const positions = [];
+  let m;
+  while ((m = unitRe.exec(text)) !== null) {
+    positions.push({ unitNum: parseInt(m[1]), subNum: parseInt(m[3]), idx: m.index + m[0].length });
+  }
+  positions.forEach((pos, i) => {
+    const key      = `${pos.unitNum}-${pos.subNum}`;
+    const blockEnd = i + 1 < positions.length ? positions[i + 1].idx : text.length;
+    const block    = text.slice(pos.idx, blockEnd);
+    const qAns     = {};
+    for (const line of block.split('\n')) {
+      if (!line.includes('|')) continue;
+      if (/^\s*\|[\s|:-]+\|\s*$/.test(line)) continue; // separator row
+      const cells = line.split('|').slice(1, -1).map(c => c.trim()).filter(Boolean);
+      for (let j = 0; j + 1 < cells.length; j += 2) {
+        const n = parseInt(cells[j]);
+        const a = cells[j + 1].toUpperCase();
+        if (n > 0 && /^[A-D]$/.test(a)) qAns[n] = a;
+      }
+    }
+    answers[key] = qAns;
+  });
+  return answers;
+}
+
+// ── Exercise markdown parser ───────────────────────────────────────
+// Input: text of exercise.md, answers map from parseMdAnswers()
+// Returns: array of unit objects ready for exSaveUnitData()
+function parseMdExercise(text, answers) {
+  const units  = [];
+  // Header: "## Unit 1 個人資料 1-1 姓名、籍貫…"
+  const hdrRe  = /^#{1,3}\s+Unit\s+(\d+)\s+(.+?)\s+(\d+)-(\d+)\s+(.+)$/gm;
+  const splits = [];
+  let m;
+  while ((m = hdrRe.exec(text)) !== null) {
+    splits.push({
+      unitNum: parseInt(m[1]), titleZh: m[2].trim(),
+      subNum:  parseInt(m[4]), subTitleZh: m[5].trim(),
+      idx: m.index,
+    });
+  }
+  splits.forEach((sp, i) => {
+    const block   = text.slice(sp.idx, i + 1 < splits.length ? splits[i + 1].idx : text.length);
+    const unitAns = answers[`${sp.unitNum}-${sp.subNum}`] || {};
+    const secAM   = block.match(/^#{1,3}\s+A[.．]\s+/m);
+    const secBM   = block.match(/^#{1,3}\s+B[.．]\s+/m);
+    const aStart  = secAM ? secAM.index + secAM[0].length : null;
+    const bStart  = secBM ? secBM.index + secBM[0].length : null;
+    const secAText = aStart != null ? block.slice(aStart, bStart ?? block.length) : '';
+    const secBText = bStart != null ? block.slice(bStart) : '';
+    units.push({
+      unit_number:  sp.unitNum,  sub_number:   sp.subNum,
+      title_zh:     sp.titleZh,  sub_title_zh: sp.subTitleZh,
+      sections:     mdParseSectionA(secAText, unitAns),
+      ...mdParseSectionB(secBText),
+    });
+  });
+  return units;
+}
+
+// Parse Section A: 一/二/三/四/五 sub-sections with questions
+function mdParseSectionA(text, answers) {
+  const sections = [];
+  const CN = { '一':1,'二':2,'三':3,'四':4,'五':5 };
+  const TY = { 1:'listening',2:'completion',3:'cloze',4:'reading',5:'essay' };
+  const ms = [...text.matchAll(/^#{1,3}\s+(一|二|三|四|五)、(.+)$/gm)];
+  ms.forEach((sm, i) => {
+    const n    = CN[sm[1]];
+    const body = text.slice(sm.index + sm[0].length, i + 1 < ms.length ? ms[i + 1].index : text.length);
+    const { passages, questions } = mdParseQBlock(body, answers);
+    sections.push({
+      section_number: n, type: TY[n] || 'mcq',
+      title: `${sm[1]}、${sm[2].trim()}`, passages, questions,
+    });
+  });
+  return sections;
+}
+
+// Parse a block that may have ## passage sub-headers before questions
+function mdParseQBlock(text, answers) {
+  const passages  = [];
+  const questions = [];
+  // ## headers within a section are passage sub-headers (e.g. ## (一))
+  const passMs = [...text.matchAll(/^##\s+(.+)$/gm)];
+  if (passMs.length > 0) {
+    const before = text.slice(0, passMs[0].index).trim();
+    if (before) questions.push(...mdParseQuestions(before, null, answers));
+    passMs.forEach((pm, i) => {
+      const label  = pm[1].trim();
+      const bStart = pm.index + pm[0].length;
+      const bEnd   = i + 1 < passMs.length ? passMs[i + 1].index : text.length;
+      const block  = text.slice(bStart, bEnd);
+      const qStart = block.search(/^\d+[.．、]/m);
+      if (qStart > 0) {
+        const pt = block.slice(0, qStart).trim();
+        if (pt) passages.push({ label, text: pt });
+        questions.push(...mdParseQuestions(block.slice(qStart), label, answers));
+      } else if (qStart === 0) {
+        questions.push(...mdParseQuestions(block, label, answers));
+      } else {
+        if (block.trim()) passages.push({ label, text: block.trim() });
+      }
+    });
+  } else {
+    questions.push(...mdParseQuestions(text, null, answers));
+  }
+  return { passages, questions };
+}
+
+// Parse numbered questions with A/B/C/D choices (multi-line or inline)
+function mdParseQuestions(text, passageLabel, answers) {
+  const qs    = [];
+  const lines = text.split('\n');
+  let cur     = null;
+
+  const save = () => {
+    if (!cur) return;
+    qs.push({ q_num: cur.num, text: cur.text || '', passage_label: passageLabel,
+              choices: cur.choices, answer: answers[cur.num] || null });
+    cur = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const qM = line.match(/^(\d+)[.．、]\s*(.*)/);
+    if (qM) {
+      save();
+      const { qText, choices } = mdParseChoices(qM[2].trim());
+      cur = { num: parseInt(qM[1]), text: qText, choices };
+      continue;
+    }
+    // Single-letter choice line: "A text", "B text", etc.
+    const chM = line.match(/^([A-D])\s+(.*)/);
+    if (chM && cur) { cur.choices[chM[1]] = chM[2].trim(); continue; }
+    // Continuation text before any choices seen
+    if (cur && Object.keys(cur.choices).length === 0) {
+      cur.text = cur.text ? `${cur.text} ${line}` : line;
+    }
+  }
+  save();
+  return qs;
+}
+
+// Detect whether choices appear inline with (or instead of) question text
+function mdParseChoices(text) {
+  if (!text) return { qText: '', choices: {} };
+  // Line starts with "A ..." — either all-inline or first choice only
+  if (/^A\s/.test(text)) {
+    const all = mdExtractABCD(text);
+    if (all) return { qText: '', choices: all };
+    // Only choice A — remainder will come from subsequent lines
+    return { qText: '', choices: { A: text.slice(2).trim() } };
+  }
+  // "question text A ch B ch C ch D ch" pattern
+  const m = text.match(/^(.*?)\s+A\s+(.*?)\s+B\s+(.*?)\s+C\s+(.*?)\s+D\s+(.+)$/s);
+  if (m && m[1].trim()) {
+    return { qText: m[1].trim(),
+             choices: { A: m[2].trim(), B: m[3].trim(), C: m[4].trim(), D: m[5].trim() } };
+  }
+  return { qText: text, choices: {} };
+}
+
+// Extract "A ... B ... C ... D ..." when all four choices are on one line
+function mdExtractABCD(text) {
+  const m = text.match(/^A\s+(.*?)\s+B\s+(.*?)\s+C\s+(.*?)\s+D\s+(.+)$/s);
+  if (!m) return null;
+  return { A: m[1].trim(), B: m[2].trim(), C: m[3].trim(), D: m[4].trim() };
+}
+
+// Parse Section B: 主題相關詞語 and 常用詞組 markdown tables
+function mdParseSectionB(text) {
+  const vocab   = [];
+  const phrases = [];
+  const vocM = text.match(/^#{1,3}\s+一[、，.]\s*主題相關詞語/m);
+  const phrM = text.match(/^#{1,3}\s+二[、，.]\s*常用詞組/m);
+  const vocT = vocM ? text.slice(vocM.index + vocM[0].length, phrM ? phrM.index : text.length) : '';
+  const phrT = phrM ? text.slice(phrM.index + phrM[0].length) : '';
+
+  for (const row of mdParseTable(vocT)) {
+    if (row.every(c => /^[-:]+$/.test(c))) continue;
+    if (/本冊|章節|詞語/.test(row[0])) continue;
+    const source = row[0];
+    const words  = (row[1] || '').split(/[、,，\s]+/).map(w => w.trim()).filter(Boolean);
+    for (const word of words) if (word) vocab.push({ source, word, related: '' });
+  }
+  for (const row of mdParseTable(phrT)) {
+    if (row.every(c => /^[-:]+$/.test(c))) continue;
+    if (/本冊|章節|詞組/.test(row[0])) continue;
+    if (!row[1]?.trim()) continue;
+    phrases.push({ source: row[0] || '', phrase: row[1].trim(), example_zh: row[2]?.trim() || '' });
+  }
+  return { vocab, phrases };
+}
+
+// Parse a markdown table; returns array of string arrays (one per data row)
+function mdParseTable(text) {
+  const rows = [];
+  for (const line of text.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('|')) continue;
+    const cells = t.split('|').slice(1, -1).map(c => c.trim());
+    if (cells.some(c => c)) rows.push(cells);
+  }
+  return rows;
+}
+
+// ── Run markdown import ────────────────────────────────────────────
+async function exStartMdImport() {
+  const title      = document.getElementById('md-title').value.trim();
+  const level      = document.getElementById('md-level').value;
+  const totalUnits = parseInt(document.getElementById('md-total-units').value) || 30;
+  const btn        = document.getElementById('md-import-btn');
+
+  if (!title)            { showMsg('md-msg', 'Nhập tên bộ đề.', 'err'); return; }
+  if (!_md.exerciseText) { showMsg('md-msg', 'Chưa chọn file bài tập.', 'err'); return; }
+  if (!_md.answerText)   { showMsg('md-msg', 'Chưa chọn file đáp án.', 'err'); return; }
+
+  btn.disabled = true;
+  showMsg('md-msg', '', '');
+
+  try {
+    const answers = parseMdAnswers(_md.answerText);
+    const units   = parseMdExercise(_md.exerciseText, answers);
+    if (!units.length) {
+      showMsg('md-msg', 'Không tìm thấy Unit nào trong file. Kiểm tra lại định dạng.', 'err');
+      btn.disabled = false;
+      return;
+    }
+
+    const { data: book, error: bErr } = await _adminDb.client
+      .from('exam_books')
+      .insert({ title, level: level || null, total_units: totalUnits, status: 'draft' })
+      .select().single();
+    if (bErr) throw bErr;
+    _ex.book = book;
+    await loadExams();
+
+    const progEl  = document.getElementById('md-progress');
+    const barEl   = document.getElementById('md-progress-bar');
+    const labelEl = document.getElementById('md-progress-label');
+    const pctEl   = document.getElementById('md-progress-pct');
+    const chipsEl = document.getElementById('md-progress-chips');
+    progEl.style.display = '';
+    chipsEl.innerHTML = units.map(u =>
+      `<span id="md-chip-${u.unit_number}-${u.sub_number}"
+             style="font-size:11px;padding:3px 10px;border-radius:999px;background:#e5e7eb;color:#6b7280">
+         ${u.unit_number}-${u.sub_number}
+       </span>`
+    ).join('');
+
+    let done = 0;
+    const failed = [];
+    for (const unit of units) {
+      try {
+        await exSaveUnitData(unit);
+        done++;
+        const pct = Math.round(done / units.length * 100);
+        barEl.style.width   = pct + '%';
+        pctEl.textContent   = pct + '%';
+        labelEl.textContent = `Lưu: ${done} / ${units.length} sub-unit…`;
+        const chip = document.getElementById(`md-chip-${unit.unit_number}-${unit.sub_number}`);
+        if (chip) { chip.style.background = '#dcfce7'; chip.style.color = '#15803d'; chip.textContent = `${unit.unit_number}-${unit.sub_number} ✓`; }
+      } catch (e) {
+        failed.push(`${unit.unit_number}-${unit.sub_number}`);
+        const chip = document.getElementById(`md-chip-${unit.unit_number}-${unit.sub_number}`);
+        if (chip) { chip.style.background = '#fee2e2'; chip.style.color = '#dc2626'; chip.textContent = `${unit.unit_number}-${unit.sub_number} ✗`; }
+      }
+    }
+
+    if (failed.length) {
+      showMsg('md-msg', `${done}/${units.length} thành công · lỗi: ${failed.join(', ')}`, 'err');
+      btn.disabled = false;
+    } else {
+      showMsg('md-msg', `✓ Import hoàn tất ${units.length} sub-unit.`, 'ok');
+      setTimeout(() => {
+        exShowPanel('ex-panel-units');
+        document.getElementById('ex-units-title').textContent = book.title;
+        exLoadUnits(book.id);
+      }, 1200);
+    }
+  } catch (e) {
+    showMsg('md-msg', 'Lỗi: ' + e.message, 'err');
+    btn.disabled = false;
+  }
 }

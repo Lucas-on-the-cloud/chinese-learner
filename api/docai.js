@@ -50,6 +50,10 @@ async function getAccessToken() {
   return data.access_token;
 }
 
+export const config = {
+  api: { bodyParser: { sizeLimit: '50mb' } },
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -57,8 +61,10 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { imageBase64 } = req.body;
-  if (!imageBase64) return res.status(400).json({ error: 'Missing imageBase64' });
+  const { imageBase64, pdfBase64 } = req.body;
+  const content  = pdfBase64 || imageBase64;
+  const mimeType = pdfBase64 ? 'application/pdf' : 'image/jpeg';
+  if (!content) return res.status(400).json({ error: 'Missing imageBase64 or pdfBase64' });
 
   const processorName = process.env.DOCAI_PROCESSOR_NAME;
   if (!processorName) return res.status(500).json({ error: 'DOCAI_PROCESSOR_NAME env var not set' });
@@ -75,7 +81,7 @@ export default async function handler(req, res) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          rawDocument: { content: imageBase64, mimeType: 'image/jpeg' },
+          rawDocument: { content, mimeType },
         }),
       }
     );
