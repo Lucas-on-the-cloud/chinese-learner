@@ -802,7 +802,7 @@ async function exToggleUnit(unitId) {
   body.innerHTML = '<div style="padding:12px 14px;color:#9ca3af;font-size:13px">Đang tải…</div>';
 
   const { data: sections } = await _adminDb.client
-    .from('exam_sections').select('id,section_number,section_type,title')
+    .from('exam_sections').select('id,section_number,section_type,title,audio_url')
     .eq('unit_id', unitId).order('section_number');
 
   const sectionIds = (sections || []).map(s => s.id);
@@ -873,6 +873,9 @@ async function exToggleUnit(unitId) {
         secBody += exQRow(q, choicesByQ[q.id] || {}, hasMultiPass);
       });
 
+      const audioRow = sec.section_type === 'listening'
+        ? `<div id="ex-sec-audio-${sec.id}" style="margin-bottom:10px">${exSectionAudioBlock(sec.id, sec.audio_url)}</div>`
+        : '';
       html += `<div style="margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">
           ${escHtml(sec.title || sec.section_type)}
@@ -881,7 +884,7 @@ async function exToggleUnit(unitId) {
           ${unanswered ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">${unanswered} chưa đáp án</span>` : ''}
           ${flagged ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">⚠ ${flagged}</span>` : ''}
         </div>
-        ${secBody}
+        ${audioRow}${secBody}
       </div>`;
     }
   }
@@ -1016,6 +1019,81 @@ async function exCancelQ(qId) {
   const choices = {}; (ca||[]).forEach(c => { choices[c.label] = c; });
   const el2 = document.getElementById(`ex-q-${qId}`);
   if (el2) el2.outerHTML = exQRow(q, choices, draggable);
+}
+
+// ── Section audio (一、對話聽力) ────────────────────────────────────
+function exSectionAudioBlock(secId, audioUrl) {
+  if (audioUrl) {
+    return `
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;
+                  padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <i class="fa-solid fa-headphones" style="color:#1a56db;font-size:14px;flex-shrink:0"></i>
+        <audio controls src="${escHtml(audioUrl)}"
+          style="flex:1;min-width:200px;height:32px;accent-color:#1a56db"></audio>
+        <label style="cursor:pointer">
+          <input type="file" accept="audio/*" style="display:none"
+            onchange="exUploadSectionAudio(${secId},this)">
+          <span class="s-btn" style="padding:4px 12px;font-size:11px;background:#1a56db;pointer-events:none">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Thay
+          </span>
+        </label>
+        <button onclick="exDeleteSectionAudio(${secId})"
+          style="background:none;border:1px solid #fca5a5;border-radius:5px;cursor:pointer;
+                 font-size:11px;color:#dc2626;padding:4px 10px">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>`;
+  }
+  return `
+    <label style="cursor:pointer;display:block">
+      <input type="file" accept="audio/*" style="display:none"
+        onchange="exUploadSectionAudio(${secId},this)">
+      <div style="border:2px dashed #bfdbfe;border-radius:8px;padding:12px 16px;
+                  display:flex;align-items:center;gap:10px;color:#1a56db;
+                  background:#f0f9ff;transition:.15s"
+           onmouseover="this.style.borderColor='#1a56db'"
+           onmouseout="this.style.borderColor='#bfdbfe'">
+        <i class="fa-solid fa-headphones" style="font-size:18px"></i>
+        <div>
+          <div style="font-size:12px;font-weight:600">Upload audio đoạn hội thoại</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:1px">MP3 · M4A · WAV · OGG</div>
+        </div>
+        <span class="s-btn" style="margin-left:auto;padding:4px 14px;font-size:11px;pointer-events:none">
+          Chọn file
+        </span>
+      </div>
+    </label>`;
+}
+
+async function exUploadSectionAudio(secId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const container = document.getElementById(`ex-sec-audio-${secId}`);
+  if (container) container.innerHTML =
+    `<div style="font-size:12px;color:#6b7280;padding:8px 0">
+       <i class="fa-solid fa-spinner fa-spin"></i> Đang upload…
+     </div>`;
+
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const path = `exams/${secId}_${Date.now()}.${ext}`;
+  const { error: upErr } = await _adminDb.client.storage
+    .from('audio').upload(path, file, { contentType: file.type, upsert: true });
+  if (upErr) {
+    if (container) container.innerHTML =
+      `<div style="font-size:12px;color:#dc2626">Lỗi upload: ${escHtml(upErr.message)}</div>`;
+    return;
+  }
+  const { data: pub } = _adminDb.client.storage.from('audio').getPublicUrl(path);
+  const url = pub.publicUrl;
+  await _adminDb.client.from('exam_sections').update({ audio_url: url }).eq('id', secId);
+  if (container) container.innerHTML = exSectionAudioBlock(secId, url);
+}
+
+async function exDeleteSectionAudio(secId) {
+  if (!confirm('Xóa audio này?')) return;
+  await _adminDb.client.from('exam_sections').update({ audio_url: null }).eq('id', secId);
+  const container = document.getElementById(`ex-sec-audio-${secId}`);
+  if (container) container.innerHTML = exSectionAudioBlock(secId, null);
 }
 
 // ── Passage block renderer ─────────────────────────────────────────
