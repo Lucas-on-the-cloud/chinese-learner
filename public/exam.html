@@ -1152,7 +1152,7 @@ let _selRange = null;
       const midX   = (rect.left + rect.right) / 2;
       const pw     = popup.offsetWidth || 320;
       popup.style.left      = Math.max(pw/2 + 8, Math.min(window.innerWidth - pw/2 - 8, midX)) + 'px';
-      popup.style.top       = (window.scrollY + rect.top - 10) + 'px';
+      popup.style.top       = (rect.top - 10) + 'px';
       popup.style.transform = 'translate(-50%, -100%)';
       popup.classList.add('show');
     }, 10);
@@ -1171,12 +1171,22 @@ function selDismiss() {
 
 function selHighlight(n) {
   if (!_selRange) return;
-  _selUnwrapMarks(_selRange);
+  // If the selection is already inside a mark, remove it first (re-colour case)
+  const anchor = _selRange.commonAncestorContainer;
+  const anchorEl = anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement;
+  const existingMark = anchorEl?.closest('mark');
+  if (existingMark) existingMark.replaceWith(...existingMark.childNodes);
+
+  // surroundContents works when the selection stays within one element boundary
   try {
     const mark = document.createElement('mark');
     mark.className = 'hl-' + n;
     _selRange.surroundContents(mark);
-  } catch {
+    selDismiss(); return;
+  } catch {}
+
+  // Fallback extractContents — only safe for passage text (not inside buttons)
+  if (anchorEl?.closest('.passage-text,.passage-block')) {
     try {
       const frag = _selRange.extractContents();
       const mark = document.createElement('mark');
@@ -1190,7 +1200,15 @@ function selHighlight(n) {
 
 function selRemoveHL() {
   if (!_selRange) return;
-  _selUnwrapMarks(_selRange);
+  const node = _selRange.commonAncestorContainer;
+  const el   = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  if (!el) { selDismiss(); return; }
+  const parentMark = el.closest('mark');
+  if (parentMark) { parentMark.replaceWith(...parentMark.childNodes); selDismiss(); return; }
+  const zone = el.closest('.passage-text,.passage-block,.q-block') || el;
+  zone.querySelectorAll('mark').forEach(m => {
+    try { if (_selRange.intersectsNode(m)) m.replaceWith(...m.childNodes); } catch {}
+  });
   selDismiss();
 }
 
@@ -1204,7 +1222,7 @@ function _selUnwrapMarks(range) {
   zone.querySelectorAll('mark').forEach(m => {
     try { if (range.intersectsNode(m)) m.replaceWith(...m.childNodes); } catch {}
   });
-  el.normalize?.();
+  // intentionally no normalize — avoids invalidating _selRange
 }
 
 async function selAskAI() {
