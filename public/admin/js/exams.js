@@ -70,22 +70,32 @@ async function loadExams() {
   }
   el.innerHTML = books.map(b => {
     const active = _ex.book?.id === b.id;
+    const pub    = b.status === 'published';
     return `<div onclick="exSelectBook(${b.id})"
       style="padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;
              border:1.5px solid ${active ? '#1a56db' : '#e5e7eb'};
              background:${active ? '#eff6ff' : '#fff'}">
       <div style="font-weight:600;font-size:13px">${escHtml(b.title)}</div>
-      <div style="display:flex;gap:6px;margin-top:4px;align-items:center;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">
         ${b.level ? `<span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">${b.level}</span>` : ''}
         <span style="font-size:11px;color:#6b7280">${b.total_units || 30} units</span>
-        <span style="font-size:11px;padding:2px 8px;border-radius:999px;margin-left:auto;
-               background:${b.status === 'published' ? '#f0fdf4' : '#fef9c3'};
-               color:${b.status === 'published' ? '#15803d' : '#a16207'}">
-          ${b.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
-        </span>
+        ${!pub ? `<button onclick="event.stopPropagation();exPublishBook(${b.id})"
+            style="font-size:10px;background:#1a56db;color:#fff;border:none;border-radius:5px;
+                   padding:2px 9px;cursor:pointer;margin-left:auto">
+            ▶ Xuất bản
+          </button>` : `<span style="font-size:11px;padding:2px 8px;border-radius:999px;margin-left:auto;
+               background:#f0fdf4;color:#15803d">✓ Đã xuất bản</span>`}
       </div>
     </div>`;
   }).join('');
+}
+
+async function exPublishBook(bookId) {
+  await Promise.all([
+    _adminDb.client.from('exam_books').update({ status: 'published' }).eq('id', bookId),
+    _adminDb.client.from('exam_units').update({ status: 'published' }).eq('book_id', bookId),
+  ]);
+  await loadExams();
 }
 
 // ── Panel helpers ──────────────────────────────────────────────────
@@ -1567,7 +1577,12 @@ async function exStartMdImport() {
       showMsg('md-msg', `${done}/${units.length} thành công · lỗi: ${failed.join(', ')}`, 'err');
       btn.disabled = false;
     } else {
-      showMsg('md-msg', `✓ Import hoàn tất ${units.length} sub-unit.`, 'ok');
+      // Auto-publish book + all units so students can access immediately
+      await Promise.all([
+        _adminDb.client.from('exam_books').update({ status: 'published' }).eq('id', book.id),
+        _adminDb.client.from('exam_units').update({ status: 'published' }).eq('book_id', book.id),
+      ]);
+      showMsg('md-msg', `✓ Import hoàn tất ${units.length} sub-unit — đã xuất bản.`, 'ok');
       setTimeout(() => {
         exShowPanel('ex-panel-units');
         document.getElementById('ex-units-title').textContent = book.title;

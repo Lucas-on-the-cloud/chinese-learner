@@ -417,7 +417,7 @@ audio{accent-color:#7c3aed;width:100%;height:32px}
               <i :class="secBOpen ? 'fa-chevron-up' : 'fa-chevron-down'"
                  class="fa-solid text-gray-400 text-[11px]"></i>
             </button>
-            <div x-show="secBOpen" x-collapse class="px-5 pb-5">
+            <div x-show="secBOpen" style="display:none" class="px-5 pb-5">
               <!-- Vocab -->
               <template x-if="vocab.length">
                 <div class="mb-5">
