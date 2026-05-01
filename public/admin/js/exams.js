@@ -43,7 +43,21 @@ async function loadExams() {
 
 async function exQuickDeleteBook(bookId) {
   if (!confirm('Xóa bộ đề này? Tất cả unit, câu hỏi, đoạn đọc sẽ bị xóa vĩnh viễn.')) return;
-  await _adminDb.client.from('exam_books').delete().eq('id', bookId);
+
+  // Delete child tables that may lack CASCADE (OCR-era records)
+  await Promise.all([
+    _adminDb.client.from('exam_jobs').delete().eq('book_id', bookId),
+    _adminDb.client.from('exam_doc_ai_pages').delete().eq('book_id', bookId),
+    _adminDb.client.from('exam_ocr_pages').delete().eq('book_id', bookId),
+  ]);
+
+  // Now delete the book itself (remaining children cascade)
+  const { error } = await _adminDb.client.from('exam_books').delete().eq('id', bookId);
+  if (error) {
+    alert('Lỗi xóa: ' + error.message);
+    return;
+  }
+
   if (_ex.book?.id === bookId) { _ex.book = null; exShowPanel('ex-panel-create'); }
   await loadExams();
 }
