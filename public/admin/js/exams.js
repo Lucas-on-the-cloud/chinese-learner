@@ -1090,34 +1090,73 @@ function mdParseSectionA(text, answers) {
   return sections;
 }
 
+// Segment text into alternating passage/question groups, extract both
+function extractPassageAndQs(text, label, passages, questions, answers) {
+  const lines = text.split('\n');
+  const segs  = [];
+  let buf  = [];
+  let mode = null;
+
+  const flush = () => {
+    if (buf.some(l => l.trim())) segs.push({ type: mode || 'passage', lines: [...buf] });
+    buf = [];
+  };
+
+  for (const line of lines) {
+    const t        = line.trim();
+    const isQ      = /^\d+[.．、]/.test(t);
+    const isChoice = /^[A-D]\s+/.test(t);
+
+    if (isQ || (mode === 'question' && isChoice)) {
+      if (mode !== 'question') { flush(); mode = 'question'; }
+      buf.push(line);
+    } else if (!t) {
+      buf.push(line);
+    } else {
+      if (mode === 'question') { flush(); mode = 'passage'; }
+      if (!mode) mode = 'passage';
+      buf.push(line);
+    }
+  }
+  flush();
+
+  let passIdx = 0;
+  for (const seg of segs) {
+    const content = seg.lines.join('\n')
+      .replace(/!\[.*?\]\(.*?\)/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    if (!content) continue;
+    if (seg.type === 'passage') {
+      passages.push({ label: passIdx === 0 ? label : null, text: content });
+      passIdx++;
+    } else {
+      questions.push(...mdParseQuestions(content, passIdx <= 1 ? label : null, answers));
+    }
+  }
+}
+
 // Parse a block that may have ## passage sub-headers before questions
 function mdParseQBlock(text, answers) {
   const passages  = [];
   const questions = [];
-  // ## headers within a section are passage sub-headers (e.g. ## (一))
   const passMs = [...text.matchAll(/^##\s+(.+)$/gm)];
-  if (passMs.length > 0) {
-    const before = text.slice(0, passMs[0].index).trim();
-    if (before) questions.push(...mdParseQuestions(before, null, answers));
-    passMs.forEach((pm, i) => {
-      const label  = pm[1].trim();
-      const bStart = pm.index + pm[0].length;
-      const bEnd   = i + 1 < passMs.length ? passMs[i + 1].index : text.length;
-      const block  = text.slice(bStart, bEnd);
-      const qStart = block.search(/^\d+[.．、]/m);
-      if (qStart > 0) {
-        const pt = block.slice(0, qStart).trim();
-        if (pt) passages.push({ label, text: pt });
-        questions.push(...mdParseQuestions(block.slice(qStart), label, answers));
-      } else if (qStart === 0) {
-        questions.push(...mdParseQuestions(block, label, answers));
-      } else {
-        if (block.trim()) passages.push({ label, text: block.trim() });
-      }
-    });
-  } else {
-    questions.push(...mdParseQuestions(text, null, answers));
+
+  if (passMs.length === 0) {
+    extractPassageAndQs(text, null, passages, questions, answers);
+    return { passages, questions };
   }
+
+  const before = text.slice(0, passMs[0].index);
+  if (before.trim()) extractPassageAndQs(before, null, passages, questions, answers);
+
+  passMs.forEach((pm, i) => {
+    const label  = pm[1].trim();
+    const bStart = pm.index + pm[0].length;
+    const bEnd   = i + 1 < passMs.length ? passMs[i + 1].index : text.length;
+    extractPassageAndQs(text.slice(bStart, bEnd), label, passages, questions, answers);
+  });
+
   return { passages, questions };
 }
 
