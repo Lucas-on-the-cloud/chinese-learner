@@ -809,7 +809,7 @@ async function exToggleUnit(unitId) {
 
   const [{ data: questions }, { data: passagesArr }] = await Promise.all([
     _adminDb.client.from('exam_questions')
-      .select('id,section_id,question_number,question_text,correct_answer,flag_warnings')
+      .select('id,section_id,passage_id,question_number,question_text,correct_answer,flag_warnings')
       .in('section_id', sectionIds).order('question_number'),
     sectionIds.length
       ? _adminDb.client.from('exam_passages')
@@ -847,16 +847,32 @@ async function exToggleUnit(unitId) {
   if (sections?.length) {
     html += '<div style="font-size:11px;font-weight:700;color:#6b7280;letter-spacing:.06em;margin:12px 0 8px;text-transform:uppercase">A · 測驗練習</div>';
     for (const sec of sections) {
-      const qs         = qsBySection[sec.id] || [];
-      const passes     = passagesBySection[sec.id] || [];
-      const unanswered = qs.filter(q => !q.correct_answer).length;
-      const flagged    = qs.filter(q => q.flag_warnings?.some(f => f.level === 'red')).length;
-      const passHtml   = passes.map(p => `
-        <div style="background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;
-                    padding:8px 12px;margin-bottom:8px;font-size:12px;color:#166534">
-          ${p.label ? `<span style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;color:#15803d">${escHtml(p.label)}</span>` : ''}
-          <div style="white-space:pre-wrap;line-height:1.7;font-family:'Noto Serif TC',serif">${escHtml(p.content_text || '')}</div>
-        </div>`).join('');
+      const qs           = qsBySection[sec.id] || [];
+      const passes       = passagesBySection[sec.id] || [];
+      const hasMultiPass = passes.length > 1;
+      const unanswered   = qs.filter(q => !q.correct_answer).length;
+      const flagged      = qs.filter(q => q.flag_warnings?.some(f => f.level === 'red')).length;
+
+      // Group questions by passage_id
+      const qsByPass = {};
+      qs.forEach(q => {
+        const k = q.passage_id != null ? String(q.passage_id) : '__none__';
+        if (!qsByPass[k]) qsByPass[k] = [];
+        qsByPass[k].push(q);
+      });
+
+      let secBody = '';
+      for (const p of passes) {
+        secBody += exPassageBlock(p, hasMultiPass);
+        (qsByPass[String(p.id)] || []).forEach(q => {
+          secBody += exQRow(q, choicesByQ[q.id] || {}, hasMultiPass);
+        });
+      }
+      // Questions not linked to any passage
+      (qsByPass['__none__'] || []).forEach(q => {
+        secBody += exQRow(q, choicesByQ[q.id] || {}, hasMultiPass);
+      });
+
       html += `<div style="margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">
           ${escHtml(sec.title || sec.section_type)}
@@ -865,8 +881,7 @@ async function exToggleUnit(unitId) {
           ${unanswered ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">${unanswered} chưa đáp án</span>` : ''}
           ${flagged ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">⚠ ${flagged}</span>` : ''}
         </div>
-        ${passHtml}
-        ${qs.map(q => exQRow(q, choicesByQ[q.id] || {})).join('')}
+        ${secBody}
       </div>`;
     }
   }
@@ -908,18 +923,27 @@ async function exToggleUnit(unitId) {
 }
 
 // ── Question row ───────────────────────────────────────────────────
-function exQRow(q, choices) {
-  const ABCD   = ['A','B','C','D'];
-  const flags  = q.flag_warnings || [];
-  const red    = flags.filter(f => f.level === 'red');
-  return `<div id="ex-q-${q.id}" style="background:#f9fafb;border:1px solid ${red.length?'#fca5a5':'#e5e7eb'};
-    border-radius:6px;padding:9px 12px;margin-bottom:5px;font-size:12px">
+function exQRow(q, choices, draggable = false) {
+  const ABCD  = ['A','B','C','D'];
+  const flags = q.flag_warnings || [];
+  const red   = flags.filter(f => f.level === 'red');
+  const dragA = draggable
+    ? `draggable="true"
+       ondragstart="event.dataTransfer.setData('text/plain',String(${q.id}));this.style.opacity='.45'"
+       ondragend="this.style.opacity=''"` : '';
+  return `<div id="ex-q-${q.id}" data-draggable="${draggable}" ${dragA}
+    style="background:#f9fafb;border:1px solid ${red.length?'#fca5a5':'#e5e7eb'};
+    border-radius:6px;padding:9px 12px;margin-bottom:5px;font-size:12px;
+    ${draggable?'cursor:grab':''}">
     ${red.length ? `<div style="font-size:11px;color:#dc2626;margin-bottom:5px">⚠ ${escHtml(red[0].message)}</div>` : ''}
-    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
-      <span style="font-weight:700;color:#1a56db;min-width:26px">Q${q.question_number}</span>
-      <span style="color:#374151;flex:1">${escHtml(q.question_text||'(Nghe)')}</span>
-      <span onclick="exEditQ(${q.id})" style="cursor:pointer;color:#6b7280;font-size:11px;white-space:nowrap">
-        <i class="fa-solid fa-pen-to-square"></i> Sửa</span>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      ${draggable ? `<span style="color:#d1d5db;font-size:16px;line-height:1;cursor:grab;flex-shrink:0">⠿</span>` : ''}
+      <span style="font-weight:700;color:#1a56db;min-width:26px;flex-shrink:0">Q${q.question_number}</span>
+      <span style="color:#374151;flex:1;font-size:12px">${escHtml(q.question_text||'(Nghe)')}</span>
+      <span onclick="exEditQ(${q.id})" style="cursor:pointer;color:#6b7280;font-size:11px;white-space:nowrap;flex-shrink:0">
+        <i class="fa-solid fa-pen-to-square"></i></span>
+      <span onclick="exDeleteQ(${q.id})" style="cursor:pointer;color:#dc2626;font-size:11px;white-space:nowrap;flex-shrink:0;margin-left:2px">
+        <i class="fa-solid fa-trash"></i></span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:7px">
       ${ABCD.map(l => {
@@ -949,7 +973,7 @@ async function exSetAnswer(qId, answer) {
   ]);
   const choices = {}; (ca||[]).forEach(c => { choices[c.label] = c; });
   const el = document.getElementById(`ex-q-${qId}`);
-  if (el) el.outerHTML = exQRow(q, choices);
+  if (el) el.outerHTML = exQRow(q, choices, el.dataset.draggable === 'true');
 }
 
 async function exEditQ(qId) {
@@ -983,13 +1007,125 @@ async function exSaveQ(qId) {
 }
 
 async function exCancelQ(qId) {
+  const el = document.getElementById(`ex-q-${qId}`);
+  const draggable = el?.dataset.draggable === 'true';
   const [{ data: q }, { data: ca }] = await Promise.all([
     _adminDb.client.from('exam_questions').select('*').eq('id', qId).single(),
     _adminDb.client.from('exam_choices').select('*').eq('question_id', qId),
   ]);
   const choices = {}; (ca||[]).forEach(c => { choices[c.label] = c; });
+  const el2 = document.getElementById(`ex-q-${qId}`);
+  if (el2) el2.outerHTML = exQRow(q, choices, draggable);
+}
+
+// ── Passage block renderer ─────────────────────────────────────────
+function exPassageBlock(p, hasMultiPass) {
+  const dropA = hasMultiPass
+    ? `ondragover="exDragOverPass(event,this)"
+       ondragleave="exDragLeavePass(event,this)"
+       ondrop="exDropOnPass(event,${p.id},this)"`
+    : '';
+  return `<div id="ex-pass-${p.id}" data-pass-id="${p.id}"
+    style="background:#f0fdf4;border:2px solid ${hasMultiPass?'#86efac':'#bbf7d0'};
+           border-radius:8px;padding:10px 14px;margin-bottom:6px;transition:.15s" ${dropA}>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px">
+        <i class="fa-solid fa-book-open-reader" style="font-size:10px"></i>
+        ${p.label ? escHtml(p.label) : '📖 Đoạn đọc'}
+        ${hasMultiPass ? `<span style="font-size:10px;font-weight:400;color:#86efac;
+          background:#166534;padding:1px 7px;border-radius:999px">← thả câu hỏi vào đây</span>` : ''}
+      </span>
+      <button onclick="exEditPassage(${p.id})"
+        style="background:none;border:1px solid #bbf7d0;border-radius:5px;cursor:pointer;
+               font-size:11px;color:#16a34a;padding:2px 8px;line-height:1.6">
+        <i class="fa-solid fa-pen-to-square"></i> Sửa
+      </button>
+    </div>
+    <div id="ex-pass-text-${p.id}"
+      style="white-space:pre-wrap;line-height:1.8;font-family:'Noto Serif TC',serif;
+             font-size:13px;color:#166534">${escHtml(p.content_text||'')}</div>
+  </div>`;
+}
+
+// ── Passage edit ───────────────────────────────────────────────────
+async function exEditPassage(passId) {
+  const container = document.getElementById(`ex-pass-${passId}`);
+  const textEl    = document.getElementById(`ex-pass-text-${passId}`);
+  if (!container || !textEl || container.querySelector('textarea')) return;
+
+  const { data: p } = await _adminDb.client
+    .from('exam_passages').select('content_text').eq('id', passId).single();
+  const raw = p?.content_text || '';
+
+  textEl.style.display = 'none';
+  const wrap = document.createElement('div');
+  wrap.id = `ex-pass-edit-${passId}`;
+  wrap.innerHTML = `
+    <textarea id="ex-pass-ta-${passId}"
+      style="width:100%;min-height:140px;font-size:13px;line-height:1.8;
+             font-family:'Noto Serif TC',serif;border:1.5px solid #86efac;
+             border-radius:6px;padding:8px;resize:vertical;margin-bottom:8px;
+             background:#f0fdf4;color:#166534">${escHtml(raw)}</textarea>
+    <div style="display:flex;gap:6px">
+      <button class="s-btn" onclick="exSavePassage(${passId})"
+        style="padding:4px 16px;font-size:12px;background:#16a34a">Lưu</button>
+      <button class="s-btn" onclick="exCancelPassage(${passId})"
+        style="padding:4px 16px;font-size:12px;background:#6b7280">Hủy</button>
+    </div>`;
+  container.appendChild(wrap);
+}
+
+async function exSavePassage(passId) {
+  const ta = document.getElementById(`ex-pass-ta-${passId}`);
+  if (!ta) return;
+  const text = ta.value;
+  await _adminDb.client.from('exam_passages').update({ content_text: text }).eq('id', passId);
+  const textEl = document.getElementById(`ex-pass-text-${passId}`);
+  const wrap   = document.getElementById(`ex-pass-edit-${passId}`);
+  if (textEl) { textEl.textContent = text; textEl.style.display = ''; }
+  if (wrap)   wrap.remove();
+}
+
+function exCancelPassage(passId) {
+  const textEl = document.getElementById(`ex-pass-text-${passId}`);
+  const wrap   = document.getElementById(`ex-pass-edit-${passId}`);
+  if (textEl) textEl.style.display = '';
+  if (wrap)   wrap.remove();
+}
+
+// ── Delete question ────────────────────────────────────────────────
+async function exDeleteQ(qId) {
+  if (!confirm('Xóa câu hỏi này? Không thể hoàn tác.')) return;
+  await Promise.all([
+    _adminDb.client.from('exam_choices').delete().eq('question_id', qId),
+    _adminDb.client.from('exam_questions').delete().eq('id', qId),
+  ]);
   const el = document.getElementById(`ex-q-${qId}`);
-  if (el) el.outerHTML = exQRow(q, choices);
+  if (el) el.remove();
+}
+
+// ── Drag-and-drop: reassign question → passage ─────────────────────
+function exDragOverPass(e, el) {
+  e.preventDefault();
+  el.style.borderColor = '#1a56db';
+  el.style.background  = '#eff6ff';
+}
+
+function exDragLeavePass(e, el) {
+  el.style.borderColor = '#86efac';
+  el.style.background  = '#f0fdf4';
+}
+
+async function exDropOnPass(e, passId, el) {
+  e.preventDefault();
+  el.style.borderColor = '#86efac';
+  el.style.background  = '#f0fdf4';
+  const qId = parseInt(e.dataTransfer.getData('text/plain'));
+  if (!qId || isNaN(qId)) return;
+  await _adminDb.client.from('exam_questions').update({ passage_id: passId }).eq('id', qId);
+  const body   = el.closest('[id^="ex-unit-body-"]');
+  const unitId = body ? parseInt(body.id.replace('ex-unit-body-', '')) : null;
+  if (unitId) { body.style.display = 'none'; await exToggleUnit(unitId); }
 }
 
 async function exPublishUnit(unitId, currentStatus) {
