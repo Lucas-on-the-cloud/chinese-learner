@@ -249,10 +249,11 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .sel-dismiss:hover{color:var(--text)}
 .hl-color{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .12s;flex-shrink:0}
 .hl-color:hover{transform:scale(1.18);border-color:rgba(0,0,0,.25)}
-mark.hl-1{background:#C0E1D2;color:inherit;border-radius:2px;cursor:pointer}
-mark.hl-2{background:#FEF3C7;color:inherit;border-radius:2px;cursor:pointer}
-mark.hl-3{background:#DBEAFE;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-1{background:#FDE68A;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-2{background:#BAE6FD;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-3{background:#E9D5FF;color:inherit;border-radius:2px;cursor:pointer}
 mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
+.choice-btn,.choice-btn *{user-select:text;-webkit-user-select:text}
 
 /* ── AI side panel ────────────────────────────────────── */
 .ai-panel{position:fixed;bottom:0;right:0;width:min(400px,100vw);max-height:60vh;background:#fff;border-top:1px solid var(--border);border-left:1px solid var(--border);border-radius:16px 0 0 0;box-shadow:var(--shadow-lg);z-index:400;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
@@ -696,9 +697,9 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
 <div class="sel-popup" id="sel-popup">
   <span class="sel-text" id="sel-text"></span>
   <div class="sel-divider"></div>
-  <div class="hl-color" style="background:#C0E1D2" onclick="selHighlight(1)" title="Xanh lá"></div>
-  <div class="hl-color" style="background:#FEF3C7" onclick="selHighlight(2)" title="Vàng"></div>
-  <div class="hl-color" style="background:#DBEAFE" onclick="selHighlight(3)" title="Xanh dương"></div>
+  <div class="hl-color" style="background:#FDE68A" onclick="selHighlight(1)" title="Vàng"></div>
+  <div class="hl-color" style="background:#BAE6FD" onclick="selHighlight(2)" title="Xanh dương"></div>
+  <div class="hl-color" style="background:#E9D5FF" onclick="selHighlight(3)" title="Tím"></div>
   <div class="hl-color" style="background:#FCA5A5" onclick="selHighlight(4)" title="Đỏ"></div>
   <div class="sel-divider"></div>
   <button class="sel-btn" onclick="selAskAI()">
@@ -773,8 +774,12 @@ const SEC_ICON  = {listening:'fa-headphones',completion:'fa-pen-nib',cloze:'fa-f
 const SEC_COLOR = {listening:'var(--purple)',completion:'var(--blue)',cloze:'var(--orange)',reading:'var(--green)',essay:'var(--green)',mcq:'var(--blue)'};
 const SEC_BG    = {listening:'#fdf4ff',completion:'var(--blue-lt)',cloze:'#fffbeb',reading:'var(--green-lt)',essay:'var(--green-lt)',mcq:'var(--blue-lt)'};
 
+// Non-reactive answer store — lets renderQ() avoid Alpine re-renders on each pick
+let _answers = {};
+
 // Global pick handler (called from rendered HTML)
 function pickAnswer(qId, label) {
+  if (window.getSelection()?.toString().trim().length > 0) return; // user selecting text
   document.dispatchEvent(new CustomEvent('pick-answer', { detail: { qId, label } }));
 }
 
@@ -913,7 +918,7 @@ function examApp() {
       this.activeUnit = unit;
       this.sections = []; this.passagesBySection = {}; this.questionsBySection = {};
       this.choicesForQ = {}; this.vocab = []; this.phrases = [];
-      this.answers = {}; this.submitted = false; this.vocabOpen = false;
+      _answers = {}; this.answers = {}; this.submitted = false; this.vocabOpen = false;
       this.currentSectionIdx = 0; this.showResult = false; this.aiResult = '';
 
       const { data: sections } = await _db.from('exam_sections')
@@ -984,7 +989,8 @@ function examApp() {
     // ── Render question ──────────────────
     renderQ(q) {
       const choices = this.choicesForQ[q.id] || {};
-      const ans = this.answers[q.id], corr = q.correct_answer, sub = this.submitted;
+      // Read _answers (plain JS, non-reactive) so Alpine doesn't re-render on every pick
+      const ans = _answers[q.id], corr = q.correct_answer, sub = this.submitted;
       const btns = ['A','B','C','D'].map(l => {
         const txt = choices[l] || '';
         let cls = 'choice-btn';
@@ -992,7 +998,7 @@ function examApp() {
         if (sub && l===corr && l===ans)  cls += ' c-correct';
         if (sub && l!==corr && l===ans)  cls += ' c-wrong';
         if (sub && l===corr && l!==ans)  cls += ' c-miss';
-        return `<button class="${cls}" onclick="pickAnswer(${q.id},'${l}')" ${sub?'disabled':''}>
+        return `<button class="${cls}" data-q="${q.id}" data-label="${l}" onclick="pickAnswer(${q.id},'${l}')" ${sub?'disabled':''}>
           <span class="choice-lbl">${l}</span>
           <span class="zh">${esc(txt)}</span>
         </button>`;
@@ -1016,7 +1022,12 @@ function examApp() {
     // ── Interaction ───────────────────────
     pick(qId, label) {
       if (this.submitted) return;
-      this.answers = { ...this.answers, [qId]: label };
+      _answers[qId] = label;
+      this.answers = { ..._answers }; // reactive copy for answeredQ counter only
+      // Direct DOM update — avoids Alpine re-rendering renderQ (which would wipe highlights)
+      document.querySelectorAll(`.choice-btn[data-q="${qId}"]`).forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.label === label);
+      });
     },
 
     prevSection() {
@@ -1067,7 +1078,7 @@ function examApp() {
     },
 
     retry() {
-      this.answers = {}; this.submitted = false;
+      _answers = {}; this.answers = {}; this.submitted = false;
       this.showResult = false; this.aiResult = '';
       this.currentSectionIdx = 0;
       window.scrollTo(0,0);
