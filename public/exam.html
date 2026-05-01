@@ -124,9 +124,13 @@ audio{accent-color:var(--purple);width:100%;height:32px}
 .audio-missing{font-size:12px;color:var(--text-3);font-style:italic}
 
 /* ── Passage ──────────────────────────────────────────── */
-.passage-block{background:linear-gradient(135deg,var(--green-lt),#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.passage-block{background:linear-gradient(135deg,var(--green-lt),#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:0}
 .passage-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
+/* Split layout: passage sticky-left, questions scrollable-right */
+.passage-row{display:grid;grid-template-columns:42% 1fr;gap:20px;align-items:start;margin-bottom:20px}
+.passage-col{position:sticky;top:calc(var(--nav-h) + 56px);max-height:calc(100vh - 130px);overflow-y:auto;border-radius:12px;scrollbar-width:thin}
+@media(max-width:768px){.passage-row{grid-template-columns:1fr}.passage-col{position:static;max-height:none}}
 
 /* ── Questions ────────────────────────────────────────── */
 .q-block{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #f3f4f6}
@@ -479,23 +483,29 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
               </div>
             </template>
 
-            <!-- Passages + questions -->
+            <!-- Passages + questions (split layout) -->
             <template x-if="(passagesBySection[currentSection.id]||[]).length">
               <div>
                 <template x-for="p in passagesBySection[currentSection.id]" :key="p.id">
-                  <div>
-                    <div class="passage-block">
-                      <template x-if="p.label">
-                        <div class="passage-label">
-                          <i class="fa-solid fa-paragraph" style="font-size:9px"></i>
-                          <span x-text="p.label"></span>
-                        </div>
-                      </template>
-                      <div class="passage-text zh" x-text="p.content_text || ''"></div>
+                  <div class="passage-row">
+                    <!-- Left: sticky passage -->
+                    <div class="passage-col">
+                      <div class="passage-block">
+                        <template x-if="p.label">
+                          <div class="passage-label">
+                            <i class="fa-solid fa-paragraph" style="font-size:9px"></i>
+                            <span x-text="p.label"></span>
+                          </div>
+                        </template>
+                        <div class="passage-text zh" x-text="p.content_text || ''"></div>
+                      </div>
                     </div>
-                    <template x-for="q in questionsFor(currentSection.id, p.id)" :key="q.id">
-                      <div x-html="renderQ(q)" class="q-block"></div>
-                    </template>
+                    <!-- Right: questions -->
+                    <div>
+                      <template x-for="q in questionsFor(currentSection.id, p.id)" :key="q.id">
+                        <div x-html="renderQ(q)" class="q-block"></div>
+                      </template>
+                    </div>
                   </div>
                 </template>
                 <template x-for="q in questionsFor(currentSection.id, null)" :key="q.id">
