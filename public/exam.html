@@ -247,6 +247,12 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .sel-btn.orange:hover{background:#d96612}
 .sel-dismiss{background:none;border:none;color:var(--text-3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1}
 .sel-dismiss:hover{color:var(--text)}
+.hl-color{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all .12s;flex-shrink:0}
+.hl-color:hover{transform:scale(1.18);border-color:rgba(0,0,0,.25)}
+mark.hl-1{background:#C0E1D2;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-2{background:#FEF3C7;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-3{background:#DBEAFE;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
 
 /* ── AI side panel ────────────────────────────────────── */
 .ai-panel{position:fixed;bottom:0;right:0;width:min(400px,100vw);max-height:60vh;background:#fff;border-top:1px solid var(--border);border-left:1px solid var(--border);border-radius:16px 0 0 0;box-shadow:var(--shadow-lg);z-index:400;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s ease}
@@ -690,13 +696,16 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <div class="sel-popup" id="sel-popup">
   <span class="sel-text" id="sel-text"></span>
   <div class="sel-divider"></div>
+  <div class="hl-color" style="background:#C0E1D2" onclick="selHighlight(1)" title="Xanh lá"></div>
+  <div class="hl-color" style="background:#FEF3C7" onclick="selHighlight(2)" title="Vàng"></div>
+  <div class="hl-color" style="background:#DBEAFE" onclick="selHighlight(3)" title="Xanh dương"></div>
+  <div class="hl-color" style="background:#FCA5A5" onclick="selHighlight(4)" title="Đỏ"></div>
+  <div class="sel-divider"></div>
   <button class="sel-btn" onclick="selAskAI()">
     <i class="fa-solid fa-sparkles" style="font-size:10px"></i> Hỏi AI
   </button>
-  <button class="sel-btn orange" onclick="selCopy()">
-    <i class="fa-regular fa-copy" style="font-size:10px"></i>
-  </button>
-  <button class="sel-dismiss" onclick="selDismiss()">✕</button>
+  <button class="sel-dismiss" onclick="selRemoveHL()" title="Xóa highlight">✕</button>
+  <button class="sel-dismiss" onclick="selDismiss()">×</button>
 </div>
 
 <!-- ── AI SIDE PANEL ────────────────────────────────────────── -->
@@ -1101,9 +1110,10 @@ function renderNavAuth(user) {
   wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${init}</a>`;
 }
 
-// ── Text selection + AI panel ────────────────────────────────
+// ── Text selection + highlight + AI panel ────────────────────
 let _selText = '';
 let _selContext = '';
+let _selRange = null;
 
 (function initSelection() {
   document.addEventListener('mouseup', e => {
@@ -1111,29 +1121,28 @@ let _selContext = '';
     setTimeout(() => {
       const sel = window.getSelection();
       const txt = sel?.toString().trim();
-      if (!txt || txt.length < 2) { selDismiss(); return; }
+      if (!txt || txt.length < 1) { selDismiss(); return; }
 
-      // commonAncestorContainer can be a Text node — walk up to Element
-      const range   = sel.getRangeAt(0);
-      const anchor  = range.commonAncestorContainer;
-      const el      = anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement;
-      const passage = el?.closest('.passage-text, .passage-block');
-      if (!passage) { selDismiss(); return; }
+      const range  = sel.getRangeAt(0);
+      const anchor = range.commonAncestorContainer;
+      const el     = anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement;
+      const zone   = el?.closest('.passage-text,.passage-block,.q-stem,.q-text,.choices,.choice-btn,.q-block');
+      if (!zone) { selDismiss(); return; }
 
       _selText    = txt;
-      _selContext = passage.textContent?.trim().slice(0, 400) || '';
+      _selRange   = range.cloneRange();
+      _selContext = zone.closest('.passage-block,.q-block')?.textContent?.trim().slice(0, 400) || '';
 
-      const rect   = range.getBoundingClientRect();
-      const popup  = document.getElementById('sel-popup');
-      const selEl  = document.getElementById('sel-text');
+      const popup = document.getElementById('sel-popup');
+      const selEl = document.getElementById('sel-text');
       if (!popup || !selEl) return;
 
-      selEl.textContent = txt.length > 20 ? txt.slice(0, 20) + '…' : txt;
+      selEl.textContent = txt.length > 22 ? txt.slice(0, 22) + '…' : txt;
 
-      const midX    = (rect.left + rect.right) / 2;
-      const pw      = popup.offsetWidth || 260;
-      const clampX  = Math.max(pw/2 + 8, Math.min(window.innerWidth - pw/2 - 8, midX));
-      popup.style.left      = clampX + 'px';
+      const rect   = range.getBoundingClientRect();
+      const midX   = (rect.left + rect.right) / 2;
+      const pw     = popup.offsetWidth || 320;
+      popup.style.left      = Math.max(pw/2 + 8, Math.min(window.innerWidth - pw/2 - 8, midX)) + 'px';
       popup.style.top       = (window.scrollY + rect.top - 10) + 'px';
       popup.style.transform = 'translate(-50%, -100%)';
       popup.classList.add('show');
@@ -1148,11 +1157,45 @@ let _selContext = '';
 function selDismiss() {
   document.getElementById('sel-popup')?.classList.remove('show');
   window.getSelection()?.removeAllRanges();
+  _selRange = null;
 }
 
-function selCopy() {
-  navigator.clipboard?.writeText(_selText);
+function selHighlight(n) {
+  if (!_selRange) return;
+  _selUnwrapMarks(_selRange);
+  try {
+    const mark = document.createElement('mark');
+    mark.className = 'hl-' + n;
+    _selRange.surroundContents(mark);
+  } catch {
+    try {
+      const frag = _selRange.extractContents();
+      const mark = document.createElement('mark');
+      mark.className = 'hl-' + n;
+      mark.appendChild(frag);
+      _selRange.insertNode(mark);
+    } catch {}
+  }
   selDismiss();
+}
+
+function selRemoveHL() {
+  if (!_selRange) return;
+  _selUnwrapMarks(_selRange);
+  selDismiss();
+}
+
+function _selUnwrapMarks(range) {
+  const node = range.commonAncestorContainer;
+  const el   = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+  if (!el) return;
+  const parentMark = el.closest('mark');
+  if (parentMark) { parentMark.replaceWith(...parentMark.childNodes); return; }
+  const zone = el.closest('.passage-text,.passage-block,.q-block') || el;
+  zone.querySelectorAll('mark').forEach(m => {
+    try { if (range.intersectsNode(m)) m.replaceWith(...m.childNodes); } catch {}
+  });
+  el.normalize?.();
 }
 
 async function selAskAI() {
