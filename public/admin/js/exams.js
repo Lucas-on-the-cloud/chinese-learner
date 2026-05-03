@@ -446,12 +446,32 @@ async function exEditQ(qId) {
 
 async function exSaveQ(qId) {
   const text = document.getElementById(`eq-text-${qId}`)?.value.trim()||'';
-  await _adminDb.client.from('exam_questions').update({ question_text: text }).eq('id', qId);
+
+  const { error: qErr } = await _adminDb.client.from('exam_questions')
+    .update({ question_text: text }).eq('id', qId);
+  if (qErr) { alert('Lỗi câu hỏi: ' + qErr.message); return; }
+
+  // Fetch existing choices to know which to UPDATE vs INSERT
+  const { data: existing } = await _adminDb.client.from('exam_choices')
+    .select('id,label').eq('question_id', qId);
+  const labelToId = Object.fromEntries((existing || []).map(c => [c.label, c.id]));
+
   for (const l of ['A','B','C','D']) {
     const val = document.getElementById(`eq-c-${qId}-${l}`)?.value.trim()||'';
-    await _adminDb.client.from('exam_choices').update({ text: val }).match({ question_id: qId, label: l });
+    if (labelToId[l]) {
+      // UPDATE existing
+      const { error } = await _adminDb.client.from('exam_choices')
+        .update({ text: val }).eq('id', labelToId[l]);
+      if (error) { alert(`Lỗi lựa chọn ${l}: ` + error.message); return; }
+    } else if (val) {
+      // INSERT new (only if user typed a value)
+      const { error } = await _adminDb.client.from('exam_choices')
+        .insert({ question_id: qId, label: l, text: val });
+      if (error) { alert(`Lỗi tạo lựa chọn ${l}: ` + error.message); return; }
+    }
   }
-  exCancelQ(qId);
+
+  await exCancelQ(qId);
 }
 
 async function exCancelQ(qId) {
