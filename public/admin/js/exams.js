@@ -325,6 +325,9 @@ async function exToggleUnit(unitId, forceReload) {
           <button onclick="exAddPassage(${sec.id})" style="margin-left:auto;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
             <i class="fa-solid fa-plus" style="font-size:9px"></i> Thêm đoạn đọc
           </button>
+          <button onclick="exDeleteSection(${sec.id},${qs.length},${passes.length})" title="Xóa cả section" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
+            <i class="fa-solid fa-trash" style="font-size:9px"></i> Xóa section
+          </button>
         </div>
         ${audioRow}${secBody}
       </div>`;
@@ -689,6 +692,32 @@ async function exDeletePassage(passId) {
   // Reload unit panel
   const block = document.getElementById(`ex-pass-${passId}`);
   const body  = block?.closest('[id^="ex-unit-body-"]');
+  if (body) {
+    const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+    if (unitId) exToggleUnit(unitId, true);
+  }
+}
+
+// ── Delete entire section (passages + questions + choices) ────────────────
+async function exDeleteSection(sectionId, qCount, pCount) {
+  const parts = [];
+  if (pCount > 0) parts.push(`${pCount} đoạn đọc`);
+  if (qCount > 0) parts.push(`${qCount} câu hỏi`);
+  const summary = parts.length ? ` (gồm ${parts.join(' + ')})` : '';
+  if (!confirm(`Xóa section này${summary}? Không thể hoàn tác.`)) return;
+
+  // Cascade delete: choices → questions → passages → section
+  const { data: qs } = await _adminDb.client.from('exam_questions').select('id').eq('section_id', sectionId);
+  const qIds = (qs || []).map(q => q.id);
+  if (qIds.length) await _adminDb.client.from('exam_choices').delete().in('question_id', qIds);
+  if (qIds.length) await _adminDb.client.from('exam_questions').delete().in('id', qIds);
+  await _adminDb.client.from('exam_passages').delete().eq('section_id', sectionId);
+  const { error } = await _adminDb.client.from('exam_sections').delete().eq('id', sectionId);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+
+  // Reload unit panel
+  const sec = document.getElementById(`ex-sec-${sectionId}`);
+  const body = sec?.closest('[id^="ex-unit-body-"]');
   if (body) {
     const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
     if (unitId) exToggleUnit(unitId, true);
