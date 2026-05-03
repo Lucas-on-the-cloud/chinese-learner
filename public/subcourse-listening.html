@@ -329,11 +329,28 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   }
 
   // Group by lesson (lesson_id → lesson_title)
-  const groupMap = new Map(); // lesson_id → {title, segs[]}
+  const tmpMap = new Map();
   segs.forEach(s => {
     const key = s.lesson_id || s.lesson_title || 'unknown';
-    if (!groupMap.has(key)) groupMap.set(key, { title: s.lesson_title || 'Bài học', segs: [] });
-    groupMap.get(key).segs.push(s);
+    if (!tmpMap.has(key)) tmpMap.set(key, { title: s.lesson_title || 'Bài học', segs: [] });
+    tmpMap.get(key).segs.push(s);
+  });
+
+  // Sort groups: by "Unit X-Y" extracted from title (natural order); fall back to title compare.
+  const sortKey = (t) => {
+    const m = String(t || '').match(/Unit\s+(\d+)[-.](\d+)/i);
+    if (m) return [parseInt(m[1]), parseInt(m[2]), t];
+    return [9999, 9999, String(t || '')];
+  };
+  const groupMap = new Map(
+    [...tmpMap.entries()].sort((a, b) => {
+      const [ax, ay] = sortKey(a[1].title); const [bx, by] = sortKey(b[1].title);
+      return ax - bx || ay - by || String(a[1].title).localeCompare(String(b[1].title));
+    })
+  );
+  // Sort segments within each group by sort_order then start_sec
+  groupMap.forEach(g => {
+    g.segs.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || (a.start_sec ?? 0) - (b.start_sec ?? 0));
   });
 
   const totalGroups = groupMap.size;
