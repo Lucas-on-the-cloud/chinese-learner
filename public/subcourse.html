@@ -358,13 +358,33 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   }
 
   // Group lessons by title prefix (before " · ")
-  const groupMap = new Map();
+  const tmpMap = new Map();
   lessons.forEach(l => {
     const sep = l.title.indexOf(' · ');
     const key = sep > -1 ? l.title.slice(0, sep).trim() : l.title.trim();
-    if (!groupMap.has(key)) groupMap.set(key, []);
-    groupMap.get(key).push(l);
+    if (!tmpMap.has(key)) tmpMap.set(key, []);
+    tmpMap.get(key).push(l);
   });
+
+  // Sort groups: extract leading "Unit X-Y" if present, else fallback to alphabetical.
+  // Within each group, sort lessons by trailing "Hình N" / numeric suffix.
+  const sortKey = (s) => {
+    const m = s.match(/^Unit\s+(\d+)[-.](\d+)/i);
+    if (m) return [parseInt(m[1]), parseInt(m[2]), s];
+    return [9999, 9999, s];
+  };
+  const partKey = (t) => {
+    const m = t.match(/Hình\s*(?:ảnh)?\s*(\d+)/i);
+    return m ? parseInt(m[1]) : 9999;
+  };
+  const groupMap = new Map(
+    [...tmpMap.entries()]
+      .sort((a, b) => {
+        const [ax, ay] = sortKey(a[0]); const [bx, by] = sortKey(b[0]);
+        return ax - bx || ay - by || a[0].localeCompare(b[0]);
+      })
+      .map(([k, arr]) => [k, arr.sort((a, b) => partKey(a.title) - partKey(b.title))])
+  );
 
   const totalGroups = groupMap.size;
   const totalParts  = lessons.length;
