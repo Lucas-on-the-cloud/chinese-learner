@@ -566,6 +566,10 @@ function exPassageBlock(p, hasMultiPass, idx, total, sectionId) {
           style="${isFirst ? dimStyle : btnStyle};padding:2px 7px"><i class="fa-solid fa-arrow-up" style="font-size:10px"></i></button>
         <button onclick="exMovePassage(${p.id},1)" title="Xuống" ${isLast ? 'disabled' : ''}
           style="${isLast ? dimStyle : btnStyle};padding:2px 7px"><i class="fa-solid fa-arrow-down" style="font-size:10px"></i></button>
+        <button onclick="exAddQuestion(${p.id})" title="Thêm câu hỏi vào đoạn này"
+          style="${btnStyle.replace('#bbf7d0','#bfdbfe').replace('#16a34a','#1a56db').replace('#f0fdf4','#eff6ff')}">
+          <i class="fa-solid fa-plus" style="font-size:9px"></i> Câu hỏi
+        </button>
         <button onclick="exEditPassage(${p.id})" title="Sửa nội dung" style="${btnStyle}">
           <i class="fa-solid fa-pen-to-square"></i> Sửa
         </button>
@@ -692,6 +696,57 @@ async function exDeletePassage(passId) {
   // Reload unit panel
   const block = document.getElementById(`ex-pass-${passId}`);
   const body  = block?.closest('[id^="ex-unit-body-"]');
+  if (body) {
+    const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+    if (unitId) exToggleUnit(unitId, true);
+  }
+}
+
+// ── Add new question linked to a passage ──────────────────────────────────
+async function exAddQuestion(passageId) {
+  const { data: pass } = await _adminDb.client.from('exam_passages')
+    .select('section_id').eq('id', passageId).single();
+  if (!pass) return;
+
+  const text = prompt('Nội dung câu hỏi:');
+  if (text === null) return;
+  if (!text.trim()) { alert('Câu hỏi không được trống.'); return; }
+
+  const a = prompt('Lựa chọn A:', ''); if (a === null) return;
+  const b = prompt('Lựa chọn B:', ''); if (b === null) return;
+  const c = prompt('Lựa chọn C:', ''); if (c === null) return;
+  const d = prompt('Lựa chọn D:', ''); if (d === null) return;
+
+  const ans = prompt('Đáp án đúng (A/B/C/D):', 'A');
+  if (ans === null) return;
+  const answer = ans.trim().toUpperCase();
+  if (!/^[A-D]$/.test(answer)) { alert('Đáp án phải là A, B, C hoặc D.'); return; }
+
+  // Auto-increment question_number based on max in this section
+  const { data: maxQ } = await _adminDb.client.from('exam_questions')
+    .select('question_number').eq('section_id', pass.section_id)
+    .order('question_number', { ascending: false }).limit(1);
+  const nextNum = (maxQ?.[0]?.question_number || 0) + 1;
+
+  const { data: q, error } = await _adminDb.client.from('exam_questions').insert({
+    section_id:     pass.section_id,
+    passage_id:     passageId,
+    question_number: nextNum,
+    question_text:  text.trim(),
+    correct_answer: answer,
+  }).select().single();
+  if (error) { alert('Lỗi: ' + error.message); return; }
+
+  await _adminDb.client.from('exam_choices').insert([
+    { question_id: q.id, label: 'A', text: a.trim() },
+    { question_id: q.id, label: 'B', text: b.trim() },
+    { question_id: q.id, label: 'C', text: c.trim() },
+    { question_id: q.id, label: 'D', text: d.trim() },
+  ]);
+
+  // Reload unit panel
+  const sec  = document.getElementById(`ex-sec-${pass.section_id}`);
+  const body = sec?.closest('[id^="ex-unit-body-"]');
   if (body) {
     const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
     if (unitId) exToggleUnit(unitId, true);
