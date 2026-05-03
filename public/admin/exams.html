@@ -201,12 +201,49 @@
               <span id="ex-units-title"></span>
             </div>
             <div style="display:flex;gap:8px">
+              <button class="s-btn" onclick="exShowAddUnit()"
+                      style="padding:5px 12px;font-size:11px;background:#16a34a">
+                <i class="fa-solid fa-plus"></i> Thêm Sub-unit
+              </button>
               <button class="s-btn" onclick="exDeleteBook()"
                       style="padding:5px 12px;font-size:11px;background:#dc2626">
                 <i class="fa-solid fa-trash"></i> Xóa
               </button>
             </div>
           </div>
+
+          <!-- Add sub-unit form (toggle) -->
+          <div id="ex-add-unit-form" style="display:none;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:10px">
+              <i class="fa-solid fa-plus-circle"></i> Thêm sub-unit mới (mặc định 5 sections trống: 對話聽力, 完成句子, 選詞填空, 材料閱讀, 短文閱讀)
+            </div>
+            <div style="display:grid;grid-template-columns:90px 90px 1fr 1.5fr;gap:10px;margin-bottom:10px">
+              <div>
+                <div class="s-label" style="font-size:11px">Unit số</div>
+                <input id="au-unit-num" type="number" class="s-input" min="1" max="20" placeholder="Ví dụ: 4">
+              </div>
+              <div>
+                <div class="s-label" style="font-size:11px">Sub số</div>
+                <input id="au-sub-num" type="number" class="s-input" min="1" max="10" placeholder="Ví dụ: 1">
+              </div>
+              <div>
+                <div class="s-label" style="font-size:11px">Tiêu đề chính (中文)</div>
+                <input id="au-title-zh" class="s-input" placeholder="Ví dụ: 休閒娛樂">
+              </div>
+              <div>
+                <div class="s-label" style="font-size:11px">Tiêu đề phụ (中文)</div>
+                <input id="au-subtitle-zh" class="s-input" placeholder="Ví dụ: 空閒時光、嗜好及興趣、運動">
+              </div>
+            </div>
+            <div id="au-msg" class="s-msg" style="margin-bottom:8px"></div>
+            <div style="display:flex;gap:6px">
+              <button class="s-btn" onclick="exSaveNewUnit()" style="padding:5px 16px;font-size:12px;background:#16a34a">
+                <i class="fa-solid fa-check"></i> Tạo
+              </button>
+              <button class="s-btn" onclick="exHideAddUnit()" style="padding:5px 16px;font-size:12px;background:#6b7280">Hủy</button>
+            </div>
+          </div>
+
           <div id="ex-units-list"></div>
         </div>
 

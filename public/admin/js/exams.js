@@ -322,11 +322,14 @@ async function exToggleUnit(unitId, forceReload) {
           ${passes.length ? `<span style="font-size:11px;color:#16a34a;background:#f0fdf4;padding:1px 8px;border-radius:999px">${passes.length} đoạn đọc</span>` : ''}
           ${unanswered ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">${unanswered} chưa đáp án</span>` : ''}
           ${flagged ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">⚠ ${flagged}</span>` : ''}
-          <button onclick="exAddPassage(${sec.id})" style="margin-left:auto;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
-            <i class="fa-solid fa-plus" style="font-size:9px"></i> Thêm đoạn đọc
+          <button onclick="exAddQuestionToSection(${sec.id})" style="margin-left:auto;background:#eff6ff;border:1px solid #bfdbfe;color:#1a56db;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
+            <i class="fa-solid fa-plus" style="font-size:9px"></i> Thêm câu hỏi
+          </button>
+          <button onclick="exAddPassage(${sec.id})" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
+            <i class="fa-solid fa-plus" style="font-size:9px"></i> Đoạn đọc
           </button>
           <button onclick="exDeleteSection(${sec.id},${qs.length},${passes.length})" title="Xóa cả section" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
-            <i class="fa-solid fa-trash" style="font-size:9px"></i> Xóa section
+            <i class="fa-solid fa-trash" style="font-size:9px"></i> Xóa
           </button>
         </div>
         ${audioRow}${secBody}
@@ -716,6 +719,114 @@ async function exDeletePassage(passId) {
   // Reload unit panel
   const block = document.getElementById(`ex-pass-${passId}`);
   const body  = block?.closest('[id^="ex-unit-body-"]');
+  if (body) {
+    const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+    if (unitId) exToggleUnit(unitId, true);
+  }
+}
+
+// ── Add new sub-unit (with 5 empty sections) ──────────────────────────────
+function exShowAddUnit() {
+  const form = document.getElementById('ex-add-unit-form');
+  if (form) form.style.display = '';
+  document.getElementById('au-unit-num')?.focus();
+}
+
+function exHideAddUnit() {
+  const form = document.getElementById('ex-add-unit-form');
+  if (form) form.style.display = 'none';
+  ['au-unit-num','au-sub-num','au-title-zh','au-subtitle-zh'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  showMsg('au-msg', '', '');
+}
+
+async function exSaveNewUnit() {
+  if (!_ex.book) { showMsg('au-msg', 'Chưa chọn bộ đề.', 'err'); return; }
+  const unitNum  = parseInt(document.getElementById('au-unit-num')?.value);
+  const subNum   = parseInt(document.getElementById('au-sub-num')?.value);
+  const titleZh  = document.getElementById('au-title-zh')?.value.trim() || '';
+  const subTitle = document.getElementById('au-subtitle-zh')?.value.trim() || '';
+
+  if (!unitNum || unitNum < 1) { showMsg('au-msg', 'Unit số không hợp lệ.', 'err'); return; }
+  if (!subNum || subNum < 1)   { showMsg('au-msg', 'Sub số không hợp lệ.', 'err'); return; }
+  if (!subTitle)               { showMsg('au-msg', 'Tiêu đề phụ không được trống.', 'err'); return; }
+
+  // Check duplicate
+  const { data: existing } = await _adminDb.client.from('exam_units')
+    .select('id').eq('book_id', _ex.book.id)
+    .eq('unit_number', unitNum).eq('sub_number', subNum).maybeSingle();
+  if (existing) { showMsg('au-msg', `Unit ${unitNum}-${subNum} đã tồn tại.`, 'err'); return; }
+
+  // Insert unit
+  const { data: unit, error: uErr } = await _adminDb.client.from('exam_units').insert({
+    book_id:      _ex.book.id,
+    unit_number:  unitNum,
+    sub_number:   subNum,
+    title_zh:     titleZh || null,
+    sub_title_zh: subTitle,
+    status:       'published',
+  }).select().single();
+  if (uErr) { showMsg('au-msg', 'Lỗi tạo unit: ' + uErr.message, 'err'); return; }
+
+  // Insert 5 default sections (一-五 matching B1/B2 format)
+  const SECTIONS = [
+    { section_number: 1, section_type: 'listening',  title: '一、對話聽力' },
+    { section_number: 2, section_type: 'completion', title: '二、完成句子' },
+    { section_number: 3, section_type: 'cloze',      title: '三、選詞填空' },
+    { section_number: 4, section_type: 'reading',    title: '四、材料閱讀' },
+    { section_number: 5, section_type: 'essay',      title: '五、短文閱讀' },
+  ];
+  await _adminDb.client.from('exam_sections').insert(
+    SECTIONS.map(s => ({ ...s, unit_id: unit.id }))
+  );
+
+  showMsg('au-msg', `✓ Đã tạo Unit ${unitNum}-${subNum}.`, 'ok');
+  exHideAddUnit();
+  exLoadUnits(_ex.book.id);
+}
+
+// ── Add new question to a section (no passage — e.g. listening) ───────────
+async function exAddQuestionToSection(sectionId) {
+  const text = prompt('Nội dung câu hỏi:');
+  if (text === null) return;
+  if (!text.trim()) { alert('Câu hỏi không được trống.'); return; }
+
+  const a = prompt('Lựa chọn A:', ''); if (a === null) return;
+  const b = prompt('Lựa chọn B:', ''); if (b === null) return;
+  const c = prompt('Lựa chọn C:', ''); if (c === null) return;
+  const d = prompt('Lựa chọn D:', ''); if (d === null) return;
+
+  const ans = prompt('Đáp án đúng (A/B/C/D):', 'A');
+  if (ans === null) return;
+  const answer = ans.trim().toUpperCase();
+  if (!/^[A-D]$/.test(answer)) { alert('Đáp án phải là A, B, C hoặc D.'); return; }
+
+  const { data: maxQ } = await _adminDb.client.from('exam_questions')
+    .select('question_number').eq('section_id', sectionId)
+    .order('question_number', { ascending: false }).limit(1);
+  const nextNum = (maxQ?.[0]?.question_number || 0) + 1;
+
+  const { data: q, error } = await _adminDb.client.from('exam_questions').insert({
+    section_id:      sectionId,
+    passage_id:      null,
+    question_number: nextNum,
+    question_text:   text.trim(),
+    correct_answer:  answer,
+  }).select().single();
+  if (error) { alert('Lỗi: ' + error.message); return; }
+
+  await _adminDb.client.from('exam_choices').insert([
+    { question_id: q.id, label: 'A', text: a.trim() },
+    { question_id: q.id, label: 'B', text: b.trim() },
+    { question_id: q.id, label: 'C', text: c.trim() },
+    { question_id: q.id, label: 'D', text: d.trim() },
+  ]);
+
+  // Reload unit panel
+  const sec  = document.getElementById(`ex-sec-${sectionId}`);
+  const body = sec?.closest('[id^="ex-unit-body-"]');
   if (body) {
     const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
     if (unitId) exToggleUnit(unitId, true);
