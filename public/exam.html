@@ -500,6 +500,9 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
                         </div>
                       </template>
                       <div class="passage-text zh" x-text="p.content_text || ''"></div>
+                      <template x-if="p.image_url">
+                        <img :src="p.image_url" style="margin-top:10px;max-width:100%;border-radius:8px;border:1px solid #bbf7d0;display:block">
+                      </template>
                     </div>
                     <template x-for="q in questionsFor(currentSection.id, p.id)" :key="q.id">
                       <div x-html="renderQ(q)" class="q-block"></div>
@@ -941,7 +944,7 @@ function examApp() {
       if (!secIds.length) { this.loading = false; this.view = 'exam'; this.startTimer(); return; }
 
       const [{ data: passArr }, { data: qArr }, { data: vocabArr }, { data: phrasesArr }] = await Promise.all([
-        _db.from('exam_passages').select('id,section_id,label,content_text,sort_order').in('section_id', secIds).order('sort_order').order('id'),
+        _db.from('exam_passages').select('id,section_id,label,content_text,sort_order,image_url').in('section_id', secIds).order('sort_order').order('id'),
         _db.from('exam_questions').select('id,section_id,passage_id,question_number,question_text,correct_answer')
            .in('section_id', secIds).order('question_number'),
         _db.from('exam_vocab').select('*').eq('unit_id', unit.id),

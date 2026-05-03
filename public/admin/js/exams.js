@@ -250,7 +250,7 @@ async function exToggleUnit(unitId, forceReload) {
       .in('section_id', sectionIds).order('question_number'),
     sectionIds.length
       ? _adminDb.client.from('exam_passages')
-          .select('id,section_id,label,content_text,sort_order')
+          .select('id,section_id,label,content_text,sort_order,image_url')
           .in('section_id', sectionIds)
           .order('sort_order').order('id')
       : { data: [] },
@@ -605,7 +605,81 @@ function exPassageBlock(p, hasMultiPass, idx, total, sectionId) {
     <div id="ex-pass-text-${p.id}"
       style="white-space:pre-wrap;line-height:1.8;font-family:'Noto Serif TC',serif;
              font-size:13px;color:#166534">${escHtml(p.content_text||'')}</div>
+    <div id="ex-pass-img-${p.id}" style="margin-top:8px">${exPassageImageBlock(p.id, p.image_url)}</div>
   </div>`;
+}
+
+function exPassageImageBlock(passId, imageUrl) {
+  if (imageUrl) {
+    return `
+      <div style="background:#fff;border:1px solid #bbf7d0;border-radius:6px;padding:8px;display:flex;gap:10px;align-items:flex-start">
+        <img src="${escHtml(imageUrl)}" style="max-width:240px;max-height:160px;border-radius:4px;object-fit:contain;background:#f9fafb">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="cursor:pointer">
+            <input type="file" accept="image/*" style="display:none"
+              onchange="exUploadPassageImage(${passId},this)">
+            <span style="background:#16a34a;color:#fff;font-size:11px;padding:3px 10px;border-radius:5px;display:inline-block">
+              <i class="fa-solid fa-arrow-up-from-bracket"></i> Thay
+            </span>
+          </label>
+          <button onclick="exDeletePassageImage(${passId})"
+            style="background:none;border:1px solid #fca5a5;color:#dc2626;font-size:11px;padding:3px 10px;border-radius:5px;cursor:pointer">
+            <i class="fa-solid fa-trash"></i> Xóa ảnh
+          </button>
+        </div>
+      </div>`;
+  }
+  return `
+    <label style="cursor:pointer;display:inline-block">
+      <input type="file" accept="image/*" style="display:none"
+        onchange="exUploadPassageImage(${passId},this)">
+      <span style="background:#f0fdf4;border:1.5px dashed #86efac;color:#16a34a;font-size:11px;padding:5px 12px;border-radius:6px;display:inline-block">
+        <i class="fa-solid fa-image"></i> + Thêm ảnh
+      </span>
+    </label>`;
+}
+
+async function exUploadPassageImage(passId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const container = document.getElementById(`ex-pass-img-${passId}`);
+  if (container) container.innerHTML =
+    `<div style="font-size:12px;color:#6b7280;padding:6px 0">
+       <i class="fa-solid fa-spinner fa-spin"></i> Đang upload…
+     </div>`;
+
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const path = `passages/${passId}_${Date.now()}.${ext}`;
+  // Try 'images' bucket first; fall back to 'audio' if it doesn't exist.
+  let bucket = 'images';
+  let { error: upErr } = await _adminDb.client.storage
+    .from(bucket).upload(path, file, { contentType: file.type, upsert: true });
+  if (upErr && upErr.message?.toLowerCase().includes('not found')) {
+    bucket = 'audio';
+    ({ error: upErr } = await _adminDb.client.storage
+      .from(bucket).upload(path, file, { contentType: file.type, upsert: true }));
+  }
+  if (upErr) {
+    if (container) container.innerHTML =
+      `<div style="font-size:12px;color:#dc2626">Lỗi upload: ${escHtml(upErr.message)}</div>`;
+    return;
+  }
+  const { data: pub } = _adminDb.client.storage.from(bucket).getPublicUrl(path);
+  const url = pub.publicUrl;
+  const { error: uErr } = await _adminDb.client.from('exam_passages').update({ image_url: url }).eq('id', passId);
+  if (uErr) {
+    if (container) container.innerHTML =
+      `<div style="font-size:12px;color:#dc2626">Lỗi DB: ${escHtml(uErr.message)} — chạy SQL migration 006 chưa?</div>`;
+    return;
+  }
+  if (container) container.innerHTML = exPassageImageBlock(passId, url);
+}
+
+async function exDeletePassageImage(passId) {
+  if (!confirm('Xóa ảnh đoạn đọc này?')) return;
+  await _adminDb.client.from('exam_passages').update({ image_url: null }).eq('id', passId);
+  const container = document.getElementById(`ex-pass-img-${passId}`);
+  if (container) container.innerHTML = exPassageImageBlock(passId, null);
 }
 
 // ── Passage edit ───────────────────────────────────────────────────
