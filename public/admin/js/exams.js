@@ -228,10 +228,12 @@ async function exLoadUnits(bookId) {
     </div>`).join('');
 }
 
-async function exToggleUnit(unitId) {
+async function exToggleUnit(unitId, forceReload) {
   const body = document.getElementById(`ex-unit-body-${unitId}`);
   const chev = document.getElementById(`ex-chev-${unitId}`);
-  if (body.style.display !== 'none') { body.style.display = 'none'; chev.style.transform = ''; return; }
+  if (!forceReload && body.style.display !== 'none') {
+    body.style.display = 'none'; chev.style.transform = ''; return;
+  }
   chev.style.transform = 'rotate(180deg)';
   body.style.display = '';
   body.innerHTML = '<div style="padding:12px 14px;color:#9ca3af;font-size:13px">Đang tải…</div>';
@@ -248,7 +250,9 @@ async function exToggleUnit(unitId) {
       .in('section_id', sectionIds).order('question_number'),
     sectionIds.length
       ? _adminDb.client.from('exam_passages')
-          .select('id,section_id,label,content_text').in('section_id', sectionIds).order('id')
+          .select('id,section_id,label,content_text,sort_order')
+          .in('section_id', sectionIds)
+          .order('sort_order').order('id')
       : { data: [] },
   ]);
 
@@ -297,12 +301,12 @@ async function exToggleUnit(unitId) {
       });
 
       let secBody = '';
-      for (const p of passes) {
-        secBody += exPassageBlock(p, hasMultiPass);
+      passes.forEach((p, idx) => {
+        secBody += exPassageBlock(p, hasMultiPass, idx, passes.length, sec.id);
         (qsByPass[String(p.id)] || []).forEach(q => {
           secBody += exQRow(q, choicesByQ[q.id] || {}, hasMultiPass);
         });
-      }
+      });
       // Questions not linked to any passage
       (qsByPass['__none__'] || []).forEach(q => {
         secBody += exQRow(q, choicesByQ[q.id] || {}, hasMultiPass);
@@ -311,13 +315,16 @@ async function exToggleUnit(unitId) {
       const audioRow = sec.section_type === 'listening'
         ? `<div id="ex-sec-audio-${sec.id}" style="margin-bottom:10px">${exSectionAudioBlock(sec.id, sec.audio_url)}</div>`
         : '';
-      html += `<div style="margin-bottom:12px">
+      html += `<div style="margin-bottom:12px" id="ex-sec-${sec.id}">
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px">
           ${escHtml(sec.title || sec.section_type)}
           <span style="font-weight:400;color:#9ca3af">${qs.length} câu</span>
           ${passes.length ? `<span style="font-size:11px;color:#16a34a;background:#f0fdf4;padding:1px 8px;border-radius:999px">${passes.length} đoạn đọc</span>` : ''}
           ${unanswered ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">${unanswered} chưa đáp án</span>` : ''}
           ${flagged ? `<span style="font-size:11px;color:#dc2626;background:#fef2f2;padding:1px 8px;border-radius:999px">⚠ ${flagged}</span>` : ''}
+          <button onclick="exAddPassage(${sec.id})" style="margin-left:auto;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:11px;padding:3px 10px;border-radius:6px;cursor:pointer">
+            <i class="fa-solid fa-plus" style="font-size:9px"></i> Thêm đoạn đọc
+          </button>
         </div>
         ${audioRow}${secBody}
       </div>`;
@@ -532,27 +539,38 @@ async function exDeleteSectionAudio(secId) {
 }
 
 // ── Passage block renderer ─────────────────────────────────────────
-function exPassageBlock(p, hasMultiPass) {
+function exPassageBlock(p, hasMultiPass, idx, total, sectionId) {
   const dropA = hasMultiPass
     ? `ondragover="exDragOverPass(event,this)"
        ondragleave="exDragLeavePass(event,this)"
        ondrop="exDropOnPass(event,${p.id},this)"`
     : '';
+  const isFirst = idx === 0, isLast = idx === total - 1;
+  const btnStyle = `background:none;border:1px solid #bbf7d0;border-radius:5px;cursor:pointer;font-size:11px;color:#16a34a;padding:2px 8px;line-height:1.6`;
+  const dimStyle = `${btnStyle};opacity:.35;cursor:not-allowed`;
   return `<div id="ex-pass-${p.id}" data-pass-id="${p.id}"
     style="background:#f0fdf4;border:2px solid ${hasMultiPass?'#86efac':'#bbf7d0'};
            border-radius:8px;padding:10px 14px;margin-bottom:6px;transition:.15s" ${dropA}>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <span style="font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:6px">
+      <span style="font-size:11px;font-weight:700;color:#15803d;display:flex;align-items:center;gap:6px;flex:1;min-width:0">
         <i class="fa-solid fa-book-open-reader" style="font-size:10px"></i>
-        ${p.label ? escHtml(p.label) : '📖 Đoạn đọc'}
+        ${p.label ? escHtml(p.label) : '📖 Đoạn đọc'} <span style="font-weight:400;color:#86efac">${idx + 1}/${total}</span>
         ${hasMultiPass ? `<span style="font-size:10px;font-weight:400;color:#86efac;
           background:#166534;padding:1px 7px;border-radius:999px">← thả câu hỏi vào đây</span>` : ''}
       </span>
-      <button onclick="exEditPassage(${p.id})"
-        style="background:none;border:1px solid #bbf7d0;border-radius:5px;cursor:pointer;
-               font-size:11px;color:#16a34a;padding:2px 8px;line-height:1.6">
-        <i class="fa-solid fa-pen-to-square"></i> Sửa
-      </button>
+      <div style="display:flex;gap:4px;flex-shrink:0">
+        <button onclick="exMovePassage(${p.id},-1)" title="Lên" ${isFirst ? 'disabled' : ''}
+          style="${isFirst ? dimStyle : btnStyle};padding:2px 7px"><i class="fa-solid fa-arrow-up" style="font-size:10px"></i></button>
+        <button onclick="exMovePassage(${p.id},1)" title="Xuống" ${isLast ? 'disabled' : ''}
+          style="${isLast ? dimStyle : btnStyle};padding:2px 7px"><i class="fa-solid fa-arrow-down" style="font-size:10px"></i></button>
+        <button onclick="exEditPassage(${p.id})" title="Sửa nội dung" style="${btnStyle}">
+          <i class="fa-solid fa-pen-to-square"></i> Sửa
+        </button>
+        <button onclick="exDeletePassage(${p.id})" title="Xóa đoạn đọc"
+          style="${btnStyle.replace('#bbf7d0','#fecaca').replace('#16a34a','#dc2626')}">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
     </div>
     <div id="ex-pass-text-${p.id}"
       style="white-space:pre-wrap;line-height:1.8;font-family:'Noto Serif TC',serif;
@@ -604,6 +622,106 @@ function exCancelPassage(passId) {
   const wrap   = document.getElementById(`ex-pass-edit-${passId}`);
   if (textEl) textEl.style.display = '';
   if (wrap)   wrap.remove();
+}
+
+// ── Move passage up/down within section (swap sort_order with neighbor) ────
+async function exMovePassage(passId, dir) {
+  // Look up this passage's section + sort_order
+  const { data: cur } = await _adminDb.client.from('exam_passages')
+    .select('id,section_id,sort_order').eq('id', passId).single();
+  if (!cur) return;
+  // Find sibling passage in same section to swap with
+  const { data: siblings } = await _adminDb.client.from('exam_passages')
+    .select('id,sort_order').eq('section_id', cur.section_id)
+    .order('sort_order').order('id');
+  const idx = siblings.findIndex(s => s.id === cur.id);
+  const swap = siblings[idx + dir];
+  if (!swap) return; // already at edge
+  // Two-step swap (use temp value to avoid unique violations if any)
+  await _adminDb.client.from('exam_passages').update({ sort_order: -1 }).eq('id', cur.id);
+  await _adminDb.client.from('exam_passages').update({ sort_order: cur.sort_order }).eq('id', swap.id);
+  await _adminDb.client.from('exam_passages').update({ sort_order: swap.sort_order }).eq('id', cur.id);
+  // Reload current unit's panel
+  if (typeof _ex?.openUnitId !== 'undefined' && _ex.openUnitId) exToggleUnit(_ex.openUnitId, true);
+  else exReloadOpenUnitBody(cur.section_id);
+}
+
+// Reload the unit body containing this section (find via DOM)
+async function exReloadOpenUnitBody(sectionId) {
+  // Find which unit body is currently open by walking up from the section element
+  const sec = document.getElementById(`ex-sec-${sectionId}`);
+  if (!sec) return;
+  const body = sec.closest('[id^="ex-unit-body-"]');
+  if (!body) return;
+  const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+  if (unitId) exToggleUnit(unitId, true);
+}
+
+// ── Delete passage (and optionally its linked questions) ───────────────────
+async function exDeletePassage(passId) {
+  const { data: linkedQs } = await _adminDb.client.from('exam_questions')
+    .select('id,question_number').eq('passage_id', passId);
+  const qCount = linkedQs?.length || 0;
+
+  let deleteQuestions = false;
+  if (qCount > 0) {
+    const choice = confirm(
+      `Đoạn đọc này có ${qCount} câu hỏi liên kết.\n\n` +
+      `OK = Xóa cả đoạn đọc + ${qCount} câu hỏi\n` +
+      `Cancel = Chỉ xóa đoạn đọc, giữ câu hỏi (gỡ link)`
+    );
+    if (choice === null) return; // user closed dialog without choosing
+    deleteQuestions = choice;
+  } else {
+    if (!confirm('Xóa đoạn đọc này? Không thể hoàn tác.')) return;
+  }
+
+  if (deleteQuestions && qCount > 0) {
+    const qIds = linkedQs.map(q => q.id);
+    await _adminDb.client.from('exam_choices').delete().in('question_id', qIds);
+    await _adminDb.client.from('exam_questions').delete().in('id', qIds);
+  } else if (qCount > 0) {
+    // Unlink: set passage_id = null for each question
+    await _adminDb.client.from('exam_questions').update({ passage_id: null }).eq('passage_id', passId);
+  }
+  await _adminDb.client.from('exam_passages').delete().eq('id', passId);
+
+  // Reload unit panel
+  const block = document.getElementById(`ex-pass-${passId}`);
+  const body  = block?.closest('[id^="ex-unit-body-"]');
+  if (body) {
+    const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+    if (unitId) exToggleUnit(unitId, true);
+  }
+}
+
+// ── Add new passage to a section ───────────────────────────────────────────
+async function exAddPassage(sectionId) {
+  const label = prompt('Nhãn đoạn đọc (tuỳ chọn, ví dụ "(一)", "(二)"). Để trống nếu không cần:', '');
+  if (label === null) return; // user cancelled
+  const text = prompt('Nội dung đoạn đọc:');
+  if (text === null) return;
+  if (!text.trim() && !label.trim()) { alert('Cần ít nhất nhãn hoặc nội dung.'); return; }
+
+  // Compute next sort_order
+  const { data: existing } = await _adminDb.client.from('exam_passages')
+    .select('sort_order').eq('section_id', sectionId)
+    .order('sort_order', { ascending: false }).limit(1);
+  const nextOrder = (existing?.[0]?.sort_order || 0) + 1;
+
+  const { error } = await _adminDb.client.from('exam_passages').insert({
+    section_id: sectionId, label: label.trim() || null,
+    content_text: text.trim(), sort_order: nextOrder,
+  });
+  if (error) { alert('Lỗi: ' + error.message); return; }
+
+  // Reload unit body
+  const sec = document.getElementById(`ex-sec-${sectionId}`);
+  const body = sec?.closest('[id^="ex-unit-body-"]');
+  if (body) {
+    const unitId = parseInt(body.id.replace('ex-unit-body-', ''));
+    if (unitId) exToggleUnit(unitId, true);
+  }
 }
 
 // ── Delete question ────────────────────────────────────────────────

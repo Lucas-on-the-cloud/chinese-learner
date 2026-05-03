@@ -941,7 +941,7 @@ function examApp() {
       if (!secIds.length) { this.loading = false; this.view = 'exam'; this.startTimer(); return; }
 
       const [{ data: passArr }, { data: qArr }, { data: vocabArr }, { data: phrasesArr }] = await Promise.all([
-        _db.from('exam_passages').select('id,section_id,label,content_text').in('section_id', secIds).order('id'),
+        _db.from('exam_passages').select('id,section_id,label,content_text,sort_order').in('section_id', secIds).order('sort_order').order('id'),
         _db.from('exam_questions').select('id,section_id,passage_id,question_number,question_text,correct_answer')
            .in('section_id', secIds).order('question_number'),
         _db.from('exam_vocab').select('*').eq('unit_id', unit.id),

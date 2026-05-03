@@ -8,3 +8,6 @@ node_modules/
 arc-ocr-project-ce42b37a6656.json
 *-credentials.json
 *-service-account.json
+
+# Claude Code internal state
+.claude/scheduled_tasks.lock
