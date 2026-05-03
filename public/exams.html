@@ -162,8 +162,13 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
            class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition hover:-translate-y-1 hover:shadow-lg group">
           <!-- Thumb -->
           <div class="h-36 relative flex items-center justify-center overflow-hidden"
-               :style="`background:${gradients[idx % gradients.length]}`">
-            <span class="zh text-[90px] font-bold text-white/10 leading-none select-none">試</span>
+               :style="book.cover_url ? '' : `background:${gradients[idx % gradients.length]}`">
+            <template x-if="book.cover_url">
+              <img :src="book.cover_url" :alt="book.title" class="w-full h-full object-cover">
+            </template>
+            <template x-if="!book.cover_url">
+              <span class="zh text-[90px] font-bold text-white/10 leading-none select-none">試</span>
+            </template>
             <span x-show="book.level"
                   class="absolute top-2.5 left-3 text-[11px] font-bold text-white bg-black/30 backdrop-blur-sm px-2.5 py-0.5 rounded-md"
                   x-text="book.level"></span>
@@ -275,7 +280,7 @@ function examsApp() {
       }
 
       const [{ data: books }, { data: unitRows }] = await Promise.all([
-        _db.from('exam_books').select('id,title,level,total_units,status')
+        _db.from('exam_books').select('id,title,level,total_units,status,cover_url')
            .eq('status', 'published').order('created_at', { ascending: false }),
         _db.from('exam_units').select('book_id').eq('status', 'published'),
       ]);

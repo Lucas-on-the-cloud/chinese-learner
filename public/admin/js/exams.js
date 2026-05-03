@@ -7,7 +7,7 @@ const _ex = {
 async function loadExams() {
   const { data: books } = await _adminDb.client
     .from('exam_books')
-    .select('id,title,level,total_units,status,created_at')
+    .select('id,title,level,total_units,status,cover_url,created_at')
     .order('created_at', { ascending: false });
 
   const el = document.getElementById('ex-book-list');
@@ -18,14 +18,20 @@ async function loadExams() {
   el.innerHTML = books.map(b => {
     const active = _ex.book?.id === b.id;
     const pub    = b.status === 'published';
+    const thumb = b.cover_url
+      ? `<img src="${escHtml(b.cover_url)}" style="width:38px;height:38px;border-radius:6px;object-fit:cover;flex-shrink:0;background:#f3f4f6">`
+      : '';
     return `<div onclick="exSelectBook(${b.id})"
       style="padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;
              border:1.5px solid ${active ? '#1a56db' : '#e5e7eb'};
-             background:${active ? '#eff6ff' : '#fff'};position:relative">
+             background:${active ? '#eff6ff' : '#fff'};position:relative;
+             display:flex;gap:10px;align-items:flex-start">
       <button onclick="event.stopPropagation();exQuickDeleteBook(${b.id})"
         title="Xóa" style="position:absolute;top:6px;right:6px;background:none;border:none;
-               cursor:pointer;color:#d1d5db;font-size:13px;line-height:1;padding:2px 4px;border-radius:4px"
+               cursor:pointer;color:#d1d5db;font-size:13px;line-height:1;padding:2px 4px;border-radius:4px;z-index:2"
         onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#d1d5db'">✕</button>
+      ${thumb}
+      <div style="flex:1;min-width:0">
       <div style="font-weight:600;font-size:13px;padding-right:18px">${escHtml(b.title)}</div>
       <div style="display:flex;gap:6px;margin-top:6px;align-items:center;flex-wrap:wrap">
         ${b.level ? `<span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">${b.level}</span>` : ''}
@@ -36,6 +42,7 @@ async function loadExams() {
             ▶ Xuất bản
           </button>` : `<span style="font-size:11px;padding:2px 8px;border-radius:999px;margin-left:auto;
                background:#f0fdf4;color:#15803d">✓ Đã xuất bản</span>`}
+      </div>
       </div>
     </div>`;
   }).join('');
@@ -116,10 +123,94 @@ async function exSelectBook(bookId) {
   if (unitCount > 0) {
     exShowPanel('ex-panel-units');
     document.getElementById('ex-units-title').textContent = data.title;
+    exRenderBookCover();
     exLoadUnits(bookId);
   } else {
     exShowPanel('ex-panel-markdown');
   }
+}
+
+// ── Book cover image (upload / replace / delete) ─────────────────────────────
+function exRenderBookCover() {
+  const wrap = document.getElementById('ex-book-cover');
+  if (!wrap || !_ex.book) return;
+  const url = _ex.book.cover_url;
+  if (url) {
+    wrap.innerHTML = `
+      <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;display:flex;gap:14px;align-items:center">
+        <img src="${escHtml(url)}" style="width:96px;height:96px;border-radius:8px;object-fit:cover;background:#f3f4f6;flex-shrink:0">
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:6px">
+            <i class="fa-solid fa-image" style="color:#1a56db"></i> Ảnh bìa bộ đề
+          </div>
+          <div style="display:flex;gap:6px">
+            <label style="cursor:pointer">
+              <input type="file" accept="image/*" style="display:none" onchange="exUploadBookCover(this)">
+              <span class="s-btn" style="padding:4px 12px;font-size:11px;background:#1a56db;display:inline-block">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i> Thay
+              </span>
+            </label>
+            <button onclick="exDeleteBookCover()" class="s-btn"
+              style="padding:4px 12px;font-size:11px;background:#dc2626">
+              <i class="fa-solid fa-trash"></i> Xóa ảnh
+            </button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <label style="cursor:pointer;display:block">
+        <input type="file" accept="image/*" style="display:none" onchange="exUploadBookCover(this)">
+        <div style="border:2px dashed #bfdbfe;border-radius:10px;padding:14px 18px;
+                    display:flex;align-items:center;gap:10px;background:#f0f9ff;color:#1a56db;transition:.15s"
+             onmouseover="this.style.background='#e0f2fe'" onmouseout="this.style.background='#f0f9ff'">
+          <i class="fa-solid fa-image" style="font-size:18px"></i>
+          <div>
+            <div style="font-weight:600;font-size:13px">Thêm ảnh bìa bộ đề</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">Click để chọn ảnh — hiển thị ở /exams.html</div>
+          </div>
+        </div>
+      </label>`;
+  }
+}
+
+async function exUploadBookCover(input) {
+  const file = input.files[0];
+  if (!file || !_ex.book) return;
+  const wrap = document.getElementById('ex-book-cover');
+  if (wrap) wrap.innerHTML = `<div style="font-size:12px;color:#6b7280;padding:8px"><i class="fa-solid fa-spinner fa-spin"></i> Đang upload…</div>`;
+
+  const ext  = file.name.split('.').pop().toLowerCase();
+  const path = `book-covers/${_ex.book.id}_${Date.now()}.${ext}`;
+  let bucket = 'images';
+  let { error: upErr } = await _adminDb.client.storage
+    .from(bucket).upload(path, file, { contentType: file.type, upsert: true });
+  if (upErr && upErr.message?.toLowerCase().includes('not found')) {
+    bucket = 'audio';
+    ({ error: upErr } = await _adminDb.client.storage
+      .from(bucket).upload(path, file, { contentType: file.type, upsert: true }));
+  }
+  if (upErr) { alert('Lỗi upload: ' + upErr.message); exRenderBookCover(); return; }
+
+  const { data: pub } = _adminDb.client.storage.from(bucket).getPublicUrl(path);
+  const url = pub.publicUrl;
+  const { error: uErr } = await _adminDb.client.from('exam_books')
+    .update({ cover_url: url }).eq('id', _ex.book.id);
+  if (uErr) { alert('Lỗi DB: ' + uErr.message + ' — chạy SQL migration 007 chưa?'); exRenderBookCover(); return; }
+
+  _ex.book.cover_url = url;
+  exRenderBookCover();
+  await loadExams();
+}
+
+async function exDeleteBookCover() {
+  if (!_ex.book || !confirm('Xóa ảnh bìa?')) return;
+  const { error } = await _adminDb.client.from('exam_books')
+    .update({ cover_url: null }).eq('id', _ex.book.id);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  _ex.book.cover_url = null;
+  exRenderBookCover();
+  await loadExams();
 }
 
 async function exDeleteBook() {
