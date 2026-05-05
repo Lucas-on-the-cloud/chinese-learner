@@ -122,6 +122,8 @@ a{text-decoration:none;color:inherit}
 .dict-textarea{width:100%;padding:14px 16px;border:2px solid var(--blue);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:19px;outline:none;resize:vertical;line-height:1.7;color:var(--text);background:#fafeff;min-height:84px;letter-spacing:.5px}
 .dict-textarea:focus{box-shadow:0 0 0 3px rgba(26,86,219,.12)}
 .dict-textarea:disabled{background:#f9fafb;color:var(--text-2);cursor:not-allowed}
+.dict-textarea::selection{background:#fde68a;color:#7c2d12}
+.dict-textarea::-moz-selection{background:#fde68a;color:#7c2d12}
 .dict-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .dict-btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
 .dict-btn:hover{border-color:#9ca3af;color:var(--text)}
@@ -736,11 +738,13 @@ function dictCheck() {
   sessionScore.total++;
   saveProgress(bookName, lessonId, seg.id, pct);
 
-  // Find position in textarea AFTER the first wrong/missing real char (for cursor placement)
+  // Locate the first wrong/missing real char so we can place the cursor / highlight it
   let cursorPos = -1;
+  let highlightWrongChar = false;
   if (pct < 100) {
     const firstWrongRealIdx = results.findIndex(r => r.type !== 'ok');
     if (firstWrongRealIdx >= 0) {
+      const firstWrongIsErr = results[firstWrongRealIdx]?.type === 'err';
       const taChars = [...(ta.value || '')];
       let realCount = 0;
       for (let i = 0; i < taChars.length; i++) {
@@ -750,6 +754,7 @@ function dictCheck() {
         }
       }
       if (cursorPos === -1) cursorPos = ta.value.length;
+      highlightWrongChar = firstWrongIsErr;
     }
   }
 
@@ -787,10 +792,13 @@ function dictCheck() {
     const nextBtn = document.querySelector('#dict-score-row .dict-btn.primary');
     setTimeout(() => nextBtn?.focus(), 50);
   } else {
-    // Mistakes → put cursor right after first wrong char in textarea so user can fix it
+    // Mistakes → highlight wrong char (yellow via ::selection) so user can fix it.
+    // If the wrong is "miss" (user typed too short), just place caret at end.
     setTimeout(() => {
       ta.focus();
-      if (cursorPos >= 0) ta.setSelectionRange(cursorPos, cursorPos);
+      if (cursorPos < 0) return;
+      if (highlightWrongChar) ta.setSelectionRange(cursorPos - 1, cursorPos);
+      else                    ta.setSelectionRange(cursorPos, cursorPos);
     }, 50);
     // Dismiss the result block as soon as user edits (delete/type/paste)
     const onEdit = () => {
