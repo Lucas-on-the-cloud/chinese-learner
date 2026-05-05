@@ -7,13 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7/dist/hanzi-writer.min.js"></script>
 <script src="js/auth-service.js"></script>
 <link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--navy:#0d1b4b;--orange:#f47b20;--green:#16a34a;--green-lt:#f0fdf4;--red:#dc2626;--red-lt:#fef2f2;--text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;--border:#e5e7eb;--surface:#fff;--bg:#f4f5f7}
+:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--navy:#0d1b4b;--orange:#f47b20;--green:#16a34a;--green-lt:#f0fdf4;--red:#dc2626;--red-lt:#fef2f2;--text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;--border:#e5e7eb;--surface:#fff;--bg:#f4f5f7;--success:#16a34a;--success-lt:#f0fdf4;--danger:#dc2626;--danger-lt:#fef2f2}
 
 .navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
@@ -48,38 +49,87 @@ a{text-decoration:none;color:inherit}
 
 /* Content card */
 .content-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px 32px;line-height:1.85}
-
-/* Single-language modes (zh / pinyin / vi) */
 .para{margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed #e5e7eb}
 .para:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
 .para-zh{font-family:'Noto Serif TC',serif;font-size:18.5px;font-weight:500;color:var(--navy);line-height:1.9;letter-spacing:.4px;text-align:justify}
 .para-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;color:var(--text-2);line-height:1.85;letter-spacing:.02em;text-align:justify}
 .para-vi{font-size:15px;color:var(--text);line-height:1.85;text-align:justify}
-
-/* "Tất cả" mode — 2-column parallel ZH | VI */
 .parallel{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed #e5e7eb}
 .parallel:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
 .parallel-zh{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:500;color:var(--navy);line-height:1.85;letter-spacing:.4px;text-align:justify}
 .parallel-vi{font-size:14px;color:var(--text-2);line-height:1.75;text-align:justify}
 .parallel-zh-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;color:var(--text-3);line-height:1.6;letter-spacing:.02em;margin-bottom:6px;font-style:italic}
-@media(max-width:780px){
-  .parallel{grid-template-columns:1fr;gap:10px}
-  .parallel-zh{padding-bottom:10px;border-bottom:1px solid #f3f4f6}
-}
+@media(max-width:780px){.parallel{grid-template-columns:1fr;gap:10px}.parallel-zh{padding-bottom:10px;border-bottom:1px solid #f3f4f6}}
 
+/* Vocab */
 .vocab-section{margin-top:30px}
-.vocab-title{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:14px}
+.vocab-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.vocab-title{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy)}
 .vocab-title i{color:var(--orange);font-size:16px}
-.vocab-list{display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:8px}
+.vocab-actions{display:flex;gap:6px}
+.vocab-btn-action{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text-2);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.vocab-btn-action:hover{border-color:#9ca3af;color:var(--text)}
+.vocab-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:8px}
 .vocab-item{background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:14px;transition:.15s}
 .vocab-item:hover{border-color:#c7d7fd}
-.vocab-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--red);min-width:80px;cursor:pointer;border-radius:6px;padding:4px 8px;text-align:center;transition:.15s}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--red);min-width:70px;cursor:pointer;border-radius:6px;padding:4px 8px;text-align:center;transition:.15s}
 .vocab-char:hover{background:var(--red-lt)}
 .vocab-info{flex:1;min-width:0}
 .vocab-pinyin{font-size:11px;color:var(--text-2);font-style:italic;margin-bottom:1px}
 .vocab-meaning{font-size:13.5px;font-weight:500;color:var(--text)}
 .vocab-example{font-size:11.5px;color:var(--text-3);margin-top:3px;font-style:italic}
 .vocab-level{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:#fdf6e3;color:#b8860b;margin-left:6px}
+.vocab-fork{background:#fff;border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text-2);padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.15s;flex-shrink:0}
+.vocab-fork:hover{background:var(--success-lt);border-color:#bbf7d0;color:var(--success)}
+.vocab-fork.added{background:var(--success-lt);border-color:#bbf7d0;color:var(--success)}
+
+/* CHAT WIDGET (copied from reading.html) */
+.chat-bubble-btn{position:fixed;bottom:24px;right:24px;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 8px 24px rgba(26,86,219,.4);z-index:50;transition:.15s;display:flex;align-items:center;justify-content:center}
+.chat-bubble-btn:hover{transform:scale(1.05);background:var(--blue-dark)}
+.chat-widget{position:fixed;bottom:90px;right:24px;width:360px;max-width:calc(100vw - 48px);height:500px;max-height:calc(100vh - 120px);background:#fff;border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,.18);display:none;flex-direction:column;z-index:51;border:1px solid var(--border)}
+.chat-widget.open{display:flex}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-weight:600;color:var(--text)}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
+.chat-close-btn{margin-left:auto;background:none;border:none;font-size:18px;color:var(--text-3);cursor:pointer;line-height:1}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{padding:9px 12px;border-radius:10px;font-size:13.5px;line-height:1.55;max-width:85%;white-space:pre-wrap;word-break:break-word}
+.chat-msg.user{align-self:flex-end;background:var(--blue);color:#fff}
+.chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:var(--text)}
+.chat-msg.system{align-self:center;background:transparent;color:var(--text-3);font-size:11px;font-style:italic}
+.chat-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px}
+.chat-input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;outline:none}
+.chat-input:focus{border-color:var(--blue)}
+.chat-send{background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chat-send:hover{background:var(--blue-dark)}
+
+/* HANDWRITING MODAL */
+.hw-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.hw-overlay.open{display:flex}
+.hw-modal{background:#fff;border-radius:14px;padding:1.75rem;width:92%;max-width:480px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;max-height:92vh;overflow-y:auto}
+.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;line-height:1}
+.hw-close:hover{color:var(--danger)}
+.hw-word-title{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700;color:var(--blue);text-align:center;margin-bottom:4px}
+.hw-sub{font-size:13px;color:var(--text-2);text-align:center;font-style:italic;margin-bottom:4px}
+.hw-meaning{font-size:14px;font-weight:500;text-align:center;margin-bottom:1.25rem;color:var(--text)}
+.hw-char-nav{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.hw-pip{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;width:36px;height:36px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2);background:#fff;transition:all .15s}
+.hw-pip.active{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.hw-pip.done{border-color:#bbf7d0;color:var(--success);background:var(--success-lt)}
+.hw-mode-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:1rem}
+.hw-mode-tab{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:6px 18px;border-radius:16px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.hw-mode-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.hw-canvas-wrap{display:flex;justify-content:center;margin-bottom:1rem}
+#hw-target{border-radius:10px;background:#fff;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden}
+.hw-grid{position:absolute;background:#e5e7eb}
+.hw-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.hw-btn{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text);padding:8px 18px;border-radius:7px;cursor:pointer;transition:all .15s}
+.hw-btn:hover{background:var(--bg)}
+.hw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.hw-btn.primary:hover{background:var(--blue-dark)}
+.hw-btn.danger{border-color:#fcc;color:var(--danger)}
+.hw-btn.danger:hover{background:var(--danger-lt)}
+.hw-score{text-align:center;font-size:12px;color:var(--text-2);margin-top:10px;min-height:18px}
+.hw-score.good{color:var(--success);font-weight:600}
 
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
 .footer-inner{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto}
@@ -87,13 +137,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .loading{text-align:center;padding:60px 20px;color:var(--text-3)}
 .loading i{font-size:32px;display:block;margin-bottom:10px}
 
-@media(max-width:600px){
-  .nav-link{display:none}
-  .content-card{padding:20px 18px}
-  .para-zh,.parallel-zh{font-size:16.5px}
-  .para-vi,.parallel-vi{font-size:13.5px}
-  .para-pinyin{font-size:12.5px}
-}
+@media(max-width:600px){.nav-link{display:none}.content-card{padding:20px 18px}.para-zh,.parallel-zh{font-size:16.5px}.para-vi,.parallel-vi{font-size:13.5px}.para-pinyin{font-size:12.5px}.chat-widget{right:0;bottom:0;width:100vw;max-width:100vw;height:80vh;border-radius:14px 14px 0 0}}
 </style>
 </head>
 <body>
@@ -123,6 +167,53 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   <div id="content"><div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải bài…</div></div>
 </div>
 
+<!-- CHAT BUBBLE -->
+<button class="chat-bubble-btn" id="chat-bubble" onclick="chatToggle()" title="Chat AI về bài báo" style="display:none">
+  <i class="fa-solid fa-comments"></i>
+</button>
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-header">
+    <div class="dot"></div> Chat AI · bài báo
+    <button class="chat-close-btn" onclick="chatToggle()">×</button>
+  </div>
+  <div class="chat-messages" id="chat-msgs">
+    <div class="chat-msg system">Hỏi AI về nội dung, ngữ pháp hoặc từ vựng trong bài.</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Hỏi gì đó…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">
+    <button class="chat-send" onclick="chatSend()">Gửi</button>
+  </div>
+</div>
+
+<!-- HANDWRITING MODAL -->
+<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)hwClose()">
+  <div class="hw-modal">
+    <button class="hw-close" onclick="hwClose()">×</button>
+    <div class="hw-word-title" id="hw-title"></div>
+    <div class="hw-sub" id="hw-py"></div>
+    <div class="hw-meaning" id="hw-mg"></div>
+    <div class="hw-char-nav" id="hw-nav"></div>
+    <div class="hw-mode-tabs">
+      <button class="hw-mode-tab active" id="mt-a" onclick="hwSetMode('a')">▶ Xem nét</button>
+      <button class="hw-mode-tab" id="mt-q" onclick="hwSetMode('q')">✏️ Viết</button>
+    </div>
+    <div class="hw-canvas-wrap"><div id="hw-target">
+      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+    </div></div>
+    <div class="hw-controls" id="hw-ca">
+      <button class="hw-btn primary" onclick="hwAnimate()">▶ Animate</button>
+      <button class="hw-btn" onclick="hwLoop()">↺ Loop</button>
+    </div>
+    <div class="hw-controls" id="hw-cq" style="display:none">
+      <button class="hw-btn primary" onclick="hwQuiz()">Bắt đầu viết</button>
+      <button class="hw-btn danger" onclick="hwReset()">↺ Reset</button>
+    </div>
+    <div class="hw-score" id="hw-sc"></div>
+  </div>
+</div>
+
 <footer>
   <div class="footer-inner">
     <span>TOCFL FAFA © 2026</span>
@@ -136,13 +227,14 @@ const SB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
 const id = +new URLSearchParams(location.search).get('id');
-if (!id) { document.getElementById('content').innerHTML = '<div class="loading">Thiếu id bài báo.</div>'; }
-else { load(); }
+let articleData = null;
+
+if (!id) document.getElementById('content').innerHTML = '<div class="loading">Thiếu id bài báo.</div>';
+else load();
 
 function fmt(iso) { return iso ? new Date(iso).toLocaleString('vi-VN', { dateStyle:'medium', timeStyle:'short' }) : ''; }
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Split text into paragraphs by \n\n; fallback split by sentence-end punct (group every 3 sentences).
 function splitParas(text, type='zh') {
   if (!text) return [];
   text = text.trim();
@@ -160,8 +252,10 @@ async function load() {
     document.getElementById('content').innerHTML = `<div class="loading">Không tìm thấy bài (${error?.message || ''}).</div>`;
     return;
   }
+  articleData = a;
   document.title = (a.title_zh || 'Bài báo') + ' — TOCFL FAFA';
   render(a);
+  document.getElementById('chat-bubble').style.display = 'flex';
 }
 
 let activeMode = 'all';
@@ -175,14 +269,21 @@ function render(a) {
   while (viParas.length < max) viParas.push('');
   while (pyParas.length < max) pyParas.push('');
 
-  const vocabHtml = (a.vocab || []).map(w => `
-    <div class="vocab-item">
-      <div class="vocab-char" title="${esc(w.pinyin || '')}">${esc(w.char)}</div>
+  const forks = JSON.parse(localStorage.getItem('tocfl_user_flashcards') || '[]');
+  const forkChars = new Set(forks.map(f => f.char));
+
+  const vocabHtml = (a.vocab || []).map((w, i) => `
+    <div class="vocab-item" data-idx="${i}">
+      <div class="vocab-char" onclick="hwOpen(${i})" title="Click để tập viết">${esc(w.char)}</div>
       <div class="vocab-info">
         <div class="vocab-pinyin">${esc(w.pinyin || '')}${w.level ? `<span class="vocab-level">${esc(w.level)}</span>` : ''}</div>
         <div class="vocab-meaning">${esc(w.meaning || '')}</div>
         ${w.example ? `<div class="vocab-example">${esc(w.example)}${w.exMeaning ? ' — ' + esc(w.exMeaning) : ''}</div>` : ''}
       </div>
+      <button class="vocab-fork ${forkChars.has(w.char) ? 'added' : ''}" onclick="forkVocab(${i}, this)">
+        <i class="fa-${forkChars.has(w.char) ? 'solid fa-check' : 'regular fa-bookmark'}"></i>
+        ${forkChars.has(w.char) ? 'Đã thêm' : 'Flash'}
+      </button>
     </div>`).join('');
 
   document.getElementById('content').innerHTML = `
@@ -197,21 +298,23 @@ function render(a) {
     <a class="article-source-link" href="${esc(a.source_url)}" target="_blank" rel="noopener">
       <i class="fa-solid fa-external-link"></i> Xem nguyên văn tại ${esc(a.source_name || a.source)}
     </a>
-
     <div class="tabs">
       <button class="tab" data-mode="zh">繁體中文</button>
       <button class="tab" data-mode="pinyin">Pinyin</button>
       <button class="tab" data-mode="vi">Tiếng Việt</button>
       <button class="tab active" data-mode="all">Tất cả</button>
     </div>
-
     <article class="content-card" id="content-card"></article>
-
     <div class="vocab-section">
-      <div class="vocab-title"><i class="fa-solid fa-book-open"></i> Từ vựng (${a.vocab?.length || 0})</div>
+      <div class="vocab-head">
+        <div class="vocab-title"><i class="fa-solid fa-book-open"></i> Từ vựng (${a.vocab?.length || 0})</div>
+        <div class="vocab-actions">
+          <button class="vocab-btn-action" onclick="exportCsv()"><i class="fa-solid fa-download"></i> CSV</button>
+          <button class="vocab-btn-action" onclick="forkAll()"><i class="fa-solid fa-bookmark"></i> Flash tất cả</button>
+        </div>
+      </div>
       <div class="vocab-list">${vocabHtml}</div>
     </div>
-
     <div id="comments-root" style="margin-top:40px"></div>
   `;
 
@@ -224,7 +327,6 @@ function render(a) {
     } else if (activeMode === 'vi') {
       card.innerHTML = viParas.map(p => `<div class="para"><div class="para-vi">${esc(p)}</div></div>`).join('');
     } else {
-      // all — 2 columns parallel: ZH (with pinyin above) | VI
       card.innerHTML = zhParas.map((zh, i) => `
         <div class="parallel">
           <div>
@@ -250,6 +352,186 @@ function render(a) {
       supabaseUrl: SB_URL, supabaseKey: SB_KEY,
     });
   }
+}
+
+// ─── FLASHCARD FORK (localStorage) ──────────────────────────────
+function forkVocab(idx, btn) {
+  const w = articleData?.vocab?.[idx]; if (!w) return;
+  const list = JSON.parse(localStorage.getItem('tocfl_user_flashcards') || '[]');
+  if (list.find(f => f.char === w.char)) {
+    btn.classList.remove('added'); btn.innerHTML = `<i class="fa-regular fa-bookmark"></i> Flash`;
+    localStorage.setItem('tocfl_user_flashcards', JSON.stringify(list.filter(f => f.char !== w.char)));
+    return;
+  }
+  list.push({
+    char: w.char, pinyin: w.pinyin, meaning: w.meaning,
+    example_zh: w.example, example_vi: w.exMeaning,
+    source: 'news', source_id: articleData.id, added_at: Date.now(),
+  });
+  localStorage.setItem('tocfl_user_flashcards', JSON.stringify(list));
+  btn.classList.add('added');
+  btn.innerHTML = `<i class="fa-solid fa-check"></i> Đã thêm`;
+}
+
+function forkAll() {
+  let added = 0;
+  document.querySelectorAll('.vocab-fork:not(.added)').forEach(btn => {
+    const item = btn.closest('.vocab-item');
+    const idx = +item.dataset.idx;
+    forkVocab(idx, btn);
+    added++;
+  });
+  alert(`Đã thêm ${added} từ vào flashcard.`);
+}
+
+// ─── CSV EXPORT ─────────────────────────────────────────────────
+function exportCsv() {
+  const v = articleData?.vocab || [];
+  if (!v.length) return;
+  const rows = [['Hán', 'Pinyin', 'Nghĩa', 'Ví dụ', 'Dịch ví dụ', 'Cấp']];
+  v.forEach(w => rows.push([w.char, w.pinyin, w.meaning, w.example || '', w.exMeaning || '', w.level || '']));
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vocab-${articleData.id}.csv`;
+  a.click();
+}
+
+// ─── CHAT AI ────────────────────────────────────────────────────
+const chatHistory = [];
+function chatToggle() { document.getElementById('chat-widget').classList.toggle('open'); }
+async function chatSend() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="chat-msg user">${esc(msg)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const a = articleData;
+  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Học viên đang đọc 1 bài báo Đài Loan và muốn hỏi về nó.
+
+Bài báo:
+Tiêu đề: ${a.title_zh}
+Nguồn: ${a.source_name || a.source}
+Nội dung:
+${a.content_zh}
+
+Hãy trả lời câu hỏi của học viên một cách rõ ràng, ngắn gọn, dễ hiểu. Có thể trích dẫn nguyên văn từ bài. Trả lời bằng tiếng Việt; nếu trích chữ Hán giữ nguyên 繁體.`;
+
+  chatHistory.push({ role: 'user', content: msg });
+
+  msgs.innerHTML += `<div class="chat-msg ai" id="chat-loading"><i class="fa-solid fa-spinner fa-spin"></i></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'system', content: sysPrompt }, ...chatHistory],
+        max_tokens: 1500,
+        temperature: 0.4,
+      }),
+    });
+    const j = await res.json();
+    document.getElementById('chat-loading')?.remove();
+    if (!res.ok || j.error) throw new Error(j.error || `HTTP ${res.status}`);
+    const reply = j.content || '(không có phản hồi)';
+    chatHistory.push({ role: 'assistant', content: reply });
+    msgs.innerHTML += `<div class="chat-msg ai">${esc(reply).replace(/\n/g, '<br>')}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    document.getElementById('chat-loading')?.remove();
+    msgs.innerHTML += `<div class="chat-msg ai">⚠ ${esc(e.message)}</div>`;
+  }
+}
+
+// ─── HANDWRITING (Hanzi Writer) ─────────────────────────────────
+let hwState = { chars: [], idx: 0, mode: 'a', writer: null, done: [] };
+
+function hwOpen(vocabIdx) {
+  const w = articleData?.vocab?.[vocabIdx]; if (!w) return;
+  hwState.chars = [...w.char];
+  hwState.idx = 0;
+  hwState.done = hwState.chars.map(() => false);
+  hwState.mode = 'a';
+  document.getElementById('hw-title').textContent = w.char;
+  document.getElementById('hw-py').textContent = w.pinyin || '';
+  document.getElementById('hw-mg').textContent = w.meaning || '';
+  document.getElementById('hw-sc').textContent = '';
+  document.getElementById('mt-a').classList.add('active');
+  document.getElementById('mt-q').classList.remove('active');
+  document.getElementById('hw-ca').style.display = 'flex';
+  document.getElementById('hw-cq').style.display = 'none';
+  hwRenderNav();
+  document.getElementById('hw-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  hwLoadChar(0);
+}
+
+function hwClose() {
+  document.getElementById('hw-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  if (hwState.writer) { hwState.writer.cancelAnimation?.(); hwState.writer.cancelQuiz?.(); hwState.writer = null; }
+}
+
+function hwSelectChar(i) { hwState.idx = i; hwRenderNav(); hwLoadChar(i); }
+
+function hwSetMode(m) {
+  hwState.mode = m;
+  document.getElementById('mt-a').classList.toggle('active', m === 'a');
+  document.getElementById('mt-q').classList.toggle('active', m === 'q');
+  document.getElementById('hw-ca').style.display = m === 'a' ? 'flex' : 'none';
+  document.getElementById('hw-cq').style.display = m === 'q' ? 'flex' : 'none';
+  document.getElementById('hw-sc').textContent = '';
+  hwLoadChar(hwState.idx);
+}
+
+function hwRenderNav() {
+  if (hwState.chars.length <= 1) { document.getElementById('hw-nav').innerHTML = ''; return; }
+  document.getElementById('hw-nav').innerHTML = hwState.chars.map((c, i) =>
+    `<div class="hw-pip ${i === hwState.idx ? 'active' : ''} ${hwState.done[i] ? 'done' : ''}" onclick="hwSelectChar(${i})">${esc(c)}</div>`
+  ).join('');
+}
+
+function hwLoadChar(i) {
+  const target = document.getElementById('hw-target');
+  // Clear previous (preserve grid)
+  [...target.querySelectorAll('svg')].forEach(s => s.remove());
+  if (hwState.writer) { hwState.writer.cancelAnimation?.(); hwState.writer.cancelQuiz?.(); }
+  if (typeof HanziWriter === 'undefined') { document.getElementById('hw-sc').textContent = '⚠ Hanzi Writer chưa load'; return; }
+  hwState.writer = HanziWriter.create('hw-target', hwState.chars[i], {
+    width: 200, height: 200, padding: 5,
+    showOutline: hwState.mode === 'a',
+    showCharacter: hwState.mode === 'a',
+    strokeAnimationSpeed: 1, delayBetweenStrokes: 200,
+  });
+  if (hwState.mode === 'a') hwState.writer.animateCharacter();
+}
+
+function hwAnimate() { if (hwState.writer) hwState.writer.animateCharacter(); }
+function hwLoop() {
+  if (!hwState.writer) return;
+  hwState.writer.animateCharacter({ onComplete: () => setTimeout(hwLoop, 800) });
+}
+function hwQuiz() {
+  if (!hwState.writer) return;
+  document.getElementById('hw-sc').textContent = '';
+  hwState.writer.quiz({
+    onComplete: ({ totalMistakes }) => {
+      const sc = document.getElementById('hw-sc');
+      sc.textContent = totalMistakes === 0 ? '✓ Hoàn hảo!' : `Hoàn thành · ${totalMistakes} lỗi`;
+      sc.classList.toggle('good', totalMistakes === 0);
+      hwState.done[hwState.idx] = true;
+      hwRenderNav();
+    },
+  });
+}
+function hwReset() {
+  document.getElementById('hw-sc').textContent = '';
+  hwLoadChar(hwState.idx);
 }
 </script>
 <script src="/js/comments.js"></script>
