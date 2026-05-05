@@ -15,12 +15,21 @@ const SOURCES = [
 ];
 
 const SYSTEM_PROMPT = `Bạn là biên tập viên báo song ngữ Trung-Việt cho học viên TOCFL phồn thể (繁體中文 Đài Loan).
-Cho 1 bài báo tiếng Trung với cấu trúc đoạn phân cách bằng \\n\\n. Trả JSON:
-{"title_vi","content_vi","pinyin","category","vocab":[{"char","pinyin","meaning","example","exMeaning","level"}]}
 
-BẮT BUỘC: content_vi và pinyin PHẢI giữ nguyên số đoạn (\\n\\n) như content_zh.
-Pinyin có dấu thanh, mỗi câu kết bằng "." để tách. Bỏ qua header phân loại tuổi (限制級…).
-vocab 25-30 mục ≥2 chữ (danh từ chính + động từ then chốt + thuật ngữ chuyên ngành); example là câu nguyên văn. KHÔNG markdown.`;
+INPUT: 1 bài báo phồn thể, đã chia thành N đoạn, mỗi đoạn đánh số [1] [2] [3]…
+
+OUTPUT JSON:
+{"title_vi":"…","category":"politics|business|tech|sports|culture|lifestyle|world|society",
+ "paragraphs":[{"vi":"<dịch đoạn 1>","pinyin":"<pinyin có dấu thanh đoạn 1>"},…],
+ "vocab":[{"char":"<≥2 chữ>","pinyin":"…","meaning":"…","example":"<câu nguyên văn>","exMeaning":"…","level":"…"}]}
+
+QUY TẮC TUYỆT ĐỐI:
+- paragraphs PHẢI có ĐÚNG N phần tử, đúng thứ tự [1]→[N]. KHÔNG GỘP, KHÔNG BỎ, KHÔNG TÓM TẮT.
+- Mỗi paragraphs[i].vi PHẢI dịch ĐẦY ĐỦ đoạn [i+1] — không chỉ tóm 1 câu.
+- pinyin có dấu thanh ā á ǎ à, từ viết liền, câu cách bằng dấu cách.
+- Header/footer (vd "（編輯：…）") cũng giữ vị trí (có thể vi="" pinyin="" nhưng phần tử PHẢI tồn tại).
+- vocab 25-30 mục ≥2 chữ (danh từ chính + động từ then chốt + thuật ngữ); example là câu nguyên văn.
+- KHÔNG markdown.`;
 
 function cleanContent(text) {
   let out = (text || '')
@@ -114,24 +123,31 @@ export default async function handler(req, res) {
         throw new Error('content too short');
 
       const trimmedZh = cleanContent(article.textContent).slice(0, 2000);
+      const zhParas = trimmedZh.split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
+      const N = zhParas.length;
+      const numbered = zhParas.map((q, i) => `[${i + 1}]\n${q}`).join('\n\n');
 
       const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + openaiKey },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
-          max_tokens: 8000,
+          max_tokens: 10000,
           temperature: 0.3,
           response_format: { type: 'json_object' },
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user',   content: `Tiêu đề: ${article.title || p.title}\n\nNội dung:\n${trimmedZh}\n\nTrả JSON.` },
+            { role: 'user',   content: `Tiêu đề: ${article.title || p.title}\n\nSố đoạn N = ${N}\n\n${numbered}\n\nTrả JSON: paragraphs PHẢI có ĐÚNG ${N} phần tử khớp [1]…[${N}].` },
           ],
         }),
       });
       const aiJson = await aiRes.json();
       if (aiJson.error) throw new Error('OpenAI: ' + aiJson.error.message);
       const ai = JSON.parse(aiJson.choices[0].message.content);
+      const paras = Array.isArray(ai.paragraphs) ? ai.paragraphs : [];
+      if (paras.length < Math.max(1, N - 1)) throw new Error(`paragraph mismatch: got ${paras.length}/${N}`);
+      while (paras.length < N) paras.push({ vi: '', pinyin: '' });
+      const finalParas = paras.slice(0, N);
 
       const { error } = await sb.from('news_articles').insert({
         source: p.source,
@@ -140,9 +156,9 @@ export default async function handler(req, res) {
         title_zh: article.title || p.title,
         title_vi: ai.title_vi || '',
         excerpt_zh: p.excerpt,
-        content_zh: trimmedZh,
-        content_vi: ai.content_vi || '',
-        pinyin: ai.pinyin || '',
+        content_zh: zhParas.join('\n\n'),
+        content_vi: finalParas.map(x => x.vi || '').join('\n\n'),
+        pinyin:     finalParas.map(x => x.pinyin || '').join('\n\n'),
         vocab: ai.vocab || [],
         category: ai.category || 'world',
         cover_url: p.cover || null,

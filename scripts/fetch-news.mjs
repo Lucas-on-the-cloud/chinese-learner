@@ -101,38 +101,42 @@ async function fetchContent(url) {
   };
 }
 
-// 4. AI process: 1 call per article does translate + pinyin + vocab + category
+// 4. AI process: paragraph-aligned (input zh đã chia đoạn, AI trả paragraphs[] cùng độ dài)
 const SYSTEM_PROMPT = `Bạn là biên tập viên báo song ngữ Trung-Việt cho học viên TOCFL phồn thể (繁體中文 Đài Loan).
-Cho 1 bài báo tiếng Trung phồn thể với cấu trúc đoạn (paragraph) đã được phân cách bằng dòng trống (\\n\\n).
-Trả về JSON object đúng schema:
 
+INPUT: 1 bài báo phồn thể, đã được người dùng chia thành N đoạn, mỗi đoạn đánh số [1] [2] [3]…
+
+OUTPUT JSON object:
 {
-  "title_vi": "<tiêu đề dịch tiếng Việt>",
-  "content_vi": "<full content dịch tiếng Việt, GIỮ NGUYÊN STRUCTURE \\n\\n giữa các đoạn>",
-  "pinyin": "<pinyin có dấu thanh; GIỮ NGUYÊN STRUCTURE \\n\\n giữa các đoạn>",
-  "category": "<chọn 1: politics|business|tech|sports|culture|lifestyle|world|society>",
-  "vocab": [
-    {"char":"<từ/cụm 2+ chữ>","pinyin":"...","meaning":"<nghĩa Việt>","example":"<câu nguyên văn từ bài>","exMeaning":"<dịch câu>","level":"<cơ bản|trung cấp|nâng cao>"}
-  ]
+  "title_vi": "<tiêu đề dịch>",
+  "category": "politics|business|tech|sports|culture|lifestyle|world|society",
+  "paragraphs": [
+    {"vi":"<dịch đoạn 1>","pinyin":"<pinyin có dấu thanh đoạn 1>"},
+    {"vi":"<dịch đoạn 2>","pinyin":"<pinyin có dấu thanh đoạn 2>"},
+    …
+  ],
+  "vocab": [{"char":"<≥2 chữ>","pinyin":"…","meaning":"<nghĩa Việt>","example":"<câu nguyên văn từ bài>","exMeaning":"<dịch câu>","level":"<cơ bản|trung cấp|nâng cao>"}]
 }
 
-Quy tắc:
-- BẮT BUỘC giữ paragraph structure: số đoạn của content_vi và pinyin PHẢI BẰNG số đoạn của content_zh; mỗi đoạn cách nhau bằng \\n\\n.
-- Bản dịch tự nhiên, không word-for-word.
-- Pinyin: có dấu thanh ā á ǎ à, viết liền theo từ.
-- BỎ QUA những đoạn header/disclaimer ở đầu bài (vd "限制級 您即將進入...").
-- vocab: ĐÚNG 25-30 từ/cụm THIẾT YẾU (≥2 chữ); chọn danh từ chính, động từ then chốt, thuật ngữ chuyên ngành liên quan chủ đề bài.
-- KHÔNG markdown.`;
+QUY TẮC TUYỆT ĐỐI:
+- paragraphs PHẢI có ĐÚNG N phần tử, theo đúng thứ tự [1] → [N]. KHÔNG GỘP, KHÔNG BỎ, KHÔNG TÓM TẮT đoạn nào.
+- Mỗi paragraphs[i].vi PHẢI là bản dịch ĐẦY ĐỦ, tự nhiên (không word-for-word) của TOÀN BỘ đoạn [i+1] — không chỉ tóm 1 câu.
+- Mỗi paragraphs[i].pinyin PHẢI là pinyin có dấu thanh (ā á ǎ à) của TOÀN BỘ đoạn [i+1], các từ viết liền, các câu cách bằng dấu cách.
+- Đoạn header/disclaimer/footer cũng giữ vị trí (vd dòng "（編輯：…）" hoặc "限制級…"): vẫn dịch ngắn gọn HOẶC trả "vi":"" và "pinyin":"" — KHÔNG được bỏ phần tử.
+- vocab: ĐÚNG 25-30 từ/cụm THIẾT YẾU (≥2 chữ); danh từ chính + động từ then chốt + thuật ngữ chuyên ngành.
+- KHÔNG markdown, KHÔNG \`\`\`json.`;
 
-async function aiProcess(zh, title) {
-  const userMsg = `Tiêu đề: ${title}\n\nNội dung bài:\n${zh}\n\nTrả JSON theo schema.`;
+async function aiProcess(zhParas, title) {
+  const numbered = zhParas.map((p, i) => `[${i+1}]\n${p}`).join('\n\n');
+  const N = zhParas.length;
+  const userMsg = `Tiêu đề: ${title}\n\nSố đoạn N = ${N}\n\n${numbered}\n\nTrả JSON: paragraphs PHẢI có ĐÚNG ${N} phần tử khớp [1]…[${N}].`;
   for (let attempt = 0; attempt < 4; attempt++) {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + KEY },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        max_tokens: 8000,
+        max_tokens: 10000,
         temperature: 0.3,
         response_format: { type: 'json_object' },
         messages: [
@@ -149,7 +153,17 @@ async function aiProcess(zh, title) {
       throw new Error('OpenAI: ' + j.error.message);
     }
     const raw = j.choices?.[0]?.message?.content || '';
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const paras = Array.isArray(parsed.paragraphs) ? parsed.paragraphs : [];
+    // Validation: must match input length (allow off-by-one for trailing footer)
+    if (paras.length < Math.max(1, N - 1)) {
+      if (attempt < 3) { await new Promise(r => setTimeout(r, 1500)); continue; }
+      throw new Error(`paragraph mismatch: got ${paras.length}, expected ${N}`);
+    }
+    // Pad / trim to exact N
+    while (paras.length < N) paras.push({ vi: '', pinyin: '' });
+    parsed.paragraphs = paras.slice(0, N);
+    return parsed;
   }
   throw new Error('rate limit retries exhausted');
 }
@@ -165,8 +179,12 @@ for (let i = 0; i < picks.length; i++) {
     if (!article.content || article.content.length < 200) throw new Error('content too short: ' + article.content.length);
     // Trim to 2000 chars to keep AI output JSON within max_tokens
     const trimmedZh = article.content.slice(0, 2000);
+    const zhParas = trimmedZh.split(/\n{2,}/).map(s => s.trim()).filter(Boolean);
 
-    const ai = await aiProcess(trimmedZh, article.title || p.title);
+    const ai = await aiProcess(zhParas, article.title || p.title);
+    const paras = ai.paragraphs || [];
+    const content_vi = paras.map(x => x.vi || '').join('\n\n');
+    const pinyin    = paras.map(x => x.pinyin || '').join('\n\n');
 
     const row = {
       source: p.source,
@@ -175,9 +193,9 @@ for (let i = 0; i < picks.length; i++) {
       title_zh: article.title || p.title,
       title_vi: ai.title_vi || '',
       excerpt_zh: p.excerpt?.slice(0, 500) || '',
-      content_zh: trimmedZh,
-      content_vi: ai.content_vi || '',
-      pinyin: ai.pinyin || '',
+      content_zh: zhParas.join('\n\n'),
+      content_vi,
+      pinyin,
       vocab: ai.vocab || [],
       category: ai.category || 'world',
       cover_url: p.cover || null,
@@ -185,11 +203,11 @@ for (let i = 0; i < picks.length; i++) {
     };
 
     if (DRYRUN) {
-      console.log(` ✓ [DRY] ${trimmedZh.length}ch zh, ${row.vocab.length} vocab, cat=${row.category}`);
+      console.log(` ✓ [DRY] ${zhParas.length} paras, ${row.vocab.length} vocab, cat=${row.category}`);
     } else {
       const { error } = await sb.from('news_articles').insert(row);
       if (error) throw new Error('db: ' + error.message);
-      console.log(` ✓ saved (${trimmedZh.length}ch, ${row.vocab.length} vocab, cat=${row.category})`);
+      console.log(` ✓ saved (${zhParas.length} paras, ${row.vocab.length} vocab, cat=${row.category})`);
       inserted++;
     }
   } catch (e) {
