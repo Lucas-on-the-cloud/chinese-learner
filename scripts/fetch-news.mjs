@@ -121,7 +121,7 @@ Quy tắc:
 - Bản dịch tự nhiên, không word-for-word.
 - Pinyin: có dấu thanh ā á ǎ à, viết liền theo từ.
 - BỎ QUA những đoạn header/disclaimer ở đầu bài (vd "限制級 您即將進入...").
-- vocab: ĐÚNG 15-20 từ/cụm THIẾT YẾU (≥2 chữ).
+- vocab: ĐÚNG 25-30 từ/cụm THIẾT YẾU (≥2 chữ); chọn danh từ chính, động từ then chốt, thuật ngữ chuyên ngành liên quan chủ đề bài.
 - KHÔNG markdown.`;
 
 async function aiProcess(zh, title) {

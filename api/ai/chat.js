@@ -21,6 +21,7 @@ export default async function handler(req, res) {
     model = 'gpt-4o-mini',
     max_tokens = 2000,
     temperature = 0.4,
+    response_format,
   } = req.body || {};
 
   if (!Array.isArray(messages) || messages.length === 0)
@@ -39,7 +40,10 @@ export default async function handler(req, res) {
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-      body: JSON.stringify({ model: safeModel, messages, max_tokens: safeMaxTok, temperature: safeTemp }),
+      body: JSON.stringify({
+        model: safeModel, messages, max_tokens: safeMaxTok, temperature: safeTemp,
+        ...(response_format && typeof response_format === 'object' ? { response_format } : {}),
+      }),
     });
     const j = await r.json();
     if (j.error) return res.status(502).json({ error: 'OpenAI: ' + j.error.message });

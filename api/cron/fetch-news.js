@@ -20,7 +20,7 @@ Cho 1 bài báo tiếng Trung với cấu trúc đoạn phân cách bằng \\n\\
 
 BẮT BUỘC: content_vi và pinyin PHẢI giữ nguyên số đoạn (\\n\\n) như content_zh.
 Pinyin có dấu thanh, mỗi câu kết bằng "." để tách. Bỏ qua header phân loại tuổi (限制級…).
-vocab 15-20 mục ≥2 chữ; example là câu nguyên văn. KHÔNG markdown.`;
+vocab 25-30 mục ≥2 chữ (danh từ chính + động từ then chốt + thuật ngữ chuyên ngành); example là câu nguyên văn. KHÔNG markdown.`;
 
 function cleanContent(text) {
   let out = (text || '')
