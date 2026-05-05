@@ -209,6 +209,27 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   .nav-menu .nav-link{display:none}
   .mode-tab{font-size:12px;padding:8px 0}
 }
+
+/* CHAT WIDGET */
+.chat-bubble-btn{position:fixed;bottom:24px;right:24px;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 8px 24px rgba(26,86,219,.4);z-index:50;transition:.15s;display:none;align-items:center;justify-content:center}
+.chat-bubble-btn.show{display:flex}
+.chat-bubble-btn:hover{transform:scale(1.05);background:#1544b8}
+.chat-widget{position:fixed;bottom:90px;right:24px;width:360px;max-width:calc(100vw - 48px);height:500px;max-height:calc(100vh - 120px);background:#fff;border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,.18);display:none;flex-direction:column;z-index:51;border:1px solid var(--border)}
+.chat-widget.open{display:flex}
+.chat-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-weight:600;color:var(--text)}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.chat-close-btn{margin-left:auto;background:none;border:none;font-size:18px;color:var(--text-3);cursor:pointer;line-height:1}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{padding:9px 12px;border-radius:10px;font-size:13.5px;line-height:1.55;max-width:85%;white-space:pre-wrap;word-break:break-word}
+.chat-msg.user{align-self:flex-end;background:var(--blue);color:#fff}
+.chat-msg.ai{align-self:flex-start;background:#f3f4f6;color:var(--text)}
+.chat-msg.system{align-self:center;background:transparent;color:var(--text-3);font-size:11px;font-style:italic;text-align:center}
+.chat-input-row{padding:10px;border-top:1px solid var(--border);display:flex;gap:6px}
+.chat-input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;outline:none}
+.chat-input:focus{border-color:var(--blue)}
+.chat-send{background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chat-send:hover{background:#1544b8}
+@media(max-width:600px){.chat-widget{right:0;bottom:0;width:100vw;max-width:100vw;height:80vh;border-radius:14px 14px 0 0}}
 </style>
 </head>
 <body>
@@ -328,6 +349,7 @@ const audioEl = document.getElementById('main-audio');
 
 function goBack() {
   // Coming from /subcourse-listening.html → return there with same book param
+  chatHideBubble();
   if (bookName) {
     location.href = `/subcourse-listening.html?b=${encodeURIComponent(bookName)}`;
     return;
@@ -416,8 +438,10 @@ async function loadExercise(book, lid) {
 
   if (!allSegments.length) {
     document.getElementById('app-main').innerHTML = '<div class="loading-spinner">Bài học này chưa có audio.</div>';
+    chatHideBubble();
     return;
   }
+  chatShowBubble();
 
   const meta = allBooks.find(b => b.name === book) || {};
   const lessonTitle = allSegments[0]?.lesson_title || 'Bài học';
@@ -992,7 +1016,105 @@ function formatTime(sec) {
   const s = Math.floor(sec || 0);
   return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
+
+// ─── CHAT AI ────────────────────────────────────
+const chatHistory = [];
+function chatToggle() {
+  const w = document.getElementById('chat-widget');
+  w.classList.toggle('open');
+  if (w.classList.contains('open')) setTimeout(() => document.getElementById('chat-input')?.focus(), 50);
+}
+function chatBuildContext() {
+  if (!allSegments?.length) return '';
+  const lessonTitle = allSegments[0]?.lesson_title || 'Bài nghe';
+  const lines = allSegments.map((s, i) => {
+    const zh = s.transcript || '';
+    const py = s.pinyin ? `\n   Pinyin: ${s.pinyin}` : '';
+    const vi = s.meaning_vi ? `\n   Việt: ${s.meaning_vi}` : '';
+    return `[${i+1}] ${zh}${py}${vi}`;
+  }).join('\n\n');
+  return `Bài nghe: ${lessonTitle}\nSách: ${bookName}\n\nCác đoạn audio (繁體中文 + pinyin + dịch):\n${lines}`;
+}
+async function chatSend() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('chat-msgs');
+  const escMsg = msg.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  msgs.innerHTML += `<div class="chat-msg user">${escMsg}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // "add 詞, 詞…" — báo người dùng dùng flashcard fork khác
+  if (/^add\s+/i.test(msg)) {
+    msgs.innerHTML += `<div class="chat-msg system">Bài nghe chưa hỗ trợ lệnh "add". Bookmark từ vựng tại trang khoá học/đọc báo.</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Học viên đang luyện nghe 1 bài và muốn hỏi về nội dung, ngữ pháp, từ vựng, cách phát âm.
+
+${chatBuildContext()}
+
+Trả lời bằng tiếng Việt, ngắn gọn rõ ràng. Khi trích chữ Hán phải dùng 繁體 (Đài Loan), không giản thể. Có thể trích nguyên văn từ bài nếu cần.`;
+
+  chatHistory.push({ role: 'user', content: msg });
+  msgs.innerHTML += `<div class="chat-msg ai" id="chat-loading"><i class="fa-solid fa-spinner fa-spin"></i></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'system', content: sysPrompt }, ...chatHistory],
+        max_tokens: 1500, temperature: 0.4,
+      }),
+    });
+    const j = await res.json();
+    document.getElementById('chat-loading')?.remove();
+    if (!res.ok || j.error) throw new Error(j.error || `HTTP ${res.status}`);
+    const reply = j.content || '(không có phản hồi)';
+    chatHistory.push({ role: 'assistant', content: reply });
+    const escReply = reply.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(/\n/g, '<br>');
+    msgs.innerHTML += `<div class="chat-msg ai">${escReply}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    document.getElementById('chat-loading')?.remove();
+    msgs.innerHTML += `<div class="chat-msg ai">⚠ ${e.message}</div>`;
+  }
+}
+// Show bubble only when a lesson is loaded
+function chatShowBubble() {
+  document.getElementById('chat-bubble')?.classList.add('show');
+}
+function chatHideBubble() {
+  document.getElementById('chat-bubble')?.classList.remove('show');
+  document.getElementById('chat-widget')?.classList.remove('open');
+  chatHistory.length = 0;
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs) msgs.innerHTML = '<div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.</div>';
+}
 </script>
+
+<!-- CHAT BUBBLE + WIDGET -->
+<button class="chat-bubble-btn" id="chat-bubble" onclick="chatToggle()" title="Chat AI về bài nghe">
+  <i class="fa-solid fa-comments"></i>
+</button>
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-header">
+    <div class="dot"></div> Chat AI · bài nghe
+    <button class="chat-close-btn" onclick="chatToggle()">×</button>
+  </div>
+  <div class="chat-messages" id="chat-msgs">
+    <div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.</div>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Hỏi gì đó…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">
+    <button class="chat-send" onclick="chatSend()">Gửi</button>
+  </div>
+</div>
+
 <script src="/js/nav-mobile.js"></script>
 </body>
 </html>
