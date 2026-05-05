@@ -29,7 +29,7 @@ a{text-decoration:none;color:inherit}
 .nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;transition:.15s;white-space:nowrap}
 .nav-btn:hover{background:var(--blue-dark)}
 
-.page{flex:1;max-width:840px;width:100%;margin:0 auto;padding:24px 1.5rem 60px}
+.page{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:24px 1.5rem 60px}
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);margin-bottom:18px;padding:6px 12px;border-radius:7px;transition:.15s}
 .back-btn:hover{background:var(--surface);color:var(--text)}
 
@@ -40,27 +40,37 @@ a{text-decoration:none;color:inherit}
 .article-title-vi{font-size:15px;color:var(--text-2);line-height:1.5;font-style:italic;margin-bottom:18px}
 .article-source-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--blue);background:var(--blue-lt);padding:6px 12px;border-radius:7px;margin-bottom:20px;border:1px solid #c7d7fd}
 
-/* Toggle bar */
-.toggles{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:18px;flex-wrap:wrap;font-size:12px}
-.toggles-label{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-right:4px}
-.toggle-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-2);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:5px}
-.toggle-btn:hover{border-color:#9ca3af;color:var(--text)}
-.toggle-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
-.toggle-btn i{font-size:10px}
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:#fff;border:1px solid var(--border);border-radius:9px;padding:4px}
+.tab{flex:1;padding:9px 8px;border-radius:6px;border:none;background:transparent;color:var(--text-2);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--navy);color:#fff}
 
-/* Content */
+/* Content card */
 .content-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px 32px;line-height:1.85}
-.para{margin-bottom:22px;padding-bottom:18px;border-bottom:1px dashed #e5e7eb}
+
+/* Single-language modes (zh / pinyin / vi) */
+.para{margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed #e5e7eb}
 .para:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
-.para-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;color:var(--text-3);line-height:1.7;margin-bottom:6px;letter-spacing:.02em}
-.para-zh{font-family:'Noto Serif TC',serif;font-size:18.5px;font-weight:500;color:var(--navy);line-height:1.85;letter-spacing:.4px}
-.para-vi{font-size:14.5px;color:var(--text-2);line-height:1.75;font-style:italic;margin-top:8px;border-left:3px solid var(--blue-lt);padding-left:14px}
-.zh-only .para-pinyin,.zh-only .para-vi{display:none}
+.para-zh{font-family:'Noto Serif TC',serif;font-size:18.5px;font-weight:500;color:var(--navy);line-height:1.9;letter-spacing:.4px;text-align:justify}
+.para-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:14.5px;color:var(--text-2);line-height:1.85;letter-spacing:.02em;text-align:justify}
+.para-vi{font-size:15px;color:var(--text);line-height:1.85;text-align:justify}
+
+/* "Tất cả" mode — 2-column parallel ZH | VI */
+.parallel{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px dashed #e5e7eb}
+.parallel:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.parallel-zh{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:500;color:var(--navy);line-height:1.85;letter-spacing:.4px;text-align:justify}
+.parallel-vi{font-size:14px;color:var(--text-2);line-height:1.75;text-align:justify}
+.parallel-zh-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;color:var(--text-3);line-height:1.6;letter-spacing:.02em;margin-bottom:6px;font-style:italic}
+@media(max-width:780px){
+  .parallel{grid-template-columns:1fr;gap:10px}
+  .parallel-zh{padding-bottom:10px;border-bottom:1px solid #f3f4f6}
+}
 
 .vocab-section{margin-top:30px}
 .vocab-title{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:14px}
 .vocab-title i{color:var(--orange);font-size:16px}
-.vocab-list{display:grid;gap:8px}
+.vocab-list{display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:8px}
 .vocab-item{background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:14px;transition:.15s}
 .vocab-item:hover{border-color:#c7d7fd}
 .vocab-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--red);min-width:80px;cursor:pointer;border-radius:6px;padding:4px 8px;text-align:center;transition:.15s}
@@ -80,8 +90,8 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:600px){
   .nav-link{display:none}
   .content-card{padding:20px 18px}
-  .para-zh{font-size:17px}
-  .para-vi{font-size:13.5px}
+  .para-zh,.parallel-zh{font-size:16.5px}
+  .para-vi,.parallel-vi{font-size:13.5px}
   .para-pinyin{font-size:12.5px}
 }
 </style>
@@ -132,19 +142,15 @@ else { load(); }
 function fmt(iso) { return iso ? new Date(iso).toLocaleString('vi-VN', { dateStyle:'medium', timeStyle:'short' }) : ''; }
 function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Split text into paragraphs by double newline; if no \n\n, fall back to splitting by sentence-end punct.
+// Split text into paragraphs by \n\n; fallback split by sentence-end punct (group every 3 sentences).
 function splitParas(text, type='zh') {
   if (!text) return [];
   text = text.trim();
   if (text.includes('\n\n')) return text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-  // Fallback: split by sentence punct
-  const re = type === 'zh'
-    ? /(?<=[。！？])\s*/
-    : /(?<=[.!?])\s+/;
+  const re = type === 'zh' ? /(?<=[。！？])\s*/ : /(?<=[.!?])\s+/;
   const sentences = text.split(re).map(s => s.trim()).filter(Boolean);
-  // Group every 2-3 sentences into a paragraph for readability
   const paras = [];
-  for (let i = 0; i < sentences.length; i += 2) paras.push(sentences.slice(i, i+2).join(' '));
+  for (let i = 0; i < sentences.length; i += 3) paras.push(sentences.slice(i, i+3).join(type === 'zh' ? '' : ' '));
   return paras;
 }
 
@@ -158,26 +164,16 @@ async function load() {
   render(a);
 }
 
-let showPinyin = false;
-let showVi = true;
+let activeMode = 'all';
 
 function render(a) {
   const zhParas = splitParas(a.content_zh, 'zh');
   const viParas = splitParas(a.content_vi || '', 'vi');
   const pyParas = splitParas(a.pinyin || '', 'vi');
-
-  // Align: pad with empty if mismatch
   const max = Math.max(zhParas.length, viParas.length, pyParas.length);
   while (zhParas.length < max) zhParas.push('');
   while (viParas.length < max) viParas.push('');
   while (pyParas.length < max) pyParas.push('');
-
-  const parasHtml = zhParas.map((zh, i) => `
-    <div class="para">
-      <div class="para-pinyin">${esc(pyParas[i] || '')}</div>
-      <div class="para-zh">${esc(zh)}</div>
-      <div class="para-vi">${esc(viParas[i] || '')}</div>
-    </div>`).join('');
 
   const vocabHtml = (a.vocab || []).map(w => `
     <div class="vocab-item">
@@ -202,15 +198,14 @@ function render(a) {
       <i class="fa-solid fa-external-link"></i> Xem nguyên văn tại ${esc(a.source_name || a.source)}
     </a>
 
-    <div class="toggles">
-      <span class="toggles-label">Hiển thị</span>
-      <button class="toggle-btn" id="t-pinyin"><i class="fa-solid fa-language"></i> Pinyin</button>
-      <button class="toggle-btn on" id="t-vi"><i class="fa-solid fa-flag"></i> Tiếng Việt</button>
+    <div class="tabs">
+      <button class="tab" data-mode="zh">繁體中文</button>
+      <button class="tab" data-mode="pinyin">Pinyin</button>
+      <button class="tab" data-mode="vi">Tiếng Việt</button>
+      <button class="tab active" data-mode="all">Tất cả</button>
     </div>
 
-    <article class="content-card" id="content-card">
-      ${parasHtml}
-    </article>
+    <article class="content-card" id="content-card"></article>
 
     <div class="vocab-section">
       <div class="vocab-title"><i class="fa-solid fa-book-open"></i> Từ vựng (${a.vocab?.length || 0})</div>
@@ -220,27 +215,32 @@ function render(a) {
     <div id="comments-root" style="margin-top:40px"></div>
   `;
 
-  // Hook toggles
   const card = document.getElementById('content-card');
-  const tPy = document.getElementById('t-pinyin');
-  const tVi = document.getElementById('t-vi');
-  function applyToggles() {
-    card.classList.toggle('hide-pinyin', !showPinyin);
-    card.classList.toggle('hide-vi', !showVi);
-    tPy.classList.toggle('on', showPinyin);
-    tVi.classList.toggle('on', showVi);
-    // Add styles dynamically
-    const sheet = document.getElementById('toggle-styles') || (() => {
-      const s = document.createElement('style'); s.id = 'toggle-styles'; document.head.appendChild(s); return s;
-    })();
-    sheet.textContent = `
-      .hide-pinyin .para-pinyin{display:none}
-      .hide-vi .para-vi{display:none}
-    `;
+  function renderMode() {
+    if (activeMode === 'zh') {
+      card.innerHTML = zhParas.map(p => `<div class="para"><div class="para-zh">${esc(p)}</div></div>`).join('');
+    } else if (activeMode === 'pinyin') {
+      card.innerHTML = pyParas.map(p => `<div class="para"><div class="para-pinyin">${esc(p)}</div></div>`).join('');
+    } else if (activeMode === 'vi') {
+      card.innerHTML = viParas.map(p => `<div class="para"><div class="para-vi">${esc(p)}</div></div>`).join('');
+    } else {
+      // all — 2 columns parallel: ZH (with pinyin above) | VI
+      card.innerHTML = zhParas.map((zh, i) => `
+        <div class="parallel">
+          <div>
+            ${pyParas[i] ? `<div class="parallel-zh-pinyin">${esc(pyParas[i])}</div>` : ''}
+            <div class="parallel-zh">${esc(zh)}</div>
+          </div>
+          <div class="parallel-vi">${esc(viParas[i] || '')}</div>
+        </div>`).join('');
+    }
   }
-  applyToggles();
-  tPy.addEventListener('click', () => { showPinyin = !showPinyin; applyToggles(); });
-  tVi.addEventListener('click', () => { showVi = !showVi; applyToggles(); });
+  renderMode();
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+    activeMode = t.dataset.mode;
+    renderMode();
+  }));
 
   if (window.mountComments) {
     window.mountComments({
