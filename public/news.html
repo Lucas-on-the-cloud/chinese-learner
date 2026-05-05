@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đọc báo Đài Loan — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--navy:#0d1b4b;--orange:#f47b20;--text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;--border:#e5e7eb;--surface:#fff;--bg:#f4f5f7}
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--bg)}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;transition:.15s;white-space:nowrap}
+.nav-btn:hover{background:var(--blue-dark)}
+
+.page{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:32px 1.5rem 60px}
+.page-hero{margin-bottom:28px}
+.page-title{font-family:'Noto Serif TC',serif;font-size:clamp(24px,3vw,34px);font-weight:700;color:var(--navy);margin-bottom:6px}
+.page-sub{font-size:14px;color:var(--text-2)}
+
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;font-size:13px}
+.filter-pill{padding:7px 14px;border-radius:7px;background:#fff;border:1px solid var(--border);color:var(--text-2);cursor:pointer;font-family:inherit;font-weight:500;transition:.15s}
+.filter-pill:hover{border-color:#9ca3af;color:var(--text)}
+.filter-pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:.18s;cursor:pointer}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08);border-color:#c7d7fd}
+.card-cover{aspect-ratio:16/9;background:linear-gradient(135deg,var(--navy),#1e3a8a);position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.15);font-family:'Noto Serif TC',serif;font-size:80px}
+.card-cover img{width:100%;height:100%;object-fit:cover}
+.card-cover-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em;backdrop-filter:blur(4px)}
+.card-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column}
+.card-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-3);margin-bottom:8px}
+.card-source{color:var(--blue);font-weight:600}
+.card-title{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;color:var(--navy);line-height:1.4;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-title-vi{font-size:13px;color:var(--text-2);line-height:1.5;font-style:italic;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:auto}
+.card-foot{margin-top:12px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text-3)}
+.card-vocab-count{display:inline-flex;align-items:center;gap:4px}
+.card-vocab-count i{color:var(--orange)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text-3)}
+.empty i{font-size:36px;margin-bottom:12px;display:block;color:#d1d5db}
+
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-inner{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto}
+
+@media(max-width:600px){.nav-link{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link active" href="/news.html">Đọc báo</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-hero">
+    <h1 class="page-title">Đọc báo Đài Loan</h1>
+    <p class="page-sub">5 bài báo mới nhất từ các nguồn lớn của Đài Loan, kèm pinyin + dịch nghĩa + từ vựng AI · cập nhật 3 ngày/lần</p>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="filter-pill active" data-cat="all">Tất cả</button>
+  </div>
+
+  <div class="grid" id="grid">
+    <div class="empty"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <a href="/courses.html" style="color:rgba(255,255,255,.5)">Khóa học</a>
+  </div>
+</footer>
+
+<script>
+const SB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const SB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+const CAT_LABELS = {
+  politics: '🏛 Chính trị',
+  business: '💼 Kinh tế',
+  tech:     '💻 Công nghệ',
+  sports:   '⚽ Thể thao',
+  culture:  '🎭 Văn hoá',
+  lifestyle:'🌿 Đời sống',
+  world:    '🌏 Thế giới',
+  society:  '👥 Xã hội',
+};
+const CAT_COLOR = {
+  politics:'#dc2626', business:'#16a34a', tech:'#7c3aed',
+  sports:'#f59e0b', culture:'#ec4899', lifestyle:'#14b8a6',
+  world:'#1a56db', society:'#6366f1',
+};
+
+let allArticles = [];
+let activeCat = 'all';
+
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  const list = activeCat === 'all' ? allArticles : allArticles.filter(a => a.category === activeCat);
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty"><i class="fa-regular fa-newspaper"></i><div>Chưa có bài nào trong category này.</div></div>';
+    return;
+  }
+  grid.innerHTML = list.map(a => {
+    const wm = a.title_zh?.[0] || '報';
+    const cover = a.cover_url
+      ? `<img src="${a.cover_url}" alt="" onerror="this.parentElement.innerHTML='${wm}'">`
+      : wm;
+    const catColor = CAT_COLOR[a.category] || '#475569';
+    return `
+      <a class="card" href="/news-reader.html?id=${a.id}">
+        <div class="card-cover" style="background:linear-gradient(135deg,${catColor},${catColor}cc)">
+          ${cover}
+          <span class="card-cover-badge">${CAT_LABELS[a.category] || a.category || 'Tin tức'}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <span class="card-source">${a.source_name || a.source}</span>
+            <span>·</span>
+            <span>${fmtDate(a.published_at)}</span>
+          </div>
+          <div class="card-title">${a.title_zh || ''}</div>
+          <div class="card-title-vi">${a.title_vi || ''}</div>
+          <div class="card-foot">
+            <span class="card-vocab-count"><i class="fa-solid fa-book-open"></i> ${a.vocab?.length || 0} từ</span>
+            <span><i class="fa-solid fa-arrow-right"></i></span>
+          </div>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+function buildFilters() {
+  const cats = [...new Set(allArticles.map(a => a.category).filter(Boolean))];
+  const fl = document.getElementById('filters');
+  fl.innerHTML = `<button class="filter-pill active" data-cat="all">Tất cả (${allArticles.length})</button>` +
+    cats.map(c => {
+      const n = allArticles.filter(a => a.category === c).length;
+      return `<button class="filter-pill" data-cat="${c}">${CAT_LABELS[c] || c} (${n})</button>`;
+    }).join('');
+  fl.querySelectorAll('.filter-pill').forEach(btn => btn.addEventListener('click', () => {
+    activeCat = btn.dataset.cat;
+    fl.querySelectorAll('.filter-pill').forEach(b => b.classList.toggle('active', b === btn));
+    render();
+  }));
+}
+
+(async () => {
+  const { data, error } = await sb
+    .from('news_articles')
+    .select('id, title_zh, title_vi, source, source_name, category, cover_url, published_at, vocab')
+    .eq('status','published')
+    .order('published_at', { ascending:false });
+  if (error) {
+    document.getElementById('grid').innerHTML = `<div class="empty">Lỗi: ${error.message}</div>`;
+    return;
+  }
+  allArticles = data || [];
+  buildFilters();
+  render();
+})();
+</script>
+<script src="/js/nav-mobile.js"></script>
+</body>
+</html>

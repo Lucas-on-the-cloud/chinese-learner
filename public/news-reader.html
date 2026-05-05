@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đọc bài — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+:root{--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;--navy:#0d1b4b;--orange:#f47b20;--green:#16a34a;--green-lt:#f0fdf4;--red:#dc2626;--red-lt:#fef2f2;--text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;--border:#e5e7eb;--surface:#fff;--bg:#f4f5f7}
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:var(--bg)}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;transition:.15s;white-space:nowrap}
+.nav-btn:hover{background:var(--blue-dark)}
+
+.page{flex:1;max-width:900px;width:100%;margin:0 auto;padding:24px 1.5rem 60px}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);margin-bottom:18px;padding:6px 12px;border-radius:7px;transition:.15s}
+.back-btn:hover{background:var(--surface);color:var(--text)}
+
+.article-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-3);margin-bottom:10px;flex-wrap:wrap}
+.article-source{color:var(--blue);font-weight:600}
+.article-cat-badge{background:var(--blue-lt);color:var(--blue);padding:2px 9px;border-radius:5px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.article-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3vw,32px);font-weight:700;color:var(--navy);line-height:1.35;margin-bottom:8px}
+.article-title-vi{font-size:15px;color:var(--text-2);line-height:1.5;font-style:italic;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.article-source-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--blue);background:var(--blue-lt);padding:6px 12px;border-radius:7px;margin-bottom:24px;border:1px solid #c7d7fd}
+
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:#fff;border:1px solid var(--border);border-radius:9px;padding:4px}
+.tab{flex:1;padding:9px 0;border-radius:6px;border:none;background:transparent;color:var(--text-2);font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--navy);color:#fff}
+
+.content-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px 32px;line-height:1.85}
+.content-zh{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:500;color:var(--navy);letter-spacing:.4px;white-space:pre-wrap}
+.content-pinyin{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:var(--text-2);line-height:1.9;white-space:pre-wrap;letter-spacing:.02em}
+.content-vi{font-size:15px;color:var(--text);line-height:1.85;white-space:pre-wrap}
+
+.vocab-section{margin-top:30px}
+.vocab-title{display:flex;align-items:center;gap:10px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);margin-bottom:14px}
+.vocab-title i{color:var(--orange);font-size:16px}
+.vocab-list{display:grid;gap:8px}
+.vocab-item{background:#fff;border:1px solid var(--border);border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:14px;transition:.15s}
+.vocab-item:hover{border-color:#c7d7fd}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--red);min-width:80px;cursor:pointer;border-radius:6px;padding:4px 8px;text-align:center;transition:.15s}
+.vocab-char:hover{background:var(--red-lt)}
+.vocab-info{flex:1;min-width:0}
+.vocab-pinyin{font-size:11px;color:var(--text-2);font-style:italic;margin-bottom:1px}
+.vocab-meaning{font-size:13.5px;font-weight:500;color:var(--text)}
+.vocab-example{font-size:11.5px;color:var(--text-3);margin-top:3px;font-style:italic}
+.vocab-level{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:#fdf6e3;color:#b8860b;margin-left:6px}
+
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-inner{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto}
+
+.loading{text-align:center;padding:60px 20px;color:var(--text-3)}
+.loading i{font-size:32px;display:block;margin-bottom:10px}
+
+@media(max-width:600px){.nav-link{display:none}.content-card{padding:20px 18px}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link active" href="/news.html">Đọc báo</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <a class="back-btn" href="/news.html"><i class="fa-solid fa-arrow-left"></i> Tất cả bài báo</a>
+  <div id="content"><div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải bài…</div></div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span>TOCFL FAFA © 2026</span>
+    <a href="/news.html" style="color:rgba(255,255,255,.5)">Đọc báo</a>
+  </div>
+</footer>
+
+<script>
+const SB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const SB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+const id = +new URLSearchParams(location.search).get('id');
+if (!id) { document.getElementById('content').innerHTML = '<div class="loading">Thiếu id bài báo.</div>'; }
+else { load(); }
+
+function fmt(iso) { return iso ? new Date(iso).toLocaleString('vi-VN', { dateStyle:'medium', timeStyle:'short' }) : ''; }
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function load() {
+  const { data: a, error } = await sb.from('news_articles').select('*').eq('id', id).maybeSingle();
+  if (error || !a) {
+    document.getElementById('content').innerHTML = `<div class="loading">Không tìm thấy bài (${error?.message || ''}).</div>`;
+    return;
+  }
+  document.title = (a.title_zh || 'Bài báo') + ' — TOCFL FAFA';
+  render(a);
+}
+
+function render(a) {
+  const vocabHtml = (a.vocab || []).map((w, i) => `
+    <div class="vocab-item">
+      <div class="vocab-char" title="${esc(w.pinyin || '')}">${esc(w.char)}</div>
+      <div class="vocab-info">
+        <div class="vocab-pinyin">${esc(w.pinyin || '')}${w.level ? `<span class="vocab-level">${esc(w.level)}</span>` : ''}</div>
+        <div class="vocab-meaning">${esc(w.meaning || '')}</div>
+        ${w.example ? `<div class="vocab-example">${esc(w.example)}${w.exMeaning ? ' — ' + esc(w.exMeaning) : ''}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('content').innerHTML = `
+    <div class="article-meta">
+      <span class="article-source">${esc(a.source_name || a.source)}</span>
+      <span>·</span>
+      <span>${fmt(a.published_at)}</span>
+      ${a.category ? `<span class="article-cat-badge">${esc(a.category)}</span>` : ''}
+    </div>
+    <h1 class="article-title">${esc(a.title_zh)}</h1>
+    ${a.title_vi ? `<div class="article-title-vi">${esc(a.title_vi)}</div>` : ''}
+    <a class="article-source-link" href="${esc(a.source_url)}" target="_blank" rel="noopener">
+      <i class="fa-solid fa-external-link"></i> Xem nguyên văn tại ${esc(a.source_name || a.source)}
+    </a>
+
+    <div class="tabs">
+      <button class="tab active" data-mode="zh">繁體中文</button>
+      <button class="tab" data-mode="pinyin">Pinyin</button>
+      <button class="tab" data-mode="vi">Tiếng Việt</button>
+      <button class="tab" data-mode="all">Tất cả</button>
+    </div>
+
+    <div class="content-card" id="content-card"></div>
+
+    <div class="vocab-section">
+      <div class="vocab-title"><i class="fa-solid fa-book-open"></i> Từ vựng (${a.vocab?.length || 0})</div>
+      <div class="vocab-list">${vocabHtml}</div>
+    </div>
+
+    <div id="comments-root" style="margin-top:40px"></div>
+  `;
+
+  let mode = 'zh';
+  const card = document.getElementById('content-card');
+  const showMode = () => {
+    if (mode === 'zh')        card.innerHTML = `<div class="content-zh">${esc(a.content_zh)}</div>`;
+    else if (mode === 'pinyin') card.innerHTML = `<div class="content-pinyin">${esc(a.pinyin || 'Chưa có pinyin')}</div>`;
+    else if (mode === 'vi')   card.innerHTML = `<div class="content-vi">${esc(a.content_vi || 'Chưa có dịch')}</div>`;
+    else card.innerHTML = `
+      <div class="content-zh">${esc(a.content_zh)}</div>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)">
+      <div class="content-pinyin">${esc(a.pinyin || '')}</div>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border)">
+      <div class="content-vi">${esc(a.content_vi || '')}</div>
+    `;
+  };
+  showMode();
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    mode = t.dataset.mode;
+    showMode();
+  }));
+
+  // Comments
+  if (window.mountComments) {
+    window.mountComments({
+      container: '#comments-root',
+      entityType: 'news_article',
+      entityId: String(a.id),
+      supabaseUrl: SB_URL, supabaseKey: SB_KEY,
+    });
+  }
+}
+</script>
+<script src="/js/comments.js"></script>
+<script src="/js/nav-mobile.js"></script>
+</body>
+</html>
