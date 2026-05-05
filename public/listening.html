@@ -736,8 +736,24 @@ function dictCheck() {
   sessionScore.total++;
   saveProgress(bookName, lessonId, seg.id, pct);
 
-  // Disable textarea + hide actions, replace with result block
-  ta.disabled = true;
+  // Find position in textarea AFTER the first wrong/missing real char (for cursor placement)
+  let cursorPos = -1;
+  if (pct < 100) {
+    const firstWrongRealIdx = results.findIndex(r => r.type !== 'ok');
+    if (firstWrongRealIdx >= 0) {
+      const taChars = [...(ta.value || '')];
+      let realCount = 0;
+      for (let i = 0; i < taChars.length; i++) {
+        if (!DICT_PUNCT_RE.test(taChars[i])) {
+          if (realCount === firstWrongRealIdx) { cursorPos = i + 1; break; }
+          realCount++;
+        }
+      }
+      if (cursorPos === -1) cursorPos = ta.value.length;
+    }
+  }
+
+  // Hide actions; KEEP textarea editable so user can fix the wrong char immediately
   document.querySelector('.dict-actions')?.style.setProperty('display', 'none');
 
   const pinyinHTML = seg.pinyin
@@ -765,11 +781,26 @@ function dictCheck() {
       </div>
     </div>`;
   document.getElementById('dict-score-row').scrollIntoView({ behavior:'smooth', block:'nearest' });
-  // Perfect score → auto-focus "Câu tiếp" so Enter advances; otherwise focus "Thử lại"
-  const focusBtn = pct === 100
-    ? document.querySelector('#dict-score-row .dict-btn.primary')
-    : document.querySelector('#dict-score-row .dict-btn:not(.primary)');
-  setTimeout(() => focusBtn?.focus(), 50);
+
+  if (pct === 100) {
+    // Perfect → focus "Câu tiếp" so Enter advances
+    const nextBtn = document.querySelector('#dict-score-row .dict-btn.primary');
+    setTimeout(() => nextBtn?.focus(), 50);
+  } else {
+    // Mistakes → put cursor right after first wrong char in textarea so user can fix it
+    setTimeout(() => {
+      ta.focus();
+      if (cursorPos >= 0) ta.setSelectionRange(cursorPos, cursorPos);
+    }, 50);
+    // Dismiss the result block as soon as user edits (delete/type/paste)
+    const onEdit = () => {
+      const row = document.getElementById('dict-score-row');
+      if (row) row.innerHTML = '';
+      document.querySelector('.dict-actions')?.style.removeProperty('display');
+      ta.removeEventListener('input', onEdit);
+    };
+    ta.addEventListener('input', onEdit);
+  }
 }
 
 function dictHint() {
