@@ -95,11 +95,20 @@ a{text-decoration:none;color:inherit}
 
 /* ── NGHE CHECK ─────────────────────────────────── */
 .check-body{padding:16px 14px 12px}
-.word-display{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:48px;margin-bottom:16px}
+.word-display{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;min-height:48px;margin-bottom:16px}
 .word-token{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--navy);line-height:1}
 .word-token.punct{color:var(--text-3);font-size:18px}
 .word-box{display:inline-block;height:28px;border-radius:6px;background:#e5e7eb;cursor:pointer;transition:all .15s;vertical-align:middle}
 .word-box:hover{background:#d1d5db}
+
+/* Pinyin ruby column — used in all 3 modes */
+.py-col{display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1}
+.py-col .py-rt{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;color:#6b7280;font-weight:500;min-height:14px;letter-spacing:.02em}
+.py-col .py-rt.empty{visibility:hidden}
+.py-col.punct .py-rt{visibility:hidden}
+.py-col .word-token, .py-col .word-box{display:inline-block}
+.tc-text-ruby{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:var(--navy);line-height:1.6}
+.tc-text-ruby .py-rt{font-size:12px}
 
 .reveal-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .reveal-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s}
@@ -257,6 +266,8 @@ let revealedSet  = new Set(); // indices of revealed chars in check mode
 let fullAutoPlay = true;
 let fullHideScript = false;
 let isPlaying    = false;
+let showPinyin   = false;   // Check + Dictation modes — toggleable
+let showPinyinFull = true;  // Full mode — default on
 
 const audioEl = document.getElementById('main-audio');
 
@@ -497,6 +508,10 @@ function buildCheckBody(seg) {
       <button class="speed-pill${hidePercent===30?' active':''}" onclick="setHidePercent(30)">30%</button>
       <button class="speed-pill${hidePercent===50?' active':''}" onclick="setHidePercent(50)">50%</button>
       <button class="speed-pill${hidePercent===100?' active':''}" onclick="setHidePercent(100)">100%</button>
+      <span style="margin-left:auto"></span>
+      <button class="speed-pill${showPinyin?' active':''}" onclick="togglePinyin()" title="Hiện/ẩn pinyin">
+        <i class="fa-solid fa-language" style="font-size:11px"></i> Pinyin
+      </button>
     </div>
     <div class="check-body">
       <div class="word-display" id="word-display">${renderWordDisplay(chars)}</div>
@@ -521,15 +536,34 @@ function tokenize(text) {
   return [...text.trim()].filter(c => c !== ' ' || true);
 }
 
+// Align pinyin syllables (space-separated) with Chinese chars; punctuation gets no pinyin.
+function alignPinyin(transcript, pinyin) {
+  const chars = [...((transcript||'').trim())];
+  const tokens = (pinyin||'').trim().split(/\s+/).filter(Boolean);
+  const isPunct = (ch) => /[，。！？、：；""''「」（）()\-—…\s]/.test(ch);
+  const out = []; let i = 0;
+  for (const ch of chars) {
+    if (isPunct(ch)) out.push({ ch, py: '', isPunct: true });
+    else out.push({ ch, py: tokens[i++] || '', isPunct: false });
+  }
+  return out;
+}
+
 function renderWordDisplay(chars) {
+  const seg = allSegments[currentIdx];
+  const aligned = showPinyin ? alignPinyin(seg?.transcript || '', seg?.pinyin || '') : null;
   return chars.map((ch, i) => {
     const hidden = window._hiddenIndices?.has(i) && !revealedSet.has(i);
+    const isPunct = /[，。！？、：；""''「」…]/.test(ch);
+    const py = aligned?.[i]?.py || '';
+    const pyTop = showPinyin ? `<span class="py-rt${py ? '' : ' empty'}">${py}</span>` : '';
     if (hidden) {
       const w = Math.max(18, ch === '，' || ch === '。' ? 14 : 22);
-      return `<span class="word-box" style="width:${w}px" onclick="revealOne(${i})" title="Click để xem"></span>`;
+      const box = `<span class="word-box" style="width:${w}px" onclick="revealOne(${i})" title="Click để xem"></span>`;
+      return showPinyin ? `<span class="py-col">${pyTop}${box}</span>` : box;
     }
-    const isPunct = /[，。！？、：；""''「」…]/.test(ch);
-    return `<span class="word-token${isPunct?' punct':''}">${ch}</span>`;
+    const tok = `<span class="word-token${isPunct?' punct':''}">${ch}</span>`;
+    return showPinyin ? `<span class="py-col${isPunct?' punct':''}">${pyTop}${tok}</span>` : tok;
   }).join('');
 }
 
@@ -574,13 +608,24 @@ let dictationHintCount = 0;
 function buildDictationBody(seg) {
   const chars = [...(seg.transcript || '').replace(/\s/g,'')];
   const dotsHTML = buildDots(seg.transcript || '');
+  const pinyinHint = showPinyin
+    ? `<div class="word-display" style="margin-bottom:12px;padding:10px 12px;background:#fffbeb;border:1px dashed #fde68a;border-radius:8px">
+        <span style="font-size:10px;font-weight:700;color:#92400e;letter-spacing:.6px;margin-right:8px">PINYIN GỢI Ý:</span>
+        <span style="font-family:'Be Vietnam Pro',sans-serif;font-size:14px;color:#78350f">${(seg.pinyin || '—')}</span>
+      </div>`
+    : '';
   return `
     <div class="speed-row">
       <span class="speed-row-label">Ẩn từ:</span>
       <button class="speed-pill${hidePercent===30?' active':''}" onclick="setHidePercent(30)">30%</button>
       <button class="speed-pill${hidePercent===50?' active':''}" onclick="setHidePercent(50)">50%</button>
       <button class="speed-pill${hidePercent===100?' active':''}" onclick="setHidePercent(100)">100%</button>
+      <span style="margin-left:auto"></span>
+      <button class="speed-pill${showPinyin?' active':''}" onclick="togglePinyin()" title="Hiện/ẩn pinyin gợi ý">
+        <i class="fa-solid fa-language" style="font-size:11px"></i> Pinyin
+      </button>
     </div>
+    ${pinyinHint}
     <div class="dictation-body">
       <textarea class="dictation-input" id="dictation-input" rows="2"
         placeholder="Gõ câu trả lời của bạn ở đây..."></textarea>
@@ -739,6 +784,9 @@ function buildFullBody(seg) {
         <button class="full-ctrl-btn${fullHideScript?' on':''}" id="hide-script-btn" onclick="toggleScript()">
           <i class="fas fa-${fullHideScript?'eye-slash':'eye'}"></i> ${fullHideScript?'Hiện':'Ẩn'} script
         </button>
+        <button class="full-ctrl-btn${showPinyinFull?' on':''}" onclick="togglePinyinFull()">
+          <i class="fa-solid fa-language"></i> Pinyin: ${showPinyinFull?'Bật':'Tắt'}
+        </button>
         <button class="full-ctrl-btn nav-speed-btn" onclick="cycleSpeed()" style="min-width:52px">
           <span id="full-speed-label">${audioSpeed}x</span>
         </button>
@@ -747,9 +795,19 @@ function buildFullBody(seg) {
 }
 
 function buildFullExtra(seg) {
-  const transcriptBlock = fullHideScript
-    ? `<div style="font-size:13px;color:var(--text-3);font-style:italic;text-align:center;padding:1rem 0">Script đang ẩn — nhấn "Hiện script" để xem</div>`
-    : `<div class="tc-text">${seg.transcript || ''}</div>`;
+  let transcriptBlock;
+  if (fullHideScript) {
+    transcriptBlock = `<div style="font-size:13px;color:var(--text-3);font-style:italic;text-align:center;padding:1rem 0">Script đang ẩn — nhấn "Hiện script" để xem</div>`;
+  } else if (showPinyinFull && seg.pinyin) {
+    const aligned = alignPinyin(seg.transcript || '', seg.pinyin);
+    const html = aligned.map(({ ch, py, isPunct }) => {
+      const pyTop = `<span class="py-rt${py ? '' : ' empty'}">${py}</span>`;
+      return `<span class="py-col${isPunct?' punct':''}">${pyTop}<span>${ch}</span></span>`;
+    }).join('');
+    transcriptBlock = `<div class="tc-text-ruby">${html}</div>`;
+  } else {
+    transcriptBlock = `<div class="tc-text">${seg.transcript || ''}</div>`;
+  }
   const meaningBlock = seg.meaning_vi
     ? `<div class="tc-vi-label">Dịch nghĩa</div><div class="tc-vi-text">${seg.meaning_vi}</div>`
     : '';
@@ -783,6 +841,18 @@ function toggleAutoPlay() {
 
 function toggleScript() {
   fullHideScript = !fullHideScript;
+  const extra = document.getElementById('ex-full-extra');
+  if (extra) extra.innerHTML = buildFullExtra(allSegments[currentIdx]);
+}
+
+function togglePinyin() {
+  showPinyin = !showPinyin;
+  renderCard(allSegments[currentIdx]);
+}
+
+function togglePinyinFull() {
+  showPinyinFull = !showPinyinFull;
+  renderCard(allSegments[currentIdx]);
   const extra = document.getElementById('ex-full-extra');
   if (extra) extra.innerHTML = buildFullExtra(allSegments[currentIdx]);
 }
