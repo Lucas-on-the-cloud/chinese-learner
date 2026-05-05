@@ -131,6 +131,46 @@ a{text-decoration:none;color:inherit}
 .hw-score{text-align:center;font-size:12px;color:var(--text-2);margin-top:10px;min-height:18px}
 .hw-score.good{color:var(--success);font-weight:600}
 
+/* SELECTION HIGHLIGHT */
+.zh-char{display:inline;cursor:text}
+.zh-char.selecting{background:rgba(26,86,219,.18)}
+.zh-char.hl-1{background:#FEF3C7}
+.zh-char.hl-2{background:#DBEAFE}
+.zh-char.hl-3{background:#C0E1D2}
+.zh-char.hl-4{background:#FCA5A5}
+.sel-bar{display:none;position:fixed;z-index:200;background:#fff;border:1px solid var(--border);border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:6px 10px;align-items:center;gap:8px;font-size:12px}
+.sel-bar.show{display:flex}
+.sel-word{font-family:'Noto Serif TC',serif;font-weight:600;color:var(--navy);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-label{color:var(--text-3);font-size:11px}
+.hl-color{width:18px;height:18px;border-radius:5px;cursor:pointer;border:1px solid rgba(0,0,0,.1)}
+.hl-color:hover{transform:scale(1.1)}
+.sel-divider{width:1px;height:18px;background:var(--border)}
+.sel-action{background:var(--bg);border:none;border-radius:5px;padding:5px 10px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;color:var(--text-2);transition:.15s}
+.sel-action:hover{background:#e5e7eb;color:var(--text)}
+.sel-action.add{background:var(--success);color:#fff}
+.sel-action.add:hover{background:#15803d}
+.sel-action.remove{color:var(--danger)}
+
+/* WORKSHEET OVERLAY */
+.ws-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ws-overlay.open{display:flex}
+.ws-modal{background:#fff;border-radius:14px;padding:1.5rem;width:92%;max-width:520px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:.75rem}
+.ws-modal-header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:.75rem}
+.ws-modal-header h3{font-size:16px;color:var(--navy)}
+.ws-top-actions{display:flex;gap:8px}
+.ws-sm-btn{background:var(--bg);border:1px solid var(--border);font-size:11px;font-weight:500;padding:5px 12px;border-radius:5px;cursor:pointer;font-family:inherit;color:var(--text-2)}
+.ws-sm-btn:hover{background:#e5e7eb}
+#ws-list{display:flex;flex-direction:column;gap:4px;flex:1;overflow-y:auto;max-height:50vh}
+.ws-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;cursor:pointer}
+.ws-row:hover{background:var(--bg)}
+.ws-row input{cursor:pointer}
+.ws-zh{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--navy);font-weight:600;min-width:80px}
+.ws-py{font-size:11px;color:var(--text-2);font-style:italic;flex:1}
+.ws-vn{font-size:12px;color:var(--text-3)}
+.ws-footer{padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:flex-end}
+.ws-gen-btn{background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.ws-gen-btn:hover{background:var(--blue-dark)}
+
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
 .footer-inner{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto}
 
@@ -183,6 +223,38 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <input class="chat-input" id="chat-input" placeholder="Hỏi gì đó…"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">
     <button class="chat-send" onclick="chatSend()">Gửi</button>
+  </div>
+</div>
+
+<!-- SELECTION HIGHLIGHT BAR -->
+<div class="sel-bar" id="sel-bar">
+  <span class="sel-word" id="sel-word"></span>
+  <span class="sel-label">Highlight:</span>
+  <div class="hl-color" style="background:#FEF3C7" onclick="selHighlight('hl-1')" title="Vàng"></div>
+  <div class="hl-color" style="background:#DBEAFE" onclick="selHighlight('hl-2')" title="Xanh dương"></div>
+  <div class="hl-color" style="background:#C0E1D2" onclick="selHighlight('hl-3')" title="Xanh lá"></div>
+  <div class="hl-color" style="background:#FCA5A5" onclick="selHighlight('hl-4')" title="Đỏ"></div>
+  <div class="sel-divider"></div>
+  <button class="sel-action add" onclick="selAddVocab()">+ Vocab</button>
+  <button class="sel-action remove" onclick="selRemoveHL()">✕ HL</button>
+  <button class="sel-action" onclick="selClear()">Bỏ</button>
+</div>
+
+<!-- WORKSHEET OVERLAY -->
+<div class="ws-overlay" id="ws-overlay" onclick="if(event.target===this)wsClose()">
+  <div class="ws-modal">
+    <div class="ws-modal-header">
+      <h3>📝 Tạo bài tập viết</h3>
+      <button class="hw-close" style="position:static" onclick="wsClose()">×</button>
+    </div>
+    <div class="ws-top-actions">
+      <button class="ws-sm-btn" onclick="wsSelectAll()">Chọn tất cả</button>
+      <button class="ws-sm-btn" onclick="wsSelectNone()">Bỏ chọn</button>
+    </div>
+    <div id="ws-list"></div>
+    <div class="ws-footer">
+      <button class="ws-gen-btn" onclick="wsGenerate()">📄 Tạo &amp; In</button>
+    </div>
   </div>
 </div>
 
@@ -310,6 +382,7 @@ function render(a) {
         <div class="vocab-title"><i class="fa-solid fa-book-open"></i> Từ vựng (${a.vocab?.length || 0})</div>
         <div class="vocab-actions">
           <button class="vocab-btn-action" onclick="exportCsv()"><i class="fa-solid fa-download"></i> CSV</button>
+          <button class="vocab-btn-action" onclick="wsOpen()"><i class="fa-solid fa-print"></i> Bài tập viết</button>
           <button class="vocab-btn-action" onclick="forkAll()"><i class="fa-solid fa-bookmark"></i> Flash tất cả</button>
         </div>
       </div>
@@ -318,10 +391,15 @@ function render(a) {
     <div id="comments-root" style="margin-top:40px"></div>
   `;
 
+  // Wrap each Chinese char in <span class="zh-char"> for selection
+  function wrapZh(text) {
+    return [...(text || '')].map(c => `<span class="zh-char">${esc(c)}</span>`).join('');
+  }
+
   const card = document.getElementById('content-card');
   function renderMode() {
     if (activeMode === 'zh') {
-      card.innerHTML = zhParas.map(p => `<div class="para"><div class="para-zh">${esc(p)}</div></div>`).join('');
+      card.innerHTML = zhParas.map(p => `<div class="para"><div class="para-zh">${wrapZh(p)}</div></div>`).join('');
     } else if (activeMode === 'pinyin') {
       card.innerHTML = pyParas.map(p => `<div class="para"><div class="para-pinyin">${esc(p)}</div></div>`).join('');
     } else if (activeMode === 'vi') {
@@ -331,7 +409,7 @@ function render(a) {
         <div class="parallel">
           <div>
             ${pyParas[i] ? `<div class="parallel-zh-pinyin">${esc(pyParas[i])}</div>` : ''}
-            <div class="parallel-zh">${esc(zh)}</div>
+            <div class="parallel-zh">${wrapZh(zh)}</div>
           </div>
           <div class="parallel-vi">${esc(viParas[i] || '')}</div>
         </div>`).join('');
@@ -533,6 +611,219 @@ function hwReset() {
   document.getElementById('hw-sc').textContent = '';
   hwLoadChar(hwState.idx);
 }
+
+// ─── SELECTION HIGHLIGHT ────────────────────────────────────────
+let selState = { text: '', spans: [] };
+const HL_KEY = () => `news_hl_${id}`;
+
+document.addEventListener('mouseup', e => {
+  if (e.target.closest('#sel-bar')) return;
+  setTimeout(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const allSpans = [...document.querySelectorAll('.zh-char')];
+    const selected = allSpans.filter(s => range.intersectsNode(s));
+    if (!selected.length) return;
+    selState.text = selected.map(s => s.textContent).join('');
+    selState.spans = selected;
+    selected.forEach(s => s.classList.add('selecting'));
+    const rect = range.getBoundingClientRect();
+    selShowBar(rect);
+  }, 0);
+});
+document.addEventListener('mousedown', e => { if (!e.target.closest('#sel-bar')) selClear(); });
+
+function selShowBar(rect) {
+  const bar = document.getElementById('sel-bar');
+  document.getElementById('sel-word').textContent = selState.text;
+  const midX = (rect.left + rect.right) / 2;
+  const hw = 220;
+  const x = Math.max(hw, Math.min(window.innerWidth - hw, midX));
+  bar.style.left = x + 'px';
+  bar.style.top = (rect.top - 10 + window.scrollY) + 'px';
+  bar.style.transform = 'translate(-50%, -100%)';
+  bar.classList.add('show');
+}
+
+function selHighlight(cls) {
+  selState.spans.forEach(s => {
+    s.classList.remove('hl-1','hl-2','hl-3','hl-4','selecting');
+    s.classList.add(cls);
+  });
+  saveHighlights();
+  selClear();
+}
+
+function selRemoveHL() {
+  selState.spans.forEach(s => s.classList.remove('hl-1','hl-2','hl-3','hl-4','selecting'));
+  saveHighlights();
+  selClear();
+}
+
+function selAddVocab() {
+  if (!selState.text) return;
+  const word = selState.text.trim();
+  if (!word) return;
+  // Check if already exists
+  if ((articleData.vocab || []).find(w => w.char === word)) {
+    alert('Đã có trong danh sách từ vựng.');
+    selClear(); return;
+  }
+  // Add stub vocab entry, optionally enrich with AI later
+  articleData.vocab = articleData.vocab || [];
+  articleData.vocab.push({
+    char: word,
+    pinyin: '',
+    meaning: '(do người dùng thêm)',
+    example: '',
+    exMeaning: '',
+    level: '',
+  });
+  selClear();
+  // Re-render whole article to refresh vocab list
+  render(articleData);
+  // Optionally trigger AI enrichment
+  enrichUserVocab(word, articleData.vocab.length - 1);
+}
+
+async function enrichUserVocab(word, idx) {
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        max_tokens: 400, temperature: 0.2,
+        messages: [
+          { role: 'system', content: 'Bạn là từ điển Trung-Việt. Trả JSON {"pinyin":"có dấu thanh","meaning":"nghĩa Việt ngắn","example":"câu Trung phồn thể","exMeaning":"dịch câu"}. KHÔNG markdown.' },
+          { role: 'user', content: `Từ: ${word}\n\nNgữ cảnh bài: ${(articleData.content_zh || '').slice(0, 400)}` },
+        ],
+      }),
+    });
+    const j = await res.json();
+    if (!res.ok || j.error) return;
+    const data = JSON.parse(j.content.trim().replace(/^```json\s*/, '').replace(/\s*```\s*$/, ''));
+    if (articleData.vocab[idx]) {
+      Object.assign(articleData.vocab[idx], { pinyin: data.pinyin || '', meaning: data.meaning || '', example: data.example || '', exMeaning: data.exMeaning || '' });
+      render(articleData);
+    }
+  } catch (e) { console.warn('enrich failed', e); }
+}
+
+function selClear() {
+  document.querySelectorAll('.zh-char.selecting').forEach(s => s.classList.remove('selecting'));
+  selState.text = ''; selState.spans = [];
+  document.getElementById('sel-bar').classList.remove('show');
+  window.getSelection()?.removeAllRanges();
+}
+
+function saveHighlights() {
+  // Snapshot all hl-* classes by char index per paragraph
+  const snapshot = [];
+  document.querySelectorAll('.para-zh, .parallel-zh').forEach((para, pIdx) => {
+    [...para.querySelectorAll('.zh-char')].forEach((s, cIdx) => {
+      const cls = ['hl-1','hl-2','hl-3','hl-4'].find(c => s.classList.contains(c));
+      if (cls) snapshot.push({ p: pIdx, c: cIdx, cls });
+    });
+  });
+  localStorage.setItem(HL_KEY(), JSON.stringify(snapshot));
+}
+
+function restoreHighlights() {
+  const snap = JSON.parse(localStorage.getItem(HL_KEY()) || '[]');
+  if (!snap.length) return;
+  document.querySelectorAll('.para-zh, .parallel-zh').forEach((para, pIdx) => {
+    const spans = [...para.querySelectorAll('.zh-char')];
+    snap.filter(s => s.p === pIdx).forEach(s => {
+      if (spans[s.c]) spans[s.c].classList.add(s.cls);
+    });
+  });
+}
+
+// ─── WORKSHEET ──────────────────────────────────────────────────
+function wsOpen() {
+  const v = articleData?.vocab || [];
+  if (!v.length) { alert('Không có từ vựng.'); return; }
+  document.getElementById('ws-list').innerHTML = v.map((w, i) => `
+    <label class="ws-row">
+      <input type="checkbox" class="ws-cb" data-i="${i}" checked>
+      <span class="ws-zh">${esc(w.char)}</span>
+      <span class="ws-py">${esc(w.pinyin || '')}</span>
+      <span class="ws-vn">${esc(w.meaning || '')}</span>
+    </label>`).join('');
+  document.getElementById('ws-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function wsClose() {
+  document.getElementById('ws-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function wsSelectAll()  { document.querySelectorAll('.ws-cb').forEach(cb => cb.checked = true); }
+function wsSelectNone() { document.querySelectorAll('.ws-cb').forEach(cb => cb.checked = false); }
+
+function wsGenerate() {
+  const selected = [...document.querySelectorAll('.ws-cb:checked')]
+    .map(cb => articleData.vocab[+cb.dataset.i])
+    .filter(Boolean);
+  if (!selected.length) { alert('Chọn ít nhất 1 từ.'); return; }
+  wsClose();
+  const win = window.open('', '_blank');
+  win.document.write(wsBuildHTML(selected, articleData.title_zh || 'Bài báo'));
+  win.document.close();
+}
+
+function wsBuildHTML(vocab, title) {
+  const SZ = 58, N = 10;
+  let rowsHTML = '', initJS = '';
+  vocab.forEach((w, wi) => {
+    const chars = [...w.char].filter(c => /[一-鿿]/.test(c));
+    rowsHTML += `<div class="word-hd">${w.char}<span class="py">${w.pinyin || ''}</span><span class="vn">${w.meaning || ''}</span></div>`;
+    chars.forEach((ch, ci) => {
+      const eId = `e-${wi}-${ci}`;
+      const pIds = Array.from({ length: N }, (_, k) => `p-${wi}-${ci}-${k}`);
+      const grid = `<div class="gl"></div><div class="gv"></div>`;
+      rowsHTML += `<div class="row"><div class="box ex" id="${eId}">${grid}</div>${pIds.map(id => `<div class="box pr" id="${id}">${grid}</div>`).join('')}</div>`;
+      initJS += `HanziWriter.create('${eId}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:false,showCharacter:true,strokeColor:'#111'});\n`;
+      pIds.forEach(id => {
+        initJS += `HanziWriter.create('${id}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:true,showCharacter:false,outlineColor:'#bbb'});\n`;
+      });
+    });
+  });
+  return `<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>漢字練習</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Be+Vietnam+Pro:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7/dist/hanzi-writer.min.js"><\/script>
+<style>
+@page{size:A4 portrait;margin:12mm}*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#fff;padding:10px}
+.print-bar{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid #e0d8cc}
+.print-btn{background:#1a1208;color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit}
+.print-hint{font-size:11px;color:#999}
+h1{font-family:'Noto Serif TC',serif;font-size:15px;color:#333;margin-bottom:12px}
+.word-hd{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;color:#444;margin:12px 0 4px}
+.word-hd .py{color:#888;font-style:italic;font-weight:400;margin-left:8px;font-family:'Be Vietnam Pro',sans-serif}
+.word-hd .vn{color:#888;font-weight:400;margin-left:6px;font-family:'Be Vietnam Pro',sans-serif}
+.row{display:flex;gap:3px;margin-bottom:3px;page-break-inside:avoid}
+.box{width:${SZ}px;height:${SZ}px;border:1px solid #bbb;position:relative;flex-shrink:0;background:#fff}
+.ex{border:2px solid #333}
+.gl{position:absolute;top:50%;left:0;width:100%;height:1px;background:#e5ddd2}
+.gv{position:absolute;left:50%;top:0;height:100%;width:1px;background:#e5ddd2}
+@media print{.print-bar{display:none}body{padding:0}}
+</style></head><body>
+<div class="print-bar"><button class="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>
+<span class="print-hint">Chọn "Save as PDF" trong hộp thoại in để lưu file</span></div>
+<h1>${title} · 漢字練習</h1>
+${rowsHTML}
+<script>window.onload=function(){try{${initJS}}catch(e){console.error(e)}};<\/script>
+</body></html>`;
+}
+
+// Restore highlights after each render (use observer)
+const _origRender = render;
+render = function(a) {
+  _origRender(a);
+  setTimeout(restoreHighlights, 100);
+};
 </script>
 <script src="/js/comments.js"></script>
 <script src="/js/nav-mobile.js"></script>
