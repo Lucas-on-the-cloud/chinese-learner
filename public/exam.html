@@ -333,7 +333,7 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
       <div class="nav-auth" id="nav-auth">
-        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
       </div>
     </div>
   </div>
@@ -1130,7 +1130,7 @@ Giải thích ngắn gọn tại sao đáp án đúng là đúng cho từng câu
 
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
   const init = user.email?.[0]?.toUpperCase() || 'U';
   wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${init}</a>`;
 }

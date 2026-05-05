@@ -146,7 +146,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
       <div id="nav-auth">
-        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
       </div>
     </div>
   </div>
@@ -409,7 +409,7 @@ async function renderProgressBars(user) {
 
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/login.html">Bắt đầu học</a>`; return; }
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
   const profile = auth.profile;
   const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
   const initial = auth.avatarInitial();

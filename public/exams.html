@@ -77,7 +77,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <a class="nav-link" href="/blog.html">Blog</a>
       <div class="nav-auth" id="nav-auth">
-        <a class="nav-btn" href="/login.html">Bắt đầu học</a>
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
       </div>
     </div>
   </div>
@@ -312,7 +312,7 @@ function examsApp() {
 
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a href="/login.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
+  if (!user) { wrap.innerHTML = `<a href="/courses.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
   const init = user.email?.[0]?.toUpperCase() || 'U';
   wrap.innerHTML = `<a href="/dashboard.html" class="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple/70 flex items-center justify-center text-sm font-bold text-white" title="Dashboard">${init}</a>`;
 }
