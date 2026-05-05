@@ -15,12 +15,30 @@ const SOURCES = [
 ];
 
 const SYSTEM_PROMPT = `Bạn là biên tập viên báo song ngữ Trung-Việt cho học viên TOCFL phồn thể (繁體中文 Đài Loan).
-Cho 1 bài báo tiếng Trung. Trả JSON: {"title_vi","content_vi","pinyin","category","vocab":[{"char","pinyin","meaning","example","exMeaning","level"}]}
-Quy tắc: pinyin có dấu thanh; vocab 15-20 mục ≥2 chữ; example là câu nguyên văn từ bài; KHÔNG markdown.`;
+Cho 1 bài báo tiếng Trung với cấu trúc đoạn phân cách bằng \\n\\n. Trả JSON:
+{"title_vi","content_vi","pinyin","category","vocab":[{"char","pinyin","meaning","example","exMeaning","level"}]}
+
+BẮT BUỘC: content_vi và pinyin PHẢI giữ nguyên số đoạn (\\n\\n) như content_zh.
+Pinyin có dấu thanh, mỗi câu kết bằng "." để tách. Bỏ qua header phân loại tuổi (限制級…).
+vocab 15-20 mục ≥2 chữ; example là câu nguyên văn. KHÔNG markdown.`;
+
+function cleanContent(text) {
+  let out = (text || '')
+    .replace(/[ \t ]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{2,}/g, '\n\n')
+    .trim();
+  // Fallback: if Readability returned a flat block, inject paragraph breaks every 3 sentences
+  if (!out.includes('\n\n')) {
+    const sentences = out.split(/(?<=[。！？])/).map(s => s.trim()).filter(Boolean);
+    const paras = [];
+    for (let i = 0; i < sentences.length; i += 3) paras.push(sentences.slice(i, i + 3).join(''));
+    out = paras.join('\n\n');
+  }
+  return out;
+}
 
 export default async function handler(req, res) {
-  // Authorize: Vercel cron sends a header `Authorization: Bearer <CRON_SECRET>` if CRON_SECRET env var is set.
-  // For Hobby plan, also accept calls from Vercel internal — basic check via user-agent or skip auth.
   const cronSecret = process.env.CRON_SECRET;
   if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
     return res.status(401).json({ error: 'unauthorized' });
@@ -50,9 +68,11 @@ export default async function handler(req, res) {
     });
   }
 
-  const parser = new Parser({ timeout: 8000, customFields: { item: ['media:thumbnail', 'media:content', 'enclosure'] } });
+  const parser = new Parser({
+    timeout: 8000,
+    customFields: { item: ['media:thumbnail', 'media:content', 'enclosure'] },
+  });
 
-  // Pull RSS from sources, take 2 latest each
   const candidates = [];
   for (const src of SOURCES) {
     try {
@@ -76,7 +96,6 @@ export default async function handler(req, res) {
   const have = new Set((existing || []).map(r => r.source_url));
   const fresh = candidates.filter(c => !have.has(c.link));
 
-  // Process at most 2 per call to stay within Vercel Hobby 10s timeout
   const picks = fresh.slice(0, 2);
   if (!picks.length) return res.status(200).json({ ok: true, inserted: 0, reason: 'no fresh articles' });
 
@@ -94,7 +113,7 @@ export default async function handler(req, res) {
       if (!article || !article.textContent || article.textContent.length < 200)
         throw new Error('content too short');
 
-      const trimmedZh = article.textContent.replace(/\s+/g, ' ').trim().slice(0, 2000);
+      const trimmedZh = cleanContent(article.textContent).slice(0, 2000);
 
       const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',

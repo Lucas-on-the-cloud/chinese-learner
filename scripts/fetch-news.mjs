@@ -81,9 +81,21 @@ async function fetchContent(url) {
   const reader = new Readability(dom.window.document);
   const article = reader.parse();
   if (!article) throw new Error('readability failed');
+  // Preserve paragraph structure: collapse runs of inline whitespace, but keep blank lines
+  let cleaned = (article.textContent || '')
+    .replace(/[ \t ]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{2,}/g, '\n\n')
+    .trim();
+  if (!cleaned.includes('\n\n')) {
+    const sentences = cleaned.split(/(?<=[。！？])/).map(s => s.trim()).filter(Boolean);
+    const paras = [];
+    for (let i = 0; i < sentences.length; i += 3) paras.push(sentences.slice(i, i+3).join(''));
+    cleaned = paras.join('\n\n');
+  }
   return {
     title: article.title || '',
-    content: (article.textContent || '').replace(/\s+/g, ' ').trim(),
+    content: cleaned,
     excerpt: article.excerpt || '',
     cover: article.byline || null,
   };
@@ -91,24 +103,26 @@ async function fetchContent(url) {
 
 // 4. AI process: 1 call per article does translate + pinyin + vocab + category
 const SYSTEM_PROMPT = `Bạn là biên tập viên báo song ngữ Trung-Việt cho học viên TOCFL phồn thể (繁體中文 Đài Loan).
-Cho 1 bài báo tiếng Trung phồn thể. Trả về JSON object đúng schema:
+Cho 1 bài báo tiếng Trung phồn thể với cấu trúc đoạn (paragraph) đã được phân cách bằng dòng trống (\\n\\n).
+Trả về JSON object đúng schema:
 
 {
   "title_vi": "<tiêu đề dịch tiếng Việt>",
-  "content_vi": "<full content dịch tiếng Việt, giữ đoạn>",
-  "pinyin": "<pinyin có dấu thanh, space-separated theo từng âm tiết, giữ dấu câu>",
+  "content_vi": "<full content dịch tiếng Việt, GIỮ NGUYÊN STRUCTURE \\n\\n giữa các đoạn>",
+  "pinyin": "<pinyin có dấu thanh; GIỮ NGUYÊN STRUCTURE \\n\\n giữa các đoạn>",
   "category": "<chọn 1: politics|business|tech|sports|culture|lifestyle|world|society>",
   "vocab": [
-    {"char":"<từ/cụm 2+ chữ>","pinyin":"...","meaning":"<nghĩa Việt>","example":"<câu nguyên văn từ bài>","exMeaning":"<dịch câu>","level":"<cơ bản|trung cấp|nâng cao>"},
-    ...
+    {"char":"<từ/cụm 2+ chữ>","pinyin":"...","meaning":"<nghĩa Việt>","example":"<câu nguyên văn từ bài>","exMeaning":"<dịch câu>","level":"<cơ bản|trung cấp|nâng cao>"}
   ]
 }
 
-Quy tắc nghiêm ngặt:
-- Bản dịch tự nhiên, không word-for-word; giữ nghĩa đầy đủ.
-- Pinyin: có dấu thanh ā á ǎ à, viết liền theo từ (vd: "wǒmen" không "wo men"), space giữa các từ. Bỏ qua dấu câu khi gen pinyin.
-- vocab: ĐÚNG 15-20 từ/cụm THIẾT YẾU (≥2 chữ, không từ hư). Ví dụ phải là câu/cụm NGUYÊN VĂN từ bài.
-- KHÔNG markdown, KHÔNG explain ngoài JSON.`;
+Quy tắc:
+- BẮT BUỘC giữ paragraph structure: số đoạn của content_vi và pinyin PHẢI BẰNG số đoạn của content_zh; mỗi đoạn cách nhau bằng \\n\\n.
+- Bản dịch tự nhiên, không word-for-word.
+- Pinyin: có dấu thanh ā á ǎ à, viết liền theo từ.
+- BỎ QUA những đoạn header/disclaimer ở đầu bài (vd "限制級 您即將進入...").
+- vocab: ĐÚNG 15-20 từ/cụm THIẾT YẾU (≥2 chữ).
+- KHÔNG markdown.`;
 
 async function aiProcess(zh, title) {
   const userMsg = `Tiêu đề: ${title}\n\nNội dung bài:\n${zh}\n\nTrả JSON theo schema.`;
