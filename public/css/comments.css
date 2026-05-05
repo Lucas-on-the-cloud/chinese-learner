@@ -37,3 +37,32 @@
 .cm-reply-form-slot .cm-form { background: #fff; }
 .cm-children { margin-top: 12px; padding-left: 14px; border-left: 2px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
 .cm-empty { text-align: center; color: #94a3b8; padding: 32px 0; font-size: 14px; }
+
+/* Aggregate rating block */
+.cm-aggregate { display: flex; gap: 24px; align-items: center; background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1px solid #fde68a; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; flex-wrap: wrap; }
+.cm-agg-left { display: flex; flex-direction: column; align-items: center; min-width: 120px; }
+.cm-agg-num { font-size: 36px; font-weight: 800; color: #92400e; line-height: 1; }
+.cm-agg-stars { margin-top: 4px; color: #f59e0b; font-size: 14px; }
+.cm-agg-stars .on { color: #f59e0b; }
+.cm-agg-stars .off { color: #fde68a; }
+.cm-agg-count { margin-top: 4px; font-size: 12px; color: #92400e; }
+.cm-agg-right { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; }
+.cm-rate-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #78350f; }
+.cm-rate-bar-n { width: 26px; font-weight: 600; }
+.cm-rate-bar { flex: 1; height: 8px; background: #fde68a; border-radius: 4px; overflow: hidden; }
+.cm-rate-bar-fill { display: block; height: 100%; background: #f59e0b; }
+.cm-rate-bar-c { width: 22px; text-align: right; }
+
+/* Star picker on form */
+.cm-rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cm-rate-label { font-size: 12px; color: #64748b; }
+.cm-rate-picker { display: inline-flex; align-items: center; gap: 3px; }
+.cm-rate-star { color: #cbd5e1; cursor: pointer; font-size: 18px; transition: color .12s, transform .12s; }
+.cm-rate-star.on, .cm-rate-star.hover { color: #f59e0b; }
+.cm-rate-star:hover { transform: scale(1.1); }
+.cm-rate-clear { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 16px; padding: 0 4px; margin-left: 4px; }
+.cm-rate-clear:hover { color: #ef4444; }
+
+/* Per-comment stars */
+.cm-stars { color: #f59e0b; font-size: 11px; }
+.cm-stars .off { color: #cbd5e1; }

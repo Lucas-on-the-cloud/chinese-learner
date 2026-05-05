@@ -46,6 +46,16 @@
     return roots;
   }
 
+  function renderStars(rating) {
+    if (!rating) return '';
+    let h = '<span class="cm-stars" title="' + rating + '/5">';
+    for (let i = 1; i <= 5; i++) {
+      h += `<i class="fa-solid fa-star ${i <= rating ? 'on' : 'off'}"></i>`;
+    }
+    h += '</span>';
+    return h;
+  }
+
   function renderComment(c, depth, ctx) {
     const adminBadge = c.is_admin
       ? '<span class="cm-badge-admin">Admin</span>'
@@ -59,6 +69,7 @@
         <div class="cm-head">
           <span class="cm-name">${escapeHtml(c.display_name || 'Ẩn danh')}</span>
           ${adminBadge}
+          ${renderStars(c.rating)}
           <span class="cm-time">${timeAgo(c.created_at)}</span>
         </div>
         <div class="cm-body">${escapeHtml(c.body).replace(/\n/g, '<br>')}</div>
@@ -70,9 +81,19 @@
 
   function renderForm(parentId) {
     const id = parentId ? `reply-${parentId}` : 'top';
+    const rateBlock = parentId ? '' : `
+      <div class="cm-rate-row">
+        <span class="cm-rate-label">Đánh giá (tùy chọn):</span>
+        <span class="cm-rate-picker" data-rating="0">
+          ${[1,2,3,4,5].map(n => `<i class="fa-regular fa-star cm-rate-star" data-n="${n}"></i>`).join('')}
+          <button type="button" class="cm-rate-clear" title="Xoá đánh giá">×</button>
+        </span>
+        <input type="hidden" name="rating" value="">
+      </div>`;
     return `
       <form class="cm-form" data-form="${id}">
         <input type="text" class="cm-name-input" name="name" placeholder="Tên hiển thị (mặc định: Ẩn danh)" maxlength="50">
+        ${rateBlock}
         <textarea class="cm-body-input" name="body" placeholder="${parentId ? 'Trả lời...' : 'Bình luận của bạn...'}" required maxlength="2000"></textarea>
         <input type="text" name="hp" class="cm-honeypot" tabindex="-1" autocomplete="off">
         <div class="cm-form-foot">
@@ -86,7 +107,7 @@
   async function loadComments(ctx) {
     const { data, error } = await ctx.sb
       .from('comments')
-      .select('id, parent_id, display_name, body, is_admin, status, created_at')
+      .select('id, parent_id, display_name, body, is_admin, status, rating, created_at')
       .eq('entity_type', ctx.entityType)
       .eq('entity_id', String(ctx.entityId))
       .eq('status', 'visible')
@@ -95,20 +116,44 @@
     return data || [];
   }
 
-  async function postComment(ctx, { name, body, parentId, hp }) {
+  async function postComment(ctx, { name, body, parentId, hp, rating }) {
     if (hp) throw new Error('spam'); // honeypot — bots fill, humans don't
     const display_name = (name || '').trim().slice(0, 50) || 'Ẩn danh';
     const trimmedBody = body.trim();
     if (!trimmedBody) throw new Error('Vui lòng nhập nội dung.');
     if (trimmedBody.length > 2000) throw new Error('Tối đa 2000 ký tự.');
+    const ratingNum = rating ? Math.max(1, Math.min(5, +rating)) : null;
     const { error } = await ctx.sb.from('comments').insert({
       entity_type: ctx.entityType,
       entity_id: String(ctx.entityId),
       parent_id: parentId || null,
       display_name,
       body: trimmedBody,
+      rating: parentId ? null : ratingNum,
     });
     if (error) throw error;
+  }
+
+  function renderAggregate(rows) {
+    const rated = rows.filter(r => r.rating && !r.parent_id);
+    if (!rated.length) return '';
+    const avg = rated.reduce((a,r)=>a+r.rating, 0) / rated.length;
+    const counts = [0,0,0,0,0,0]; // index 1..5
+    rated.forEach(r => counts[r.rating]++);
+    let bars = '';
+    for (let n = 5; n >= 1; n--) {
+      const pct = rated.length ? Math.round(counts[n] / rated.length * 100) : 0;
+      bars += `<div class="cm-rate-bar-row"><span class="cm-rate-bar-n">${n}★</span><span class="cm-rate-bar"><span class="cm-rate-bar-fill" style="width:${pct}%"></span></span><span class="cm-rate-bar-c">${counts[n]}</span></div>`;
+    }
+    return `
+      <div class="cm-aggregate">
+        <div class="cm-agg-left">
+          <div class="cm-agg-num">${avg.toFixed(1)}</div>
+          <div class="cm-agg-stars">${[1,2,3,4,5].map(i => `<i class="fa-solid fa-star ${i <= Math.round(avg) ? 'on' : 'off'}"></i>`).join('')}</div>
+          <div class="cm-agg-count">${rated.length} đánh giá</div>
+        </div>
+        <div class="cm-agg-right">${bars}</div>
+      </div>`;
   }
 
   async function render(ctx) {
@@ -118,6 +163,7 @@
     ctx.root.innerHTML = `
       <div class="cm-widget">
         <h3 class="cm-title"><i class="fa-regular fa-comments"></i> Bình luận <span class="cm-count">(${total})</span></h3>
+        ${renderAggregate(rows)}
         <div class="cm-form-top">${renderForm(null)}</div>
         <div class="cm-list">
           ${tree.length ? tree.map(c => renderComment(c, 0, ctx)).join('') : '<div class="cm-empty">Chưa có bình luận. Hãy là người đầu tiên!</div>'}
@@ -126,13 +172,42 @@
     bindEvents(ctx);
   }
 
+  function bindStarPicker(form) {
+    const picker = form.querySelector('.cm-rate-picker');
+    if (!picker) return;
+    const stars = picker.querySelectorAll('.cm-rate-star');
+    const hidden = form.querySelector('input[name="rating"]');
+    const clearBtn = picker.querySelector('.cm-rate-clear');
+    const setRating = (n) => {
+      picker.dataset.rating = String(n);
+      hidden.value = n ? String(n) : '';
+      stars.forEach((s, i) => {
+        const filled = i < n;
+        s.classList.toggle('fa-solid', filled);
+        s.classList.toggle('fa-regular', !filled);
+        s.classList.toggle('on', filled);
+      });
+    };
+    stars.forEach((s, idx) => {
+      s.addEventListener('mouseenter', () => {
+        stars.forEach((ss, i) => ss.classList.toggle('hover', i <= idx));
+      });
+      s.addEventListener('mouseleave', () => stars.forEach(ss => ss.classList.remove('hover')));
+      s.addEventListener('click', () => setRating(idx + 1));
+    });
+    clearBtn?.addEventListener('click', () => setRating(0));
+  }
+
   function bindEvents(ctx) {
     // Top-level form
     const topForm = ctx.root.querySelector('.cm-form[data-form="top"]');
-    topForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await handleSubmit(ctx, topForm, null);
-    });
+    if (topForm) {
+      bindStarPicker(topForm);
+      topForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await handleSubmit(ctx, topForm, null);
+      });
+    }
 
     // Reply buttons
     ctx.root.querySelectorAll('.cm-reply-btn').forEach(btn => {
@@ -162,7 +237,7 @@
     try {
       await postComment(ctx, {
         name: fd.get('name'), body: fd.get('body'),
-        parentId, hp: fd.get('hp'),
+        parentId, hp: fd.get('hp'), rating: fd.get('rating'),
       });
       msgEl.textContent = 'Đã gửi!';
       msgEl.className = 'cm-form-msg cm-ok';

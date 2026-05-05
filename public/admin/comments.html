@@ -22,6 +22,8 @@
 .cm-row-entity.eu { background:#fce7f3; color:#9d174d; }
 .cm-row-status { background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
 .cm-row-status.visible { background:#dcfce7; color:#15803d; }
+.cm-row-rating { color:#f59e0b; font-size:12px; }
+.cm-row-rating .off { color:#e5e7eb; }
 .cm-row-body { color:#1e293b; line-height:1.5; font-size:14px; white-space:pre-wrap; word-break:break-word; }
 .cm-row-actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
 .cm-action-btn { background:#fff; border:1px solid #e5e7eb; padding:5px 11px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:500; color:#475569; font-family:inherit; }
@@ -212,6 +214,7 @@ function render() {
         <div class="cm-row-head">
           <span class="cm-row-name">${escapeHtml(c.display_name)}</span>
           ${c.is_admin ? '<span class="cm-row-entity" style="background:#4f46e5;color:#fff">ADMIN</span>' : ''}
+          ${c.rating ? `<span class="cm-row-rating" title="${c.rating}/5">${[1,2,3,4,5].map(i => `<i class="fa-solid fa-star ${i <= c.rating ? '' : 'off'}"></i>`).join('')}</span>` : ''}
           <span class="cm-row-entity ${ENTITY_CLASS[c.entity_type]||''}">${ENTITY_LABELS[c.entity_type]||c.entity_type}#${c.entity_id}</span>
           <span class="cm-row-status ${c.status}">${c.status === 'visible' ? '✓ Hiển thị' : '⏸ Đã ẩn'}</span>
           ${isReply ? `<span style="font-size:11px;color:#64748b">↳ trả lời <b>${escapeHtml(parent.display_name)}</b>: "${escapeHtml((parent.body||'').slice(0,60))}${parent.body.length>60?'…':''}"</span>` : ''}
