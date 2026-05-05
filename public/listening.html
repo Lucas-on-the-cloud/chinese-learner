@@ -694,7 +694,22 @@ function buildDictationBody(seg) {
 }
 
 // ─── DICTATION (single textarea, char-by-char compare on submit) ──────
-const DICT_PUNCT_RE = /[，。！？、：；""''「」（）()【】《》〈〉…\-—·\.,\?\!:;\(\)\[\]\s​　]/g;
+const _DICT_PUNCT_TEST = /[，。！？、：；""''「」（）()【】《》〈〉…\-—·\.,\?\!:;\(\)\[\]\s​　]/;
+const _DICT_LABEL_TEST = /[A-Za-z]/;
+// Chinese numerals 一-九 are equivalent to ASCII digits 1-9 for comparison purposes.
+const _DICT_NUM_MAP = { '一':'1','二':'2','三':'3','四':'4','五':'5','六':'6','七':'7','八':'8','九':'9' };
+function _dictIsSkip(c) { return _DICT_LABEL_TEST.test(c) || _DICT_PUNCT_TEST.test(c); }
+function _dictNorm(c)   { return _DICT_NUM_MAP[c] || c; }
+// Returns array of "real" (non-skipped) chars from a string, with original index + normalized form.
+function _dictPickReal(s) {
+  const arr = [...(s || '')];
+  const out = [];
+  for (let i = 0; i < arr.length; i++) {
+    const ch = arr[i];
+    if (!_dictIsSkip(ch)) out.push({ orig: ch, norm: _dictNorm(ch), origIdx: i });
+  }
+  return out;
+}
 
 function bindDictationInputs() {
   const ta = document.getElementById('dict-textarea');
@@ -723,33 +738,29 @@ function dictSetOverlay(charIdx) {
   ov.innerHTML = _escHtml(v.slice(0, charIdx)) + '<mark>' + _escHtml(v[charIdx]) + '</mark>' + _escHtml(v.slice(charIdx + 1));
 }
 
-function stripPunct(s) {
-  return [...(s || '')].filter(c => !DICT_PUNCT_RE.test(c)).join('');
-}
-
 function dictCheck() {
   const seg = allSegments[currentIdx];
   if (!seg) return;
   const ta = document.getElementById('dict-textarea');
   if (!ta) return;
-  const correctChars = [...stripPunct(seg.transcript || '')];
-  const userChars    = [...stripPunct(ta.value || '')];
-  if (!userChars.length) { replayAudio(); return; }
+  const expectedReal = _dictPickReal(seg.transcript || '');
+  const userReal     = _dictPickReal(ta.value || '');
+  if (!userReal.length) { replayAudio(); return; }
 
-  // Build per-char results aligned by position (ignoring punctuation in both)
+  // Build per-position results (skip both punctuation AND ASCII letters; treat 一≡1, 二≡2, ..., 九≡9)
   let ok = 0;
-  const results = correctChars.map((ch, i) => {
-    const u = userChars[i] || '';
-    if (!u)       return { type: 'miss', correct: ch, user: '' };
-    if (u === ch) { ok++; return { type: 'ok', correct: ch, user: u }; }
-    return { type: 'err', correct: ch, user: u };
+  const results = expectedReal.map((e, i) => {
+    const u = userReal[i];
+    if (!u) return { type: 'miss', correct: e.orig, user: '' };
+    if (u.norm === e.norm) { ok++; return { type: 'ok', correct: e.orig, user: u.orig }; }
+    return { type: 'err', correct: e.orig, user: u.orig };
   });
-  const extra = userChars.slice(correctChars.length);
+  const extra = userReal.slice(expectedReal.length).map(u => u.orig);
 
-  // Render result row preserving punctuation flow from original transcript
+  // Render result row preserving punctuation/labels flow from original transcript
   let resIdx = 0;
   const rowHtml = [...(seg.transcript || '')].map((ch) => {
-    if (DICT_PUNCT_RE.test(ch)) return `<span class="rc-punct">${ch}</span>`;
+    if (_dictIsSkip(ch)) return `<span class="rc-punct">${ch}</span>`;
     const r = results[resIdx++];
     if (!r) return '';
     return `<span class="rc-cell rc-${r.type}">
@@ -762,7 +773,7 @@ function dictCheck() {
       extra.map(c => `<span class="rc-cell rc-err"><span class="rc-correct">·</span><span class="rc-user">${c}</span></span>`).join('')
     : '';
 
-  const total = correctChars.length;
+  const total = expectedReal.length;
   const pct = total ? Math.round(ok / total * 100) : 0;
   const msg = pct === 100 ? '🎉 Hoàn hảo!' : pct >= 70 ? '👍 Khá tốt!' : '💪 Cố gắng hơn!';
   const pillCls = pct === 100 ? 'perfect' : pct >= 70 ? 'good' : 'meh';
@@ -777,17 +788,13 @@ function dictCheck() {
   if (pct < 100) {
     const firstWrongRealIdx = results.findIndex(r => r.type !== 'ok');
     if (firstWrongRealIdx >= 0) {
-      const firstWrongIsErr = results[firstWrongRealIdx]?.type === 'err';
-      const taChars = [...(ta.value || '')];
-      let realCount = 0;
-      for (let i = 0; i < taChars.length; i++) {
-        if (!DICT_PUNCT_RE.test(taChars[i])) {
-          if (realCount === firstWrongRealIdx) { cursorPos = i + 1; break; }
-          realCount++;
-        }
+      const isErr = results[firstWrongRealIdx]?.type === 'err';
+      if (isErr && userReal[firstWrongRealIdx]) {
+        cursorPos = userReal[firstWrongRealIdx].origIdx + 1;
+        highlightWrongChar = true;
+      } else {
+        cursorPos = ta.value.length;
       }
-      if (cursorPos === -1) cursorPos = ta.value.length;
-      highlightWrongChar = firstWrongIsErr;
     }
   }
 
@@ -850,17 +857,14 @@ function dictHint() {
   if (!seg) return;
   const ta = document.getElementById('dict-textarea');
   if (!ta) return;
-  const correctChars = [...stripPunct(seg.transcript || '')];
-  const userChars    = [...stripPunct(ta.value || '')];
-  // Find first wrong/missing position
+  const expected = _dictPickReal(seg.transcript || '');
+  const userReal = _dictPickReal(ta.value || '');
   let firstWrong = -1;
-  for (let i = 0; i < correctChars.length; i++) {
-    if (userChars[i] !== correctChars[i]) { firstWrong = i; break; }
+  for (let i = 0; i < expected.length; i++) {
+    if (!userReal[i] || userReal[i].norm !== expected[i].norm) { firstWrong = i; break; }
   }
   if (firstWrong === -1) return;
-  // Replace user up to firstWrong with correct, then append correct char at firstWrong
-  const newChars = correctChars.slice(0, firstWrong + 1);
-  ta.value = newChars.join('');
+  ta.value = expected.slice(0, firstWrong + 1).map(e => e.orig).join('');
   ta.focus();
   ta.setSelectionRange(ta.value.length, ta.value.length);
 }
@@ -870,7 +874,7 @@ function dictShowAnswer() {
   if (!seg) return;
   const ta = document.getElementById('dict-textarea');
   if (!ta) return;
-  ta.value = stripPunct(seg.transcript || '');
+  ta.value = _dictPickReal(seg.transcript || '').map(e => e.orig).join('');
   ta.focus();
 }
 
