@@ -119,11 +119,25 @@ a{text-decoration:none;color:inherit}
 .reset-btn:hover{color:var(--text);border-color:#9ca3af}
 
 /* ── NGHE CHÉP (textarea + inline result) ────────── */
-.dict-textarea{width:100%;padding:14px 16px;border:2px solid var(--blue);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:19px;outline:none;resize:vertical;line-height:1.7;color:var(--text);background:#fafeff;min-height:84px;letter-spacing:.5px}
+.dict-input-wrap{position:relative}
+.dict-overlay,.dict-textarea{
+  width:100%;
+  padding:14px 16px;
+  border:2px solid transparent;
+  border-radius:10px;
+  font-family:'Noto Serif TC',serif;
+  font-size:19px;
+  line-height:1.7;
+  letter-spacing:.5px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  box-sizing:border-box;
+}
+.dict-overlay{position:absolute;inset:0;color:transparent;pointer-events:none;overflow:hidden;margin:0;z-index:0}
+.dict-overlay mark{background:#fde68a;color:transparent;border-radius:3px;box-shadow:0 0 0 1px rgba(245,158,11,.35)}
+.dict-textarea{position:relative;z-index:1;border-color:var(--blue);outline:none;resize:vertical;color:var(--text);background:transparent;min-height:84px;font-family:'Noto Serif TC',serif}
 .dict-textarea:focus{box-shadow:0 0 0 3px rgba(26,86,219,.12)}
 .dict-textarea:disabled{background:#f9fafb;color:var(--text-2);cursor:not-allowed}
-.dict-textarea::selection{background:#fde68a;color:#7c2d12}
-.dict-textarea::-moz-selection{background:#fde68a;color:#7c2d12}
 .dict-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .dict-btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
 .dict-btn:hover{border-color:#9ca3af;color:var(--text)}
@@ -662,7 +676,10 @@ function buildDictationBody(seg) {
       </button>
     </div>
     ${pinyinHint}
-    <textarea class="dict-textarea" id="dict-textarea" rows="2" placeholder="Gõ câu trả lời (chữ phồn thể) — không cần dấu câu…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+    <div class="dict-input-wrap">
+      <div class="dict-overlay" id="dict-overlay" aria-hidden="true"></div>
+      <textarea class="dict-textarea" id="dict-textarea" rows="2" placeholder="Gõ câu trả lời (chữ phồn thể) — không cần dấu câu…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+    </div>
     <div class="dict-actions">
       <button class="dict-btn" onclick="dictHint()" title="Gợi ý từ tiếp theo"><i class="fa-solid fa-lightbulb"></i> Gợi ý</button>
       <button class="dict-btn" onclick="dictShowAnswer()" title="Hiện toàn bộ đáp án"><i class="fa-solid fa-eye"></i> Xem đáp án</button>
@@ -688,6 +705,22 @@ function bindDictationInputs() {
     else if (e.key === 'Tab')             { e.preventDefault(); dictHint();  }
     // Ctrl handled globally — see _ctrlSolo handler
   });
+  // Sync overlay scroll with textarea (so highlight stays aligned on long content)
+  ta.addEventListener('scroll', () => {
+    const ov = document.getElementById('dict-overlay');
+    if (ov) { ov.scrollTop = ta.scrollTop; ov.scrollLeft = ta.scrollLeft; }
+  });
+}
+
+function _escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function dictSetOverlay(charIdx) {
+  const ta = document.getElementById('dict-textarea');
+  const ov = document.getElementById('dict-overlay');
+  if (!ta || !ov) return;
+  const v = ta.value;
+  if (charIdx < 0 || charIdx >= v.length) { ov.innerHTML = ''; return; }
+  ov.innerHTML = _escHtml(v.slice(0, charIdx)) + '<mark>' + _escHtml(v[charIdx]) + '</mark>' + _escHtml(v.slice(charIdx + 1));
 }
 
 function stripPunct(s) {
@@ -792,19 +825,20 @@ function dictCheck() {
     const nextBtn = document.querySelector('#dict-score-row .dict-btn.primary');
     setTimeout(() => nextBtn?.focus(), 50);
   } else {
-    // Mistakes → highlight wrong char (yellow via ::selection) so user can fix it.
-    // If the wrong is "miss" (user typed too short), just place caret at end.
+    // Mistakes → highlight wrong char (yellow via overlay <mark>) and place caret AFTER it.
+    // If the wrong is "miss" (user typed too short), just place caret at end (no highlight).
     setTimeout(() => {
       ta.focus();
       if (cursorPos < 0) return;
-      if (highlightWrongChar) ta.setSelectionRange(cursorPos - 1, cursorPos);
-      else                    ta.setSelectionRange(cursorPos, cursorPos);
+      ta.setSelectionRange(cursorPos, cursorPos);
+      if (highlightWrongChar) dictSetOverlay(cursorPos - 1);
     }, 50);
-    // Dismiss the result block as soon as user edits (delete/type/paste)
+    // Dismiss the result block as soon as user edits (delete/type/paste); also clear overlay
     const onEdit = () => {
       const row = document.getElementById('dict-score-row');
       if (row) row.innerHTML = '';
       document.querySelector('.dict-actions')?.style.removeProperty('display');
+      dictSetOverlay(-1);
       ta.removeEventListener('input', onEdit);
     };
     ta.addEventListener('input', onEdit);
