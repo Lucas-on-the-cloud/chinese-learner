@@ -93,30 +93,11 @@ a{text-decoration:none;color:inherit}
 .kbd-hint{padding:10px 14px;font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-top:1px solid #f9fafb}
 .kbd{display:inline-block;padding:1px 6px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:10px;font-family:monospace;color:var(--text-2)}
 
-/* ── NGHE CHECK ─────────────────────────────────── */
-.check-body{padding:16px 14px 12px}
-.word-display{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;min-height:48px;margin-bottom:16px}
-.word-token{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--navy);line-height:1}
-.word-token.punct{color:var(--text-3);font-size:18px}
-.word-box{display:inline-block;height:28px;border-radius:6px;background:#e5e7eb;cursor:pointer;transition:all .15s;vertical-align:middle}
-.word-box:hover{background:#d1d5db}
-
-/* Pinyin ruby column — used in all 3 modes */
+/* Pinyin ruby column — used in Dictation hint + Full mode */
 .py-col{display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1}
 .py-col .py-rt{font-family:'Be Vietnam Pro',sans-serif;font-size:11px;color:#6b7280;font-weight:500;min-height:14px;letter-spacing:.02em}
 .py-col .py-rt.empty{visibility:hidden}
 .py-col.punct .py-rt{visibility:hidden}
-.py-col .word-token, .py-col .word-box{display:inline-block}
-.tc-text-ruby{display:flex;flex-wrap:wrap;align-items:flex-end;gap:6px;font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:var(--navy);line-height:1.6}
-.tc-text-ruby .py-rt{font-size:12px}
-
-.reveal-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.reveal-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s}
-.reveal-btn:hover{border-color:#9ca3af;color:var(--text)}
-.reveal-btn i{font-size:11px;color:var(--text-3)}
-.reveal-sep{color:var(--border);font-size:16px}
-.reset-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;transition:all .12s}
-.reset-btn:hover{color:var(--text);border-color:#9ca3af}
 
 /* ── NGHE CHÉP (textarea + inline result) ────────── */
 .dict-input-wrap{position:relative}
@@ -177,35 +158,44 @@ a{text-decoration:none;color:inherit}
   .rc-punct{font-size:19px;padding-bottom:6px}
 }
 
-/* ── NGHE FULL ──────────────────────────────────── */
-.full-player{padding:24px 14px 16px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.full-btns{display:flex;align-items:center;gap:18px}
-.full-prev-btn,.full-next-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);color:var(--text-2);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.full-prev-btn:hover,.full-next-btn:hover{border-color:#9ca3af;color:var(--text)}
-.full-prev-btn:disabled,.full-next-btn:disabled{opacity:.35;cursor:not-allowed}
-.full-play-btn{width:56px;height:56px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;box-shadow:0 4px 16px rgba(26,86,219,.35)}
-.full-play-btn:hover{background:#1544b8;box-shadow:0 6px 20px rgba(26,86,219,.45)}
-.full-counter{font-size:14px;color:var(--text-2);font-weight:500}
-.full-counter strong{color:var(--text)}
-.full-ctrl-row{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;gap:8px}
-.full-ctrl-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .12s}
-.full-ctrl-btn:hover{border-color:#9ca3af;color:var(--text)}
-.full-ctrl-btn.on{background:var(--blue-lt);color:var(--blue);border-color:#c7d7fd}
-.full-ctrl-btn i{font-size:11px}
+/* ── NGHE FULL (2-column layout) ──────────────────── */
+.nf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.nf-left{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;min-height:340px}
+.nf-audio-mount{width:100%}
+.nf-audio-mount audio.nf-audio{width:100%;display:block}
+.nf-current{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px 6px;text-align:center;gap:10px}
+.nf-current-text{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--navy);line-height:1.6;letter-spacing:.4px}
+.nf-current-text-ruby{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:5px;font-family:'Noto Serif TC',serif;font-size:22px;font-weight:600;color:var(--navy);line-height:1.5}
+.nf-current-text-ruby .py-rt{font-size:12px}
+.nf-current-meaning{font-size:13px;color:var(--text-2);font-style:italic;line-height:1.55;margin-top:4px}
+.nf-nav{display:flex;align-items:center;justify-content:center;gap:24px;padding-top:12px;border-top:1px solid var(--border)}
+.nf-nav button{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;color:var(--text-2);font-size:14px;transition:all .12s}
+.nf-nav button:hover{color:var(--text);border-color:#9ca3af}
+.nf-nav button:disabled{opacity:.35;cursor:not-allowed}
+.nf-counter{font-size:14px;color:var(--text-2);font-weight:500;min-width:60px;text-align:center}
 
-.transcript-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:12px}
-.tc-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px}
-.tc-text{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:var(--navy);line-height:1.75;letter-spacing:.5px}
-.tc-vi-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-3);text-transform:uppercase;margin-top:14px;margin-bottom:6px}
-.tc-vi-text{font-size:14px;color:var(--text-2);font-style:italic;line-height:1.7}
+.nf-right{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:480px}
+.nf-list{overflow-y:auto;flex:1}
+.nf-row{display:flex;align-items:center;gap:12px;padding:13px 16px;width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);cursor:pointer;text-align:left;font-family:inherit;transition:background .12s}
+.nf-row:last-child{border-bottom:none}
+.nf-row:hover{background:#f8fafc}
+.nf-row.active{background:#dbeafe}
+.nf-row-icon{color:var(--text-2);font-size:18px;flex-shrink:0}
+.nf-row.active .nf-row-icon{color:var(--blue)}
+.nf-row-text{flex:1;font-family:'Noto Serif TC',serif;font-size:15px;color:var(--text);line-height:1.4}
 
-.seg-list-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:12px}
-.sl-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-3);text-transform:uppercase;margin-bottom:12px}
-.sl-circles{display:flex;flex-wrap:wrap;gap:8px}
-.sl-circle{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all .15s;flex-shrink:0}
-.sl-circle:hover{border-color:#9ca3af;color:var(--text)}
-.sl-circle.done{background:var(--green-lt);border-color:#bbf7d0;color:var(--green)}
-.sl-circle.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.nf-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:12px;flex-wrap:wrap}
+.nf-toggle{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;user-select:none}
+.nf-toggle input{cursor:pointer;accent-color:var(--blue)}
+.nf-toggle-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s}
+.nf-toggle-btn:hover{border-color:#9ca3af;color:var(--text)}
+.nf-toggle-btn.on{background:var(--blue-lt);color:var(--blue);border-color:#c7d7fd}
+.nf-toggle-btn i{font-size:11px}
+@media(max-width:768px){
+  .nf-grid{grid-template-columns:1fr}
+  .nf-right{max-height:360px}
+  .nf-current-text,.nf-current-text-ruby{font-size:19px}
+}
 
 /* DONE */
 .done-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:3rem;text-align:center}
@@ -218,8 +208,6 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:640px){
   .nav-menu .nav-link{display:none}
   .mode-tab{font-size:12px;padding:8px 0}
-  .word-token{font-size:18px}
-  .tc-text{font-size:17px}
 }
 </style>
 </head>
@@ -305,15 +293,13 @@ let sessionScore = { correct: 0, total: 0 };
 let timeInterval = null;
 
 // Mode state
-let currentMode  = 'check';   // 'check' | 'dictation' | 'full'
+let currentMode  = 'dictation';   // 'dictation' | 'full'
 let audioSpeed   = 1;
-let hidePercent  = 50;        // check mode: % of chars to hide
-let revealedSet  = new Set(); // indices of revealed chars in check mode
 let fullAutoPlay = true;
-let fullHideScript = false;
 let isPlaying    = false;
-let showPinyin   = false;   // Check + Dictation modes — toggleable
+let showPinyin   = false;   // Dictation mode — toggleable
 let showPinyinFull = true;  // Full mode — default on
+let nfAutoScroll = true;
 
 const audioEl = document.getElementById('main-audio');
 
@@ -448,12 +434,10 @@ function renderExercise(idx) {
   // Build mode tabs + card
   document.getElementById('app-main').innerHTML = `
     <div class="mode-tabs">
-      <button class="mode-tab${currentMode==='check'?' active':''}" onclick="switchMode('check')">Nghe Check</button>
       <button class="mode-tab${currentMode==='dictation'?' active':''}" onclick="switchMode('dictation')">Nghe Chép</button>
       <button class="mode-tab${currentMode==='full'?' active':''}" onclick="switchMode('full')">Nghe Full</button>
     </div>
     <div id="ex-card-wrap"></div>
-    ${currentMode === 'full' ? '<div id="ex-full-extra"></div>' : ''}
   `;
 
   renderCard(seg);
@@ -468,13 +452,13 @@ function switchMode(mode) {
 }
 
 function renderCard(seg) {
-  const isCheck = currentMode === 'check';
   const isDictation = currentMode === 'dictation';
   const isFull = currentMode === 'full';
   const total = allSegments.length;
   const n = currentIdx + 1;
 
-  const navHTML = `
+  // Compact nav bar — only used in Dictation mode (Full has its own larger layout)
+  const navHTML = isDictation ? `
     <div class="ex-nav">
       <div class="ex-nav-left">
         <button class="nav-icon-btn" onclick="goSeg(${currentIdx-1})" ${currentIdx===0?'disabled':''} title="Câu trước">
@@ -495,83 +479,25 @@ function renderCard(seg) {
         </button>
       </div>
       <div class="ex-nav-right">
-        ${isCheck || isDictation ? `<button class="nav-icon-btn" onclick="showHint()" title="Gợi ý"><i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i></button>` : ''}
+        <button class="nav-icon-btn" onclick="showHint()" title="Gợi ý"><i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i></button>
         <button class="nav-icon-btn" title="Ghi chú"><i class="far fa-file" style="color:#9ca3af"></i></button>
       </div>
-    </div>`;
+    </div>` : '';
 
-  let bodyHTML = '';
+  const bodyHTML = isDictation ? buildDictationBody(seg) : buildFullBody(seg);
+  document.getElementById('ex-card-wrap').innerHTML = isFull
+    ? bodyHTML
+    : `<div class="ex-card">${navHTML}${bodyHTML}</div>`;
 
-  if (isCheck) {
-    bodyHTML = buildCheckBody(seg);
-  } else if (isDictation) {
-    bodyHTML = buildDictationBody(seg);
-  } else {
-    bodyHTML = buildFullBody(seg);
-  }
-
-  document.getElementById('ex-card-wrap').innerHTML = `<div class="ex-card">${navHTML}${bodyHTML}</div>`;
-
-  if (isFull) {
-    document.getElementById('ex-full-extra').innerHTML = buildFullExtra(seg);
-  }
-
-  // Bind events after render
+  // Bind mode-specific behaviors
   if (isDictation) {
     bindDictationInputs();
+    nfMountAudio(false);
+  } else if (isFull) {
+    nfMountAudio(true);
+    nfBindKeys();
+    nfAutoScrollToActive();
   }
-  if (isCheck) {
-    document.addEventListener('keydown', handleCheckKey);
-  }
-}
-
-// ─── NGHE CHECK ──────────────────────────────────
-function buildCheckBody(seg) {
-  const chars = tokenize(seg.transcript || '');
-  // Initially hide hidePercent% of chars randomly
-  const hideCount = Math.round(chars.length * hidePercent / 100);
-  // Pick random indices to hide (if revealedSet is empty = first render)
-  if (revealedSet.size === 0) {
-    const indices = chars.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0, hideCount);
-    indices.forEach(i => {/* hiddenIndices tracked via NOT in revealedSet */});
-    // Store which should start as HIDDEN
-    window._hiddenIndices = new Set(indices);
-  }
-
-  const speedLabel = hidePercent === 30 ? '30%' : hidePercent === 50 ? '50%' : '100%';
-
-  return `
-    <div class="speed-row">
-      <span class="speed-row-label">Ẩn từ:</span>
-      <button class="speed-pill${hidePercent===30?' active':''}" onclick="setHidePercent(30)">30%</button>
-      <button class="speed-pill${hidePercent===50?' active':''}" onclick="setHidePercent(50)">50%</button>
-      <button class="speed-pill${hidePercent===100?' active':''}" onclick="setHidePercent(100)">100%</button>
-      <span style="margin-left:auto"></span>
-      <button class="speed-pill${showPinyin?' active':''}" onclick="togglePinyin()" title="Hiện/ẩn pinyin">
-        <i class="fa-solid fa-language" style="font-size:11px"></i> Pinyin
-      </button>
-    </div>
-    <div class="check-body">
-      <div class="word-display" id="word-display">${renderWordDisplay(chars)}</div>
-      <div class="reveal-row">
-        <button class="reveal-btn" onclick="revealChars(1)"><i class="far fa-eye"></i> 1 từ</button>
-        <button class="reveal-btn" onclick="revealChars(2)"><i class="far fa-eye"></i> 2 từ</button>
-        <button class="reveal-btn" onclick="revealChars(3)"><i class="far fa-eye"></i> 3 từ</button>
-        <button class="reveal-btn" onclick="revealChars(Infinity)" style="background:#f8faff;border-color:#c7d7fd;color:var(--blue)">Tất cả</button>
-        <span class="reveal-sep">·</span>
-        <button class="reset-btn" onclick="resetReveal()"><i class="fas fa-rotate"></i> Reset</button>
-      </div>
-    </div>
-    <div class="kbd-hint">
-      <kbd class="kbd">Ctrl</kbd> phát lại &nbsp;·&nbsp;
-      <kbd class="kbd">Tab</kbd> lật từ &nbsp;·&nbsp;
-      <kbd class="kbd">Enter</kbd> câu tiếp theo
-    </div>`;
-}
-
-function tokenize(text) {
-  // Split into individual chars; keep punctuation as separate tokens
-  return [...text.trim()].filter(c => c !== ' ' || true);
 }
 
 // Align pinyin syllables (space-separated) with Chinese chars; punctuation gets no pinyin.
@@ -587,59 +513,6 @@ function alignPinyin(transcript, pinyin) {
   return out;
 }
 
-function renderWordDisplay(chars) {
-  const seg = allSegments[currentIdx];
-  const aligned = showPinyin ? alignPinyin(seg?.transcript || '', seg?.pinyin || '') : null;
-  return chars.map((ch, i) => {
-    const hidden = window._hiddenIndices?.has(i) && !revealedSet.has(i);
-    const isPunct = /[，。！？、：；""''「」…]/.test(ch);
-    const py = aligned?.[i]?.py || '';
-    const pyTop = showPinyin ? `<span class="py-rt${py ? '' : ' empty'}">${py}</span>` : '';
-    if (hidden) {
-      const w = Math.max(18, ch === '，' || ch === '。' ? 14 : 22);
-      const box = `<span class="word-box" style="width:${w}px" onclick="revealOne(${i})" title="Click để xem"></span>`;
-      return showPinyin ? `<span class="py-col">${pyTop}${box}</span>` : box;
-    }
-    const tok = `<span class="word-token${isPunct?' punct':''}">${ch}</span>`;
-    return showPinyin ? `<span class="py-col${isPunct?' punct':''}">${pyTop}${tok}</span>` : tok;
-  }).join('');
-}
-
-function revealChars(n) {
-  const chars = tokenize(allSegments[currentIdx]?.transcript || '');
-  const hidden = [...(window._hiddenIndices || [])].filter(i => !revealedSet.has(i));
-  const toReveal = hidden.sort(() => Math.random()-.5).slice(0, n === Infinity ? hidden.length : n);
-  toReveal.forEach(i => revealedSet.add(i));
-  document.getElementById('word-display').innerHTML = renderWordDisplay(chars);
-}
-
-function revealOne(i) {
-  revealedSet.add(i);
-  const chars = tokenize(allSegments[currentIdx]?.transcript || '');
-  document.getElementById('word-display').innerHTML = renderWordDisplay(chars);
-}
-
-function resetReveal() {
-  revealedSet = new Set();
-  const seg = allSegments[currentIdx];
-  const chars = tokenize(seg?.transcript || '');
-  const hideCount = Math.round(chars.length * hidePercent / 100);
-  const indices = chars.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0, hideCount);
-  window._hiddenIndices = new Set(indices);
-  document.getElementById('word-display').innerHTML = renderWordDisplay(chars);
-}
-
-function setHidePercent(pct) {
-  hidePercent = pct;
-  renderExercise(currentIdx);
-}
-
-function handleCheckKey(e) {
-  if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'TEXTAREA') return;
-  if (e.key === 'Enter') { document.removeEventListener('keydown', handleCheckKey); goSeg(currentIdx+1); }
-  if (e.key === 'Tab') { e.preventDefault(); revealChars(1); }
-}
-
 // Global "tap Ctrl alone" → replay audio. Works in Check + Dictation modes.
 // Triggers on keyup of Ctrl WITHOUT any other key pressed during the hold (so Ctrl+C/V/etc are safe).
 let _ctrlSolo = false;
@@ -650,7 +523,7 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('keyup', (e) => {
   if (e.key === 'Control' && _ctrlSolo) {
     _ctrlSolo = false;
-    if (currentMode === 'check' || currentMode === 'dictation') {
+    if (currentMode === 'dictation') {
       e.preventDefault();
       replayAudio();
     }
@@ -878,90 +751,110 @@ function dictShowAnswer() {
   ta.focus();
 }
 
-// ─── NGHE FULL ───────────────────────────────────
+// ─── NGHE FULL (2-column: audio+current | scrollable list) ────────
 function buildFullBody(seg) {
-  const n = currentIdx + 1, total = allSegments.length;
+  const total = allSegments.length;
+  const n = currentIdx + 1;
+
+  // Current sentence display (with optional pinyin ruby above)
+  let currentText;
+  if (showPinyinFull && seg.pinyin) {
+    const aligned = alignPinyin(seg.transcript || '', seg.pinyin);
+    const html = aligned.map(({ ch, py, isPunct }) =>
+      `<span class="py-col${isPunct?' punct':''}"><span class="py-rt${py?'':' empty'}">${py}</span><span>${ch}</span></span>`
+    ).join('');
+    currentText = `<div class="nf-current-text-ruby">${html}</div>`;
+  } else {
+    currentText = `<div class="nf-current-text">${seg.transcript || ''}</div>`;
+  }
+  const meaningHTML = seg.meaning_vi
+    ? `<div class="nf-current-meaning">${seg.meaning_vi}</div>`
+    : '';
+
+  // Right list: each row plays its own segment
+  const rows = allSegments.map((s, i) => `
+    <button class="nf-row${i === currentIdx ? ' active' : ''}" data-idx="${i}" onclick="goSeg(${i})">
+      <i class="fa-solid fa-circle-play nf-row-icon"></i>
+      <span class="nf-row-text">${s.transcript || ''}</span>
+    </button>`).join('');
+
   return `
-    <div class="full-player">
-      <div class="full-btns">
-        <button class="full-prev-btn" onclick="goSeg(${currentIdx-1})" ${currentIdx===0?'disabled':''}>
-          <i class="fas fa-backward-step"></i>
-        </button>
-        <button class="full-play-btn" id="full-play-btn" onclick="togglePlay()">
-          <i class="fas fa-${isPlaying?'pause':'play'}" id="full-play-icon"></i>
-        </button>
-        <button class="full-next-btn" onclick="goSeg(${currentIdx+1})" ${currentIdx>=total-1?'disabled':''}>
-          <i class="fas fa-forward-step"></i>
-        </button>
+    <div class="nf-grid">
+      <div class="nf-left">
+        <div class="nf-audio-mount" id="nf-audio-mount"></div>
+        <div class="nf-current">
+          ${currentText}
+          ${meaningHTML}
+        </div>
+        <div class="nf-nav">
+          <button onclick="goSeg(${currentIdx-1})" ${currentIdx===0?'disabled':''} title="Câu trước">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <span class="nf-counter">${n} / ${total}</span>
+          <button onclick="goSeg(${currentIdx+1})" ${currentIdx>=total-1?'disabled':''} title="Câu tiếp">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
       </div>
-      <div class="full-counter">Câu <strong>${n}</strong> / ${total} &nbsp;·</div>
-      <div class="full-ctrl-row">
-        <button class="full-ctrl-btn" onclick="goSeg(0)"><i class="fas fa-rotate-left"></i> Từ đầu</button>
-        <button class="full-ctrl-btn${fullAutoPlay?' on':''}" id="auto-play-btn" onclick="toggleAutoPlay()">
-          <i class="fas fa-${fullAutoPlay?'circle-check':'circle'}"></i> Tự động phát: ${fullAutoPlay?'Bật':'Tắt'}
-        </button>
-        <button class="full-ctrl-btn${fullHideScript?' on':''}" id="hide-script-btn" onclick="toggleScript()">
-          <i class="fas fa-${fullHideScript?'eye-slash':'eye'}"></i> ${fullHideScript?'Hiện':'Ẩn'} script
-        </button>
-        <button class="full-ctrl-btn${showPinyinFull?' on':''}" onclick="togglePinyinFull()">
-          <i class="fa-solid fa-language"></i> Pinyin: ${showPinyinFull?'Bật':'Tắt'}
-        </button>
-        <button class="full-ctrl-btn nav-speed-btn" onclick="cycleSpeed()" style="min-width:52px">
-          <span id="full-speed-label">${audioSpeed}x</span>
-        </button>
+      <div class="nf-right">
+        <div class="nf-list" id="nf-list">${rows}</div>
       </div>
+    </div>
+    <div class="nf-footer">
+      <button class="nf-toggle-btn${showPinyinFull?' on':''}" onclick="togglePinyinFull()">
+        <i class="fa-solid fa-language"></i> Pinyin: ${showPinyinFull?'Bật':'Tắt'}
+      </button>
+      <button class="nf-toggle-btn${fullAutoPlay?' on':''}" onclick="toggleAutoPlay()">
+        <i class="fa-solid fa-${fullAutoPlay?'circle-check':'circle'}"></i> Tự động phát: ${fullAutoPlay?'Bật':'Tắt'}
+      </button>
+      <label class="nf-toggle">
+        <input type="checkbox" id="nf-autoscroll" ${nfAutoScroll?'checked':''} onchange="nfAutoScroll = this.checked">
+        Auto scroll
+      </label>
+    </div>
+    <div class="kbd-hint" style="margin-top:10px">
+      <kbd class="kbd">Space</kbd> phát/dừng &nbsp;·&nbsp;
+      <kbd class="kbd">←</kbd> <kbd class="kbd">→</kbd> di chuyển
     </div>`;
 }
 
-function buildFullExtra(seg) {
-  let transcriptBlock;
-  if (fullHideScript) {
-    transcriptBlock = `<div style="font-size:13px;color:var(--text-3);font-style:italic;text-align:center;padding:1rem 0">Script đang ẩn — nhấn "Hiện script" để xem</div>`;
-  } else if (showPinyinFull && seg.pinyin) {
-    const aligned = alignPinyin(seg.transcript || '', seg.pinyin);
-    const html = aligned.map(({ ch, py, isPunct }) => {
-      const pyTop = `<span class="py-rt${py ? '' : ' empty'}">${py}</span>`;
-      return `<span class="py-col${isPunct?' punct':''}">${pyTop}<span>${ch}</span></span>`;
-    }).join('');
-    transcriptBlock = `<div class="tc-text-ruby">${html}</div>`;
+function nfMountAudio(showInFull) {
+  if (!audioEl) return;
+  if (showInFull) {
+    const mount = document.getElementById('nf-audio-mount');
+    if (mount && audioEl.parentNode !== mount) mount.appendChild(audioEl);
+    audioEl.setAttribute('controls', '');
+    audioEl.classList.add('nf-audio');
   } else {
-    transcriptBlock = `<div class="tc-text">${seg.transcript || ''}</div>`;
+    if (audioEl.parentNode !== document.body) document.body.appendChild(audioEl);
+    audioEl.removeAttribute('controls');
+    audioEl.classList.remove('nf-audio');
   }
-  const meaningBlock = seg.meaning_vi
-    ? `<div class="tc-vi-label">Dịch nghĩa</div><div class="tc-vi-text">${seg.meaning_vi}</div>`
-    : '';
+}
 
-  const circles = allSegments.map((_, i) => {
-    const done = getLessonProgress(bookName, lessonId) > i;
-    const cls  = i === currentIdx ? 'active' : done ? 'done' : '';
-    return `<div class="sl-circle ${cls}" onclick="goSeg(${i})">${i+1}</div>`;
-  }).join('');
+function nfBindKeys() {
+  document.removeEventListener('keydown', _nfKeyHandler);
+  document.addEventListener('keydown', _nfKeyHandler);
+}
 
-  return `
-    <div class="transcript-card">
-      <div class="tc-label">Transcript</div>
-      ${transcriptBlock}
-      ${meaningBlock}
-    </div>
-    <div class="seg-list-card">
-      <div class="sl-label">Danh sách câu</div>
-      <div class="sl-circles">${circles}</div>
-    </div>`;
+function _nfKeyHandler(e) {
+  if (currentMode !== 'full') { document.removeEventListener('keydown', _nfKeyHandler); return; }
+  if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'TEXTAREA') return;
+  if (e.key === ' ')          { e.preventDefault(); togglePlay(); }
+  else if (e.key === 'ArrowLeft')  { e.preventDefault(); goSeg(currentIdx - 1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); goSeg(currentIdx + 1); }
+}
+
+function nfAutoScrollToActive() {
+  if (!nfAutoScroll) return;
+  setTimeout(() => {
+    document.querySelector('.nf-row.active')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, 60);
 }
 
 function toggleAutoPlay() {
   fullAutoPlay = !fullAutoPlay;
-  const btn = document.getElementById('auto-play-btn');
-  if (btn) {
-    btn.className = 'full-ctrl-btn' + (fullAutoPlay ? ' on' : '');
-    btn.innerHTML = `<i class="fas fa-${fullAutoPlay?'circle-check':'circle'}"></i> Tự động phát: ${fullAutoPlay?'Bật':'Tắt'}`;
-  }
-}
-
-function toggleScript() {
-  fullHideScript = !fullHideScript;
-  const extra = document.getElementById('ex-full-extra');
-  if (extra) extra.innerHTML = buildFullExtra(allSegments[currentIdx]);
+  if (currentMode === 'full') renderCard(allSegments[currentIdx]);
 }
 
 function togglePinyin() {
@@ -972,8 +865,6 @@ function togglePinyin() {
 function togglePinyinFull() {
   showPinyinFull = !showPinyinFull;
   renderCard(allSegments[currentIdx]);
-  const extra = document.getElementById('ex-full-extra');
-  if (extra) extra.innerHTML = buildFullExtra(allSegments[currentIdx]);
 }
 
 // ─── HINT / SHOW ─────────────────────────────────
@@ -1031,10 +922,8 @@ function replayAudio() {
 
 function updatePlayIcons() {
   const icon = isPlaying ? 'fa-pause' : 'fa-play';
-  ['nav-play-icon','full-play-icon'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.className = 'fas ' + icon;
-  });
+  const navIcon = document.getElementById('nav-play-icon');
+  if (navIcon) navIcon.className = 'fas ' + icon;
 }
 
 function cycleSpeed() {
@@ -1042,15 +931,12 @@ function cycleSpeed() {
   const idx = speeds.indexOf(audioSpeed);
   audioSpeed = speeds[(idx + 1) % speeds.length];
   audioEl.playbackRate = audioSpeed;
-  ['speed-label','full-speed-label'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = audioSpeed + 'x';
-  });
+  const el = document.getElementById('speed-label');
+  if (el) el.textContent = audioSpeed + 'x';
 }
 
 function goSeg(idx) {
   if (idx < 0 || idx > allSegments.length) return;
-  document.removeEventListener('keydown', handleCheckKey);
   clearInterval(timeInterval);
   isPlaying = false;
   renderExercise(idx);
