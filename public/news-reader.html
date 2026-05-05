@@ -415,18 +415,17 @@ function render(a) {
     if (activeMode === 'zh') {
       card.innerHTML = zhParas.map(p => `<div class="para"><div class="para-zh">${wrapZh(p)}</div></div>`).join('');
     } else if (activeMode === 'pinyin') {
-      card.innerHTML = pyParas.map(p => `<div class="para"><div class="para-pinyin">${esc(p)}</div></div>`).join('');
+      card.innerHTML = pyParas.map(p => `<div class="para"><div class="para-pinyin">${wrapZh(p)}</div></div>`).join('');
     } else if (activeMode === 'vi') {
-      card.innerHTML = viParas.map(p => `<div class="para"><div class="para-vi">${esc(p)}</div></div>`).join('');
+      card.innerHTML = viParas.map(p => `<div class="para"><div class="para-vi">${wrapZh(p)}</div></div>`).join('');
     } else {
       card.innerHTML = zhParas.map((zh, i) => `
         <div class="parallel">
           <div class="parallel-zh">${wrapZh(zh)}</div>
-          <div class="parallel-py">${esc(pyParas[i] || '')}</div>
-          <div class="parallel-vi">${esc(viParas[i] || '')}</div>
+          <div class="parallel-py">${wrapZh(pyParas[i] || '')}</div>
+          <div class="parallel-vi">${wrapZh(viParas[i] || '')}</div>
         </div>`).join('');
     }
-    restoreHighlights();
   }
   renderMode();
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
@@ -625,9 +624,8 @@ function hwReset() {
   hwLoadChar(hwState.idx);
 }
 
-// ─── SELECTION HIGHLIGHT ────────────────────────────────────────
+// ─── SELECTION HIGHLIGHT (ephemeral — clears on reload / re-render) ─
 let selState = { text: '', spans: [] };
-const HL_KEY = () => `news_hl_${id}`;
 
 document.addEventListener('mouseup', e => {
   if (e.target.closest('#sel-bar')) return;
@@ -667,13 +665,11 @@ function selHighlight(cls) {
     s.classList.remove('hl-1','hl-2','hl-3','hl-4','selecting');
     s.classList.add(cls);
   });
-  saveHighlights();
   selClear();
 }
 
 function selRemoveHL() {
   selState.spans.forEach(s => s.classList.remove('hl-1','hl-2','hl-3','hl-4','selecting'));
-  saveHighlights();
   selClear();
 }
 
@@ -730,29 +726,6 @@ function selClear() {
   selState.text = ''; selState.spans = [];
   document.getElementById('sel-bar').classList.remove('show');
   window.getSelection()?.removeAllRanges();
-}
-
-function saveHighlights() {
-  // Snapshot all hl-* classes by char index per paragraph
-  const snapshot = [];
-  document.querySelectorAll('.para-zh, .parallel-zh').forEach((para, pIdx) => {
-    [...para.querySelectorAll('.zh-char')].forEach((s, cIdx) => {
-      const cls = ['hl-1','hl-2','hl-3','hl-4'].find(c => s.classList.contains(c));
-      if (cls) snapshot.push({ p: pIdx, c: cIdx, cls });
-    });
-  });
-  localStorage.setItem(HL_KEY(), JSON.stringify(snapshot));
-}
-
-function restoreHighlights() {
-  const snap = JSON.parse(localStorage.getItem(HL_KEY()) || '[]');
-  if (!snap.length) return;
-  document.querySelectorAll('.para-zh, .parallel-zh').forEach((para, pIdx) => {
-    const spans = [...para.querySelectorAll('.zh-char')];
-    snap.filter(s => s.p === pIdx).forEach(s => {
-      if (spans[s.c]) spans[s.c].classList.add(s.cls);
-    });
-  });
 }
 
 // ─── WORKSHEET ──────────────────────────────────────────────────
