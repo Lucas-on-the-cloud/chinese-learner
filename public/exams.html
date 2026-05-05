@@ -21,6 +21,8 @@ tailwind.config = {
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased}
@@ -196,6 +198,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </template>
     </div>
 
+    <div id="comments-root" style="margin-top:48px"></div>
   </div>
 </div>
 
@@ -243,6 +246,13 @@ const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const _db = supabase.createClient(_DB_URL, _DB_KEY);
 const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
+
+mountComments({
+  container: '#comments-root',
+  entityType: 'page',
+  entityId: 'exams',
+  supabaseUrl: _DB_URL, supabaseKey: _DB_KEY,
+});
 
 const GRADIENTS = [
   'linear-gradient(135deg,#0d1b4b,#1e3a8a)',

@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -196,6 +198,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <i class="fas fa-spinner fa-spin"></i> Đang tải khóa học…
       </div>
     </div>
+    <div id="comments-root" style="margin-top:48px"></div>
   </div>
 </div>
 
@@ -242,6 +245,13 @@ const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const db  = supabase.createClient(DB_URL, DB_KEY);
 const auth = new AuthService(db);
+
+mountComments({
+  container: '#comments-root',
+  entityType: 'page',
+  entityId: 'courses',
+  supabaseUrl: DB_URL, supabaseKey: DB_KEY,
+});
 
 const GRADIENTS = [
   'linear-gradient(135deg,#0d1b4b,#1e3a8a)',

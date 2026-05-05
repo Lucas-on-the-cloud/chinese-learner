@@ -110,6 +110,7 @@
       <button class="cm-filter-btn" data-filter="lesson_reading">Reading <span id="cnt-lesson_reading"></span></button>
       <button class="cm-filter-btn" data-filter="lesson_listening">Listening <span id="cnt-lesson_listening"></span></button>
       <button class="cm-filter-btn" data-filter="exam_unit">Exam <span id="cnt-exam_unit"></span></button>
+      <button class="cm-filter-btn" data-filter="page">Page <span id="cnt-page"></span></button>
     </div>
     <div id="cm-list">
       <div class="cm-empty"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</div>
@@ -127,12 +128,14 @@ const ENTITY_LABELS = {
   lesson_reading: 'READING',
   lesson_listening: 'LISTENING',
   exam_unit: 'EXAM',
+  page: 'PAGE',
 };
 const ENTITY_CLASS = {
   post: '',
   lesson_reading: 'lr',
   lesson_listening: 'll',
   exam_unit: 'eu',
+  page: '',
 };
 
 let allComments = [];
@@ -155,6 +158,7 @@ function entityLink(c) {
   if (c.entity_type === 'lesson_reading')   return `/reading.html?id=${c.entity_id}`;
   if (c.entity_type === 'lesson_listening') return `/listening.html?lesson=${c.entity_id}`;
   if (c.entity_type === 'exam_unit')        return `/exam.html?unit=${c.entity_id}`;
+  if (c.entity_type === 'page')             return `/${c.entity_id}.html`;
   return '#';
 }
 
@@ -176,7 +180,7 @@ function updateCounts() {
   document.getElementById('cnt-all').textContent = ` (${total})`;
   document.getElementById('cnt-visible').textContent = ` (${visible})`;
   document.getElementById('cnt-hidden').textContent = ` (${hidden})`;
-  for (const t of ['post','lesson_reading','lesson_listening','exam_unit']) {
+  for (const t of ['post','lesson_reading','lesson_listening','exam_unit','page']) {
     const n = allComments.filter(c => c.entity_type === t).length;
     document.getElementById('cnt-' + t).textContent = ` (${n})`;
   }
