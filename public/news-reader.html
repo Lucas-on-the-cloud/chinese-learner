@@ -229,7 +229,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <button class="chat-close-btn" onclick="chatToggle()">×</button>
   </div>
   <div class="chat-messages" id="chat-msgs">
-    <div class="chat-msg system">Hỏi AI về nội dung, ngữ pháp hoặc từ vựng trong bài.</div>
+    <div class="chat-msg system">Hỏi AI về nội dung, ngữ pháp hoặc từ vựng trong bài.<br><span style="font-size:10px;opacity:.7">Gõ <code>add 詞, 詞, 詞</code> để thêm từ vào danh sách từ vựng.</span></div>
   </div>
   <div class="chat-input-row">
     <input class="chat-input" id="chat-input" placeholder="Hỏi gì đó…"
@@ -498,6 +498,36 @@ async function chatSend() {
   const msgs = document.getElementById('chat-msgs');
   msgs.innerHTML += `<div class="chat-msg user">${esc(msg)}</div>`;
   msgs.scrollTop = msgs.scrollHeight;
+
+  // "add 詞, 詞, ..." — quick-add words to vocab list
+  const addMatch = msg.match(/^add\s+(.+)/i);
+  if (addMatch) {
+    const words = addMatch[1]
+      .split(/[,，、]/).map(w => w.trim())
+      .filter(w => /[一-鿿㐀-䶿]/.test(w));
+    if (words.length) {
+      const added = [], dup = [];
+      articleData.vocab = articleData.vocab || [];
+      words.forEach(w => {
+        if (articleData.vocab.find(x => x.char === w)) { dup.push(w); return; }
+        articleData.vocab.push({ char: w, pinyin: '', meaning: '(đang AI tra…)', example: '', exMeaning: '', level: '', userAdded: true });
+        added.push(w);
+      });
+      let report = '';
+      if (added.length) report += `✓ Đã thêm ${added.length} từ: ${added.map(w => `「${esc(w)}」`).join(' ')}`;
+      if (dup.length)   report += `${added.length ? '<br>' : ''}⊘ Đã có sẵn: ${dup.map(w => `「${esc(w)}」`).join(' ')}`;
+      msgs.innerHTML += `<div class="chat-msg system">${report}</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+      if (added.length) {
+        render(articleData);
+        added.forEach(w => {
+          const idx = articleData.vocab.findIndex(x => x.char === w);
+          if (idx >= 0) enrichUserVocab(w, idx);
+        });
+      }
+      return;
+    }
+  }
 
   const a = articleData;
   const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Học viên đang đọc 1 bài báo Đài Loan và muốn hỏi về nó.
