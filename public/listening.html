@@ -765,6 +765,11 @@ function dictCheck() {
       </div>
     </div>`;
   document.getElementById('dict-score-row').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  // Perfect score → auto-focus "Câu tiếp" so Enter advances; otherwise focus "Thử lại"
+  const focusBtn = pct === 100
+    ? document.querySelector('#dict-score-row .dict-btn.primary')
+    : document.querySelector('#dict-score-row .dict-btn:not(.primary)');
+  setTimeout(() => focusBtn?.focus(), 50);
 }
 
 function dictHint() {
