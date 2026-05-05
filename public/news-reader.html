@@ -345,13 +345,26 @@ async function load() {
 let activeMode = 'all';
 
 function render(a) {
-  const zhParas = splitParas(a.content_zh, 'zh');
-  const viParas = splitParas(a.content_vi || '', 'vi');
-  const pyParas = splitParas(a.pinyin || '', 'vi');
-  const max = Math.max(zhParas.length, viParas.length, pyParas.length);
-  while (zhParas.length < max) zhParas.push('');
-  while (viParas.length < max) viParas.push('');
-  while (pyParas.length < max) pyParas.push('');
+  let zhParas = splitParas(a.content_zh, 'zh');
+  let viParas = splitParas(a.content_vi || '', 'vi');
+  let pyParas = splitParas(a.pinyin || '', 'vi');
+  // For "All" tab parallel layout: if paragraph counts differ by >1, the rows
+  // would misalign (legacy articles where AI consolidated the translation).
+  // Fall back to a single mega-row so columns line up by article-not-paragraph.
+  const misaligned =
+    Math.abs(zhParas.length - viParas.length) > 1 ||
+    Math.abs(zhParas.length - pyParas.length) > 1;
+  let allZh = zhParas, allVi = viParas, allPy = pyParas;
+  if (misaligned) {
+    allZh = [zhParas.join('\n\n')];
+    allVi = [viParas.join('\n\n')];
+    allPy = [pyParas.join('\n\n')];
+  } else {
+    const max = Math.max(zhParas.length, viParas.length, pyParas.length);
+    while (allZh.length < max) allZh.push('');
+    while (allVi.length < max) allVi.push('');
+    while (allPy.length < max) allPy.push('');
+  }
 
   const forks = JSON.parse(localStorage.getItem('tocfl_user_flashcards') || '[]');
   const forkChars = new Set(forks.map(f => f.char));
@@ -419,11 +432,11 @@ function render(a) {
     } else if (activeMode === 'vi') {
       card.innerHTML = viParas.map(p => `<div class="para"><div class="para-vi">${wrapZh(p)}</div></div>`).join('');
     } else {
-      card.innerHTML = zhParas.map((zh, i) => `
+      card.innerHTML = allZh.map((zh, i) => `
         <div class="parallel">
           <div class="parallel-zh">${wrapZh(zh)}</div>
-          <div class="parallel-py">${wrapZh(pyParas[i] || '')}</div>
-          <div class="parallel-vi">${wrapZh(viParas[i] || '')}</div>
+          <div class="parallel-py">${wrapZh(allPy[i] || '')}</div>
+          <div class="parallel-vi">${wrapZh(allVi[i] || '')}</div>
         </div>`).join('');
     }
   }
