@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.0",
     "inngest": "^3.22.0",
-    "@supabase/supabase-js": "^2.49.0"
+    "pdf-parse": "^2.4.5"
   }
 }
