@@ -1128,7 +1128,7 @@ Giải thích ngắn gọn tại sao đáp án đúng là đúng cho từng câu
       try {
         this.aiResult = await _ai.call(sysPrompt, userMsg, 1200);
       } catch (e) {
-        this.aiResult = 'Không thể kết nối AI. Vui lòng kiểm tra API key trong phần Cài đặt.';
+        this.aiResult = 'Không thể kết nối AI: ' + (e?.message || 'unknown error');
       }
       this.aiLoading = false;
     },
@@ -1319,7 +1319,7 @@ async function chatSend() {
   msgs.scrollTop = msgs.scrollHeight;
 
   if (!_ai) {
-    msgs.innerHTML += `<div class="chat-msg sys">⚠ Chưa cấu hình API key. Vào Admin → Cài đặt.</div>`;
+    msgs.innerHTML += `<div class="chat-msg sys">⚠ AI service chưa load. Reload trang thử lại.</div>`;
     msgs.scrollTop = msgs.scrollHeight;
     return;
   }

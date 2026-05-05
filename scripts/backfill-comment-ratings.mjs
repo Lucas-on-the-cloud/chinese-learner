@@ -1,7 +1,7 @@
 // Backfill random 3-5 star ratings on ~70% of top-level seed comments so the
 // aggregate rating UI has data to display when testing.
-import { createClient } from '@supabase/supabase-js';
-const sb = createClient('https://prctmferugkxabyizslx.supabase.co','sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ');
+import { getClient } from './_supabase.mjs';
+const sb = getClient({ writes: true });
 
 const { data: rows, error } = await sb
   .from('comments')
