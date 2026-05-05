@@ -289,6 +289,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
     <div class="vocab-list" id="vocab-list"></div>
   </div>
+  <div id="comments-root"></div>
 </div>
 
 <!-- CHAT WIDGET -->
@@ -387,6 +388,8 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <script src="js/file-importer.js"></script>
 <script src="js/worksheet.js"></script>
 <script src="js/app.js"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <script>
 // Khởi tạo user session (anonymous auth)
 (async () => {
@@ -396,6 +399,19 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   window.userSession = new UserSession(client);
   await window.userSession.init();
   await window.userSession.migrateFromLocalStorage();
+
+  // Comments — only on single-lesson view (?id=N), skip multi-lesson study sessions
+  const params = new URLSearchParams(location.search);
+  const idParam = params.get('id');
+  const idsParam = params.get('ids');
+  if (idParam && !idsParam) {
+    mountComments({
+      container: '#comments-root',
+      entityType: 'lesson_reading',
+      entityId: idParam,
+      supabaseUrl: DB_URL, supabaseKey: DB_KEY,
+    });
+  }
 })();
 </script>
 <footer>

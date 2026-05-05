@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -155,6 +157,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:12px;display:block"></i>
         Đang tải bài viết…
       </div>
+      <div id="comments-root" style="margin-top:32px"></div>
     </main>
 
     <!-- SIDEBAR: related posts -->
@@ -283,6 +286,14 @@ async function init() {
   `;
 
   loadRelated(post.id, post.category);
+
+  mountComments({
+    container: '#comments-root',
+    entityType: 'post',
+    entityId: post.id,
+    supabaseUrl: 'https://prctmferugkxabyizslx.supabase.co',
+    supabaseKey: 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ',
+  });
 }
 
 async function loadRelated(currentId, category) {

@@ -1,0 +1,39 @@
+/* Reusable comment widget styles */
+.cm-widget { font-family: 'Be Vietnam Pro', system-ui, sans-serif; max-width: 760px; margin: 32px auto; }
+.cm-title { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 16px; display: flex; align-items: center; gap: 8px; }
+.cm-title i { color: #2563eb; }
+.cm-count { color: #64748b; font-weight: 500; font-size: 14px; }
+
+.cm-form { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.cm-name-input, .cm-body-input { width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 14px; font-family: inherit; background: #fff; color: #0f172a; }
+.cm-name-input { margin-bottom: 8px; }
+.cm-body-input { resize: vertical; min-height: 70px; line-height: 1.5; }
+.cm-name-input:focus, .cm-body-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.cm-honeypot { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+.cm-form-foot { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.cm-form-msg { flex: 1; font-size: 13px; color: #64748b; }
+.cm-form-msg.cm-ok { color: #16a34a; }
+.cm-form-msg.cm-err { color: #dc2626; }
+.cm-submit, .cm-cancel { font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 7px; cursor: pointer; border: none; transition: background .15s; }
+.cm-submit { background: #2563eb; color: #fff; }
+.cm-submit:hover { background: #1d4ed8; }
+.cm-submit:disabled { opacity: .55; cursor: not-allowed; }
+.cm-cancel { background: #fff; color: #64748b; border: 1px solid #e2e8f0; }
+.cm-cancel:hover { background: #f1f5f9; }
+
+.cm-list { display: flex; flex-direction: column; gap: 12px; }
+.cm-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
+.cm-item.cm-admin { border-color: #c7d2fe; background: linear-gradient(180deg, #f5f3ff 0%, #fff 100%); }
+.cm-head { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+.cm-name { font-weight: 600; color: #0f172a; }
+.cm-badge-admin { background: #4f46e5; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.cm-time { color: #94a3b8; font-size: 12px; }
+.cm-body { color: #1e293b; line-height: 1.55; font-size: 14px; word-break: break-word; }
+.cm-actions { margin-top: 8px; }
+.cm-reply-btn { background: none; border: none; color: #2563eb; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; font-family: inherit; }
+.cm-reply-btn:hover { text-decoration: underline; }
+.cm-reply-form-slot:empty { display: none; }
+.cm-reply-form-slot { margin-top: 10px; }
+.cm-reply-form-slot .cm-form { background: #fff; }
+.cm-children { margin-top: 12px; padding-left: 14px; border-left: 2px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
+.cm-empty { text-align: center; color: #94a3b8; padding: 32px 0; font-size: 14px; }

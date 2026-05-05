@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/user-session.js"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
@@ -198,6 +200,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <i class="fa-solid fa-spinner fa-spin" style="font-size:22px;margin-bottom:10px;display:block"></i>
     Đang tải…
   </div>
+  <div id="comments-root"></div>
 </main>
 
 <footer>
@@ -225,6 +228,18 @@ if (isNaN(lessonId)) lessonId = null;
 let   startSegId  = params.get('seg') ? parseInt(params.get('seg')) : null;
 if (isNaN(startSegId)) startSegId = null;
 const labelFilter = params.get('label') ? decodeURIComponent(params.get('label')) : null;
+
+// Mount comments only when a specific lesson is open
+if (lessonId) {
+  document.addEventListener('DOMContentLoaded', () => {
+    mountComments({
+      container: '#comments-root',
+      entityType: 'lesson_listening',
+      entityId: lessonId,
+      supabaseUrl: DB_URL, supabaseKey: DB_KEY,
+    });
+  });
+}
 
 // ─── State ──────────────────────────────────────
 let allSegments  = [];

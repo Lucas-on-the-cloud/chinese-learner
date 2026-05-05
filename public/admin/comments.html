@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bình luận — Admin · TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.cm-row { background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+.cm-row.is-admin { border-color:#c7d2fe; background:#f5f3ff; }
+.cm-row.is-hidden { opacity:.55; background:#fafafa; }
+.cm-row.is-reply { margin-left:32px; border-left:3px solid #93c5fd; }
+.cm-row-head { display:flex; align-items:center; gap:10px; font-size:13px; margin-bottom:6px; flex-wrap:wrap; }
+.cm-row-name { font-weight:700; color:#0f172a; }
+.cm-row-time { color:#94a3b8; font-size:12px; }
+.cm-row-entity { background:#e0e7ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; font-family:'JetBrains Mono',monospace; }
+.cm-row-entity.lr { background:#dcfce7; color:#15803d; }
+.cm-row-entity.ll { background:#fed7aa; color:#9a3412; }
+.cm-row-entity.eu { background:#fce7f3; color:#9d174d; }
+.cm-row-status { background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.cm-row-status.visible { background:#dcfce7; color:#15803d; }
+.cm-row-body { color:#1e293b; line-height:1.5; font-size:14px; white-space:pre-wrap; word-break:break-word; }
+.cm-row-actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+.cm-action-btn { background:#fff; border:1px solid #e5e7eb; padding:5px 11px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:500; color:#475569; font-family:inherit; }
+.cm-action-btn:hover { background:#f8fafc; }
+.cm-action-btn.danger { color:#dc2626; border-color:#fecaca; }
+.cm-action-btn.danger:hover { background:#fef2f2; }
+.cm-action-btn.primary { background:#2563eb; color:#fff; border-color:#2563eb; }
+.cm-action-btn.primary:hover { background:#1d4ed8; }
+.cm-reply-form { margin-top:10px; padding:10px; background:#eff6ff; border-radius:7px; }
+.cm-reply-form textarea { width:100%; box-sizing:border-box; padding:8px; border:1px solid #d1d5db; border-radius:6px; font-family:inherit; font-size:13px; resize:vertical; min-height:60px; }
+.cm-reply-form-foot { display:flex; gap:6px; margin-top:8px; }
+.cm-filter-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+.cm-filter-btn { background:#fff; border:1px solid #e5e7eb; padding:6px 14px; border-radius:7px; font-size:13px; cursor:pointer; font-family:inherit; color:#475569; }
+.cm-filter-btn.active { background:#1a56db; color:#fff; border-color:#1a56db; }
+.cm-empty { text-align:center; color:#94a3b8; padding:48px 20px; font-size:14px; }
+</style>
+</head>
+<body>
+
+<aside id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-icon">學</div>
+    <div>
+      <div class="sb-brand-name">TOCFL <em>FAFA</em></div>
+      <div class="sb-brand-sub">Admin · 管理面板</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-label">Quản lý · Manage</div>
+    <a class="nav-item" href="index.html">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Tổng quan</span><span class="nav-item-en">Dashboard</span></span>
+    </a>
+    <a class="nav-item" href="courses.html">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học</span><span class="nav-item-en">Courses</span></span>
+    </a>
+    <a class="nav-item" href="subcourses.html">
+      <i class="fa-solid fa-book-bookmark"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Khóa học con</span><span class="nav-item-en">Sub-courses</span></span>
+    </a>
+    <a class="nav-item" href="exams.html">
+      <i class="fa-solid fa-file-pen"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Đề thi</span><span class="nav-item-en">Exam papers</span></span>
+    </a>
+    <a class="nav-item" href="flashcards.html">
+      <i class="fa-solid fa-clone"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Flashcard</span><span class="nav-item-en">Flashcard sets</span></span>
+    </a>
+    <a class="nav-item" href="blog.html">
+      <i class="fa-solid fa-pen-nib"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Blog</span><span class="nav-item-en">Blog posts</span></span>
+    </a>
+    <a class="nav-item active" href="comments.html">
+      <i class="fa-regular fa-comments"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Bình luận</span><span class="nav-item-en">Comments</span></span>
+    </a>
+    <a class="nav-item" href="settings.html">
+      <i class="fa-solid fa-key"></i>
+      <span class="nav-item-text"><span class="nav-item-vi">Cài đặt</span><span class="nav-item-en">AI &amp; API</span></span>
+    </a>
+  </nav>
+</aside>
+
+<div id="main">
+  <header class="topbar">
+    <div>
+      <div class="crumbs">
+        <span>Admin</span>
+        <i class="fa-solid fa-chevron-right" style="font-size:9px;opacity:.5"></i>
+        <span class="active">Bình luận</span>
+      </div>
+      <h1 class="page-title">Quản lý Bình luận</h1>
+    </div>
+    <div class="topbar-right">
+      <a href="/courses.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="cm-filter-bar">
+      <button class="cm-filter-btn active" data-filter="all">Tất cả <span id="cnt-all"></span></button>
+      <button class="cm-filter-btn" data-filter="visible">Hiển thị <span id="cnt-visible"></span></button>
+      <button class="cm-filter-btn" data-filter="hidden">Đã ẩn <span id="cnt-hidden"></span></button>
+      <button class="cm-filter-btn" data-filter="post">Blog <span id="cnt-post"></span></button>
+      <button class="cm-filter-btn" data-filter="lesson_reading">Reading <span id="cnt-lesson_reading"></span></button>
+      <button class="cm-filter-btn" data-filter="lesson_listening">Listening <span id="cnt-lesson_listening"></span></button>
+      <button class="cm-filter-btn" data-filter="exam_unit">Exam <span id="cnt-exam_unit"></span></button>
+    </div>
+    <div id="cm-list">
+      <div class="cm-empty"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const sb = supabase.createClient(DB_URL, DB_KEY);
+
+const ENTITY_LABELS = {
+  post: 'BLOG',
+  lesson_reading: 'READING',
+  lesson_listening: 'LISTENING',
+  exam_unit: 'EXAM',
+};
+const ENTITY_CLASS = {
+  post: '',
+  lesson_reading: 'lr',
+  lesson_listening: 'll',
+  exam_unit: 'eu',
+};
+
+let allComments = [];
+let currentFilter = 'all';
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function timeAgo(iso) {
+  const d = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (d < 60) return 'vừa xong';
+  if (d < 3600) return Math.floor(d/60) + ' phút trước';
+  if (d < 86400) return Math.floor(d/3600) + ' giờ trước';
+  return new Date(iso).toLocaleString('vi-VN');
+}
+
+function entityLink(c) {
+  if (c.entity_type === 'post')             return `/post.html?id=${c.entity_id}`;
+  if (c.entity_type === 'lesson_reading')   return `/reading.html?id=${c.entity_id}`;
+  if (c.entity_type === 'lesson_listening') return `/listening.html?lesson=${c.entity_id}`;
+  if (c.entity_type === 'exam_unit')        return `/exam.html?unit=${c.entity_id}`;
+  return '#';
+}
+
+async function loadAll() {
+  const { data, error } = await sb
+    .from('comments')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { document.getElementById('cm-list').innerHTML = `<div class="cm-empty">Lỗi: ${escapeHtml(error.message)}</div>`; return; }
+  allComments = data || [];
+  updateCounts();
+  render();
+}
+
+function updateCounts() {
+  const total = allComments.length;
+  const visible = allComments.filter(c => c.status === 'visible').length;
+  const hidden = allComments.filter(c => c.status === 'hidden').length;
+  document.getElementById('cnt-all').textContent = ` (${total})`;
+  document.getElementById('cnt-visible').textContent = ` (${visible})`;
+  document.getElementById('cnt-hidden').textContent = ` (${hidden})`;
+  for (const t of ['post','lesson_reading','lesson_listening','exam_unit']) {
+    const n = allComments.filter(c => c.entity_type === t).length;
+    document.getElementById('cnt-' + t).textContent = ` (${n})`;
+  }
+}
+
+function filtered() {
+  if (currentFilter === 'all') return allComments;
+  if (currentFilter === 'visible' || currentFilter === 'hidden')
+    return allComments.filter(c => c.status === currentFilter);
+  return allComments.filter(c => c.entity_type === currentFilter);
+}
+
+function render() {
+  const list = filtered();
+  if (!list.length) { document.getElementById('cm-list').innerHTML = '<div class="cm-empty">Chưa có bình luận nào trong bộ lọc này.</div>'; return; }
+  // Build parent index for showing reply context
+  const byId = new Map(allComments.map(c => [c.id, c]));
+  document.getElementById('cm-list').innerHTML = list.map(c => {
+    const parent = c.parent_id ? byId.get(c.parent_id) : null;
+    const isReply = !!parent;
+    const cls = [
+      'cm-row',
+      c.is_admin ? 'is-admin' : '',
+      c.status === 'hidden' ? 'is-hidden' : '',
+      isReply ? 'is-reply' : '',
+    ].filter(Boolean).join(' ');
+    return `
+      <div class="${cls}" data-id="${c.id}">
+        <div class="cm-row-head">
+          <span class="cm-row-name">${escapeHtml(c.display_name)}</span>
+          ${c.is_admin ? '<span class="cm-row-entity" style="background:#4f46e5;color:#fff">ADMIN</span>' : ''}
+          <span class="cm-row-entity ${ENTITY_CLASS[c.entity_type]||''}">${ENTITY_LABELS[c.entity_type]||c.entity_type}#${c.entity_id}</span>
+          <span class="cm-row-status ${c.status}">${c.status === 'visible' ? '✓ Hiển thị' : '⏸ Đã ẩn'}</span>
+          ${isReply ? `<span style="font-size:11px;color:#64748b">↳ trả lời <b>${escapeHtml(parent.display_name)}</b>: "${escapeHtml((parent.body||'').slice(0,60))}${parent.body.length>60?'…':''}"</span>` : ''}
+          <span class="cm-row-time">${timeAgo(c.created_at)}</span>
+        </div>
+        <div class="cm-row-body">${escapeHtml(c.body)}</div>
+        <div class="cm-row-actions">
+          <a class="cm-action-btn" href="${entityLink(c)}" target="_blank"><i class="fa-solid fa-external-link"></i> Xem trên trang</a>
+          <button class="cm-action-btn primary" onclick="openReply(${c.id})"><i class="fa-solid fa-reply"></i> Trả lời với tư cách Admin</button>
+          ${c.status === 'visible'
+            ? `<button class="cm-action-btn" onclick="setStatus(${c.id},'hidden')"><i class="fa-solid fa-eye-slash"></i> Ẩn</button>`
+            : `<button class="cm-action-btn" onclick="setStatus(${c.id},'visible')"><i class="fa-solid fa-eye"></i> Hiển thị</button>`
+          }
+          <button class="cm-action-btn danger" onclick="deleteComment(${c.id})"><i class="fa-solid fa-trash"></i> Xoá</button>
+        </div>
+        <div class="cm-reply-slot" id="reply-slot-${c.id}"></div>
+      </div>`;
+  }).join('');
+}
+
+window.setStatus = async function(id, status) {
+  const { error } = await sb.from('comments').update({ status }).eq('id', id);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  const c = allComments.find(x => x.id === id);
+  if (c) c.status = status;
+  updateCounts();
+  render();
+};
+
+window.deleteComment = async function(id) {
+  if (!confirm('Xoá bình luận này? (cùng tất cả trả lời)')) return;
+  const { error } = await sb.from('comments').delete().eq('id', id);
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  allComments = allComments.filter(c => c.id !== id && c.parent_id !== id);
+  updateCounts();
+  render();
+};
+
+window.openReply = function(parentId) {
+  const slot = document.getElementById('reply-slot-' + parentId);
+  if (slot.innerHTML) { slot.innerHTML = ''; return; }
+  slot.innerHTML = `
+    <div class="cm-reply-form">
+      <textarea id="reply-body-${parentId}" placeholder="Trả lời với tư cách Admin (sẽ hiện badge ADMIN)…" maxlength="2000"></textarea>
+      <div class="cm-reply-form-foot">
+        <button class="cm-action-btn primary" onclick="submitReply(${parentId})">Gửi</button>
+        <button class="cm-action-btn" onclick="document.getElementById('reply-slot-${parentId}').innerHTML=''">Huỷ</button>
+      </div>
+    </div>`;
+  document.getElementById('reply-body-' + parentId).focus();
+};
+
+window.submitReply = async function(parentId) {
+  const body = document.getElementById('reply-body-' + parentId).value.trim();
+  if (!body) return;
+  const parent = allComments.find(c => c.id === parentId);
+  if (!parent) return;
+  const { error } = await sb.from('comments').insert({
+    entity_type: parent.entity_type,
+    entity_id: parent.entity_id,
+    parent_id: parentId,
+    display_name: 'TOCFL FAFA',
+    body,
+    is_admin: true,
+    status: 'visible',
+  });
+  if (error) { alert('Lỗi: ' + error.message); return; }
+  document.getElementById('reply-slot-' + parentId).innerHTML = '';
+  await loadAll();
+};
+
+document.querySelectorAll('.cm-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cm-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    render();
+  });
+});
+
+loadAll();
+</script>
+
+</body>
+</html>

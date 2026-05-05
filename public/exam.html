@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <script src="js/auth-service.js"></script>
 <script src="js/config.js"></script>
 <script src="js/ai-service.js"></script>
@@ -605,6 +607,11 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
       </template>
 
     </div><!-- /section-wrap -->
+
+    <!-- Comments — only when an exam unit is open -->
+    <div x-show="activeUnit" x-effect="if(activeUnit && window.mountComments){ mountComments({ container:'#comments-root', entityType:'exam_unit', entityId:activeUnit.id, supabaseUrl:'https://prctmferugkxabyizslx.supabase.co', supabaseKey:'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ' }); }">
+      <div id="comments-root" style="max-width:760px;margin:24px auto"></div>
+    </div>
   </div><!-- /exam view -->
 
 </div><!-- /exam-body -->
