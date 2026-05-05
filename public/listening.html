@@ -145,7 +145,8 @@ a{text-decoration:none;color:inherit}
 .rc-cell.rc-miss .rc-user{color:#cbd5e1}
 .rc-punct{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--text-3);align-self:flex-end;padding:0 2px 7px}
 .rc-extra-label{font-size:11px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;align-self:center;margin-left:8px;margin-right:4px}
-.dict-result-meaning{margin-top:12px;font-size:14px;color:var(--text-2);font-style:italic;line-height:1.6}
+.dict-result-pinyin{margin-top:12px;font-size:14px;color:#0f172a;font-family:'Be Vietnam Pro',sans-serif;letter-spacing:.02em;line-height:1.6}
+.dict-result-meaning{margin-top:8px;font-size:14px;color:var(--text-2);font-style:italic;line-height:1.6}
 .dict-result-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dict-result-msg{font-size:13px;font-weight:600;color:var(--text)}
 .dict-result-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
@@ -739,6 +740,9 @@ function dictCheck() {
   ta.disabled = true;
   document.querySelector('.dict-actions')?.style.setProperty('display', 'none');
 
+  const pinyinHTML = seg.pinyin
+    ? `<div class="dict-result-pinyin"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-right:8px">Pinyin</span>${seg.pinyin}</div>`
+    : '';
   const meaningHTML = seg.meaning_vi
     ? `<div class="dict-result-meaning"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-right:8px">Dịch nghĩa</span>${seg.meaning_vi}</div>`
     : '';
@@ -749,6 +753,7 @@ function dictCheck() {
   document.getElementById('dict-score-row').innerHTML = `
     <div class="dict-result">
       <div class="rc-row">${rowHtml}${extraHtml}</div>
+      ${pinyinHTML}
       ${meaningHTML}
       <div class="dict-result-top" style="margin-top:14px">
         <span class="score-pill ${pillCls}">${ok}/${total} chữ · ${pct}%</span>
