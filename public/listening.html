@@ -618,10 +618,27 @@ function setHidePercent(pct) {
 }
 
 function handleCheckKey(e) {
+  if (e.target?.tagName === 'INPUT' || e.target?.tagName === 'TEXTAREA') return;
   if (e.key === 'Enter') { document.removeEventListener('keydown', handleCheckKey); goSeg(currentIdx+1); }
   if (e.key === 'Tab') { e.preventDefault(); revealChars(1); }
-  if (e.ctrlKey) { e.preventDefault(); replayAudio(); }
 }
+
+// Global "tap Ctrl alone" → replay audio. Works in Check + Dictation modes.
+// Triggers on keyup of Ctrl WITHOUT any other key pressed during the hold (so Ctrl+C/V/etc are safe).
+let _ctrlSolo = false;
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Control') _ctrlSolo = true;
+  else _ctrlSolo = false;
+});
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'Control' && _ctrlSolo) {
+    _ctrlSolo = false;
+    if (currentMode === 'check' || currentMode === 'dictation') {
+      e.preventDefault();
+      replayAudio();
+    }
+  }
+});
 
 // ─── NGHE CHÉP ───────────────────────────────────
 let dictationHintCount = 0;
@@ -666,10 +683,7 @@ function bindDictationInputs() {
   ta.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); dictCheck(); }
     else if (e.key === 'Tab')             { e.preventDefault(); dictHint();  }
-    else if (e.ctrlKey && e.key === 'Control') { /* allow Ctrl held */ }
-    else if (e.ctrlKey && e.key !== 'a' && e.key !== 'c' && e.key !== 'v' && e.key !== 'x' && e.key !== 'z') {
-      e.preventDefault(); replayAudio();
-    }
+    // Ctrl handled globally — see _ctrlSolo handler
   });
 }
 
