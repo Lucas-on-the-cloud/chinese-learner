@@ -118,18 +118,37 @@ a{text-decoration:none;color:inherit}
 .reset-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;transition:all .12s}
 .reset-btn:hover{color:var(--text);border-color:#9ca3af}
 
-/* ── NGHE CHÉP ──────────────────────────────────── */
-.dictation-body{padding:12px 14px}
-.dictation-input{width:100%;padding:14px;border:2px solid var(--blue);border-radius:10px;font-family:monospace;font-size:17px;outline:none;resize:none;line-height:1.7;color:var(--text);background:#fafeff;min-height:100px}
-.dictation-input:focus{box-shadow:0 0 0 3px rgba(26,86,219,.12)}
-.score-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;font-size:13px}
-.score-text{color:var(--text-2);font-weight:500}
-.score-pct{font-weight:700;color:var(--text)}
-.dots-row{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;padding:2px 0}
-.dot-group{display:flex;gap:3px}
-.dot{width:7px;height:7px;border-radius:50%;background:#d1d5db}
-.dot.correct{background:var(--green)}
-.dot.wrong{background:var(--red)}
+/* ── NGHE CHÉP (per-char input boxes) ────────────── */
+.dict-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 7px;padding:18px 4px;line-height:1}
+.dict-cell{display:inline-flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.dict-input{width:38px;height:46px;text-align:center;font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--navy);border:1.5px solid #d1d5db;border-radius:8px;background:#fff;outline:none;padding:0;transition:all .12s;caret-color:var(--blue)}
+.dict-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.15)}
+.dict-input:disabled{cursor:not-allowed;opacity:1}
+.dict-correct{font-size:11px;font-weight:700;height:14px;color:transparent}
+.dict-cell.ok .dict-input{border-color:var(--green);background:#f0fdf4;color:var(--green)}
+.dict-cell.err .dict-input{border-color:var(--red);background:#fef2f2;color:var(--red);text-decoration:line-through;text-decoration-color:var(--red)}
+.dict-cell.err .dict-correct{color:var(--green)}
+.dict-cell.miss .dict-input{border-color:#e5e7eb;background:#f9fafb}
+.dict-cell.miss .dict-correct{color:#9ca3af}
+.dict-cell.revealed .dict-input{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+.dict-punct{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--text-3);align-self:flex-end;padding:0 2px 11px}
+.dict-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:6px}
+.dict-btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
+.dict-btn:hover{border-color:#9ca3af;color:var(--text)}
+.dict-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.dict-btn.primary:hover{background:#1544b8}
+.dict-result{margin-top:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;animation:fadeIn .25s ease}
+.dict-result-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dict-result-msg{font-size:13px;font-weight:600;color:var(--text)}
+.dict-result-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.score-pill{padding:5px 13px;border-radius:999px;font-weight:700;font-size:13px}
+.score-pill.perfect{background:var(--green-lt);color:var(--green)}
+.score-pill.good{background:var(--blue-lt);color:var(--blue)}
+.score-pill.meh{background:var(--red-lt);color:var(--red)}
+@media(max-width:600px){
+  .dict-input{width:32px;height:40px;font-size:19px}
+  .dict-punct{font-size:19px;padding-bottom:10px}
+}
 
 /* ── NGHE FULL ──────────────────────────────────── */
 .full-player{padding:24px 14px 16px;display:flex;flex-direction:column;align-items:center;gap:14px}
@@ -472,15 +491,7 @@ function renderCard(seg) {
 
   // Bind events after render
   if (isDictation) {
-    const ta = document.getElementById('dictation-input');
-    if (ta) {
-      ta.focus();
-      ta.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); checkDictation(); }
-        if (e.key === 'Tab') { e.preventDefault(); hintDictation(); }
-      });
-      ta.addEventListener('input', updateScoreLive);
-    }
+    bindDictationInputs();
   }
   if (isCheck) {
     document.addEventListener('keydown', handleCheckKey);
@@ -606,157 +617,181 @@ function handleCheckKey(e) {
 let dictationHintCount = 0;
 
 function buildDictationBody(seg) {
-  const chars = [...(seg.transcript || '').replace(/\s/g,'')];
-  const dotsHTML = buildDots(seg.transcript || '');
+  const text = (seg.transcript || '').trim();
+  const chars = [...text];
+  const isPunct = (c) => /[，。！？、：；""''「」（）()…\-—·\s]/.test(c);
+
   const pinyinHint = showPinyin
     ? `<div class="word-display" style="margin-bottom:12px;padding:10px 12px;background:#fffbeb;border:1px dashed #fde68a;border-radius:8px">
         <span style="font-size:10px;font-weight:700;color:#92400e;letter-spacing:.6px;margin-right:8px">PINYIN GỢI Ý:</span>
         <span style="font-family:'Be Vietnam Pro',sans-serif;font-size:14px;color:#78350f">${(seg.pinyin || '—')}</span>
       </div>`
     : '';
+
+  let inputIdx = 0;
+  const boxesHtml = chars.map((ch) => {
+    if (isPunct(ch)) return `<span class="dict-punct">${ch}</span>`;
+    const idx = inputIdx++;
+    return `<span class="dict-cell" data-idx="${idx}" data-correct="${ch}">
+      <input type="text" class="dict-input" maxlength="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-idx="${idx}">
+      <span class="dict-correct"></span>
+    </span>`;
+  }).join('');
+
   return `
     <div class="speed-row">
-      <span class="speed-row-label">Ẩn từ:</span>
-      <button class="speed-pill${hidePercent===30?' active':''}" onclick="setHidePercent(30)">30%</button>
-      <button class="speed-pill${hidePercent===50?' active':''}" onclick="setHidePercent(50)">50%</button>
-      <button class="speed-pill${hidePercent===100?' active':''}" onclick="setHidePercent(100)">100%</button>
       <span style="margin-left:auto"></span>
       <button class="speed-pill${showPinyin?' active':''}" onclick="togglePinyin()" title="Hiện/ẩn pinyin gợi ý">
         <i class="fa-solid fa-language" style="font-size:11px"></i> Pinyin
       </button>
     </div>
     ${pinyinHint}
-    <div class="dictation-body">
-      <textarea class="dictation-input" id="dictation-input" rows="2"
-        placeholder="Gõ câu trả lời của bạn ở đây..."></textarea>
-      <div class="score-row">
-        <span class="score-text" id="score-text">0 / ${chars.length} từ đúng</span>
-        <span class="score-pct" id="score-pct">0%</span>
-      </div>
-      <div class="dots-row" id="dots-row">${dotsHTML}</div>
+    <div class="dict-row" id="dict-row">${boxesHtml}</div>
+    <div class="dict-actions">
+      <button class="dict-btn" onclick="dictHint()" title="Gợi ý 1 chữ"><i class="fa-solid fa-lightbulb"></i> Gợi ý</button>
+      <button class="dict-btn" onclick="dictShowAnswer()" title="Hiện toàn bộ đáp án"><i class="fa-solid fa-eye"></i> Xem đáp án</button>
+      <button class="dict-btn primary" onclick="dictCheck()" title="Kiểm tra"><i class="fa-solid fa-check"></i> Kiểm tra</button>
     </div>
+    <div id="dict-score-row"></div>
     <div class="kbd-hint">
       <kbd class="kbd">Ctrl</kbd> phát lại &nbsp;·&nbsp;
       <kbd class="kbd">Tab</kbd> gợi ý từ &nbsp;·&nbsp;
-      <kbd class="kbd">Enter</kbd> kiểm tra
+      <kbd class="kbd">Enter</kbd> kiểm tra &nbsp;·&nbsp;
+      <kbd class="kbd">←/→</kbd> di chuyển
     </div>`;
 }
 
-function buildDots(transcript) {
-  const chars = [...transcript.trim()];
-  // Group into "words" — for Chinese, treat clusters separated by spaces or punctuation
-  const groups = transcript.trim().split(/(?=[，。！？、：；\s])|(?<=[，。！？、：；\s])/)
-    .map(s => [...s.replace(/\s/g,'')].filter(c => c))
-    .filter(g => g.length);
-  if (!groups.length) return '';
-  return groups.map(g => `<span class="dot-group">${g.map(()=>'<span class="dot"></span>').join('')}</span>`).join('');
+// ─── DICTATION (per-char input boxes) ──────────────────────
+function dictGetInputs() {
+  return [...document.querySelectorAll('.dict-input')];
 }
 
-function updateScoreLive() {
-  const seg = allSegments[currentIdx];
-  if (!seg) return;
-  const correct = [...(seg.transcript||'').replace(/\s/g,'')];
-  const user    = [...(document.getElementById('dictation-input')?.value||'').replace(/\s/g,'')];
-  let ok = 0;
-  correct.forEach((ch, i) => { if (user[i] === ch) ok++; });
-  const pct = correct.length ? Math.round(ok / correct.length * 100) : 0;
-  const scoreEl = document.getElementById('score-text');
-  const pctEl   = document.getElementById('score-pct');
-  if (scoreEl) scoreEl.textContent = `${ok} / ${correct.length} từ đúng`;
-  if (pctEl)   pctEl.textContent   = pct + '%';
+function bindDictationInputs() {
+  const inputs = dictGetInputs();
+  if (!inputs.length) return;
+  setTimeout(() => inputs[0].focus(), 50);
 
-  // Update dots
-  const groups = (seg.transcript||'').trim().split(/(?=[，。！？、：；\s])|(?<=[，。！？、：；\s])/)
-    .map(s => [...s.replace(/\s/g,'')].filter(c=>c)).filter(g=>g.length);
-  let charIdx = 0;
-  const dotsEl = document.getElementById('dots-row');
-  if (dotsEl) {
-    dotsEl.innerHTML = groups.map(g => {
-      const dotHTML = g.map(ch => {
-        const u = user[charIdx++];
-        const cls = u === undefined ? '' : u === ch ? 'correct' : 'wrong';
-        return `<span class="dot ${cls}"></span>`;
-      }).join('');
-      return `<span class="dot-group">${dotHTML}</span>`;
-    }).join('');
+  inputs.forEach((inp, idx) => {
+    let composing = false;
+    inp.addEventListener('compositionstart', () => { composing = true; });
+    inp.addEventListener('compositionend', () => {
+      composing = false;
+      // After IME commit, value may have multi-char; truncate
+      if (inp.value.length > 1) inp.value = [...inp.value][0] || '';
+      if (inp.value) advanceFrom(idx);
+    });
+    inp.addEventListener('input', () => {
+      if (composing) return;
+      if (inp.value.length > 1) inp.value = [...inp.value][0] || '';
+      if (inp.value) advanceFrom(idx);
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && (e.key === 'Control' || e.key === 'r' || e.key === ' ')) {
+        e.preventDefault(); replayAudio(); return;
+      }
+      if (e.key === 'Enter') { e.preventDefault(); dictCheck(); }
+      else if (e.key === 'Tab') { e.preventDefault(); dictHint(); }
+      else if (e.key === 'Backspace' && !inp.value && idx > 0) {
+        e.preventDefault();
+        inputs[idx-1].focus();
+      }
+      else if (e.key === 'ArrowLeft' && idx > 0) {
+        e.preventDefault(); inputs[idx-1].focus();
+      }
+      else if (e.key === 'ArrowRight' && idx < inputs.length - 1) {
+        e.preventDefault(); inputs[idx+1].focus();
+      }
+    });
+    inp.addEventListener('focus', () => inp.select());
+  });
+
+  function advanceFrom(idx) {
+    if (idx < inputs.length - 1) inputs[idx+1].focus();
   }
 }
 
-function checkDictation() {
-  const seg   = allSegments[currentIdx];
-  const input = document.getElementById('dictation-input')?.value || '';
-  if (!input.trim()) { replayAudio(); return; }
-  showDictationResult(seg, input);
-}
-
-function hintDictation() {
-  const seg    = allSegments[currentIdx];
-  const chars  = [...(seg.transcript||'').replace(/\s/g,'')];
-  const ta     = document.getElementById('dictation-input');
-  if (!ta) return;
-  const user   = [...ta.value.replace(/\s/g,'')];
-  // Find first wrong/missing char
-  const nextIdx = user.findIndex((c,i) => c !== chars[i]);
-  const fillTo  = nextIdx === -1 ? user.length : nextIdx;
-  ta.value = chars.slice(0, fillTo + 1).join('');
-  updateScoreLive();
-}
-
-function showDictationResult(seg, userInput) {
-  const correct = [...(seg.transcript||'').replace(/\s/g,'')];
-  const user    = [...userInput.replace(/\s/g,'')];
+function dictCheck() {
+  const seg = allSegments[currentIdx];
+  if (!seg) return;
+  const inputs = dictGetInputs();
+  if (!inputs.length) return;
   let ok = 0;
-  const cellsHTML = correct.map((ch, i) => {
-    const uch = user[i] || '';
-    const isOk = uch === ch;
-    if (isOk) ok++;
-    const cls = !uch ? 'char-miss' : isOk ? 'char-ok' : 'char-err';
-    return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:30px;padding:4px 5px;border-radius:6px;background:${isOk?'#f0fdf4':!uch?'#f9fafb':'#fef2f2'}">
-      <span style="font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:${isOk?'var(--green)':!uch?'#9ca3af':'var(--red)'}">${ch}</span>
-      ${uch ? `<span style="font-size:11px;color:${isOk?'var(--green)':'var(--red)'};border-top:1px solid currentColor;width:100%;text-align:center;padding-top:2px">${uch}</span>` : ''}
-    </span>`;
-  }).join('');
+  inputs.forEach((inp) => {
+    const cell = inp.closest('.dict-cell');
+    const correct = cell.dataset.correct;
+    const value = (inp.value || '').trim();
+    cell.classList.remove('ok','err','miss','revealed');
+    const correctEl = cell.querySelector('.dict-correct');
+    if (!value) {
+      cell.classList.add('miss');
+      correctEl.textContent = correct;
+    } else if (value === correct) {
+      cell.classList.add('ok');
+      correctEl.textContent = '';
+      ok++;
+    } else {
+      cell.classList.add('err');
+      correctEl.textContent = correct;
+    }
+    inp.disabled = true;
+  });
 
-  const pct = correct.length ? Math.round(ok / correct.length * 100) : 0;
+  const total = inputs.length;
+  const pct = total ? Math.round(ok / total * 100) : 0;
   const msg = pct === 100 ? '🎉 Hoàn hảo!' : pct >= 70 ? '👍 Khá tốt!' : '💪 Cố gắng hơn!';
+  const pillCls = pct === 100 ? 'perfect' : pct >= 70 ? 'good' : 'meh';
+
   sessionScore.correct += (pct === 100 ? 1 : 0);
   sessionScore.total++;
   saveProgress(bookName, lessonId, seg.id, pct);
 
-  // Replace card body with result
-  document.getElementById('ex-card-wrap').insertAdjacentHTML('afterend', `
-    <div class="ex-card" style="margin-top:12px;padding:18px 20px;animation:fadeIn .25s ease" id="result-card">
-      <div style="margin-bottom:12px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:8px">Đáp án đúng</div>
-        <div style="font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:var(--navy);letter-spacing:.5px">${seg.transcript}</div>
-        ${seg.meaning_vi ? `<div style="font-size:13px;color:var(--text-2);margin-top:6px;font-style:italic">${seg.meaning_vi}</div>` : ''}
+  const meaningHTML = seg.meaning_vi
+    ? `<div style="font-size:13px;color:var(--text-2);font-style:italic;margin-top:6px">${seg.meaning_vi}</div>`
+    : '';
+  const nextLabel = currentIdx+1 < allSegments.length
+    ? 'Câu tiếp <i class="fas fa-arrow-right"></i>'
+    : '🏁 Kết thúc';
+
+  document.getElementById('dict-score-row').innerHTML = `
+    <div class="dict-result">
+      <div class="dict-result-top">
+        <span class="score-pill ${pillCls}">${ok}/${total} chữ · ${pct}%</span>
+        <span class="dict-result-msg">${msg}</span>
       </div>
-      <div style="margin-bottom:14px">
-        <div style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-bottom:10px">So sánh từng chữ</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px">${cellsHTML}</div>
+      ${meaningHTML}
+      <div class="dict-result-actions">
+        <button class="dict-btn" onclick="renderExercise(${currentIdx})"><i class="fas fa-rotate-left"></i> Thử lại</button>
+        <button class="dict-btn primary" onclick="${currentIdx+1 < allSegments.length ? `goSeg(${currentIdx+1})` : 'renderDone()'}">${nextLabel}</button>
       </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;background:${pct===100?'var(--green-lt)':pct>=70?'var(--blue-lt)':'var(--red-lt)'};color:${pct===100?'var(--green)':pct>=70?'var(--blue)':'var(--red)'}">${pct}%</div>
-          <div>
-            <div style="font-size:13px;font-weight:600">${msg}</div>
-            <div style="font-size:12px;color:var(--text-2)">${ok}/${correct.length} ký tự đúng</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button onclick="document.getElementById('result-card')?.remove();renderExercise(${currentIdx})"
-            style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--blue);background:transparent;color:var(--blue);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-            <i class="fas fa-rotate-left"></i> Thử lại
-          </button>
-          <button onclick="goSeg(${currentIdx+1})"
-            style="padding:9px 18px;border-radius:8px;border:none;background:var(--navy);color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-            ${currentIdx+1 < allSegments.length ? 'Tiếp <i class="fas fa-arrow-right"></i>' : '🏁 Kết thúc'}
-          </button>
-        </div>
-      </div>
-    </div>
-  `);
-  document.getElementById('result-card')?.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    </div>`;
+  document.getElementById('dict-score-row').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function dictHint() {
+  const inputs = dictGetInputs();
+  // Find first empty or wrong-so-far cell (without checking — based purely on current value)
+  const target = inputs.find(inp => {
+    const cell = inp.closest('.dict-cell');
+    return !inp.value || inp.value !== cell.dataset.correct;
+  });
+  if (!target) return;
+  const cell = target.closest('.dict-cell');
+  target.value = cell.dataset.correct;
+  cell.classList.add('revealed');
+  // Move to next empty
+  const idx = +target.dataset.idx;
+  if (idx < inputs.length - 1) inputs[idx+1].focus();
+}
+
+function dictShowAnswer() {
+  const inputs = dictGetInputs();
+  inputs.forEach(inp => {
+    const cell = inp.closest('.dict-cell');
+    if (inp.value !== cell.dataset.correct) {
+      inp.value = cell.dataset.correct;
+      cell.classList.add('revealed');
+    }
+  });
 }
 
 // ─── NGHE FULL ───────────────────────────────────
