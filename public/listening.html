@@ -327,9 +327,12 @@ const audioEl = document.getElementById('main-audio');
 })();
 
 function goBack() {
-  if (lessonId) { lessonId = null; renderLessonList(bookName); }
-  else if (bookName) { bookName = ''; renderBookList(); }
-  else history.back();
+  // Coming from /subcourse-listening.html → return there with same book param
+  if (bookName) {
+    location.href = `/subcourse-listening.html?b=${encodeURIComponent(bookName)}`;
+    return;
+  }
+  history.back();
 }
 
 // ─── BOOK LIST ──────────────────────────────────
