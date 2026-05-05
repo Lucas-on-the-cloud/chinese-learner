@@ -118,26 +118,34 @@ a{text-decoration:none;color:inherit}
 .reset-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-3);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;cursor:pointer;transition:all .12s}
 .reset-btn:hover{color:var(--text);border-color:#9ca3af}
 
-/* ── NGHE CHÉP (per-char input boxes) ────────────── */
-.dict-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 7px;padding:18px 4px;line-height:1}
-.dict-cell{display:inline-flex;flex-direction:column;align-items:center;gap:3px;position:relative}
-.dict-input{width:38px;height:46px;text-align:center;font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--navy);border:1.5px solid #d1d5db;border-radius:8px;background:#fff;outline:none;padding:0;transition:all .12s;caret-color:var(--blue)}
-.dict-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,.15)}
-.dict-input:disabled{cursor:not-allowed;opacity:1}
-.dict-correct{font-size:11px;font-weight:700;height:14px;color:transparent}
-.dict-cell.ok .dict-input{border-color:var(--green);background:#f0fdf4;color:var(--green)}
-.dict-cell.err .dict-input{border-color:var(--red);background:#fef2f2;color:var(--red);text-decoration:line-through;text-decoration-color:var(--red)}
-.dict-cell.err .dict-correct{color:var(--green)}
-.dict-cell.miss .dict-input{border-color:#e5e7eb;background:#f9fafb}
-.dict-cell.miss .dict-correct{color:#9ca3af}
-.dict-cell.revealed .dict-input{border-color:#f59e0b;background:#fffbeb;color:#92400e}
-.dict-punct{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--text-3);align-self:flex-end;padding:0 2px 11px}
-.dict-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:6px}
+/* ── NGHE CHÉP (textarea + inline result) ────────── */
+.dict-textarea{width:100%;padding:14px 16px;border:2px solid var(--blue);border-radius:10px;font-family:'Noto Serif TC',serif;font-size:19px;outline:none;resize:vertical;line-height:1.7;color:var(--text);background:#fafeff;min-height:84px;letter-spacing:.5px}
+.dict-textarea:focus{box-shadow:0 0 0 3px rgba(26,86,219,.12)}
+.dict-textarea:disabled{background:#f9fafb;color:var(--text-2);cursor:not-allowed}
+.dict-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .dict-btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
 .dict-btn:hover{border-color:#9ca3af;color:var(--text)}
 .dict-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
 .dict-btn.primary:hover{background:#1544b8}
-.dict-result{margin-top:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;animation:fadeIn .25s ease}
+
+/* Result row — preserves punctuation in flow */
+.dict-result{margin-top:14px;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;animation:fadeIn .25s ease}
+.rc-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px;line-height:1;padding:4px 0}
+.rc-cell{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:32px;padding:4px 5px;border-radius:7px}
+.rc-cell .rc-correct{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;height:18px}
+.rc-cell .rc-user{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;line-height:1}
+.rc-cell.rc-ok{background:#f0fdf4}
+.rc-cell.rc-ok .rc-correct{visibility:hidden}
+.rc-cell.rc-ok .rc-user{color:var(--green)}
+.rc-cell.rc-err{background:#fef2f2}
+.rc-cell.rc-err .rc-correct{color:var(--green)}
+.rc-cell.rc-err .rc-user{color:var(--red);text-decoration:line-through;text-decoration-color:rgba(220,38,38,.5)}
+.rc-cell.rc-miss{background:#f9fafb}
+.rc-cell.rc-miss .rc-correct{color:var(--green)}
+.rc-cell.rc-miss .rc-user{color:#cbd5e1}
+.rc-punct{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--text-3);align-self:flex-end;padding:0 2px 7px}
+.rc-extra-label{font-size:11px;font-weight:700;color:var(--red);letter-spacing:1px;text-transform:uppercase;align-self:center;margin-left:8px;margin-right:4px}
+.dict-result-meaning{margin-top:12px;font-size:14px;color:var(--text-2);font-style:italic;line-height:1.6}
 .dict-result-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dict-result-msg{font-size:13px;font-weight:600;color:var(--text)}
 .dict-result-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
@@ -146,8 +154,10 @@ a{text-decoration:none;color:inherit}
 .score-pill.good{background:var(--blue-lt);color:var(--blue)}
 .score-pill.meh{background:var(--red-lt);color:var(--red)}
 @media(max-width:600px){
-  .dict-input{width:32px;height:40px;font-size:19px}
-  .dict-punct{font-size:19px;padding-bottom:10px}
+  .rc-cell{min-width:28px;padding:3px 4px}
+  .rc-cell .rc-user{font-size:19px}
+  .rc-cell .rc-correct{font-size:12px;height:16px}
+  .rc-punct{font-size:19px;padding-bottom:6px}
 }
 
 /* ── NGHE FULL ──────────────────────────────────── */
@@ -617,26 +627,12 @@ function handleCheckKey(e) {
 let dictationHintCount = 0;
 
 function buildDictationBody(seg) {
-  const text = (seg.transcript || '').trim();
-  const chars = [...text];
-  const isPunct = (c) => /[，。！？、：；""''「」（）()…\-—·\s]/.test(c);
-
   const pinyinHint = showPinyin
     ? `<div class="word-display" style="margin-bottom:12px;padding:10px 12px;background:#fffbeb;border:1px dashed #fde68a;border-radius:8px">
         <span style="font-size:10px;font-weight:700;color:#92400e;letter-spacing:.6px;margin-right:8px">PINYIN GỢI Ý:</span>
         <span style="font-family:'Be Vietnam Pro',sans-serif;font-size:14px;color:#78350f">${(seg.pinyin || '—')}</span>
       </div>`
     : '';
-
-  let inputIdx = 0;
-  const boxesHtml = chars.map((ch) => {
-    if (isPunct(ch)) return `<span class="dict-punct">${ch}</span>`;
-    const idx = inputIdx++;
-    return `<span class="dict-cell" data-idx="${idx}" data-correct="${ch}">
-      <input type="text" class="dict-input" maxlength="1" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-idx="${idx}">
-      <span class="dict-correct"></span>
-    </span>`;
-  }).join('');
 
   return `
     <div class="speed-row">
@@ -646,97 +642,77 @@ function buildDictationBody(seg) {
       </button>
     </div>
     ${pinyinHint}
-    <div class="dict-row" id="dict-row">${boxesHtml}</div>
+    <textarea class="dict-textarea" id="dict-textarea" rows="2" placeholder="Gõ câu trả lời (chữ phồn thể) — không cần dấu câu…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
     <div class="dict-actions">
-      <button class="dict-btn" onclick="dictHint()" title="Gợi ý 1 chữ"><i class="fa-solid fa-lightbulb"></i> Gợi ý</button>
+      <button class="dict-btn" onclick="dictHint()" title="Gợi ý từ tiếp theo"><i class="fa-solid fa-lightbulb"></i> Gợi ý</button>
       <button class="dict-btn" onclick="dictShowAnswer()" title="Hiện toàn bộ đáp án"><i class="fa-solid fa-eye"></i> Xem đáp án</button>
       <button class="dict-btn primary" onclick="dictCheck()" title="Kiểm tra"><i class="fa-solid fa-check"></i> Kiểm tra</button>
     </div>
     <div id="dict-score-row"></div>
     <div class="kbd-hint">
       <kbd class="kbd">Ctrl</kbd> phát lại &nbsp;·&nbsp;
-      <kbd class="kbd">Tab</kbd> gợi ý từ &nbsp;·&nbsp;
-      <kbd class="kbd">Enter</kbd> kiểm tra &nbsp;·&nbsp;
-      <kbd class="kbd">←/→</kbd> di chuyển
+      <kbd class="kbd">Tab</kbd> gợi ý &nbsp;·&nbsp;
+      <kbd class="kbd">Enter</kbd> kiểm tra
     </div>`;
 }
 
-// ─── DICTATION (per-char input boxes) ──────────────────────
-function dictGetInputs() {
-  return [...document.querySelectorAll('.dict-input')];
-}
+// ─── DICTATION (single textarea, char-by-char compare on submit) ──────
+const DICT_PUNCT_RE = /[，。！？、：；""''「」（）()【】《》〈〉…\-—·\.,\?\!:;\(\)\[\]\s​　]/g;
 
 function bindDictationInputs() {
-  const inputs = dictGetInputs();
-  if (!inputs.length) return;
-  setTimeout(() => inputs[0].focus(), 50);
-
-  inputs.forEach((inp, idx) => {
-    let composing = false;
-    inp.addEventListener('compositionstart', () => { composing = true; });
-    inp.addEventListener('compositionend', () => {
-      composing = false;
-      // After IME commit, value may have multi-char; truncate
-      if (inp.value.length > 1) inp.value = [...inp.value][0] || '';
-      if (inp.value) advanceFrom(idx);
-    });
-    inp.addEventListener('input', () => {
-      if (composing) return;
-      if (inp.value.length > 1) inp.value = [...inp.value][0] || '';
-      if (inp.value) advanceFrom(idx);
-    });
-    inp.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && (e.key === 'Control' || e.key === 'r' || e.key === ' ')) {
-        e.preventDefault(); replayAudio(); return;
-      }
-      if (e.key === 'Enter') { e.preventDefault(); dictCheck(); }
-      else if (e.key === 'Tab') { e.preventDefault(); dictHint(); }
-      else if (e.key === 'Backspace' && !inp.value && idx > 0) {
-        e.preventDefault();
-        inputs[idx-1].focus();
-      }
-      else if (e.key === 'ArrowLeft' && idx > 0) {
-        e.preventDefault(); inputs[idx-1].focus();
-      }
-      else if (e.key === 'ArrowRight' && idx < inputs.length - 1) {
-        e.preventDefault(); inputs[idx+1].focus();
-      }
-    });
-    inp.addEventListener('focus', () => inp.select());
+  const ta = document.getElementById('dict-textarea');
+  if (!ta) return;
+  setTimeout(() => ta.focus(), 50);
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); dictCheck(); }
+    else if (e.key === 'Tab')             { e.preventDefault(); dictHint();  }
+    else if (e.ctrlKey && e.key === 'Control') { /* allow Ctrl held */ }
+    else if (e.ctrlKey && e.key !== 'a' && e.key !== 'c' && e.key !== 'v' && e.key !== 'x' && e.key !== 'z') {
+      e.preventDefault(); replayAudio();
+    }
   });
+}
 
-  function advanceFrom(idx) {
-    if (idx < inputs.length - 1) inputs[idx+1].focus();
-  }
+function stripPunct(s) {
+  return [...(s || '')].filter(c => !DICT_PUNCT_RE.test(c)).join('');
 }
 
 function dictCheck() {
   const seg = allSegments[currentIdx];
   if (!seg) return;
-  const inputs = dictGetInputs();
-  if (!inputs.length) return;
-  let ok = 0;
-  inputs.forEach((inp) => {
-    const cell = inp.closest('.dict-cell');
-    const correct = cell.dataset.correct;
-    const value = (inp.value || '').trim();
-    cell.classList.remove('ok','err','miss','revealed');
-    const correctEl = cell.querySelector('.dict-correct');
-    if (!value) {
-      cell.classList.add('miss');
-      correctEl.textContent = correct;
-    } else if (value === correct) {
-      cell.classList.add('ok');
-      correctEl.textContent = '';
-      ok++;
-    } else {
-      cell.classList.add('err');
-      correctEl.textContent = correct;
-    }
-    inp.disabled = true;
-  });
+  const ta = document.getElementById('dict-textarea');
+  if (!ta) return;
+  const correctChars = [...stripPunct(seg.transcript || '')];
+  const userChars    = [...stripPunct(ta.value || '')];
+  if (!userChars.length) { replayAudio(); return; }
 
-  const total = inputs.length;
+  // Build per-char results aligned by position (ignoring punctuation in both)
+  let ok = 0;
+  const results = correctChars.map((ch, i) => {
+    const u = userChars[i] || '';
+    if (!u)       return { type: 'miss', correct: ch, user: '' };
+    if (u === ch) { ok++; return { type: 'ok', correct: ch, user: u }; }
+    return { type: 'err', correct: ch, user: u };
+  });
+  const extra = userChars.slice(correctChars.length);
+
+  // Render result row preserving punctuation flow from original transcript
+  let resIdx = 0;
+  const rowHtml = [...(seg.transcript || '')].map((ch) => {
+    if (DICT_PUNCT_RE.test(ch)) return `<span class="rc-punct">${ch}</span>`;
+    const r = results[resIdx++];
+    if (!r) return '';
+    return `<span class="rc-cell rc-${r.type}">
+      <span class="rc-correct">${r.correct}</span>
+      <span class="rc-user">${r.user || '—'}</span>
+    </span>`;
+  }).join('');
+  const extraHtml = extra.length
+    ? `<span class="rc-extra-label">Thừa:</span>` +
+      extra.map(c => `<span class="rc-cell rc-err"><span class="rc-correct">·</span><span class="rc-user">${c}</span></span>`).join('')
+    : '';
+
+  const total = correctChars.length;
   const pct = total ? Math.round(ok / total * 100) : 0;
   const msg = pct === 100 ? '🎉 Hoàn hảo!' : pct >= 70 ? '👍 Khá tốt!' : '💪 Cố gắng hơn!';
   const pillCls = pct === 100 ? 'perfect' : pct >= 70 ? 'good' : 'meh';
@@ -745,8 +721,12 @@ function dictCheck() {
   sessionScore.total++;
   saveProgress(bookName, lessonId, seg.id, pct);
 
+  // Disable textarea + hide actions, replace with result block
+  ta.disabled = true;
+  document.querySelector('.dict-actions')?.style.setProperty('display', 'none');
+
   const meaningHTML = seg.meaning_vi
-    ? `<div style="font-size:13px;color:var(--text-2);font-style:italic;margin-top:6px">${seg.meaning_vi}</div>`
+    ? `<div class="dict-result-meaning"><span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text-3);text-transform:uppercase;margin-right:8px">Dịch nghĩa</span>${seg.meaning_vi}</div>`
     : '';
   const nextLabel = currentIdx+1 < allSegments.length
     ? 'Câu tiếp <i class="fas fa-arrow-right"></i>'
@@ -754,11 +734,12 @@ function dictCheck() {
 
   document.getElementById('dict-score-row').innerHTML = `
     <div class="dict-result">
-      <div class="dict-result-top">
+      <div class="rc-row">${rowHtml}${extraHtml}</div>
+      ${meaningHTML}
+      <div class="dict-result-top" style="margin-top:14px">
         <span class="score-pill ${pillCls}">${ok}/${total} chữ · ${pct}%</span>
         <span class="dict-result-msg">${msg}</span>
       </div>
-      ${meaningHTML}
       <div class="dict-result-actions">
         <button class="dict-btn" onclick="renderExercise(${currentIdx})"><i class="fas fa-rotate-left"></i> Thử lại</button>
         <button class="dict-btn primary" onclick="${currentIdx+1 < allSegments.length ? `goSeg(${currentIdx+1})` : 'renderDone()'}">${nextLabel}</button>
@@ -768,30 +749,32 @@ function dictCheck() {
 }
 
 function dictHint() {
-  const inputs = dictGetInputs();
-  // Find first empty or wrong-so-far cell (without checking — based purely on current value)
-  const target = inputs.find(inp => {
-    const cell = inp.closest('.dict-cell');
-    return !inp.value || inp.value !== cell.dataset.correct;
-  });
-  if (!target) return;
-  const cell = target.closest('.dict-cell');
-  target.value = cell.dataset.correct;
-  cell.classList.add('revealed');
-  // Move to next empty
-  const idx = +target.dataset.idx;
-  if (idx < inputs.length - 1) inputs[idx+1].focus();
+  const seg = allSegments[currentIdx];
+  if (!seg) return;
+  const ta = document.getElementById('dict-textarea');
+  if (!ta) return;
+  const correctChars = [...stripPunct(seg.transcript || '')];
+  const userChars    = [...stripPunct(ta.value || '')];
+  // Find first wrong/missing position
+  let firstWrong = -1;
+  for (let i = 0; i < correctChars.length; i++) {
+    if (userChars[i] !== correctChars[i]) { firstWrong = i; break; }
+  }
+  if (firstWrong === -1) return;
+  // Replace user up to firstWrong with correct, then append correct char at firstWrong
+  const newChars = correctChars.slice(0, firstWrong + 1);
+  ta.value = newChars.join('');
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
 }
 
 function dictShowAnswer() {
-  const inputs = dictGetInputs();
-  inputs.forEach(inp => {
-    const cell = inp.closest('.dict-cell');
-    if (inp.value !== cell.dataset.correct) {
-      inp.value = cell.dataset.correct;
-      cell.classList.add('revealed');
-    }
-  });
+  const seg = allSegments[currentIdx];
+  if (!seg) return;
+  const ta = document.getElementById('dict-textarea');
+  if (!ta) return;
+  ta.value = stripPunct(seg.transcript || '');
+  ta.focus();
 }
 
 // ─── NGHE FULL ───────────────────────────────────
