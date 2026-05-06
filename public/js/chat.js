@@ -59,12 +59,6 @@ class ChatManager {
 
     this.history.push({ role: 'user', content: msg });
 
-    if (!app.config.getKey()) {
-      msgs.innerHTML += `<div class="chat-msg system">⚠ Chưa có API key.</div>`;
-      msgs.scrollTop = msgs.scrollHeight;
-      return;
-    }
-
     const loadId = 'cl-' + Date.now();
     msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ ...</div>`;
     msgs.scrollTop = msgs.scrollHeight;

@@ -63,10 +63,6 @@ class VocabManager {
   }
 
   async _enrichEntry(entry) {
-    if (!app.config.getKey()) {
-      entry.meaning = '(bạn thêm)'; entry.pinyin = '';
-      this.render(); this._saveToDb(); return;
-    }
     try {
       const raw = await app.ai.call(
         `Tra từ tiếng Trung phồn thể Đài Loan (繁體中文). Trả về JSON thuần (không markdown):\n{"pinyin":"...","meaning":"nghĩa tiếng Việt ngắn","example":"câu ví dụ ngắn bằng phồn thể","exPinyin":"pinyin ví dụ","exMeaning":"nghĩa câu ví dụ","level":"cơ bản"}`,
