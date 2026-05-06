@@ -63,7 +63,20 @@ class ChatManager {
     msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ ...</div>`;
     msgs.scrollTop = msgs.scrollHeight;
 
-    const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho người Việt. Trả lời dựa trên ngữ cảnh bài đọc. Khi viết chữ Hán phải dùng phồn thể. Ngắn gọn.\n\nBÀI ĐỌC:\n${lesson.zh}\n\nPINYIN:\n${lesson.py}\n\nTIẾNG VIỆT:\n${lesson.vi}`;
+    const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho học viên Việt Nam.
+
+NGÔN NGỮ TRẢ LỜI: BẮT BUỘC trả lời bằng TIẾNG VIỆT. Tuyệt đối KHÔNG viết toàn câu trả lời bằng tiếng Trung. Chỉ dùng chữ Hán khi trích dẫn nguyên văn từ bài đọc, kèm pinyin có dấu thanh trong ngoặc đơn và nghĩa tiếng Việt. Ví dụ: 「他喜歡吃水果」(tā xǐhuān chī shuǐguǒ — anh ấy thích ăn hoa quả).
+
+Khi viết chữ Hán phải dùng 繁體 (phồn thể Đài Loan), không giản thể. Trả lời ngắn gọn, rõ ràng, dựa trên ngữ cảnh bài đọc bên dưới.
+
+BÀI ĐỌC (繁體):
+${lesson.zh}
+
+PINYIN:
+${lesson.py}
+
+DỊCH TIẾNG VIỆT:
+${lesson.vi}`;
     try {
       const reply = await this.ai.call(sys, null, 800, this.history);
       this.history.push({ role: 'assistant', content: reply });

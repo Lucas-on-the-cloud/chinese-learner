@@ -543,15 +543,16 @@ async function chatSend() {
   }
 
   const a = articleData;
-  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Học viên đang đọc 1 bài báo Đài Loan và muốn hỏi về nó.
+  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt Nam.
+
+NGÔN NGỮ TRẢ LỜI: BẮT BUỘC trả lời bằng TIẾNG VIỆT. KHÔNG được viết toàn câu trả lời bằng tiếng Trung. Chỉ dùng chữ Hán khi trích nguyên văn từ bài, kèm pinyin có dấu thanh và nghĩa Việt trong ngoặc đơn.
+Khi viết chữ Hán phải dùng 繁體 Đài Loan, không giản thể. Trả lời ngắn gọn, rõ ràng.
 
 Bài báo:
 Tiêu đề: ${a.title_zh}
 Nguồn: ${a.source_name || a.source}
-Nội dung:
-${a.content_zh}
-
-Hãy trả lời câu hỏi của học viên một cách rõ ràng, ngắn gọn, dễ hiểu. Có thể trích dẫn nguyên văn từ bài. Trả lời bằng tiếng Việt; nếu trích chữ Hán giữ nguyên 繁體.`;
+Nội dung (繁體):
+${a.content_zh}`;
 
   chatHistory.push({ role: 'user', content: msg });
 

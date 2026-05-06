@@ -1051,11 +1051,12 @@ async function chatSend() {
     return;
   }
 
-  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Học viên đang luyện nghe 1 bài và muốn hỏi về nội dung, ngữ pháp, từ vựng, cách phát âm.
+  const sysPrompt = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt Nam.
 
-${chatBuildContext()}
+NGÔN NGỮ TRẢ LỜI: BẮT BUỘC trả lời bằng TIẾNG VIỆT. KHÔNG được viết toàn câu trả lời bằng tiếng Trung. Chỉ dùng chữ Hán khi trích nguyên văn từ bài, kèm pinyin có dấu thanh và nghĩa Việt trong ngoặc đơn.
+Khi viết chữ Hán phải dùng 繁體 Đài Loan, không giản thể. Trả lời ngắn gọn, rõ ràng.
 
-Trả lời bằng tiếng Việt, ngắn gọn rõ ràng. Khi trích chữ Hán phải dùng 繁體 (Đài Loan), không giản thể. Có thể trích nguyên văn từ bài nếu cần.`;
+${chatBuildContext()}`;
 
   chatHistory.push({ role: 'user', content: msg });
   msgs.innerHTML += `<div class="chat-msg ai" id="chat-loading"><i class="fa-solid fa-spinner fa-spin"></i></div>`;
