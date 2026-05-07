@@ -43,8 +43,10 @@
     const isReal = u && !u.is_anonymous;
     if (!isReal) {
       wrap.classList.remove('nav-auth-wrap');
-      const next = encodeURIComponent(window.location.pathname + window.location.search);
-      wrap.innerHTML = `<a class="nav-btn" href="/login.html?next=${next}">Đăng nhập</a>`;
+      // Navbar login → default to /dashboard.html (no `next` param).
+      // Moment-of-value banners (exam result, flashcards, dashboard banner)
+      // keep their own ?next= so they return to context.
+      wrap.innerHTML = `<a class="nav-btn" href="/login.html">Đăng nhập</a>`;
       return;
     }
     wrap.classList.add('nav-auth-wrap');
