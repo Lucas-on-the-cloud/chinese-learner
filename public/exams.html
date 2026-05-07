@@ -21,6 +21,7 @@ tailwind.config = {
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
+<script src="js/nav-auth.js"></script>
 <script src="/js/comments.js"></script>
 <link rel="stylesheet" href="/css/comments.css">
 <style>
@@ -284,9 +285,9 @@ function examsApp() {
 
     async init() {
       if (_auth) {
+        mountNavAuth(_auth);
         _auth.init().then(user => {
-          if (user) this.loadResults(user.id);
-          renderNavAuth(user);
+          if (user && !user.is_anonymous) this.loadResults(user.id);
         });
       }
 
@@ -321,12 +322,6 @@ function examsApp() {
   };
 }
 
-function renderNavAuth(user) {
-  const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a href="/courses.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
-  const init = user.email?.[0]?.toUpperCase() || 'U';
-  wrap.innerHTML = `<a href="/dashboard.html" class="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple/70 flex items-center justify-center text-sm font-bold text-white" title="Dashboard">${init}</a>`;
-}
 </script>
 <script src="/js/nav-mobile.js"></script>
 </body>

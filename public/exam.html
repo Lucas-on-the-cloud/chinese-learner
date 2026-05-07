@@ -9,6 +9,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
+<script src="js/nav-auth.js"></script>
 <script src="js/config.js"></script>
 <script src="js/ai-service.js"></script>
 <style>
@@ -655,6 +656,20 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
         </div>
       </template>
     </div>
+    <!-- Soft login prompt for anonymous users -->
+    <div class="modal-body" x-show="isAnon" style="padding-top:0">
+      <div style="background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size:18px"></i>
+        <div style="flex:1;font-size:13px;line-height:1.5;min-width:200px">
+          <div style="font-weight:600;margin-bottom:1px">Đăng nhập để xem lại điểm sau này</div>
+          <div style="opacity:.85;font-size:12px">Giữ lịch sử + đồng bộ qua điện thoại — kết quả hiện tại được giữ nguyên.</div>
+        </div>
+        <a :href="`/login.html?next=${encodeURIComponent(loginNext)}`"
+           style="background:#fff;color:#1a56db;padding:7px 14px;border-radius:6px;font-weight:600;font-size:12px;text-decoration:none;white-space:nowrap">
+          <i class="fa-brands fa-google" style="font-size:11px;margin-right:4px"></i>Đăng nhập
+        </a>
+      </div>
+    </div>
     <!-- AI explanation -->
     <div class="modal-ai" x-show="wrongQs.length > 0">
       <div class="modal-ai-box">
@@ -831,6 +846,8 @@ function examApp() {
     // ── Computed ─────────────────────────
     get totalQ()     { return Object.values(this.questionsBySection).flat().length },
     get answeredQ()  { return Object.keys(this.answers).length },
+    get isAnon()     { return _user?.is_anonymous === true },
+    get loginNext()  { return location.pathname + location.search },
     get currentSection(){ return this.sections[this.currentSectionIdx] || null },
     get timerDisplay(){
       const m = String(Math.floor(this.timer/60)).padStart(2,'0');
@@ -875,10 +892,10 @@ function examApp() {
       document.addEventListener('pick-answer', e => this.pick(e.detail.qId, e.detail.label));
 
       if (_auth) {
+        mountNavAuth(_auth);
         _auth.init().then(u => {
           _user = u;
-          renderNavAuth(u);
-          if (u) this.loadAllResults(u.id);
+          if (u && !u.is_anonymous) this.loadAllResults(u.id);
         });
       }
 
@@ -1127,13 +1144,6 @@ Giải thích ngắn gọn tại sao đáp án đúng là đúng cho từng câu
       this.aiLoading = false;
     },
   };
-}
-
-function renderNavAuth(user) {
-  const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
-  const init = user.email?.[0]?.toUpperCase() || 'U';
-  wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${init}</a>`;
 }
 
 // ── Text selection + highlight + AI panel ────────────────────
