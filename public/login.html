@@ -217,17 +217,6 @@ db.auth.getSession().then(({ data }) => {
   if (u && !u.is_anonymous) window.location.href = nextUrl;
 });
 
-const GOOGLE_BTN_HTML = '<svg width="22" height="22" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/></svg> Đăng nhập với Google <i class="fa-solid fa-arrow-right g-arrow"></i>';
-
-function showLoginError(msg) {
-  const err = document.getElementById('login-err');
-  err.textContent = msg;
-  err.classList.add('show');
-  const btn = document.getElementById('google-btn');
-  btn.disabled = false;
-  btn.innerHTML = GOOGLE_BTN_HTML;
-}
-
 async function handleGoogleLogin() {
   const btn = document.getElementById('google-btn');
   const err = document.getElementById('login-err');
@@ -235,28 +224,27 @@ async function handleGoogleLogin() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:16px;color:var(--blue)"></i>&nbsp; Đang kết nối với Google…';
 
+  // If user has anonymous session: link Google identity so all anon progress
+  // (reading_progress / listening_progress / user_flashcards rows tied to the
+  // anon UUID) carries over instead of orphaning into a fresh user.
+  const { data: { session } } = await db.auth.getSession();
+  const isAnon = session?.user?.is_anonymous === true;
+
   const oauthOpts = {
     provider: 'google',
     options: { redirectTo: window.location.origin + nextUrl },
   };
 
-  // Decide: link to existing anonymous user (preserve progress) vs fresh sign-in
-  const { data: { session } } = await db.auth.getSession();
-  const isAnon = session?.user?.is_anonymous === true;
+  const { error } = isAnon
+    ? await db.auth.linkIdentity(oauthOpts)
+    : await db.auth.signInWithOAuth(oauthOpts);
 
-  // Anonymous → try to link Google identity to keep their progress.
-  // If link fails (e.g. that Google account already belongs to another user,
-  // or anon already has an identity linked), drop the anon session and
-  // sign in cleanly so user can finish the flow.
-  if (isAnon) {
-    const { error } = await db.auth.linkIdentity(oauthOpts);
-    if (!error) return; // browser is being redirected to Google
-    console.warn('[login] linkIdentity failed, falling back to clean sign-in:', error);
-    try { await db.auth.signOut({ scope: 'local' }); } catch(e) {}
+  if (error) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/></svg> Đăng nhập với Google <i class="fa-solid fa-arrow-right g-arrow"></i>';
+    err.textContent = 'Lỗi: ' + error.message;
+    err.classList.add('show');
   }
-
-  const { error } = await db.auth.signInWithOAuth(oauthOpts);
-  if (error) showLoginError('Lỗi: ' + error.message);
 }
 </script>
 
