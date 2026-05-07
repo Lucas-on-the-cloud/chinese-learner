@@ -8,8 +8,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
-<script src="js/nav-auth.js"></script>
-<script src="js/user-session.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;color:#1f2937;background:#f4f5f7;display:flex;flex-direction:column;min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -45,9 +43,6 @@ a{text-decoration:none;color:inherit}
 .card-cover{aspect-ratio:16/9;background:linear-gradient(135deg,var(--navy),#1e3a8a);position:relative;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.15);font-family:'Noto Serif TC',serif;font-size:80px}
 .card-cover img{width:100%;height:100%;object-fit:cover}
 .card-cover-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em;backdrop-filter:blur(4px)}
-.card-read-badge{position:absolute;top:10px;right:10px;background:rgba(22,163,74,.95);color:#fff;font-size:10px;font-weight:600;padding:3px 9px;border-radius:5px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:4px}
-.card.read{opacity:.72}
-.card.read:hover{opacity:1}
 .card-body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column}
 .card-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-3);margin-bottom:8px}
 .card-source{color:var(--blue);font-weight:600}
@@ -114,9 +109,6 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 const SB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const SB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const sb = supabase.createClient(SB_URL, SB_KEY);
-mountNavAuth(sb);
-const userSession = new UserSession(sb);
-let readIds = new Set();
 
 const CAT_LABELS = {
   politics: '🏛 Chính trị',
@@ -156,15 +148,11 @@ function render() {
       ? `<img src="${a.cover_url}" alt="" onerror="this.parentElement.innerHTML='${wm}'">`
       : wm;
     const catColor = CAT_COLOR[a.category] || '#475569';
-    const readBadge = readIds.has(a.id)
-      ? `<span class="card-read-badge"><i class="fa-solid fa-check"></i> Đã đọc</span>`
-      : '';
     return `
-      <a class="card${readIds.has(a.id) ? ' read' : ''}" href="/news-reader.html?id=${a.id}">
+      <a class="card" href="/news-reader.html?id=${a.id}">
         <div class="card-cover" style="background:linear-gradient(135deg,${catColor},${catColor}cc)">
           ${cover}
           <span class="card-cover-badge">${CAT_LABELS[a.category] || a.category || 'Tin tức'}</span>
-          ${readBadge}
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -211,13 +199,6 @@ function buildFilters() {
   allArticles = data || [];
   buildFilters();
   render();
-
-  // Load read history (anonymous or authenticated) and re-render with badges.
-  try {
-    await userSession.init();
-    readIds = await userSession.getReadNewsArticles();
-    render();
-  } catch (e) { /* progress is best-effort */ }
 })();
 </script>
 <script src="/js/nav-mobile.js"></script>

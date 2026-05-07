@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
-<script src="js/nav-auth.js"></script>
 <script src="js/user-session.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -619,24 +618,15 @@ const userSession  = new UserSession(db);
 
 (async () => {
   try {
-    let user = await auth.init();
+    const user = await auth.init();
 
-    // No session at all → create anonymous so we can show progress
-    // (kept under the same UUID until user links a Google account).
     if (!user) {
-      await userSession.init();
-      user = userSession.uid ? { id: userSession.uid, is_anonymous: true } : null;
-      if (!user) {
-        // Even anonymous failed (likely Supabase project setting) → fall back to login
-        window.location.href = '/login.html';
-        return;
-      }
-    } else {
-      await userSession.init();
+      window.location.href = '/login.html';
+      return;
     }
 
+    await userSession.init();
     renderUser();
-    if (user.is_anonymous) renderAnonBanner();
     hideSplash();
     await loadDashboard();
   } catch(e) {
@@ -649,23 +639,6 @@ const userSession  = new UserSession(db);
     );
   }
 })();
-
-function renderAnonBanner() {
-  const banner = document.createElement('div');
-  banner.style.cssText = 'background:linear-gradient(135deg,#1a56db,#7c3aed);color:#fff;border-radius:12px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap';
-  banner.innerHTML = `
-    <i class="fa-solid fa-shield-halved" style="font-size:24px;opacity:.9"></i>
-    <div style="flex:1;min-width:240px">
-      <div style="font-weight:600;font-size:15px;margin-bottom:2px">Bạn đang dùng tài khoản tạm thời</div>
-      <div style="font-size:13px;opacity:.85;line-height:1.5">Đăng nhập bằng Google để giữ tiến độ + đồng bộ flashcard qua điện thoại. Tất cả dữ liệu hiện tại sẽ được giữ nguyên.</div>
-    </div>
-    <a href="/login.html?next=${encodeURIComponent(location.pathname)}" style="background:#fff;color:#1a56db;padding:9px 18px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap">
-      <i class="fa-brands fa-google" style="margin-right:6px"></i>Đăng nhập với Google
-    </a>
-  `;
-  const main = document.getElementById('app-main');
-  if (main) main.insertBefore(banner, main.firstChild);
-}
 
 // ── Render user info ─────────────────────────────
 function renderUser() {

@@ -85,23 +85,6 @@ class UserSession {
     return data || [];
   }
 
-  // ── News Reads ────────────────────────────────
-  async markNewsRead(articleId) {
-    if (!this.uid) return;
-    await this.client.from('news_reads').upsert(
-      { user_id: this.uid, article_id: articleId, read_at: new Date().toISOString() },
-      { onConflict: 'user_id,article_id' }
-    );
-  }
-
-  async getReadNewsArticles() {
-    if (!this.uid) return new Set();
-    const { data } = await this.client.from('news_reads')
-      .select('article_id')
-      .eq('user_id', this.uid);
-    return new Set((data || []).map(r => r.article_id));
-  }
-
   // ── User Flashcards ───────────────────────────
   async getUserFlashcards() {
     if (!this.uid) return [];

@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/nav-auth.js"></script>
 <script src="js/auth-service.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -222,9 +221,9 @@ const GRADIENTS = {
   if (!id) { document.getElementById('hero-title').textContent = 'Không tìm thấy khóa học.'; return; }
 
   // Auth (non-blocking for faster page load)
-  mountNavAuth(auth);
   auth.init().then(user => {
-    if (user && !user.is_anonymous) renderProgressBars(user);
+    renderNavAuth(user);
+    if (user) renderProgressBars(user);
   });
 
   // Load course data in parallel
@@ -407,6 +406,16 @@ async function renderProgressBars(user) {
       }
     });
   } catch(e) {}
+}
+
+function renderNavAuth(user) {
+  const wrap = document.getElementById('nav-auth');
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
+  const profile = auth.profile;
+  const avatarUrl = profile?.avatar_url || user.user_metadata?.avatar_url;
+  const initial = auth.avatarInitial();
+  const inner = avatarUrl ? `<img src="${esc(avatarUrl)}" alt="">` : initial;
+  wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${inner}</a>`;
 }
 
 function renderMarkdown(text) {

@@ -81,18 +81,12 @@ class AuthService {
   }
 
   async signInWithGoogle(redirectTo) {
-    const opts = {
+    return this.client.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectTo || `${window.location.origin}/dashboard.html`,
       },
-    };
-    // Anonymous user → link Google identity to keep their progress.
-    // Otherwise normal OAuth (creates new user or signs in existing).
-    if (this._user?.is_anonymous) {
-      return this.client.auth.linkIdentity(opts);
-    }
-    return this.client.auth.signInWithOAuth(opts);
+    });
   }
 
   async signOut() {

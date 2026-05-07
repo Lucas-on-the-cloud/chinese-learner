@@ -9,8 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.7/dist/hanzi-writer.min.js"></script>
 <script src="js/auth-service.js"></script>
-<script src="js/nav-auth.js"></script>
-<script src="js/user-session.js"></script>
 <link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -311,9 +309,6 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 const SB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const SB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const sb = supabase.createClient(SB_URL, SB_KEY);
-mountNavAuth(sb);
-const userSession = new UserSession(sb);
-userSession.init();
 
 const id = +new URLSearchParams(location.search).get('id');
 let articleData = null;
@@ -345,26 +340,6 @@ async function load() {
   document.title = (a.title_zh || 'Bài báo') + ' — TOCFL FAFA';
   render(a);
   document.getElementById('chat-bubble').style.display = 'flex';
-  startReadTracker(a.id);
-}
-
-// Mark "đã đọc" once after 30s on page OR when scrolled past 70%, whichever
-// comes first. Idempotent — only fires the first time per article load.
-function startReadTracker(articleId) {
-  let fired = false;
-  const fire = async () => {
-    if (fired) return;
-    fired = true;
-    try { await userSession.markNewsRead(articleId); } catch (e) {}
-    window.removeEventListener('scroll', onScroll);
-  };
-  const onScroll = () => {
-    const max = (document.documentElement.scrollHeight || 1) - window.innerHeight;
-    const pct = max > 0 ? (window.scrollY / max) : 0;
-    if (pct >= 0.7) fire();
-  };
-  setTimeout(fire, 30_000);
-  window.addEventListener('scroll', onScroll, { passive: true });
 }
 
 let activeMode = 'all';
