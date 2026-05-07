@@ -206,24 +206,6 @@ body::before {
 <script>
 const SUPABASE_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
-
-// Capture OAuth error params from URL hash BEFORE supabase-js strips them.
-// (createClient detects + consumes #access_token / #error= on init.)
-(function captureOAuthError() {
-  const hash = window.location.hash.slice(1);
-  if (!hash || !hash.includes('error')) return;
-  const p = new URLSearchParams(hash);
-  const code = p.get('error') || p.get('error_code');
-  const desc = p.get('error_description') || '';
-  if (!code && !desc) return;
-  const err = document.getElementById('login-err');
-  if (err) {
-    err.innerHTML = `<strong>Đăng nhập thất bại:</strong> ${decodeURIComponent(desc).replace(/\+/g,' ') || code}<br>
-      <code style="font-size:11px;opacity:.75;display:block;margin-top:6px;word-break:break-all">code=${code}</code>`;
-    err.classList.add('show');
-  }
-})();
-
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const params   = new URLSearchParams(location.search);
