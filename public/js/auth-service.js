@@ -19,17 +19,15 @@ class AuthService {
     });
   }
 
-  // Call once on page load. Waits for the auth state to settle so it works
-  // for both PKCE (?code=) and implicit (#access_token=) OAuth callbacks.
+  // Call once on page load. Uses onAuthStateChange so it works after
+  // OAuth redirects (PKCE flow: getSession() may be null before code exchange).
   init() {
     return new Promise(resolve => {
       let resolved = false;
-      let subscription = null;
 
       const finish = async (session) => {
         if (resolved) return;
         resolved = true;
-        try { subscription?.unsubscribe(); } catch (e) {}
         this._user = session?.user || null;
         if (this._user) {
           try { await this._syncProfile(this._user); } catch(e) {
@@ -40,24 +38,26 @@ class AuthService {
         resolve(this._user);
       };
 
-      // OAuth callback artifacts in URL → wait for the session to materialize.
-      const search = typeof window !== 'undefined' ? window.location.search : '';
-      const hash   = typeof window !== 'undefined' ? window.location.hash   : '';
-      const hasOAuthArtifacts =
-        new URLSearchParams(search).has('code') ||
-        hash.includes('access_token') ||
-        hash.includes('error');
-
-      const result = this.client.auth.onAuthStateChange((event, session) => {
-        // Any event that yields a session → we're authenticated
-        if (session) return finish(session);
-        // INITIAL_SESSION with no session: only treat as "signed out" if we're
-        // not currently mid-OAuth-callback. Otherwise wait for SIGNED_IN.
-        if (event === 'INITIAL_SESSION' && !hasOAuthArtifacts) return finish(null);
-        // SIGNED_OUT explicitly → not logged in
-        if (event === 'SIGNED_OUT') return finish(null);
+      const { data: { subscription } } = this.client.auth.onAuthStateChange((event, session) => {
+        if (event === 'INITIAL_SESSION') {
+          if (session) {
+            subscription.unsubscribe();
+            finish(session);
+          } else {
+            // No session — check if a PKCE code is being exchanged
+            const hasCode = typeof window !== 'undefined'
+              && new URLSearchParams(window.location.search).has('code');
+            if (!hasCode) {
+              subscription.unsubscribe();
+              finish(null); // definitely not logged in
+            }
+            // else: wait for SIGNED_IN which fires after code exchange
+          }
+        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          subscription.unsubscribe();
+          finish(event === 'SIGNED_IN' ? session : null);
+        }
       });
-      subscription = result?.data?.subscription;
 
       // Hard timeout — should never trigger in normal flow
       setTimeout(() => finish(null), 8000);
