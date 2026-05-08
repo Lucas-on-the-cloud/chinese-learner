@@ -149,13 +149,12 @@ a{color:var(--blue);text-decoration:none}
       </div>
       <div class="set-row">
         <label>RapidAPI Host</label>
-        <input id="cfg-host" placeholder="instagram-scraper-api2.p.rapidapi.com">
-        <span class="hint">Lấy từ tab "Code Snippets" trên RapidAPI — dòng <code>X-RapidAPI-Host</code>.</span>
+        <input id="cfg-host" value="instagram120.p.rapidapi.com">
+        <span class="hint">Provider sẽ được POST với <code>{"username","maxId":""}</code>. Default: <code>instagram120</code>.</span>
       </div>
       <div class="set-row">
-        <label>RapidAPI Endpoint Path (incl. param prefix)</label>
-        <input id="cfg-endpoint" placeholder="/v1/post_info?code_or_id_or_url=">
-        <span class="hint">URL Instagram sẽ được nối vào cuối path này (đã encode). Vd: <code>/v1/post_info?code_or_id_or_url=</code></span>
+        <label>RapidAPI Endpoint Path</label>
+        <input id="cfg-endpoint" value="/api/instagram/reels">
       </div>
       <div class="set-row">
         <label>RapidAPI Key</label>
@@ -330,6 +329,41 @@ function getShortcode(url) {
   const m = url.match(/\/(reel|p|tv)\/([^/?#]+)/);
   return m ? m[2] : null;
 }
+
+// Extract username + shortcode from a Reel URL.
+// Format A: https://www.instagram.com/USERNAME/reel/SHORTCODE/   → easy
+// Format B: https://www.instagram.com/reel/SHORTCODE/            → fetch IG page HTML to find username
+const RESERVED = new Set(['reel','reels','p','tv','stories','explore','accounts','direct']);
+async function resolveUserAndCode(url) {
+  const shortcode = getShortcode(url);
+  if (!shortcode) throw new Error('URL không chứa shortcode reel/p/tv');
+
+  // Format A: username embedded in path
+  const pathUser = (url.match(/instagram\.com\/([^/?#]+)\/(reel|p|tv)\//) || [])[1];
+  if (pathUser && !RESERVED.has(pathUser.toLowerCase())) {
+    return { username: pathUser, shortcode };
+  }
+
+  // Format B: fetch the public IG page HTML via CORS proxy and parse author
+  let html = '';
+  try {
+    const r = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(url));
+    if (r.ok) html = await r.text();
+  } catch (e) {}
+  if (!html) throw new Error('Không lấy được HTML page (proxy fail) — paste URL dạng instagram.com/USERNAME/reel/' + shortcode + '/');
+
+  // Try multiple patterns
+  let m = html.match(/instagram\.com\/([\w._]+)\/reel\/[A-Za-z0-9_-]+\/?/);
+  if (m && !RESERVED.has(m[1].toLowerCase())) return { username: m[1], shortcode };
+
+  m = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+?) on Instagram/);
+  if (m) return { username: m[1].split('(')[0].trim().replace(/^@/, ''), shortcode };
+
+  m = html.match(/"username"\s*:\s*"([\w._]+)"/);
+  if (m && !RESERVED.has(m[1].toLowerCase())) return { username: m[1], shortcode };
+
+  throw new Error('Không tìm được username từ page — paste URL có dạng instagram.com/USERNAME/reel/' + shortcode + '/');
+}
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -363,19 +397,30 @@ async function analyze() {
   document.getElementById('result').classList.remove('show');
 
   try {
-    // Step 1: RapidAPI extract
+    // Step 1: Resolve username + shortcode, then POST to RapidAPI reels-by-username
     const t0 = Date.now();
     setStep('extract', 'active');
-    const apiUrl = `https://${cfg.host}${cfg.endpoint}${encodeURIComponent(url)}`;
+    const { username, shortcode } = await resolveUserAndCode(url);
+    const apiUrl = `https://${cfg.host}${cfg.endpoint}`;
     const exRes = await fetch(apiUrl, {
-      headers: { 'X-RapidAPI-Host': cfg.host, 'X-RapidAPI-Key': cfg.rapid },
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-RapidAPI-Host': cfg.host,
+        'X-RapidAPI-Key': cfg.rapid,
+      },
+      body: JSON.stringify({ username, maxId: '' }),
     });
-    if (!exRes.ok) throw new Error('RapidAPI HTTP ' + exRes.status);
+    if (!exRes.ok) throw new Error('RapidAPI HTTP ' + exRes.status + ': ' + (await exRes.text()).slice(0, 200));
     const exJson = await exRes.json();
-    const videoUrl = findVideoUrl(exJson);
-    const thumbUrl = findThumb(exJson);
-    if (!videoUrl) throw new Error('Không tìm thấy video URL trong response RapidAPI');
-    setStep('extract', 'done', `${Date.now()-t0}ms`);
+    const edges = exJson.result?.edges || exJson.edges || [];
+    const found = edges.find(e => (e.node || e)?.code === shortcode);
+    if (!found) throw new Error(`Không thấy reel ${shortcode} trong list của @${username} (có ${edges.length} reels). Có thể reel quá cũ (cần pagination) hoặc URL sai username.`);
+    const node = found.node || found;
+    const videoUrl = findVideoUrl(node);
+    const thumbUrl = findThumb(node);
+    if (!videoUrl) throw new Error('Reel không có video_versions (có thể là image post)');
+    setStep('extract', 'done', `@${username} · ${Date.now()-t0}ms`);
 
     // Step 2: Download mp4 (Instagram CDN often blocks cross-origin from
     // browser → fall back to a public CORS proxy if direct fetch fails).
