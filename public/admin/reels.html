@@ -641,11 +641,10 @@ a { color: var(--teal); text-decoration: none; }
 
   <!-- STEPS -->
   <div class="steps" id="steps">
-    <div class="step" data-step="info"><span class="ic">1</span><span class="label">Lấy metadata video (yt-dlp)</span><span class="ms"></span></div>
-    <div class="step" data-step="download"><span class="ic">2</span><span class="label">Download mp4</span><span class="ms"></span></div>
-    <div class="step" data-step="transcribe"><span class="ic">3</span><span class="label">Transcribe 繁體 (Whisper)</span><span class="ms"></span></div>
-    <div class="step" data-step="enrich"><span class="ic">4</span><span class="label">AI dịch + pinyin + từ vựng</span><span class="ms"></span></div>
-    <div class="step" data-step="save"><span class="ic">5</span><span class="label">Lưu vào DB</span><span class="ms"></span></div>
+    <div class="step" data-step="fetch"><span class="ic">1</span><span class="label">Tải audio + metadata (parallel)</span><span class="ms"></span></div>
+    <div class="step" data-step="transcribe"><span class="ic">2</span><span class="label">Transcribe 繁體 (Whisper)</span><span class="ms"></span></div>
+    <div class="step" data-step="enrich"><span class="ic">3</span><span class="label">AI dịch + pinyin + từ vựng</span><span class="ms"></span></div>
+    <div class="step" data-step="save"><span class="ic">4</span><span class="label">Lưu vào DB</span><span class="ms"></span></div>
   </div>
 
   <!-- RESULT -->
@@ -892,32 +891,28 @@ async function analyze() {
   document.getElementById('result').classList.remove('show');
 
   try {
-    // Step 1: Lấy metadata từ self-hosted yt-dlp service
+    // Step 1: Lấy metadata + download audio (parallel) — 2 calls cùng lúc
     const t0 = Date.now();
-    setStep('info', 'active');
-    const infoRes = await fetch(`${cfg.api}/info?url=${encodeURIComponent(url)}`);
+    setStep('fetch', 'active');
+    const [infoRes, dlRes] = await Promise.all([
+      fetch(`${cfg.api}/info?url=${encodeURIComponent(url)}`),
+      fetch(`${cfg.api}/video?url=${encodeURIComponent(url)}`),
+    ]);
     if (!infoRes.ok) throw new Error(`Downloader /info HTTP ${infoRes.status}: ${(await infoRes.text()).slice(0, 200)}`);
-    const meta = await infoRes.json();
+    if (!dlRes.ok)   throw new Error(`Downloader /video HTTP ${dlRes.status}`);
+    const [meta, blob] = await Promise.all([infoRes.json(), dlRes.blob()]);
     if (meta.error) throw new Error(meta.error);
+    if (blob.size < 1000) throw new Error('Audio quá nhỏ — có thể yt-dlp fail');
     const thumbUrl = meta.thumbnail || null;
     const igTitle  = meta.title || null;
     const uploader = meta.uploader || '';
-    setStep('info', 'done', `${uploader ? '@' + uploader + ' · ' : ''}${Date.now()-t0}ms`);
-
-    // Step 2: Download mp4 (qua chính API vì có CORS) → blob để gửi Whisper
-    const t1 = Date.now();
-    setStep('download', 'active');
-    const dlRes = await fetch(`${cfg.api}/video?url=${encodeURIComponent(url)}`);
-    if (!dlRes.ok) throw new Error(`Downloader /video HTTP ${dlRes.status}`);
-    const blob = await dlRes.blob();
-    if (blob.size < 1000) throw new Error('Video quá nhỏ — có thể yt-dlp fail');
-    setStep('download', 'done', `${(blob.size/1024/1024).toFixed(1)}MB · ${Date.now()-t1}ms`);
+    setStep('fetch', 'done', `${uploader ? '@' + uploader + ' · ' : ''}${(blob.size/1024).toFixed(0)}KB · ${Date.now()-t0}ms`);
 
     // Step 3: Whisper transcribe
     const t2 = Date.now();
     setStep('transcribe', 'active');
     const fd = new FormData();
-    fd.append('file', blob, 'reel.mp4');
+    fd.append('file', blob, 'reel.m4a');
     fd.append('model', 'whisper-1');
     fd.append('language', 'zh');
     fd.append('response_format', 'verbose_json');

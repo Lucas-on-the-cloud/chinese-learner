@@ -92,16 +92,19 @@ app.get('/debug', async (req, res) => {
   }
 });
 
+// Stream audio-only m4a (much smaller than full mp4) — Whisper accepts m4a
+// natively. Saves ~80% bandwidth + browser→Whisper upload time.
 app.get('/video', (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).end('missing ?url=');
-  res.setHeader('Content-Type', 'video/mp4');
+  res.setHeader('Content-Type', 'audio/mp4');
   res.setHeader('Cache-Control', 'public, max-age=3600');
   const proc = spawn('yt-dlp', [
     '-o', '-',
     '--no-playlist',
     '--no-warnings',
-    '-f', 'best[ext=mp4]/best',
+    '-f', 'bestaudio[ext=m4a]/bestaudio/best',
+    '-x', '--audio-format', 'm4a',
     String(url),
   ], { timeout: 60_000 });
   proc.stdout.pipe(res);
