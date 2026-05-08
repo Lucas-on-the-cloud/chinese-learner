@@ -148,17 +148,9 @@ a{color:var(--blue);text-decoration:none}
         <span class="hint">Dùng cho Whisper (transcribe) + gpt-4o-mini (dịch + pinyin + vocab). ~100đ/reel.</span>
       </div>
       <div class="set-row">
-        <label>RapidAPI Host</label>
-        <input id="cfg-host" value="instagram120.p.rapidapi.com">
-        <span class="hint">Provider sẽ được POST với <code>{"username","maxId":""}</code>. Default: <code>instagram120</code>.</span>
-      </div>
-      <div class="set-row">
-        <label>RapidAPI Endpoint Path</label>
-        <input id="cfg-endpoint" value="/api/instagram/reels">
-      </div>
-      <div class="set-row">
-        <label>RapidAPI Key</label>
-        <input type="password" id="cfg-rapid" placeholder="abc123...">
+        <label>Downloader API URL</label>
+        <input id="cfg-api" placeholder="https://ig-downloader-xxxx.onrender.com">
+        <span class="hint">URL của service self-hosted yt-dlp (xem <code>services/ig-downloader/README.md</code>). KHÔNG có dấu <code>/</code> ở cuối.</span>
       </div>
       <button class="set-save" onclick="saveSettings()">Lưu</button>
       <span class="set-status" id="set-status"></span>
@@ -176,8 +168,8 @@ a{color:var(--blue);text-decoration:none}
 
   <!-- STEPS -->
   <div class="steps" id="steps">
-    <div class="step" data-step="extract"><span class="ic">1</span><span class="label">Lấy video URL từ Instagram (RapidAPI)</span><span class="ms"></span></div>
-    <div class="step" data-step="download"><span class="ic">2</span><span class="label">Download video</span><span class="ms"></span></div>
+    <div class="step" data-step="info"><span class="ic">1</span><span class="label">Lấy metadata video (yt-dlp)</span><span class="ms"></span></div>
+    <div class="step" data-step="download"><span class="ic">2</span><span class="label">Download mp4</span><span class="ms"></span></div>
     <div class="step" data-step="transcribe"><span class="ic">3</span><span class="label">Transcribe 繁體 (Whisper)</span><span class="ms"></span></div>
     <div class="step" data-step="enrich"><span class="ic">4</span><span class="label">AI dịch + pinyin + từ vựng</span><span class="ms"></span></div>
     <div class="step" data-step="save"><span class="ic">5</span><span class="label">Lưu vào DB</span><span class="ms"></span></div>
@@ -229,18 +221,14 @@ const sb = supabase.createClient(SB_URL, SB_KEY);
 const CFG_KEY = 'tocfl_reel_cfg';
 function loadSettings() {
   const cfg = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
-  document.getElementById('cfg-openai').value   = cfg.openai   || '';
-  document.getElementById('cfg-host').value     = cfg.host     || '';
-  document.getElementById('cfg-endpoint').value = cfg.endpoint || '';
-  document.getElementById('cfg-rapid').value    = cfg.rapid    || '';
+  document.getElementById('cfg-openai').value = cfg.openai || '';
+  document.getElementById('cfg-api').value    = cfg.api    || '';
   return cfg;
 }
 function saveSettings() {
   const cfg = {
-    openai:   document.getElementById('cfg-openai').value.trim(),
-    host:     document.getElementById('cfg-host').value.trim(),
-    endpoint: document.getElementById('cfg-endpoint').value.trim(),
-    rapid:    document.getElementById('cfg-rapid').value.trim(),
+    openai: document.getElementById('cfg-openai').value.trim(),
+    api:    document.getElementById('cfg-api').value.trim().replace(/\/$/, ''),
   };
   localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
   const s = document.getElementById('set-status');
@@ -378,8 +366,8 @@ async function analyze() {
     return;
   }
   const cfg = getCfg();
-  if (!cfg.openai || !cfg.host || !cfg.endpoint || !cfg.rapid) {
-    errEl.innerHTML = '<div class="err">Chưa cấu hình API. Mở "Cài đặt API" để nhập key.</div>';
+  if (!cfg.openai || !cfg.api) {
+    errEl.innerHTML = '<div class="err">Chưa cấu hình. Mở "Cài đặt API" để nhập OpenAI key + Downloader URL.</div>';
     return;
   }
   // Already studied?
@@ -397,49 +385,25 @@ async function analyze() {
   document.getElementById('result').classList.remove('show');
 
   try {
-    // Step 1: Resolve username + shortcode, then POST to RapidAPI reels-by-username
+    // Step 1: Lấy metadata từ self-hosted yt-dlp service
     const t0 = Date.now();
-    setStep('extract', 'active');
-    const { username, shortcode } = await resolveUserAndCode(url);
-    const apiUrl = `https://${cfg.host}${cfg.endpoint}`;
-    const exRes = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-RapidAPI-Host': cfg.host,
-        'X-RapidAPI-Key': cfg.rapid,
-      },
-      body: JSON.stringify({ username, maxId: '' }),
-    });
-    if (!exRes.ok) throw new Error('RapidAPI HTTP ' + exRes.status + ': ' + (await exRes.text()).slice(0, 200));
-    const exJson = await exRes.json();
-    const edges = exJson.result?.edges || exJson.edges || [];
-    const found = edges.find(e => (e.node || e)?.code === shortcode);
-    if (!found) throw new Error(`Không thấy reel ${shortcode} trong list của @${username} (có ${edges.length} reels). Có thể reel quá cũ (cần pagination) hoặc URL sai username.`);
-    const node = found.node || found;
-    const videoUrl = findVideoUrl(node);
-    const thumbUrl = findThumb(node);
-    if (!videoUrl) throw new Error('Reel không có video_versions (có thể là image post)');
-    setStep('extract', 'done', `@${username} · ${Date.now()-t0}ms`);
+    setStep('info', 'active');
+    const infoRes = await fetch(`${cfg.api}/info?url=${encodeURIComponent(url)}`);
+    if (!infoRes.ok) throw new Error(`Downloader /info HTTP ${infoRes.status}: ${(await infoRes.text()).slice(0, 200)}`);
+    const meta = await infoRes.json();
+    if (meta.error) throw new Error(meta.error);
+    const thumbUrl = meta.thumbnail || null;
+    const igTitle  = meta.title || null;
+    const uploader = meta.uploader || '';
+    setStep('info', 'done', `${uploader ? '@' + uploader + ' · ' : ''}${Date.now()-t0}ms`);
 
-    // Step 2: Download mp4 (Instagram CDN often blocks cross-origin from
-    // browser → fall back to a public CORS proxy if direct fetch fails).
+    // Step 2: Download mp4 (qua chính API vì có CORS) → blob để gửi Whisper
     const t1 = Date.now();
     setStep('download', 'active');
-    let blob;
-    try {
-      const direct = await fetch(videoUrl);
-      if (!direct.ok) throw new Error('HTTP ' + direct.status);
-      blob = await direct.blob();
-    } catch (e1) {
-      try {
-        const proxied = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(videoUrl));
-        if (!proxied.ok) throw new Error('proxy HTTP ' + proxied.status);
-        blob = await proxied.blob();
-      } catch (e2) {
-        throw new Error('Tải video fail (direct+proxy đều lỗi): ' + e1.message + ' / ' + e2.message);
-      }
-    }
+    const dlRes = await fetch(`${cfg.api}/video?url=${encodeURIComponent(url)}`);
+    if (!dlRes.ok) throw new Error(`Downloader /video HTTP ${dlRes.status}`);
+    const blob = await dlRes.blob();
+    if (blob.size < 1000) throw new Error('Video quá nhỏ — có thể yt-dlp fail');
     setStep('download', 'done', `${(blob.size/1024/1024).toFixed(1)}MB · ${Date.now()-t1}ms`);
 
     // Step 3: Whisper transcribe
@@ -500,9 +464,10 @@ Quy tắc vocab: 8-15 từ/cụm THIẾT YẾU (≥2 chữ Hán, không hư từ
     const row = {
       url,
       shortcode: getShortcode(url),
-      title: ai.title || '',
+      title: ai.title || igTitle || '',
       thumbnail_url: thumbUrl,
-      video_url: videoUrl,                   // expires after few days, but useful while fresh
+      // Reload trang sau này có thể play lại bằng cách stream lại từ Downloader API
+      video_url: `${cfg.api}/video?url=${encodeURIComponent(url)}`,
       duration_sec: duration,
       transcript_zh: transcriptZh,
       transcript_pinyin: ai.pinyin || '',

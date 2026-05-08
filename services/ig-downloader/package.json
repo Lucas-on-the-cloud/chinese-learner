@@ -1,0 +1,13 @@
+{
+  "name": "ig-downloader",
+  "version": "1.0.0",
+  "description": "Tiny self-hosted yt-dlp wrapper for the /admin/reels.html browser tool",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
