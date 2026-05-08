@@ -7,9 +7,26 @@
 
 import express from 'express';
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
 const app = express();
 const ALLOWED = process.env.ALLOWED_ORIGIN || '*';
+
+// Instagram blocks datacenter IPs hard. yt-dlp authenticates via a cookies.txt
+// file (Netscape format) exported from a logged-in browser. On Render: add
+// it as a Secret File at /etc/secrets/cookies.txt (Service → Environment →
+// Secret Files). Locally: put cookies.txt next to server.js.
+const COOKIE_PATHS = ['/etc/secrets/cookies.txt', './cookies.txt'];
+const COOKIES_FILE = COOKIE_PATHS.find(p => existsSync(p)) || null;
+console.log(COOKIES_FILE
+  ? `[ig-downloader] cookies file: ${COOKIES_FILE}`
+  : '[ig-downloader] NO cookies file — Instagram will likely 403/login-required');
+
+function ytdlpArgs(extra) {
+  const base = ['--no-playlist', '--no-warnings'];
+  if (COOKIES_FILE) base.push('--cookies', COOKIES_FILE);
+  return base.concat(extra);
+}
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', ALLOWED);
@@ -27,13 +44,11 @@ app.get('/healthz', (_, res) => res.json({ ok: true }));
 // selection so meta.url is populated (default -j leaves it null on some sites).
 function ytdlpJson(url) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('yt-dlp', [
+    const proc = spawn('yt-dlp', ytdlpArgs([
       '-j',
-      '--no-playlist',
-      '--no-warnings',
       '-f', 'best[ext=mp4]/best',
       url,
-    ], { timeout: 25_000 });
+    ]), { timeout: 25_000 });
     let out = '', err = '';
     proc.stdout.on('data', d => out += d.toString());
     proc.stderr.on('data', d => err += d.toString());
@@ -101,13 +116,11 @@ app.get('/video', (req, res) => {
   if (!url) return res.status(400).end('missing ?url=');
   res.setHeader('Content-Type', 'audio/mp4');
   res.setHeader('Cache-Control', 'public, max-age=3600');
-  const proc = spawn('yt-dlp', [
+  const proc = spawn('yt-dlp', ytdlpArgs([
     '-o', '-',
-    '--no-playlist',
-    '--no-warnings',
     '-f', 'ba[ext=m4a]/ba/b[ext=mp4]/b',
     String(url),
-  ], { timeout: 60_000 });
+  ]), { timeout: 60_000 });
   proc.stdout.pipe(res);
   let stderr = '';
   proc.stderr.on('data', d => { stderr += d.toString(); });
