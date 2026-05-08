@@ -23,12 +23,17 @@ app.get('/', (_, res) => res.type('text').send('ig-downloader OK\n\nGET /info?ur
 
 app.get('/healthz', (_, res) => res.json({ ok: true }));
 
-// Run yt-dlp synchronously, capturing stdout as JSON.
+// Run yt-dlp synchronously, capturing stdout as JSON. -f forces format
+// selection so meta.url is populated (default -j leaves it null on some sites).
 function ytdlpJson(url) {
   return new Promise((resolve, reject) => {
-    const proc = spawn('yt-dlp', ['-j', '--no-playlist', '--no-warnings', url], {
-      timeout: 25_000,
-    });
+    const proc = spawn('yt-dlp', [
+      '-j',
+      '--no-playlist',
+      '--no-warnings',
+      '-f', 'best[ext=mp4]/best',
+      url,
+    ], { timeout: 25_000 });
     let out = '', err = '';
     proc.stdout.on('data', d => out += d.toString());
     proc.stderr.on('data', d => err += d.toString());
@@ -41,19 +46,47 @@ function ytdlpJson(url) {
   });
 }
 
+// Defensive: try meta.url first, then requested_formats, then highest-res
+// video format from formats[].
+function extractVideoUrl(meta) {
+  if (meta.url) return meta.url;
+  if (Array.isArray(meta.requested_formats)) {
+    const v = meta.requested_formats.find(f => f.vcodec && f.vcodec !== 'none');
+    if (v?.url) return v.url;
+  }
+  if (Array.isArray(meta.formats)) {
+    const candidates = meta.formats
+      .filter(f => f.url && f.vcodec && f.vcodec !== 'none')
+      .sort((a, b) => (b.height || 0) - (a.height || 0));
+    if (candidates[0]) return candidates[0].url;
+  }
+  return null;
+}
+
 app.get('/info', async (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).json({ error: 'missing ?url=' });
   try {
     const meta = await ytdlpJson(String(url));
     res.json({
-      videoUrl: meta.url || null,
+      videoUrl: extractVideoUrl(meta),
       thumbnail: meta.thumbnail || null,
       title: meta.title || meta.fulltitle || null,
       duration: meta.duration || null,
       uploader: meta.uploader || meta.uploader_id || null,
       description: meta.description || null,
     });
+  } catch (e) {
+    res.status(502).json({ error: String(e.message || e).slice(0, 600) });
+  }
+});
+
+// Debug endpoint: returns full yt-dlp metadata so we can inspect format shape.
+app.get('/debug', async (req, res) => {
+  const url = req.query.url;
+  if (!url) return res.status(400).json({ error: 'missing ?url=' });
+  try {
+    res.json(await ytdlpJson(String(url)));
   } catch (e) {
     res.status(502).json({ error: String(e.message || e).slice(0, 600) });
   }
