@@ -92,8 +92,10 @@ app.get('/debug', async (req, res) => {
   }
 });
 
-// Stream audio-only m4a (much smaller than full mp4) — Whisper accepts m4a
-// natively. Saves ~80% bandwidth + browser→Whisper upload time.
+// Stream audio-only stream directly (no re-encoding) — Instagram reels have
+// a separate m4a audio track that yt-dlp picks up without post-processing.
+// Falls back to best mp4 if audio-only isn't available. Avoids -x because
+// post-processors don't pipe to stdout reliably.
 app.get('/video', (req, res) => {
   const url = req.query.url;
   if (!url) return res.status(400).end('missing ?url=');
@@ -103,8 +105,7 @@ app.get('/video', (req, res) => {
     '-o', '-',
     '--no-playlist',
     '--no-warnings',
-    '-f', 'bestaudio[ext=m4a]/bestaudio/best',
-    '-x', '--audio-format', 'm4a',
+    '-f', 'ba[ext=m4a]/ba/b[ext=mp4]/b',
     String(url),
   ], { timeout: 60_000 });
   proc.stdout.pipe(res);
