@@ -88,6 +88,19 @@ a{color:var(--blue);text-decoration:none}
 .parallel .p-vi{color:var(--text)}
 @media(max-width:780px){.parallel{grid-template-columns:1fr}}
 
+/* Sentence-by-sentence list (default in "Tất cả" tab when sentences[] available) */
+.sent-list{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px}
+.sent{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:11px 12px;border-radius:6px}
+.sent + .sent{margin-top:2px;border-top:1px solid var(--border)}
+.sent:hover{background:#0f172a}
+.sent-num{font-size:11px;font-weight:700;color:var(--text-3);padding-top:3px}
+.sent-body{display:flex;flex-direction:column;gap:5px}
+.sent-zh{font-family:'Noto Serif TC',serif;font-size:16px;color:#fff;line-height:1.55;letter-spacing:.4px}
+.sent-vi{font-size:13.5px;color:var(--text-2);line-height:1.55}
+
+/* CSV vocab table */
+.csv-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;font-family:monospace;font-size:11px;color:var(--text-2);white-space:pre;overflow-x:auto;max-height:240px;overflow-y:auto}
+
 .vocab-section{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
 .vocab-section h3{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700;margin-bottom:12px;color:#fff}
 .vocab-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
@@ -198,6 +211,8 @@ a{color:var(--blue);text-decoration:none}
     </div>
     <div class="actions">
       <button onclick="copyAll()"><i class="fa-solid fa-copy"></i> Copy all</button>
+      <button onclick="copyCSV()"><i class="fa-solid fa-table"></i> Copy CSV vocab</button>
+      <button onclick="copySentencesMd()"><i class="fa-solid fa-list-ol"></i> Copy markdown</button>
       <button class="danger" onclick="deleteCurrent()"><i class="fa-solid fa-trash"></i> Xoá</button>
       <button onclick="closeResult()"><i class="fa-solid fa-xmark"></i> Đóng</button>
     </div>
@@ -430,14 +445,25 @@ async function analyze() {
     const t3 = Date.now();
     setStep('enrich', 'active');
     const sys = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Cho 1 transcript reel ngắn, trả JSON object:
+
 {
   "title": "<tiêu đề ngắn 5-10 chữ tóm tắt nội dung video, tiếng Việt>",
   "pinyin": "<pinyin có dấu thanh ā á ǎ à của TOÀN BỘ transcript, viết liền theo từ, các câu cách bằng dấu cách>",
   "vi": "<bản dịch tiếng Việt ĐẦY ĐỦ, tự nhiên không word-for-word>",
-  "vocab": [{"char":"<≥2 chữ Hán>","pinyin":"…","meaning":"<nghĩa Việt>","example":"<câu nguyên văn từ transcript>","exMeaning":"<dịch câu>","level":"<cơ bản|trung cấp|nâng cao>"}]
+  "sentences": [
+    {"zh":"<câu 繁體 nguyên văn 1>","vi":"<dịch câu 1>"},
+    {"zh":"<câu 繁體 nguyên văn 2>","vi":"<dịch câu 2>"}
+  ],
+  "vocab": [
+    {"char":"<từ ≥2 chữ Hán>","pinyin":"<pinyin có dấu thanh>","meaning":"<nghĩa Việt ngắn>","example":"<câu NGUYÊN VĂN từ transcript chứa từ này>","exMeaning":"<dịch câu ví dụ>","level":"<cơ bản|trung cấp|nâng cao>"}
+  ]
 }
 
-Quy tắc vocab: 8-15 từ/cụm THIẾT YẾU (≥2 chữ Hán, không hư từ). Bắt buộc 繁體 không giản thể. KHÔNG markdown.`;
+Quy tắc:
+- sentences: chia transcript thành 8-30 câu/đoạn ngắn theo ngắt ý tự nhiên. zh là NGUYÊN VĂN tiếng Trung, vi là dịch tiếng Việt câu đó.
+- vocab: 15-25 mục THIẾT YẾU (≥2 chữ Hán, không hư từ 的/了/在/也/都). example PHẢI là câu NGUYÊN VĂN từ transcript chứa từ.
+- Bắt buộc 繁體 phồn thể, KHÔNG giản thể.
+- KHÔNG markdown, KHÔNG \`\`\`json.`;
 
     const aRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -472,6 +498,7 @@ Quy tắc vocab: 8-15 từ/cụm THIẾT YẾU (≥2 chữ Hán, không hư từ
       transcript_zh: transcriptZh,
       transcript_pinyin: ai.pinyin || '',
       transcript_vi: ai.vi || '',
+      sentences: Array.isArray(ai.sentences) ? ai.sentences : [],
       vocab: ai.vocab || [],
     };
     const { data: saved, error: saveErr } = await sb.from('reel_studies').insert(row).select().single();
@@ -519,19 +546,44 @@ function renderTranscript() {
   if (!currentReel) return;
   const c = document.getElementById('r-content');
   const r = currentReel;
+  const sents = Array.isArray(r.sentences) ? r.sentences : [];
   if (currentMode === 'zh') {
-    c.innerHTML = `<div class="transcript zh">${escapeHtml(r.transcript_zh)}</div>`;
+    if (sents.length) {
+      c.innerHTML = '<div class="sent-list">' + sents.map((s, i) =>
+        `<div class="sent"><div class="sent-num">${i+1}</div><div class="sent-body"><div class="sent-zh">${escapeHtml(s.zh || '')}</div></div></div>`
+      ).join('') + '</div>';
+    } else {
+      c.innerHTML = `<div class="transcript zh">${escapeHtml(r.transcript_zh)}</div>`;
+    }
   } else if (currentMode === 'py') {
     c.innerHTML = `<div class="transcript py">${escapeHtml(r.transcript_pinyin || '')}</div>`;
   } else if (currentMode === 'vi') {
-    c.innerHTML = `<div class="transcript vi">${escapeHtml(r.transcript_vi || '')}</div>`;
+    if (sents.length) {
+      c.innerHTML = '<div class="sent-list">' + sents.map((s, i) =>
+        `<div class="sent"><div class="sent-num">${i+1}</div><div class="sent-body"><div class="sent-vi">${escapeHtml(s.vi || '')}</div></div></div>`
+      ).join('') + '</div>';
+    } else {
+      c.innerHTML = `<div class="transcript vi">${escapeHtml(r.transcript_vi || '')}</div>`;
+    }
   } else {
-    c.innerHTML = `
-      <div class="parallel">
-        <div class="p-zh">${escapeHtml(r.transcript_zh)}</div>
-        <div class="p-py">${escapeHtml(r.transcript_pinyin || '')}</div>
-        <div class="p-vi">${escapeHtml(r.transcript_vi || '')}</div>
-      </div>`;
+    // "Tất cả" — sentence-by-sentence pairs (zh trên, vi dưới, đánh số)
+    if (sents.length) {
+      c.innerHTML = '<div class="sent-list">' + sents.map((s, i) => `
+        <div class="sent">
+          <div class="sent-num">${i+1}</div>
+          <div class="sent-body">
+            <div class="sent-zh">${escapeHtml(s.zh || '')}</div>
+            <div class="sent-vi">${escapeHtml(s.vi || '')}</div>
+          </div>
+        </div>`).join('') + '</div>';
+    } else {
+      c.innerHTML = `
+        <div class="parallel">
+          <div class="p-zh">${escapeHtml(r.transcript_zh)}</div>
+          <div class="p-py">${escapeHtml(r.transcript_pinyin || '')}</div>
+          <div class="p-vi">${escapeHtml(r.transcript_vi || '')}</div>
+        </div>`;
+    }
   }
 }
 
@@ -559,6 +611,39 @@ function copyAll() {
   const r = currentReel;
   const text = `${r.url}\n\n[繁體]\n${r.transcript_zh}\n\n[Pinyin]\n${r.transcript_pinyin}\n\n[Tiếng Việt]\n${r.transcript_vi}\n\n[Từ vựng]\n${(r.vocab || []).map(w => `${w.char} (${w.pinyin}) — ${w.meaning}`).join('\n')}`;
   navigator.clipboard.writeText(text).then(() => alert('Đã copy!'));
+}
+
+function csvEscape(s) {
+  const v = String(s ?? '');
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+
+function copyCSV() {
+  if (!currentReel) return;
+  const vocab = currentReel.vocab || [];
+  const rows = [
+    ['từ vựng tiếng trung','nghĩa của từ','pinyin','ví dụ từ đó xuất hiện trong transcript'],
+    ...vocab.map(v => [v.char || '', v.meaning || '', v.pinyin || '', v.example || '']),
+  ];
+  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+  navigator.clipboard.writeText(csv).then(() => alert(`Đã copy CSV ${vocab.length} từ.`));
+}
+
+function copySentencesMd() {
+  if (!currentReel) return;
+  const r = currentReel;
+  const sents = Array.isArray(r.sentences) ? r.sentences : [];
+  let md = `# ${r.title || 'Reel'}\n\n${r.url}\n\n## Từ vựng\n\n| 中文詞彙 | Nghĩa tiếng Việt | Pinyin |\n|---|---|---|\n`;
+  for (const v of (r.vocab || [])) md += `| ${v.char} | ${v.meaning || ''} | ${v.pinyin || ''} |\n`;
+  md += `\n## Dịch từng câu\n\n`;
+  if (sents.length) {
+    sents.forEach((s, i) => {
+      md += `${i+1}. *${s.zh}*\n   ${s.vi}\n\n`;
+    });
+  } else {
+    md += `**繁體**: ${r.transcript_zh}\n\n**Pinyin**: ${r.transcript_pinyin}\n\n**Việt**: ${r.transcript_vi}\n`;
+  }
+  navigator.clipboard.writeText(md).then(() => alert('Đã copy Markdown.'));
 }
 
 async function deleteCurrent() {
