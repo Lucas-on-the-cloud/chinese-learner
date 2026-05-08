@@ -90,13 +90,14 @@ a{color:var(--blue);text-decoration:none}
 
 /* Sentence-by-sentence list (default in "Tất cả" tab when sentences[] available) */
 .sent-list{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px}
-.sent{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:11px 12px;border-radius:6px}
+.sent{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:14px 14px;border-radius:6px}
 .sent + .sent{margin-top:2px;border-top:1px solid var(--border)}
 .sent:hover{background:#0f172a}
-.sent-num{font-size:11px;font-weight:700;color:var(--text-3);padding-top:3px}
+.sent-num{font-size:11px;font-weight:700;color:var(--text-3);padding-top:5px}
 .sent-body{display:flex;flex-direction:column;gap:5px}
-.sent-zh{font-family:'Noto Serif TC',serif;font-size:16px;color:#fff;line-height:1.55;letter-spacing:.4px}
-.sent-vi{font-size:13.5px;color:var(--text-2);line-height:1.55}
+.sent-zh{font-family:'Noto Serif TC',serif;font-size:18px;color:#fff;line-height:1.6;letter-spacing:.4px;font-weight:500}
+.sent-py{font-size:13px;color:var(--text-2);font-style:italic;line-height:1.5;letter-spacing:.02em}
+.sent-vi{font-size:14px;color:var(--text);line-height:1.55}
 
 /* CSV vocab table */
 .csv-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;font-family:monospace;font-size:11px;color:var(--text-2);white-space:pre;overflow-x:auto;max-height:240px;overflow-y:auto}
@@ -210,6 +211,7 @@ a{color:var(--blue);text-decoration:none}
       <div id="r-vocab" class="vocab-list"></div>
     </div>
     <div class="actions">
+      <button onclick="reAnalyze()" id="reanalyze-btn"><i class="fa-solid fa-arrows-rotate"></i> Phân tích lại</button>
       <button onclick="copyAll()"><i class="fa-solid fa-copy"></i> Copy all</button>
       <button onclick="copyCSV()"><i class="fa-solid fa-table"></i> Copy CSV vocab</button>
       <button onclick="copySentencesMd()"><i class="fa-solid fa-list-ol"></i> Copy markdown</button>
@@ -252,6 +254,27 @@ function saveSettings() {
 }
 function getCfg() { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); }
 loadSettings();
+
+const ENRICH_SYSTEM_PROMPT = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Cho 1 transcript reel ngắn, trả JSON object:
+
+{
+  "title": "<tiêu đề ngắn 5-10 chữ tóm tắt nội dung video, tiếng Việt>",
+  "pinyin": "<pinyin có dấu thanh ā á ǎ à của TOÀN BỘ transcript, viết liền theo từ, các câu cách bằng dấu cách>",
+  "vi": "<bản dịch tiếng Việt ĐẦY ĐỦ, tự nhiên không word-for-word>",
+  "sentences": [
+    {"zh":"<câu 繁體 nguyên văn 1>","pinyin":"<pinyin có dấu thanh CỦA RIÊNG câu 1>","vi":"<dịch câu 1>"},
+    {"zh":"<câu 2>","pinyin":"<pinyin câu 2>","vi":"<dịch câu 2>"}
+  ],
+  "vocab": [
+    {"char":"<từ ≥2 chữ Hán>","pinyin":"<pinyin có dấu thanh>","meaning":"<nghĩa Việt ngắn>","example":"<câu NGUYÊN VĂN từ transcript chứa từ này>","exMeaning":"<dịch câu ví dụ>","level":"<cơ bản|trung cấp|nâng cao>"}
+  ]
+}
+
+Quy tắc:
+- sentences: chia transcript thành 8-30 câu/đoạn ngắn theo ngắt ý tự nhiên. Mỗi câu PHẢI có đủ {zh, pinyin, vi}. pinyin có dấu thanh ā á ǎ à, viết liền theo từ.
+- vocab: BẮT BUỘC 15-20 mục (không ít hơn 15) — chọn từ THIẾT YẾU để hiểu ngữ cảnh video, ≥2 chữ Hán, không hư từ 的/了/在/也/都. example PHẢI là câu NGUYÊN VĂN từ transcript chứa từ.
+- Bắt buộc 繁體 phồn thể, KHÔNG giản thể.
+- KHÔNG markdown, KHÔNG \`\`\`json.`;
 
 // ─── Step UI ─────────────────────────────────────────
 function resetSteps() {
@@ -444,26 +467,7 @@ async function analyze() {
     // Step 4: AI enrich (translate + pinyin + vocab)
     const t3 = Date.now();
     setStep('enrich', 'active');
-    const sys = `Bạn là giáo viên tiếng Trung phồn thể (繁體中文 Đài Loan) cho học viên Việt. Cho 1 transcript reel ngắn, trả JSON object:
-
-{
-  "title": "<tiêu đề ngắn 5-10 chữ tóm tắt nội dung video, tiếng Việt>",
-  "pinyin": "<pinyin có dấu thanh ā á ǎ à của TOÀN BỘ transcript, viết liền theo từ, các câu cách bằng dấu cách>",
-  "vi": "<bản dịch tiếng Việt ĐẦY ĐỦ, tự nhiên không word-for-word>",
-  "sentences": [
-    {"zh":"<câu 繁體 nguyên văn 1>","vi":"<dịch câu 1>"},
-    {"zh":"<câu 繁體 nguyên văn 2>","vi":"<dịch câu 2>"}
-  ],
-  "vocab": [
-    {"char":"<từ ≥2 chữ Hán>","pinyin":"<pinyin có dấu thanh>","meaning":"<nghĩa Việt ngắn>","example":"<câu NGUYÊN VĂN từ transcript chứa từ này>","exMeaning":"<dịch câu ví dụ>","level":"<cơ bản|trung cấp|nâng cao>"}
-  ]
-}
-
-Quy tắc:
-- sentences: chia transcript thành 8-30 câu/đoạn ngắn theo ngắt ý tự nhiên. zh là NGUYÊN VĂN tiếng Trung, vi là dịch tiếng Việt câu đó.
-- vocab: 15-25 mục THIẾT YẾU (≥2 chữ Hán, không hư từ 的/了/在/也/都). example PHẢI là câu NGUYÊN VĂN từ transcript chứa từ.
-- Bắt buộc 繁體 phồn thể, KHÔNG giản thể.
-- KHÔNG markdown, KHÔNG \`\`\`json.`;
+    const sys = ENRICH_SYSTEM_PROMPT;
 
     const aRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -566,18 +570,23 @@ function renderTranscript() {
       c.innerHTML = `<div class="transcript vi">${escapeHtml(r.transcript_vi || '')}</div>`;
     }
   } else {
-    // "Tất cả" — sentence-by-sentence pairs (zh trên, vi dưới, đánh số)
+    // "Tất cả" — sentence-by-sentence với 3 dòng zh/pinyin/vi xếp dọc
     if (sents.length) {
       c.innerHTML = '<div class="sent-list">' + sents.map((s, i) => `
         <div class="sent">
           <div class="sent-num">${i+1}</div>
           <div class="sent-body">
             <div class="sent-zh">${escapeHtml(s.zh || '')}</div>
+            ${s.pinyin ? `<div class="sent-py">${escapeHtml(s.pinyin)}</div>` : ''}
             <div class="sent-vi">${escapeHtml(s.vi || '')}</div>
           </div>
         </div>`).join('') + '</div>';
     } else {
+      // Legacy reels (chưa re-analyze) — show fallback + nhắc nhở
       c.innerHTML = `
+        <div style="background:#7c2d12;border:1px solid #b45309;color:#fed7aa;padding:10px 14px;border-radius:8px;margin-bottom:10px;font-size:12px">
+          ⚠ Reel này phân tích trước update — chưa có sentences[]. Bấm <b>Phân tích lại</b> ở dưới để có format câu-bằng-câu mới.
+        </div>
         <div class="parallel">
           <div class="p-zh">${escapeHtml(r.transcript_zh)}</div>
           <div class="p-py">${escapeHtml(r.transcript_pinyin || '')}</div>
@@ -644,6 +653,55 @@ function copySentencesMd() {
     md += `**繁體**: ${r.transcript_zh}\n\n**Pinyin**: ${r.transcript_pinyin}\n\n**Việt**: ${r.transcript_vi}\n`;
   }
   navigator.clipboard.writeText(md).then(() => alert('Đã copy Markdown.'));
+}
+
+async function reAnalyze() {
+  if (!currentReel) return;
+  const cfg = getCfg();
+  if (!cfg.openai) { alert('Chưa cấu hình OpenAI key.'); return; }
+  if (!confirm('Phân tích lại bằng AI? Sẽ ghi đè title/pinyin/dịch/sentences/vocab. Transcript 繁體 giữ nguyên.')) return;
+
+  const btn = document.getElementById('reanalyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang phân tích…';
+  try {
+    const aRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + cfg.openai },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 4000,
+        temperature: 0.3,
+        response_format: { type: 'json_object' },
+        messages: [
+          { role: 'system', content: ENRICH_SYSTEM_PROMPT },
+          { role: 'user',   content: 'Transcript (繁體):\n' + (currentReel.transcript_zh || '') },
+        ],
+      }),
+    });
+    if (!aRes.ok) throw new Error('OpenAI HTTP ' + aRes.status);
+    const aJson = await aRes.json();
+    const ai = JSON.parse(aJson.choices[0].message.content);
+
+    const update = {
+      title: ai.title || currentReel.title,
+      transcript_pinyin: ai.pinyin || '',
+      transcript_vi: ai.vi || '',
+      sentences: Array.isArray(ai.sentences) ? ai.sentences : [],
+      vocab: ai.vocab || [],
+    };
+    const { error } = await sb.from('reel_studies').update(update).eq('id', currentReel.id);
+    if (error) throw new Error('DB: ' + error.message);
+
+    // Reload
+    await loadExisting(currentReel.id);
+    loadHistory();
+  } catch (e) {
+    alert('Lỗi: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Phân tích lại';
+  }
 }
 
 async function deleteCurrent() {
