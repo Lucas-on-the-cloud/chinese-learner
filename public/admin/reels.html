@@ -268,30 +268,61 @@ function setStep(name, state, ms = '') {
 }
 
 // ─── Helpers ─────────────────────────────────────────
-function findVideoUrl(obj) {
-  if (!obj || typeof obj !== 'object') return null;
-  // Common keys various RapidAPI Instagram providers use
-  const keys = ['video_url','videoUrl','video','media_url','mediaUrl','url','downloadUrl','download_url','playback_url','src'];
+// Instagram provider responses commonly nest the post inside result.edges[].node
+// and expose video URLs in video_versions: [{url, ...}, ...]. Walk the tree
+// to be tolerant across providers.
+function findVideoUrl(obj, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 8) return null;
+
+  // 1) Instagram-style video_versions array (most reliable)
+  if (Array.isArray(obj.video_versions) && obj.video_versions.length) {
+    const v = obj.video_versions[0];
+    if (v && typeof v.url === 'string' && v.url.startsWith('http')) return v.url;
+  }
+
+  // 2) Common single-URL keys
+  const keys = ['video_url','videoUrl','video','media_url','mediaUrl','downloadUrl','download_url','playback_url','hd_url','src'];
   for (const k of keys) {
     const v = obj[k];
-    if (typeof v === 'string' && v.startsWith('http') && /\.mp4|\.webm|video|\.m3u8/i.test(v)) return v;
+    if (typeof v === 'string' && v.startsWith('http') && /\.mp4|\.m3u8|video/i.test(v)) return v;
   }
+
+  // 3) Recurse into arrays / objects
   for (const v of Object.values(obj)) {
-    if (Array.isArray(v)) for (const item of v) { const f = findVideoUrl(item); if (f) return f; }
-    else if (typeof v === 'object') { const f = findVideoUrl(v); if (f) return f; }
+    if (Array.isArray(v)) {
+      for (const item of v) { const f = findVideoUrl(item, depth + 1); if (f) return f; }
+    } else if (v && typeof v === 'object') {
+      const f = findVideoUrl(v, depth + 1);
+      if (f) return f;
+    }
   }
   return null;
 }
-function findThumb(obj) {
-  if (!obj || typeof obj !== 'object') return null;
+
+function findThumb(obj, depth = 0) {
+  if (!obj || typeof obj !== 'object' || depth > 8) return null;
+
+  // 1) Instagram-style image_versions2.candidates[0]
+  if (obj.image_versions2 && Array.isArray(obj.image_versions2.candidates) && obj.image_versions2.candidates.length) {
+    const c = obj.image_versions2.candidates[0];
+    if (c && typeof c.url === 'string') return c.url;
+  }
+
+  // 2) Common single-URL keys
   const keys = ['thumbnail_url','thumbnailUrl','thumbnail','display_url','displayUrl','image','cover','poster'];
   for (const k of keys) {
     const v = obj[k];
     if (typeof v === 'string' && v.startsWith('http')) return v;
   }
+
+  // 3) Recurse
   for (const v of Object.values(obj)) {
-    if (Array.isArray(v)) for (const item of v) { const f = findThumb(item); if (f) return f; }
-    else if (typeof v === 'object') { const f = findThumb(v); if (f) return f; }
+    if (Array.isArray(v)) {
+      for (const item of v) { const f = findThumb(item, depth + 1); if (f) return f; }
+    } else if (v && typeof v === 'object') {
+      const f = findThumb(v, depth + 1);
+      if (f) return f;
+    }
   }
   return null;
 }
@@ -346,12 +377,24 @@ async function analyze() {
     if (!videoUrl) throw new Error('Không tìm thấy video URL trong response RapidAPI');
     setStep('extract', 'done', `${Date.now()-t0}ms`);
 
-    // Step 2: Download mp4
+    // Step 2: Download mp4 (Instagram CDN often blocks cross-origin from
+    // browser → fall back to a public CORS proxy if direct fetch fails).
     const t1 = Date.now();
     setStep('download', 'active');
-    const vidRes = await fetch(videoUrl);
-    if (!vidRes.ok) throw new Error('Tải video fail: HTTP ' + vidRes.status);
-    const blob = await vidRes.blob();
+    let blob;
+    try {
+      const direct = await fetch(videoUrl);
+      if (!direct.ok) throw new Error('HTTP ' + direct.status);
+      blob = await direct.blob();
+    } catch (e1) {
+      try {
+        const proxied = await fetch('https://corsproxy.io/?url=' + encodeURIComponent(videoUrl));
+        if (!proxied.ok) throw new Error('proxy HTTP ' + proxied.status);
+        blob = await proxied.blob();
+      } catch (e2) {
+        throw new Error('Tải video fail (direct+proxy đều lỗi): ' + e1.message + ' / ' + e2.message);
+      }
+    }
     setStep('download', 'done', `${(blob.size/1024/1024).toFixed(1)}MB · ${Date.now()-t1}ms`);
 
     // Step 3: Whisper transcribe
