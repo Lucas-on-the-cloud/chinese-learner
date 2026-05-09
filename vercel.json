@@ -1,19 +1,15 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/:path*" }
-  ],
-  "redirects": [
+    { "source": "/api/:path*", "destination": "/api/:path*" },
     {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "chinese-learner-coral.vercel.app" }],
-      "destination": "https://tocflfafa.com/$1",
-      "permanent": true
+      "source": "/((?!maintenance\\.html|robots\\.txt|favicon\\.ico).*)",
+      "has": [{ "type": "host", "value": "tocflfafa.com" }],
+      "destination": "/maintenance.html"
     },
     {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "chinese-learner.vercel.app" }],
-      "destination": "https://tocflfafa.com/$1",
-      "permanent": true
+      "source": "/((?!maintenance\\.html|robots\\.txt|favicon\\.ico).*)",
+      "has": [{ "type": "host", "value": "www.tocflfafa.com" }],
+      "destination": "/maintenance.html"
     }
   ],
   "crons": [

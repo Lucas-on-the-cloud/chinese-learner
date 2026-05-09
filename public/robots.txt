@@ -1,7 +1,2 @@
 User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-
-Sitemap: https://tocflfafa.com/sitemap.xml
-Host: tocflfafa.com
+Disallow: /
