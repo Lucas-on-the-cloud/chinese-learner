@@ -90,4 +90,59 @@ days.forEach(([day, d]) => {
   console.log(`  ${day}  ${String(d.sessions.size).padStart(3)} / ${String(d.views).padStart(4)}  ${bar}`);
 });
 
+// ── Conversion funnel (events) ─────────────────────────────────────
+async function getEvents(after) {
+  let all = [], from = 0;
+  for (;;) {
+    const { data, error } = await sb.from('events')
+      .select('session_id,name,props,ts')
+      .gte('ts', after)
+      .order('ts', { ascending: false })
+      .range(from, from + 999);
+    if (error) { console.warn('events table missing or RLS issue:', error.message); return []; }
+    if (!data?.length) break;
+    all = all.concat(data);
+    if (data.length < 1000) break;
+    from += 1000;
+  }
+  return all;
+}
+const events = await getEvents(since);
+
+console.log(`\n═══ Conversion funnel ═══`);
+console.log(`Tổng events: ${events.length}`);
+
+// Per-event breakdown
+const byName = new Map();
+events.forEach(e => {
+  if (!byName.has(e.name)) byName.set(e.name, { count: 0, sessions: new Set() });
+  byName.get(e.name).count++;
+  byName.get(e.name).sessions.add(e.session_id);
+});
+console.log(`\nEvents (count / unique visitors):`);
+const sortedEvents = [...byName.entries()].sort((a, b) => b[1].count - a[1].count);
+sortedEvents.forEach(([n, d]) => console.log(`  ${String(d.count).padStart(4)} / ${String(d.sessions.size).padStart(3)}  ${n}`));
+
+// Funnel: pageview → lesson_open → listening_done → exam_submit
+const visitors        = total.size;
+const lessonOpeners   = byName.get('lesson_open')?.sessions.size || 0;
+const listeners       = byName.get('listening_done')?.sessions.size || 0;
+const examSubmitters  = byName.get('exam_submit')?.sessions.size || 0;
+const flashcardUsers  = byName.get('flashcard_added')?.sessions.size || 0;
+
+const pct = (n) => visitors ? (n / visitors * 100).toFixed(1) + '%' : '–';
+console.log(`\nFunnel (% trên ${visitors} visitor):`);
+console.log(`  Visitor          ${visitors}   100%`);
+console.log(`  Mở bài đọc       ${String(lessonOpeners).padStart(3)}   ${pct(lessonOpeners)}`);
+console.log(`  Luyện nghe (≥1 segment)  ${String(listeners).padStart(3)}   ${pct(listeners)}`);
+console.log(`  Submit đề thi    ${String(examSubmitters).padStart(3)}   ${pct(examSubmitters)}`);
+console.log(`  Thêm flashcard   ${String(flashcardUsers).padStart(3)}   ${pct(flashcardUsers)}`);
+
+// Exam scores distribution
+const examEvents = events.filter(e => e.name === 'exam_submit');
+if (examEvents.length) {
+  const avgPct = Math.round(examEvents.reduce((s, e) => s + (e.props?.pct || 0), 0) / examEvents.length);
+  console.log(`\nĐề thi đã submit: ${examEvents.length} lần · điểm TB: ${avgPct}%`);
+}
+
 console.log();

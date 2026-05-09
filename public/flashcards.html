@@ -292,7 +292,13 @@ let studyMode    = false;
 // User personal collection (localStorage)
 const USER_FC_KEY = 'tocfl_user_flashcards';
 function getUserCards() { return JSON.parse(localStorage.getItem(USER_FC_KEY) || '[]'); }
-function saveUserCards(cards) { localStorage.setItem(USER_FC_KEY, JSON.stringify(cards)); }
+function saveUserCards(cards) {
+  const prevCount = JSON.parse(localStorage.getItem(USER_FC_KEY) || '[]').length;
+  localStorage.setItem(USER_FC_KEY, JSON.stringify(cards));
+  if (cards.length > prevCount && window.track) {
+    window.track('flashcard_added', { total: cards.length });
+  }
+}
 function isForked(char) { return getUserCards().some(c => c.char === char); }
 
 // ─── INIT ──────────────────────────────────────────

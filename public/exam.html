@@ -1071,13 +1071,26 @@ function examApp() {
       this.submitted = true;
       this.stopTimer();
 
+      const score = this.examScore;
+      const total = this.totalQ;
+
       if (_user && this.activeUnit) {
-        const score = this.examScore;
         await _db.from('exam_results').upsert({
           user_id: _user.id, unit_id: this.activeUnit.id,
-          answers: this.answers, score, total: this.totalQ,
+          answers: this.answers, score, total,
         }, { onConflict: 'user_id,unit_id' });
-        this.unitResults = { ...this.unitResults, [this.activeUnit.id]: { score, total: this.totalQ } };
+        this.unitResults = { ...this.unitResults, [this.activeUnit.id]: { score, total } };
+      }
+
+      // Conversion event
+      if (window.track && this.activeUnit) {
+        window.track('exam_submit', {
+          unit_id: this.activeUnit.id,
+          book_id: this.book?.id || null,
+          level: this.book?.level || null,
+          score, total,
+          pct: total ? Math.round(score / total * 100) : 0,
+        });
       }
 
       // Short delay then show modal

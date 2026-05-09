@@ -1004,10 +1004,18 @@ function getLessonProgress(book, lid) {
 function saveProgress(book, lid, segId, scorePct) {
   const key  = progressKey(book, lid);
   const done = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
+  const wasNew = !done.has(segId);
   done.add(segId);
   localStorage.setItem(key, JSON.stringify([...done]));
   if (window.userSession?.uid) {
     window.userSession.saveListeningResult(book, lid, segId, scorePct || 0);
+  }
+  // Track only first-time completion of a segment (avoid spam on re-tries)
+  if (wasNew && window.track) {
+    window.track('listening_done', {
+      book, lesson_id: lid, segment_id: segId,
+      score_pct: Math.round(scorePct || 0),
+    });
   }
 }
 

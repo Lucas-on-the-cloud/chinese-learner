@@ -405,12 +405,22 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   const params = new URLSearchParams(location.search);
   const idParam = params.get('id');
   const idsParam = params.get('ids');
+  const bookParam = params.get('b');
   if (idParam && !idsParam) {
     mountComments({
       container: '#comments-root',
       entityType: 'lesson_reading',
       entityId: idParam,
       supabaseUrl: DB_URL, supabaseKey: DB_KEY,
+    });
+  }
+  // Conversion event: user opened a reading lesson
+  if (window.track && (idParam || idsParam)) {
+    window.track('lesson_open', {
+      kind: 'reading',
+      id: idParam || null,
+      ids: idsParam || null,
+      book: bookParam || null,
     });
   }
 })();
