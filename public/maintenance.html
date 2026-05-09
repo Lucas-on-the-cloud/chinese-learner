@@ -5,126 +5,251 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <title>整修中 · Đang bảo trì</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #35858E, #7DA78C 35%, #C2D099 70%, #E6EEC9);
-  background-size: 400% 400%;
-  animation: bgShift 18s ease infinite;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; text-align: center;
-  padding: 1.5rem;
-  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #35858E, #7DA78C 50%, #C2D099);
+  background-size: 300% 300%;
+  animation: bgShift 20s ease infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  min-height: 100vh;
 }
 @keyframes bgShift {
-  0%   { background-position:   0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position:   0% 50%; }
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
 }
 
-/* Floating circles in background */
-body::before, body::after {
-  content: '';
-  position: fixed;
-  border-radius: 50%;
-  background: rgba(255,255,255,.1);
-  filter: blur(40px);
-  pointer-events: none;
-}
-body::before { width: 300px; height: 300px; top: -100px; left: -100px; animation: float1 12s ease-in-out infinite; }
-body::after  { width: 250px; height: 250px; bottom: -80px; right: -80px; animation: float2 14s ease-in-out infinite; }
-@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
-@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-30px)} }
-
-.card {
-  position: relative; z-index: 1;
-  background: rgba(255,255,255,.16);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255,255,255,.28);
-  border-radius: 28px;
-  padding: 56px 48px;
-  max-width: 520px;
+/* iMessage-style phone frame */
+.phone {
+  background: #fff;
   width: 100%;
-  box-shadow: 0 24px 60px rgba(0,0,0,.18);
+  max-width: 390px;
+  border-radius: 30px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.28),
+              0 8px 24px rgba(0,0,0,.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 580px;
 }
 
-.icon {
-  font-size: 64px;
-  margin-bottom: 18px;
-  display: inline-block;
-  animation: spin 8s linear infinite;
+/* Header */
+.header {
+  padding: 14px 16px 12px;
+  background: rgba(248,247,243,.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid #e6e1d2;
+  text-align: center;
+  position: relative;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-h1 {
-  font-size: clamp(28px, 5.5vw, 48px);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -.5px;
-  margin-bottom: 12px;
+.back {
+  position: absolute;
+  top: 14px; left: 14px;
+  font-size: 24px;
+  color: #35858E;
+  font-weight: 300;
+  cursor: default;
 }
-
-.zh {
-  font-family: 'Noto Serif TC', 'Microsoft JhengHei', serif;
-  font-size: clamp(20px, 4vw, 32px);
+.facetime {
+  position: absolute;
+  top: 18px; right: 16px;
+  font-size: 18px;
+  color: #35858E;
+}
+.avatar {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #35858E, #7DA78C);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 6px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(53,133,142,.25);
+}
+.name {
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 6px;
-  margin-bottom: 28px;
-  opacity: .96;
+  color: #1a3a3e;
+  letter-spacing: -.2px;
+}
+.status {
+  font-size: 11px;
+  color: #7da78c;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.status::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: #7da78c;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(125,167,140,.6);
+  animation: pulse 2s ease-out infinite;
+}
+@keyframes pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(125,167,140,.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(125,167,140,0);  }
+  100% { box-shadow: 0 0 0 0 rgba(125,167,140,0);    }
+}
+
+/* Chat area */
+.chat {
+  flex: 1;
+  padding: 18px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #f8f7f3;
+}
+.timestamp {
+  text-align: center;
+  font-size: 10.5px;
+  color: #8a9698;
+  margin: 4px 0 10px;
+  letter-spacing: .8px;
+}
+.timestamp b {
+  color: #1a3a3e;
+  font-weight: 600;
 }
 
 .msg {
-  font-size: clamp(14px, 2.2vw, 17px);
-  opacity: .88;
-  margin-bottom: 36px;
-  line-height: 1.7;
+  max-width: 80%;
+  padding: 9px 13px;
+  border-radius: 18px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  animation: pop .4s cubic-bezier(.34, 1.56, .64, 1) forwards;
+  word-wrap: break-word;
+}
+.msg.zh {
+  font-family: 'Noto Serif TC', 'Microsoft JhengHei', serif;
+  letter-spacing: .8px;
+}
+.msg.left {
+  background: #e9e5d8;
+  color: #1a3a3e;
+  border-bottom-left-radius: 5px;
+  align-self: flex-start;
+}
+.msg.right {
+  background: linear-gradient(135deg, #35858E, #2a6e76);
+  color: #fff;
+  border-bottom-right-radius: 5px;
+  align-self: flex-end;
+  box-shadow: 0 2px 8px rgba(53,133,142,.25);
 }
 
-.lucas {
-  display: inline-block;
-  background: #fff;
+/* Stagger animation delays */
+.msg:nth-child(2)  { animation-delay: .4s; }
+.msg:nth-child(3)  { animation-delay: 1.1s; }
+.msg:nth-child(4)  { animation-delay: 1.9s; }
+.msg:nth-child(5)  { animation-delay: 2.7s; }
+.msg:nth-child(6)  { animation-delay: 3.6s; }
+.msg:nth-child(7)  { animation-delay: 4.5s; }
+
+@keyframes pop {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.lucas-tag {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff 0%, #f4f7e6 100%);
   color: #2a6e76;
-  padding: 14px 32px;
-  border-radius: 50px;
-  font-weight: 800;
-  font-size: clamp(15px, 2.5vw, 19px);
-  letter-spacing: .3px;
-  box-shadow: 0 10px 28px rgba(0,0,0,.15);
-  transform: rotate(-3deg);
-  animation: wiggle 3.2s ease-in-out infinite;
-}
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-3deg) scale(1); }
-  50%      { transform: rotate(3deg) scale(1.05); }
+  padding: 11px 17px;
+  border-radius: 18px;
+  border-bottom-right-radius: 5px;
+  align-self: flex-end;
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  animation: pop .5s cubic-bezier(.34, 1.56, .64, 1) forwards;
+  animation-delay: 5.4s;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  letter-spacing: .2px;
 }
 
-footer {
-  position: fixed; bottom: 18px; left: 0; right: 0;
+/* Input bar (decorative) */
+.input-bar {
+  padding: 10px 12px 14px;
+  background: rgba(248,247,243,.95);
+  border-top: 1px solid #e6e1d2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.input {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e6e1d2;
+  border-radius: 18px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #b0b8b9;
+  font-style: italic;
+}
+.send-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #c8d3d4;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Footer outside phone */
+.signoff {
+  position: fixed;
+  bottom: 14px; left: 0; right: 0;
   text-align: center;
   font-size: 11px;
   color: rgba(255,255,255,.55);
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="icon">🚧</div>
-  <h1>Đang bảo trì</h1>
-  <div class="zh">整修中</div>
-  <p class="msg">
-    Hệ thống tạm dừng hoạt động.<br>
-    Vui lòng quay lại sau.
-  </p>
-  <span class="lucas">✨ Lucas đẹp trai !! ✨</span>
+<div class="phone">
+  <div class="header">
+    <span class="back">‹</span>
+    <span class="facetime">📞</span>
+    <div class="avatar">✨</div>
+    <div class="name">Lucas đẹp trai</div>
+    <div class="status">đang online</div>
+  </div>
+
+  <div class="chat">
+    <div class="timestamp"><b>Hôm nay</b> · vừa xong</div>
+
+    <div class="msg left">Xin chào 👋</div>
+    <div class="msg left">Trang web đang tạm dừng để chỉnh sửa lại nội dung</div>
+    <div class="msg left zh">回頭見</div>
+    <div class="msg left">Hẹn gặp lại bạn sau một ngày đẹp trời nào đó</div>
+    <div class="msg right">Cảm ơn bạn đã ghé thăm 🙏</div>
+    <div class="lucas-tag">✨ Lucas đẹp trai !! ✨</div>
+  </div>
+
+  <div class="input-bar">
+    <span class="input">iMessage · Đã đóng</span>
+    <span class="send-btn">↑</span>
+  </div>
 </div>
 
-<footer>© 2026</footer>
+<div class="signoff">© 2026 · Sẽ trở lại</div>
 
 </body>
 </html>
