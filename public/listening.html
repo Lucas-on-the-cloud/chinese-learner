@@ -230,6 +230,32 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .chat-send{background:var(--blue);color:#fff;border:none;padding:8px 14px;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .chat-send:hover{background:#1544b8}
 @media(max-width:600px){.chat-widget{right:0;bottom:0;width:100vw;max-width:100vw;height:80vh;border-radius:14px 14px 0 0}}
+
+/* ── Per-lesson vocab section (populated via chat `add` command) ── */
+.lis-vocab-wrap{margin-top:24px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px}
+.lis-vocab-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.lis-vocab-title{display:flex;align-items:center;gap:8px;font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--navy)}
+.lis-vocab-title i{color:var(--orange);font-size:14px}
+.lis-vocab-actions{display:flex;gap:6px;flex-wrap:wrap}
+.lis-vocab-actions button{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text-2);cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;transition:.15s}
+.lis-vocab-actions button:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.lis-vocab-hint{font-size:13px;color:var(--text-3);line-height:1.7;padding:18px 14px;text-align:center;background:#f8faff;border:1px dashed var(--border);border-radius:10px}
+.lis-vocab-hint code{background:#fff;color:var(--blue);padding:2px 8px;border-radius:5px;font-family:'SF Mono',Consolas,monospace;font-size:12px;font-style:normal;border:1px solid #c7d7fd}
+.lis-vocab-hint i{color:var(--orange);margin:0 3px}
+.lis-vocab-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px}
+.lis-vocab-item{background:#f8faff;border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;gap:12px;align-items:flex-start;transition:.15s;position:relative}
+.lis-vocab-item:hover{border-color:#bfdbfe;background:var(--blue-lt)}
+.lis-vocab-item .vc-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--red);min-width:64px;text-align:center;padding-top:1px}
+.lis-vocab-item .vc-info{flex:1;min-width:0}
+.lis-vocab-item .vc-py{font-size:11.5px;color:var(--text-2);font-style:italic}
+.lis-vocab-item .vc-level{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;background:#fdf6e3;color:#b8860b;padding:2px 7px;border-radius:4px;margin-left:6px;font-style:normal}
+.lis-vocab-item .vc-mn{font-size:13.5px;color:var(--text);margin-top:2px;line-height:1.4;font-weight:500}
+.lis-vocab-item .vc-ex{font-size:11.5px;color:var(--text-3);font-style:italic;margin-top:4px;font-family:'Noto Serif TC',serif;line-height:1.5}
+.lis-vocab-item .vc-del{background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;padding:4px 6px;border-radius:5px;flex-shrink:0;transition:.12s}
+.lis-vocab-item .vc-del:hover{color:var(--red);background:var(--red-lt)}
+.lis-vocab-item.pending{opacity:.6}
+.lis-vocab-item.pending .vc-mn::after{content:'…';animation:dots 1.2s infinite}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
 </style>
 </head>
 <body>
@@ -449,6 +475,7 @@ async function loadExercise(book, lid) {
   document.getElementById('page-desc').textContent = `${allSegments.length} đoạn · ${meta.display_name || book}`;
 
   renderExercise(currentIdx);
+  renderVocabSection();
 }
 
 // ─── RENDER EXERCISE ─────────────────────────────
@@ -469,6 +496,7 @@ function renderExercise(idx) {
   `;
 
   renderCard(seg);
+  renderVocabSection();
 
   // Auto-play after short delay
   setTimeout(() => playSegment(seg), 300);
@@ -1052,10 +1080,17 @@ async function chatSend() {
   msgs.innerHTML += `<div class="chat-msg user">${escMsg}</div>`;
   msgs.scrollTop = msgs.scrollHeight;
 
-  // "add 詞, 詞…" — báo người dùng dùng flashcard fork khác
+  // "add 詞1, 詞2, ..." — thêm từ vựng vào danh sách của bài nghe này
   if (/^add\s+/i.test(msg)) {
-    msgs.innerHTML += `<div class="chat-msg system">Bài nghe chưa hỗ trợ lệnh "add". Bookmark từ vựng tại trang khoá học/đọc báo.</div>`;
-    msgs.scrollTop = msgs.scrollHeight;
+    const words = msg.replace(/^add\s+/i, '')
+      .split(/[,，、；;]/).map(w => w.trim())
+      .filter(w => /[一-鿿㐀-䶿]/.test(w));
+    if (!words.length) {
+      msgs.innerHTML += `<div class="chat-msg system">Cú pháp: <code>add 詞1, 詞2, 詞3</code> (cần ít nhất 1 chữ Hán).</div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+      return;
+    }
+    await handleAddVocab(words, msgs);
     return;
   }
 
@@ -1101,7 +1136,159 @@ function chatHideBubble() {
   document.getElementById('chat-widget')?.classList.remove('open');
   chatHistory.length = 0;
   const msgs = document.getElementById('chat-msgs');
-  if (msgs) msgs.innerHTML = '<div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.</div>';
+  if (msgs) msgs.innerHTML = `<div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.<br><span style="font-size:10.5px;opacity:.75">Gõ <code style="background:rgba(0,0,0,.06);padding:1px 6px;border-radius:4px">add 詞1, 詞2</code> để thêm từ vào danh sách.</span></div>`;
+}
+
+// ─── Per-lesson vocab (chat "add" command) ────────────────────────
+function vocabKey() { return `tocfl_lis_vocab_${bookName}_${lessonId}`; }
+function loadVocab() { return JSON.parse(localStorage.getItem(vocabKey()) || '[]'); }
+function saveVocab(arr) { localStorage.setItem(vocabKey(), JSON.stringify(arr)); }
+function escHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderVocabSection() {
+  if (!bookName || !lessonId) return;
+  const main = document.getElementById('app-main');
+  if (!main) return;
+  let wrap = document.getElementById('lis-vocab-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'lis-vocab-wrap';
+    wrap.className = 'lis-vocab-wrap';
+    main.appendChild(wrap);
+  }
+  const vocab = loadVocab();
+  const empty = vocab.length === 0;
+  wrap.innerHTML = `
+    <div class="lis-vocab-hd">
+      <div class="lis-vocab-title"><i class="fas fa-book-open"></i> Từ vựng (${vocab.length})</div>
+      ${!empty ? `<div class="lis-vocab-actions">
+        <button onclick="exportVocabCsv()" title="Xuất CSV"><i class="fas fa-download"></i> CSV</button>
+        <button onclick="forkAllVocab()" title="Thêm vào Flashcard của tôi"><i class="fas fa-bookmark"></i> Flash tất cả</button>
+        <button onclick="clearVocab()" title="Xoá tất cả"><i class="fas fa-trash"></i></button>
+      </div>` : ''}
+    </div>
+    ${empty ? `
+      <div class="lis-vocab-hint">
+        Chưa có từ vựng. Mở <i class="fa-solid fa-comments"></i> chat AI (góc dưới phải) và gõ <code>add 詞1, 詞2, 詞3</code> để AI tra pinyin + nghĩa + ví dụ tự động.
+      </div>
+    ` : `
+      <div class="lis-vocab-list">${vocab.map((w, i) => `
+        <div class="lis-vocab-item${w._pending ? ' pending' : ''}">
+          <div class="vc-char">${escHtml(w.char)}</div>
+          <div class="vc-info">
+            <div class="vc-py">${escHtml(w.pinyin || '—')}${w.level ? `<span class="vc-level">${escHtml(w.level)}</span>` : ''}</div>
+            <div class="vc-mn">${escHtml(w.meaning || '(đang tra)')}</div>
+            ${w.example ? `<div class="vc-ex">${escHtml(w.example)}${w.exMeaning ? ' — ' + escHtml(w.exMeaning) : ''}</div>` : ''}
+          </div>
+          <button class="vc-del" onclick="deleteVocab(${i})" title="Xoá"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      `).join('')}</div>
+    `}
+  `;
+}
+
+function deleteVocab(idx) {
+  const v = loadVocab();
+  v.splice(idx, 1);
+  saveVocab(v);
+  renderVocabSection();
+}
+
+function clearVocab() {
+  if (!confirm('Xoá toàn bộ từ vựng đã thêm cho bài này?')) return;
+  saveVocab([]);
+  renderVocabSection();
+}
+
+function exportVocabCsv() {
+  const v = loadVocab();
+  if (!v.length) return;
+  const rows = [['Hán','Pinyin','Nghĩa','Ví dụ','Dịch ví dụ','Cấp']];
+  v.forEach(w => rows.push([w.char, w.pinyin, w.meaning, w.example || '', w.exMeaning || '', w.level || '']));
+  const csv = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `vocab-${bookName}-${lessonId}.csv`;
+  a.click();
+}
+
+function forkAllVocab() {
+  const v = loadVocab();
+  if (!v.length) return;
+  const list = JSON.parse(localStorage.getItem('tocfl_user_flashcards') || '[]');
+  let added = 0, skipped = 0;
+  v.forEach(w => {
+    if (list.find(f => f.char === w.char)) { skipped++; return; }
+    list.push({
+      char: w.char, pinyin: w.pinyin, meaning: w.meaning,
+      example_zh: w.example, example_vi: w.exMeaning,
+      source: 'listening', source_book: bookName, source_lesson: lessonId,
+      added_at: Date.now(),
+    });
+    added++;
+  });
+  localStorage.setItem('tocfl_user_flashcards', JSON.stringify(list));
+  alert(`Đã thêm ${added} từ vào Flashcard.${skipped ? ' Bỏ qua ' + skipped + ' từ đã có.' : ''}`);
+}
+
+// Process "add X, Y, Z" command from chat — AI-enrich each new word.
+async function handleAddVocab(words, msgs) {
+  const existing = loadVocab();
+  const existSet = new Set(existing.map(v => v.char));
+  const fresh = words.filter(w => !existSet.has(w));
+  const dup   = words.filter(w =>  existSet.has(w));
+
+  if (dup.length) {
+    msgs.innerHTML += `<div class="chat-msg system">⊘ Đã có sẵn: ${dup.map(w => '<b>' + escHtml(w) + '</b>').join(', ')}</div>`;
+  }
+  if (!fresh.length) { msgs.scrollTop = msgs.scrollHeight; return; }
+
+  // Add stubs immediately for feedback
+  const list = loadVocab();
+  fresh.forEach(w => list.push({ char: w, pinyin: '', meaning: '', example: '', exMeaning: '', level: '', _pending: true }));
+  saveVocab(list);
+  renderVocabSection();
+  msgs.innerHTML += `<div class="chat-msg system">Đang tra ${fresh.length} từ với AI…</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Build context from current lesson's segments
+  const transcript = (allSegments || []).map(s => (s.transcript || '').trim()).filter(Boolean).join(' ').slice(0, 1500);
+
+  for (const word of fresh) {
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          max_tokens: 400, temperature: 0.2,
+          response_format: { type: 'json_object' },
+          messages: [
+            { role: 'system', content: 'Bạn là từ điển Trung-Việt phồn thể (繁體中文 Đài Loan). Trả JSON object {"pinyin":"có dấu thanh ā á ǎ à","meaning":"nghĩa Việt ngắn 3-8 chữ","example":"câu nguyên văn 繁體 ngắn chứa từ","exMeaning":"dịch câu ví dụ","level":"cơ bản|trung cấp|nâng cao"}. KHÔNG markdown.' },
+            { role: 'user', content: `Từ: ${word}\n\nNgữ cảnh từ bài nghe đang học (để chọn ví dụ phù hợp ngữ cảnh):\n${transcript}` },
+          ],
+        }),
+      });
+      const j = await res.json();
+      if (!res.ok || j.error) throw new Error(j.error || `HTTP ${res.status}`);
+      const data = JSON.parse(j.content.trim().replace(/^```json\s*/, '').replace(/\s*```$/, ''));
+      const cur = loadVocab();
+      const idx = cur.findIndex(v => v.char === word);
+      if (idx >= 0) {
+        Object.assign(cur[idx], data);
+        delete cur[idx]._pending;
+        saveVocab(cur);
+        renderVocabSection();
+      }
+      msgs.innerHTML += `<div class="chat-msg system">✓ <b>${escHtml(word)}</b> · ${escHtml(data.pinyin || '')} · ${escHtml(data.meaning || '')}</div>`;
+    } catch (e) {
+      // Strip stub if AI failed
+      const cur = loadVocab();
+      const idx = cur.findIndex(v => v.char === word);
+      if (idx >= 0 && cur[idx]._pending) { cur.splice(idx, 1); saveVocab(cur); renderVocabSection(); }
+      msgs.innerHTML += `<div class="chat-msg system">⚠ <b>${escHtml(word)}</b>: ${escHtml(e.message.slice(0, 80))}</div>`;
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+  }
 }
 </script>
 
@@ -1115,7 +1302,7 @@ function chatHideBubble() {
     <button class="chat-close-btn" onclick="chatToggle()">×</button>
   </div>
   <div class="chat-messages" id="chat-msgs">
-    <div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.</div>
+    <div class="chat-msg system">Hỏi AI về nội dung, từ vựng, ngữ pháp trong bài nghe này.<br><span style="font-size:10.5px;opacity:.75">Gõ <code style="background:rgba(0,0,0,.06);padding:1px 6px;border-radius:4px">add 詞1, 詞2</code> để thêm từ vào danh sách.</span></div>
   </div>
   <div class="chat-input-row">
     <input class="chat-input" id="chat-input" placeholder="Hỏi gì đó…"
