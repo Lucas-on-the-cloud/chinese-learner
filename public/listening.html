@@ -1203,13 +1203,15 @@ function clearVocab() {
 function exportVocabCsv() {
   const v = loadVocab();
   if (!v.length) return;
-  const rows = [['Hán','Pinyin','Nghĩa','Ví dụ','Dịch ví dụ','Cấp']];
-  v.forEach(w => rows.push([w.char, w.pinyin, w.meaning, w.example || '', w.exMeaning || '', w.level || '']));
-  const csv = rows.map(r => r.map(c => `"${String(c ?? '').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  // Match reading.html CSV format: same header + column order
+  const header = 'Từ vựng,Pinyin,Nghĩa,Ví dụ,Pinyin ví dụ,Nghĩa ví dụ';
+  const q = s => `"${String(s ?? '').replace(/"/g, '""')}"`;
+  const rows = v.map(w => [q(w.char), q(w.pinyin), q(w.meaning), q(w.example), q(w.exPinyin), q(w.exMeaning)].join(','));
+  const csv = '﻿' + header + '\n' + rows.join('\n');
+  const lessonTitle = (allSegments?.[0]?.lesson_title || `${bookName}-${lessonId}`).replace(/\s+/g, '_');
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `vocab-${bookName}-${lessonId}.csv`;
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = `vocab_${lessonTitle}.csv`;
   a.click();
 }
 
@@ -1263,7 +1265,7 @@ async function handleAddVocab(words, msgs) {
           max_tokens: 400, temperature: 0.2,
           response_format: { type: 'json_object' },
           messages: [
-            { role: 'system', content: 'Bạn là từ điển Trung-Việt phồn thể (繁體中文 Đài Loan). Trả JSON object {"pinyin":"có dấu thanh ā á ǎ à","meaning":"nghĩa Việt ngắn 3-8 chữ","example":"câu nguyên văn 繁體 ngắn chứa từ","exMeaning":"dịch câu ví dụ","level":"cơ bản|trung cấp|nâng cao"}. KHÔNG markdown.' },
+            { role: 'system', content: 'Bạn là từ điển Trung-Việt phồn thể (繁體中文 Đài Loan). Trả JSON object {"pinyin":"có dấu thanh ā á ǎ à","meaning":"nghĩa Việt ngắn 3-8 chữ","example":"câu nguyên văn 繁體 ngắn chứa từ","exPinyin":"pinyin có dấu thanh của câu ví dụ","exMeaning":"dịch câu ví dụ","level":"cơ bản|trung cấp|nâng cao"}. KHÔNG markdown.' },
             { role: 'user', content: `Từ: ${word}\n\nNgữ cảnh từ bài nghe đang học (để chọn ví dụ phù hợp ngữ cảnh):\n${transcript}` },
           ],
         }),
