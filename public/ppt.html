@@ -2,701 +2,1512 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1280, initial-scale=1">
-<title>UAV Search & Rescue Person Detection — Slides</title>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding 101 — Lucas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --blue: #2563eb;
-    --red:  #dc2626;
-    --green:#16a34a;
-    --ink:  #111827;
-    --mute: #4b5563;
-    --soft: #6b7280;
-    --line: #d1d5db;
-    --bg-faint: #f9fafb;
-    --bg-card:  #f3f4f6;
+    --cream: #FCF9EA;
+    --cream-deep: #F5EFD4;
+    --coral: #FFA4A4;
+    --coral-deep: #E87878;
+    --peach: #FFBDBD;
+    --terracotta: #C95F5F;
+    --ink: #3A3030;
+    --ink-soft: #6B5A5A;
+    --mint: #BADFDB;
+    --mint-deep: #8FC4BF;
+    --butter: #F5EFD4;
+    --shadow: rgba(58, 48, 48, 0.08);
   }
 
-  .reveal {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--cream);
+    font-family: 'Inter', sans-serif;
     color: var(--ink);
-    font-size: 22px;
-  }
-  .reveal .slides { text-align: left; }
-  .reveal .slides > section {
-    padding: 40px 56px 60px 56px;
-    height: 720px;
-    width: 1280px;
-    box-sizing: border-box;
   }
 
-  .reveal h1, .reveal h2, .reveal h3 {
-    text-transform: none; letter-spacing: 0; color: var(--ink);
-    font-weight: 700; margin: 0 0 18px 0; line-height: 1.25;
+  /* Subtle paper grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 164, 164, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(186, 223, 219, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
   }
-  .reveal h1 { font-size: 42px; }
-  .reveal h2 { font-size: 30px; }
-  .reveal h3 { font-size: 21px; }
-  .reveal p  { margin: 0 0 12px 0; line-height: 1.5; }
 
-  .slide-title {
-    border-bottom: 3px solid var(--blue);
-    padding-bottom: 8px;
-    margin-bottom: 22px;
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 5vh 7vw;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 2;
+  }
+
+  .slide.active {
+    display: flex;
+    opacity: 1;
+    animation: slideIn 0.6s ease forwards;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Display & body type */
+  .display {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .italic { font-style: italic; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Slide number badge */
+  .slide-num {
+    position: absolute;
+    bottom: 3vh;
+    right: 3vw;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    opacity: 0.6;
+    z-index: 5;
+  }
+
+  .slide-tag {
+    position: absolute;
+    top: 4vh;
+    left: 7vw;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--coral-deep);
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed;
+    bottom: 2.5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    z-index: 10;
+    background: rgba(252, 249, 234, 0.85);
+    backdrop-filter: blur(8px);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(58, 48, 48, 0.08);
+  }
+  .nav button {
+    border: none;
+    background: var(--ink);
+    color: var(--cream);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .nav button:hover {
+    background: var(--coral-deep);
+    transform: scale(1.08);
+  }
+  .nav .counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* ============= SLIDE 1: TITLE ============= */
+  .s1 .hero-wrap {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 4vw;
+    align-items: center;
+    height: 100%;
+  }
+  .s1 .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--coral-deep);
+    margin-bottom: 1.5rem;
+  }
+  .s1 h1 {
+    font-size: clamp(3rem, 6.5vw, 6rem);
+    line-height: 0.95;
+    margin-bottom: 1.5rem;
+  }
+  .s1 h1 .accent {
+    font-style: italic;
+    color: var(--coral);
+    font-weight: 400;
+  }
+  .s1 .sub {
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 32ch;
+    line-height: 1.5;
+    margin-bottom: 2.5rem;
+  }
+  .s1 .credit {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .s1 .credit-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--coral), var(--peach));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+  }
+  .s1 .credit-text strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .s1 .credit-text span {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Decorative right side */
+  .s1 .stage {
+    position: relative;
+    height: 70vh;
+  }
+  .s1 .blob {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .s1 .b1 {
+    width: 320px; height: 320px;
+    background: var(--coral);
+    top: 5%; right: 10%;
+    animation: float 6s ease-in-out infinite;
+  }
+  .s1 .b2 {
+    width: 180px; height: 180px;
+    background: var(--butter);
+    bottom: 15%; left: 5%;
+    animation: float 7s ease-in-out infinite 1s;
+  }
+  .s1 .b3 {
+    width: 120px; height: 120px;
+    background: var(--mint);
+    top: 45%; right: 0%;
+    animation: float 5s ease-in-out infinite 0.5s;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+  }
+  .s1 .terminal {
+    position: absolute;
+    top: 38%;
+    left: 5%;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1.2rem 1.5rem;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    box-shadow: 0 20px 50px rgba(58, 48, 48, 0.25);
+    transform: rotate(-3deg);
+    z-index: 3;
+  }
+  .s1 .terminal .prompt { color: var(--mint); }
+  .s1 .terminal .cursor {
     display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--coral);
+    vertical-align: middle;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ============= GENERIC HEADINGS ============= */
+  .slide h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+  }
+  .slide h2 .it { font-style: italic; color: var(--coral); font-weight: 400; }
+
+  /* ============= SLIDE 2: EXPERIENCE ============= */
+  .s2 .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4vw;
+    align-items: center;
+  }
+  .s2 .left .body-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin-bottom: 1.5rem;
+  }
+  .s2 .left .body-text strong { color: var(--ink); font-weight: 600; }
+  .s2 .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .s2 .card {
+    background: var(--cream-deep);
+    padding: 1.25rem 1.5rem;
+    border-radius: 14px;
+    border-left: 4px solid var(--coral);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .s2 .card .emoji { font-size: 1.8rem; }
+  .s2 .card .text strong { display: block; font-weight: 600; font-size: 1rem; }
+  .s2 .card .text span { font-size: 0.85rem; color: var(--ink-soft); }
+
+  /* ============= SLIDE 3: WHAT IS VIBE CODING ============= */
+  .s3 { justify-content: center; align-items: center; text-align: center; }
+  .s3 h2 { margin-bottom: 1rem; }
+  .s3 .quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+    color: var(--ink-soft);
+    max-width: 22ch;
+    line-height: 1.4;
+    margin: 0 auto 3rem;
+  }
+  .s3 .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .s3 .step {
+    background: var(--cream-deep);
+    border: 2px dashed var(--coral);
+    border-radius: 16px;
+    padding: 1.2rem 1.8rem;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ink);
+  }
+  .s3 .arrow {
+    font-size: 1.5rem;
+    color: var(--coral);
+  }
+  .s3 .step.final {
+    background: var(--coral);
+    color: var(--cream);
+    border-style: solid;
+    font-style: normal;
+    font-weight: 600;
   }
 
-  .badge {
-    position: absolute; top: 18px; right: 24px;
-    font-size: 13px; font-weight: 600;
-    padding: 4px 12px; border-radius: 999px;
-    color: #fff; letter-spacing: 0.3px; z-index: 10;
+  /* ============= SLIDE 4: 7 CONCEPTS ============= */
+  .s4 h2 { font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 1.5rem; }
+  .s4 .concepts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
   }
-  .badge.A { background: var(--blue); }
-  .badge.B { background: var(--green); }
-  .badge.C { background: var(--red); }
+  .s4 .concepts > :nth-child(5),
+  .s4 .concepts > :nth-child(6),
+  .s4 .concepts > :nth-child(7) {
+    grid-column: span 1;
+  }
+  .s4 .concepts > :nth-child(5) { grid-column: 1 / 2; }
+  .s4 .concept {
+    background: var(--cream-deep);
+    border-radius: 18px;
+    padding: 1.3rem;
+    transition: transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .s4 .concept:hover { transform: translateY(-4px); }
+  .s4 .concept .icon {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+  }
+  .s4 .concept .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 0.3rem;
+    color: var(--ink);
+  }
+  .s4 .concept .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--coral-deep);
+    margin-bottom: 0.5rem;
+  }
+  .s4 .concept .desc {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .s4 .concept.highlight {
+    background: var(--coral);
+    color: var(--cream);
+  }
+  .s4 .concept.highlight .name { color: var(--cream); }
+  .s4 .concept.highlight .meta { color: var(--butter); }
+  .s4 .concept.highlight .desc { color: rgba(252, 249, 234, 0.9); }
 
-  .pagenum {
-    position: absolute; bottom: 18px; right: 28px;
-    font-size: 13px; color: var(--soft);
-    font-variant-numeric: tabular-nums; z-index: 10;
+  /* ============= SLIDE 5: HOUSE ANALOGY ============= */
+  .house-slide h2 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+  .house-slide .lead {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+    margin-bottom: 2.5rem;
+  }
+  .house-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr 1fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+  .house-illustration {
+    background: var(--cream-deep);
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .house-illustration svg {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+  }
+  .house-illustration .caption {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    margin-top: 0.8rem;
+    text-align: center;
+  }
+  .house-card {
+    background: var(--cream-deep);
+    border-radius: 20px;
+    padding: 1.5rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    border-top: 5px solid var(--coral);
+    transition: transform 0.3s ease;
+  }
+  .house-card:nth-child(3) { border-top-color: var(--peach); }
+  .house-card:nth-child(4) { border-top-color: var(--mint); }
+  .house-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--coral-deep);
+    margin-bottom: 0.4rem;
+  }
+  .house-card:nth-child(3) .label { color: var(--terracotta); }
+  .house-card:nth-child(4) .label { color: var(--mint-deep); }
+  .house-card .tech {
+    font-family: 'Fraunces', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .house-card .equals {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--coral);
+    margin-bottom: 1rem;
+  }
+  .house-card .ex {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .house-card .ex strong { color: var(--ink); font-weight: 600; }
+  .house-card .ex-list {
+    list-style: none;
+    margin-top: 0.5rem;
+  }
+  .house-card .ex-list li {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    padding: 0.25rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .house-card .ex-list li::before {
+    content: '·';
+    color: var(--coral);
+    font-weight: 700;
   }
 
-  table, .mono, code, .num {
-    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-    font-variant-numeric: tabular-nums;
+  /* ============= SLIDE 5-9: DEEP DIVE CONCEPT SLIDES ============= */
+  .deep-dive {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4vw;
+    align-items: center;
+    height: 100%;
   }
-  .reveal table {
-    border-collapse: collapse; width: 100%;
-    font-size: 17px; margin: 8px 0;
+  .deep-dive .left h2 {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    margin-bottom: 0.5rem;
   }
-  .reveal th, .reveal td {
-    border: 1px solid var(--line);
-    padding: 7px 11px; text-align: left; vertical-align: middle;
+  .deep-dive .big-emoji {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
   }
-  .reveal th {
-    background: var(--bg-card); font-weight: 600;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  .deep-dive .tagline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--coral);
+    margin-bottom: 1.5rem;
   }
-  .reveal td:first-child {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  .deep-dive .what-is {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+  .deep-dive .what-is strong { color: var(--ink); font-weight: 600; }
+  .deep-dive .analogy {
+    background: var(--cream-deep);
+    border-left: 4px solid var(--coral);
+    padding: 1rem 1.2rem;
+    border-radius: 0 12px 12px 0;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .deep-dive .analogy::before {
+    content: '✦ ';
+    color: var(--coral);
+    font-style: normal;
+  }
+  .deep-dive .how-use {
+    background: var(--cream-deep);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .deep-dive .how-use h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--coral-deep);
+    margin-bottom: 1rem;
+  }
+  .deep-dive .how-use ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .deep-dive .how-use li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .deep-dive .how-use li .num {
+    width: 24px;
+    height: 24px;
+    background: var(--coral);
+    color: var(--cream);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .deep-dive .code-preview {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+  }
+  .deep-dive .code-preview .tag-c { color: var(--peach); }
+  .deep-dive .code-preview .prop { color: var(--mint); }
+  .deep-dive .code-preview .val { color: var(--butter); }
+  .deep-dive .code-preview .com { color: rgba(250, 243, 231, 0.5); }
+
+  /* ============= SLIDE 5: WHO IT'S FOR ============= */
+  .s5 .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5vw;
+    align-items: center;
+  }
+  .s5 .big-num {
+    font-family: 'Fraunces', serif;
+    font-size: 12rem;
+    line-height: 0.9;
+    color: var(--coral);
+    font-weight: 900;
+  }
+  .s5 .big-num .plus { font-size: 8rem; color: var(--peach); }
+  .s5 .label {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--ink-soft);
+    margin-top: -1rem;
+  }
+  .s5 .points {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .s5 .point {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .s5 .point .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--coral);
+    margin-top: 0.5rem;
+    flex-shrink: 0;
+  }
+  .s5 .point strong {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.2rem;
+  }
+  .s5 .point span { color: var(--ink-soft); font-size: 0.95rem; }
+
+  /* ============= SLIDE 6: HOW TO RUN ============= */
+  .s6 .principles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .s6 .principle {
+    background: var(--cream-deep);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    position: relative;
+  }
+  .s6 .principle .num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 2.5rem;
+    color: var(--coral);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+  }
+  .s6 .principle h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+  .s6 .principle p {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
   }
 
-  .box {
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: 12px 16px; background: var(--bg-faint); margin: 8px 0;
+  /* ============= SLIDE 7: RUNDOWN ============= */
+  .s7 .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
   }
-  .box-blue   { border: 2px solid var(--blue);  background: #eff6ff; }
-  .box-green  { border: 2px solid var(--green); background: #f0fdf4; }
-  .box-red    { border: 2px solid var(--red);   background: #fef2f2; }
-  .box-gray   { border: 1px solid var(--line);  background: var(--bg-card); }
+  .s7 .row {
+    display: grid;
+    grid-template-columns: 130px 50px 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    background: var(--cream-deep);
+    border-radius: 12px;
+    transition: background 0.2s;
+  }
+  .s7 .row:hover { background: var(--peach); }
+  .s7 .row.break { background: transparent; border: 1px dashed var(--ink-soft); opacity: 0.6; }
+  .s7 .row.feature { background: var(--coral); color: var(--cream); }
+  .s7 .row.feature .time, .s7 .row.feature .title-cell { color: var(--cream); }
+  .s7 .time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .s7 .icon { font-size: 1.4rem; text-align: center; }
+  .s7 .title-cell {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .s7 .title-cell .sub { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 400; color: var(--ink-soft); display: block; }
+  .s7 .row.feature .title-cell .sub { color: rgba(252, 249, 234, 0.85); }
 
-  .callout {
-    font-weight: 700; color: var(--blue);
-    font-size: 18px; padding: 11px 16px;
-    border-left: 4px solid var(--blue);
-    background: #eff6ff; margin-top: 12px;
+  /* ============= SLIDE 8: FUN SKILLS ============= */
+  .s8 .skills {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
-  .callout.green { color: var(--green); border-left-color: var(--green); background: #f0fdf4; }
-  .callout.red   { color: var(--red);   border-left-color: var(--red);   background: #fef2f2; }
+  .s8 .skill {
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    padding: 1.5rem;
+    background: var(--cream-deep);
+    border-radius: 16px;
+  }
+  .s8 .skill .badge {
+    width: 56px;
+    height: 56px;
+    background: var(--coral);
+    color: var(--cream);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+  }
+  .s8 .skill h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    margin-bottom: 0.3rem;
+  }
+  .s8 .skill p {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
 
-  .title-slide { text-align: center; padding-top: 90px !important; }
-  .title-slide h1 { font-size: 48px; margin-bottom: 14px; }
-  .title-slide .subtitle {
-    font-size: 23px; color: var(--mute); margin-bottom: 36px; font-weight: 400;
+  /* ============= SLIDE 9: DEMO + PROMPTS ============= */
+  .s9 .demos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+    margin-top: 1rem;
   }
-  .headline-box {
-    display: inline-block; border: 2px solid var(--green);
-    background: #f0fdf4; border-radius: 6px;
-    padding: 14px 22px; font-style: italic;
-    color: var(--ink); font-size: 19px;
-    max-width: 880px; margin: 0 auto 36px auto;
+  .s9 .demo {
+    background: var(--cream-deep);
+    border-radius: 16px;
+    padding: 1.3rem;
+    display: flex;
+    flex-direction: column;
   }
-  .title-foot { color: var(--soft); font-size: 16px; margin-top: 26px; }
-
-  .cards-3 {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px; margin: 10px 0;
+  .s9 .demo.live { background: var(--coral); color: var(--cream); }
+  .s9 .demo .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--coral-deep);
+    margin-bottom: 0.4rem;
   }
-  .card {
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: 14px; background: #fff;
+  .s9 .demo.live .tag { color: var(--butter); }
+  .s9 .demo h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    margin-bottom: 0.6rem;
   }
-  .card h3 {
-    color: var(--blue); font-size: 18px;
-    margin-bottom: 8px; border-bottom: 2px solid var(--blue);
-    padding-bottom: 4px; display: inline-block;
-  }
-  .card p { font-size: 16px; margin: 4px 0; }
-  .card ul { margin: 4px 0 0 18px; padding: 0; }
-  .card li { font-size: 16px; margin: 3px 0; }
-
-  .cols-2 {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 18px; margin: 10px 0;
-  }
-  .col-faded {
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: 16px; background: var(--bg-card); color: var(--soft);
-  }
-  .col-faded h3 { color: var(--soft); }
-  .col-highlight {
-    border: 2px solid var(--blue); border-radius: 6px;
-    padding: 16px; background: #eff6ff;
-  }
-  .col-highlight h3 { color: var(--blue); }
-  .cols-2 ul { margin: 6px 0 0 18px; padding: 0; }
-  .cols-2 li { margin: 5px 0; font-size: 16px; }
-
-  .steps {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 14px; margin: 10px 0;
-  }
-  .step {
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: 13px; background: #fff;
-  }
-  .step-num {
+  .s9 .demo .url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--cream);
+    background: rgba(0,0,0,0.15);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
     display: inline-block;
-    width: 26px; height: 26px; line-height: 26px;
-    text-align: center; background: var(--green);
-    color: #fff; border-radius: 50%;
-    font-weight: 700; font-size: 14px; margin-right: 8px;
+    width: fit-content;
   }
-  .step h3 { display: inline; font-size: 17px; color: var(--ink); }
-  .step p, .step ul { font-size: 15px; margin-top: 8px; color: var(--mute); }
-  .step ul { margin: 6px 0 0 18px; padding: 0; }
-  .step li { margin: 3px 0; }
+  .s9 .demo .prompt-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    margin-bottom: 0.4rem;
+  }
+  .s9 .demo .prompt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0.8rem;
+    border-radius: 8px;
+    flex: 1;
+  }
+  .s9 .demo .prompt::before {
+    content: '> ';
+    color: var(--mint);
+  }
+  .s9 .demo.live .desc {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.95;
+  }
+  .s9 .demo.live .desc strong { display: block; margin-bottom: 0.4rem; font-family: 'Fraunces', serif; font-size: 1rem; }
 
-  .stack { display: flex; flex-direction: column; gap: 8px; margin: 6px 0; }
-  .panel-label { font-weight: 700; margin-bottom: 4px; }
-
-  .small { font-size: 14px; color: var(--soft); }
-  .mid   { font-size: 17px; }
-  .bold  { font-weight: 700; }
-  .red-x { color: var(--red); font-weight: 700; }
-  .ok    { color: var(--green); font-weight: 700; }
-  .star  { color: var(--green); }
-
-  .takeaways { list-style: none; padding: 0; margin: 4px 0; counter-reset: tk; }
-  .takeaways li {
-    counter-increment: tk; margin: 12px 0;
-    padding-left: 54px; position: relative;
-    font-size: 19px; font-weight: 600; line-height: 1.4;
+  /* ============= SLIDE 10: CLOSING ============= */
+  .s10 { justify-content: center; align-items: center; text-align: center; }
+  .s10 .big {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 1;
+    margin-bottom: 2rem;
   }
-  .takeaways li::before {
-    content: counter(tk); position: absolute; left: 0; top: -2px;
-    width: 36px; height: 36px; line-height: 36px;
-    text-align: center; border-radius: 50%;
-    background: var(--blue); color: #fff; font-size: 17px;
+  .s10 .big .it { font-style: italic; color: var(--coral); font-weight: 400; }
+  .s10 .closer {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--ink-soft);
+    max-width: 30ch;
+    margin: 0 auto 3rem;
+    line-height: 1.5;
   }
-  .takeaways .sub {
-    display: block; font-size: 15px; font-weight: 400;
-    color: var(--mute); margin-top: 4px; font-style: italic;
+  .s10 .thanks {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: var(--coral-deep);
+    margin-bottom: 1rem;
   }
-
-  .res-table td.plan-a { background: #f0fdf4; font-weight: 700; color: var(--green); }
-  .res-table td.naive  { background: #fef2f2; color: var(--red); }
-  .tight th, .tight td { padding: 5px 9px; font-size: 15px; }
-
-  .neg-split {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 16px; margin-top: 6px;
-  }
-  .neg-card {
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: 12px 14px; background: var(--bg-faint);
-  }
-  .neg-card h3 {
-    color: var(--red); font-size: 17px;
-    border-bottom: 2px solid var(--red);
-    padding-bottom: 4px; margin-bottom: 8px;
-  }
-  .neg-card .method { font-size: 13px; color: var(--mute); margin-bottom: 6px; }
-  .neg-card .diag { font-size: 12px; color: var(--mute); font-style: italic; margin-top: 6px; line-height: 1.4; }
-
-  .lesson {
-    border: 3px solid var(--green); border-radius: 8px;
-    background: #f0fdf4; padding: 16px 20px;
-    font-size: 18px; font-weight: 700; color: var(--ink);
-    line-height: 1.45; margin-top: 14px;
-  }
-
-  .preview { font-size: 14px; color: var(--soft); margin-top: 22px; font-style: italic; }
-  .dataset-table td:nth-child(1) {
-    font-weight: 600; background: var(--bg-card); width: 22%;
-  }
-  .bottom-line { margin-top: 14px; font-weight: 700; color: var(--ink); font-size: 17px; }
-  .reveal ul { margin: 4px 0 4px 22px; padding: 0; }
-  .reveal li { margin: 3px 0; }
-
-  .qa {
-    text-align: center; font-size: 26px;
-    font-weight: 700; color: var(--blue); margin-top: 20px;
-  }
-  .repo {
-    text-align: center; font-size: 13px;
-    color: var(--soft); margin-top: 12px;
-    font-family: "SF Mono", Menlo, Consolas, monospace;
+  .s10 .signoff {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.6rem;
   }
 
-  .reading {
-    font-size: 19px; line-height: 1.55; color: var(--ink);
+  /* Hint hover for first load */
+  .hint {
+    position: fixed;
+    bottom: 10vh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-soft);
+    opacity: 0.6;
+    animation: fadeOut 4s ease forwards;
+    z-index: 9;
   }
-  .reading p { margin: 12px 0; }
-  .reading .lead {
-    font-size: 21px; font-weight: 600; color: var(--blue);
-    margin-bottom: 16px;
+  @keyframes fadeOut {
+    0%, 60% { opacity: 0.6; }
+    100% { opacity: 0; visibility: hidden; }
+  }
+
+  @media (max-width: 900px) {
+    .s1 .hero-wrap, .s2 .grid, .s5 .layout {
+      grid-template-columns: 1fr;
+    }
+    .s4 .concepts, .s6 .principles, .s8 .skills, .s9 .demos {
+      grid-template-columns: 1fr 1fr;
+    }
   }
 </style>
 </head>
 <body>
 
-<div class="reveal">
-  <div class="slides">
+<div class="deck">
 
-    <!-- ============== SLIDE 1 — Title ============== -->
-    <section>
-      <span class="badge A">Presenter A</span>
-      <span class="pagenum">1 / 15</span>
-
-      <div class="title-slide">
-        <h1>UAV Search &amp; Rescue Person Detection</h1>
-        <div class="subtitle">Real-time UAV person detection for wilderness Search &amp; Rescue</div>
-
-        <div class="headline-box">
-          Main contribution: <span class="bold">density-aware training crops + SAHI sliced inference</span> (Plan A).<br>
-          YOLOv12-s architecture unchanged &mdash; HERIDAL mAP@0.5 lifted from <span class="mono">0.759 &rarr; 0.872</span>.
-        </div>
-
-        <div class="title-foot">Repo: github.com/Lucas-on-the-cloud/UAV_res</div>
-      </div>
-    </section>
-
-    <!-- ============== SLIDE 2 — The problem ============== -->
-    <section>
-      <span class="badge A">Presenter A</span>
-      <span class="pagenum">2 / 15</span>
-
-      <h2 class="slide-title">The Problem We Are Solving</h2>
-
-      <div class="reading">
-        <p class="lead">When a person goes missing in a wilderness area &mdash; hikers lost in forests, mountaineers stranded on slopes, survivors in flooded or earthquake-hit regions &mdash; the search radius grows quadratically with elapsed time, and ground search teams cover terrain slowly.</p>
-
-        <p>UAVs can sweep that terrain orders of magnitude faster, but a human operator watching the live video stream cannot reliably spot a <span class="mono">~30-pixel</span> person against forest, rocks, or vegetation across hours of footage.</p>
-
-        <p><span class="bold">Automated aerial person detection is the real SAR bottleneck:</span> turn a UAV's camera feed into actionable detections in real time.</p>
-
-        <div class="callout">
-          Technical task: given an aerial RGB image (<span class="mono">~4000×3000 px</span>) captured from a UAV at typical SAR altitude, <span class="bold">detect every person with tight bounding boxes</span>, in real time, on hardware that fits on a drone or ground station.
+  <!-- ============ SLIDE 1: TITLE ============ -->
+  <section class="slide s1 active" data-slide="1">
+    <span class="slide-tag">One Day Teacher · 2026</span>
+    <div class="hero-wrap">
+      <div class="left">
+        <div class="eyebrow">A workshop for the curious</div>
+        <h1 class="display">
+          Vibe<br>
+          <span class="accent">Coding</span> 101
+        </h1>
+        <p class="sub">Build your own blog, portfolio, and a real website — with Claude Code as your coding partner. No tech background needed.</p>
+        <div class="credit">
+          <div class="credit-avatar">L</div>
+          <div class="credit-text">
+            <strong>Lucas · 1123570</strong>
+            <span>Presenter / Your One Day Teacher</span>
+          </div>
         </div>
       </div>
-    </section>
+      <div class="stage">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="terminal">
+          <div><span class="prompt">$</span> claude</div>
+          <div>build me a portfolio<span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">01 / 16</span>
+  </section>
 
-    <!-- ============== SLIDE 3 — Three constraints ============== -->
-    <section>
-      <span class="badge A">Presenter A</span>
-      <span class="pagenum">3 / 15</span>
-
-      <h2 class="slide-title">Three Core Constraints</h2>
-
-      <div class="cards-3">
+  <!-- ============ SLIDE 2: MY EXPERIENCE ============ -->
+  <section class="slide s2" data-slide="2">
+    <span class="slide-tag">02 · My Experience</span>
+    <div class="grid">
+      <div class="left">
+        <h2>I'm not a <span class="it">developer</span>.</h2>
+        <p class="body-text">I'm a student, like you. But over the past few months, I've used <strong>Claude Code</strong> to ship real things on the internet — from scratch.</p>
+        <p class="body-text">No bootcamp. No CS degree. Just curiosity, a laptop, and the willingness to <strong>describe what I want</strong> until it exists.</p>
+      </div>
+      <div class="cards">
         <div class="card">
-          <h3>1. Tiny persons</h3>
-          <p>A typical HERIDAL person is <span class="mono">~30 px</span> wide in a <span class="mono">4000×3000</span> image (&lt; <span class="mono">0.1%</span> of image area).</p>
-          <p>Detectors trained at <span class="mono">imgsz=640</span> see this person shrunk to <span class="mono">~5 px</span> &mdash; they detect it but cannot localize tightly.</p>
+          <div class="emoji">🌏</div>
+          <div class="text">
+            <strong>tocflfafa.com</strong>
+            <span>A Chinese learning website I built and run</span>
+          </div>
         </div>
         <div class="card">
-          <h3>2. Natural distractors</h3>
-          <p>Aerial views over wilderness contain rocks, huts, ruins, and vegetation patches with person-like silhouettes and aspect ratios.</p>
-          <p>False positives on these distractors are the dominant remaining error mode after small-object accuracy is fixed.</p>
+          <div class="emoji">📝</div>
+          <div class="text">
+            <strong>Personal Blog</strong>
+            <span>My corner of the internet for writing</span>
+          </div>
         </div>
         <div class="card">
-          <h3>3. Scarce labeled data</h3>
-          <p>HERIDAL: <span class="mono">1,124</span> training images.</p>
-          <p>COCO <span class="mono">~118k</span>, VisDrone <span class="mono">~10k</span> &mdash; two orders of magnitude smaller.</p>
-          <p>Anything requiring lots of labelled SAR data is off the table.</p>
+          <div class="emoji">🎨</div>
+          <div class="text">
+            <strong>Portfolio Site</strong>
+            <span>Showcases everything I've made</span>
+          </div>
         </div>
       </div>
+    </div>
+    <span class="slide-num">02 / 16</span>
+  </section>
 
-      <p class="bottom-line" style="margin-top:22px;">These three constraints drive every design choice in this project.</p>
-    </section>
+  <!-- ============ SLIDE 3: WHAT IS VIBE CODING ============ -->
+  <section class="slide s3" data-slide="3">
+    <span class="slide-tag">03 · The Big Idea</span>
+    <h2>So what is <span class="it">vibe coding</span>?</h2>
+    <p class="quote">"You describe the vibe. The AI writes the code."</p>
+    <div class="flow">
+      <div class="step">you talk</div>
+      <span class="arrow">→</span>
+      <div class="step">Claude writes</div>
+      <span class="arrow">→</span>
+      <div class="step">you tweak</div>
+      <span class="arrow">→</span>
+      <div class="step final">it ships 🚀</div>
+    </div>
+    <span class="slide-num">03 / 16</span>
+  </section>
 
-    <!-- ============== SLIDE 4 — Approach ============== -->
-    <section>
-      <span class="badge A">Presenter A</span>
-      <span class="pagenum">4 / 15</span>
+  <!-- ============ SLIDE 4: 7 CONCEPTS ============ -->
+  <section class="slide s4" data-slide="4">
+    <span class="slide-tag">04 · The Toolkit</span>
+    <h2>7 things you'll meet <span class="it">(simply)</span></h2>
+    <div class="concepts">
+      <div class="concept">
+        <div class="icon">🦴</div>
+        <div class="meta">Structure</div>
+        <div class="name">HTML</div>
+        <div class="desc">The skeleton of a webpage. The bones.</div>
+      </div>
+      <div class="concept">
+        <div class="icon">👗</div>
+        <div class="meta">Style</div>
+        <div class="name">CSS</div>
+        <div class="desc">The clothes. Makes things pretty.</div>
+      </div>
+      <div class="concept">
+        <div class="icon">🧠</div>
+        <div class="meta">Behavior</div>
+        <div class="name">JavaScript</div>
+        <div class="desc">The brain. Makes it click, move, react.</div>
+      </div>
+      <div class="concept">
+        <div class="icon">🛠️</div>
+        <div class="meta">Workspace</div>
+        <div class="name">VS Code</div>
+        <div class="desc">The desk where you write code.</div>
+      </div>
+      <div class="concept">
+        <div class="icon">☁️</div>
+        <div class="meta">Save & Share</div>
+        <div class="name">GitHub</div>
+        <div class="desc">Google Drive — but for code.</div>
+      </div>
+      <div class="concept">
+        <div class="icon">🗄️</div>
+        <div class="meta">Database</div>
+        <div class="name">Supabase</div>
+        <div class="desc">Where users, logins, and data live.</div>
+      </div>
+      <div class="concept highlight">
+        <div class="icon">✨</div>
+        <div class="meta">Your Partner</div>
+        <div class="name">Claude Code</div>
+        <div class="desc">The AI that does the heavy lifting.</div>
+      </div>
+    </div>
+    <span class="slide-num">04 / 16</span>
+  </section>
 
-      <h2 class="slide-title">Our Approach: Pipeline, Not a New Detector</h2>
-
-      <div class="reading">
-        <p>This project builds a <span class="bold">pipeline</span> &mdash; not a new detector &mdash; for aerial SAR person detection. The base detector is YOLOv12-s (Tian et al., NeurIPS 2025) and is <span class="bold">held constant across all phases</span>.</p>
-
-        <p>Every improvement attaches to a clearly-scoped change <span class="bold">outside the detector</span>: training data composition, training-time preprocessing, inference-time slicing, or post-processing.</p>
+  <!-- ============ SLIDE 5: HOUSE ANALOGY ============ -->
+  <section class="slide house-slide" data-slide="5">
+    <span class="slide-tag">05 · The Big Picture</span>
+    <h2>A website is just a <span class="it">house</span> 🏠</h2>
+    <p class="lead">If we built a real house, here's who'd do what.</p>
+    <div class="house-grid">
+      <div class="house-illustration">
+        <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
+          <!-- Ground -->
+          <line x1="10" y1="200" x2="190" y2="200" stroke="#6B5A5A" stroke-width="2" stroke-dasharray="3,3" opacity="0.4"/>
+          <!-- Smoke from chimney -->
+          <circle cx="145" cy="35" r="6" fill="#FFA4A4" opacity="0.4"/>
+          <circle cx="152" cy="22" r="4" fill="#FFA4A4" opacity="0.3"/>
+          <circle cx="148" cy="12" r="3" fill="#FFA4A4" opacity="0.25"/>
+          <!-- House body (HTML — the structure) -->
+          <rect x="40" y="100" width="120" height="100" fill="#F5EFD4" stroke="#3A3030" stroke-width="3"/>
+          <!-- Roof (HTML — structure) -->
+          <polygon points="30,100 100,50 170,100" fill="#FFBDBD" stroke="#3A3030" stroke-width="3"/>
+          <!-- Chimney -->
+          <rect x="135" y="60" width="14" height="35" fill="#C95F5F" stroke="#3A3030" stroke-width="2"/>
+          <!-- Door (CSS — pretty paint color) -->
+          <rect x="85" y="145" width="30" height="55" fill="#FFA4A4" stroke="#3A3030" stroke-width="2.5"/>
+          <circle cx="108" cy="172" r="2" fill="#3A3030"/>
+          <!-- Windows (CSS — decorative) -->
+          <rect x="55" y="120" width="22" height="22" fill="#BADFDB" stroke="#3A3030" stroke-width="2.5"/>
+          <line x1="66" y1="120" x2="66" y2="142" stroke="#3A3030" stroke-width="1.5"/>
+          <line x1="55" y1="131" x2="77" y2="131" stroke="#3A3030" stroke-width="1.5"/>
+          <rect x="123" y="120" width="22" height="22" fill="#BADFDB" stroke="#3A3030" stroke-width="2.5"/>
+          <line x1="134" y1="120" x2="134" y2="142" stroke="#3A3030" stroke-width="1.5"/>
+          <line x1="123" y1="131" x2="145" y2="131" stroke="#3A3030" stroke-width="1.5"/>
+          <!-- Flower (CSS — decoration) -->
+          <circle cx="30" cy="190" r="4" fill="#FFA4A4" stroke="#3A3030" stroke-width="1.5"/>
+          <line x1="30" y1="194" x2="30" y2="200" stroke="#8FC4BF" stroke-width="1.5"/>
+          <!-- Doorbell button (JS — the interactive part) -->
+          <circle cx="80" cy="170" r="4" fill="#BADFDB" stroke="#3A3030" stroke-width="1.5"/>
+          <!-- Label arrows -->
+        </svg>
+        <p class="caption">Three teams build it.</p>
       </div>
 
-      <div class="cols-2" style="margin-top:14px;">
-        <div class="col-faded">
-          <h3>Common path</h3>
-          <ul>
-            <li>Design new architecture / attention modules</li>
-            <li>New loss</li>
-            <li>Risk: overfits in <span class="mono">1,124</span>-image regime</li>
-            <li>Every Δ confounded with architectural advantage</li>
-          </ul>
-        </div>
-        <div class="col-highlight">
-          <h3>Our path</h3>
-          <ul>
-            <li>YOLOv12-s, released weights, <span class="bold">never modified</span></li>
-            <li>Change: training data, preprocessing, inference, post-processing</li>
-            <li>Every Δ attributable to <span class="bold">one specific component</span></li>
-            <li>Pipeline transfers to any detector (YOLOv8/v11/RT-DETR)</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============== SLIDE 5 — Two datasets ============== -->
-    <section>
-      <span class="badge A">Presenter A</span>
-      <span class="pagenum">5 / 15</span>
-
-      <h2 class="slide-title">Why Two Datasets: VisDrone &rarr; HERIDAL</h2>
-
-      <table class="dataset-table">
-        <thead>
-          <tr><th></th><th>VisDrone-DET (Phase 1)</th><th>HERIDAL (Phase 2 onwards)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Domain</td><td>Urban aerial</td><td>Wilderness aerial (forests, mountains, rocks)</td></tr>
-          <tr><td>Image size</td><td><span class="mono">~2000×1500</span></td><td><span class="mono">4000×3000</span></td></tr>
-          <tr><td>Train images</td><td><span class="mono">5,684</span></td><td><span class="mono">1,124</span></td></tr>
-          <tr><td>Typical person size</td><td><span class="mono">~30&ndash;80 px</span> (varied)</td><td><span class="mono">~30 px</span> (fairly uniform)</td></tr>
-          <tr><td>Background</td><td>High semantic clutter (cars, signs, crowds)</td><td>Low semantic clutter, high texture (foliage, rocks)</td></tr>
-          <tr><td>Role</td><td>Validate pipeline + pick YOLOv12-n vs -s</td><td>Actual SAR target, all improvements measured here</td></tr>
-        </tbody>
-      </table>
-
-      <p class="bottom-line">VisDrone is the methodology validation set. HERIDAL is the real target &mdash; every contribution after Phase 1 is measured on HERIDAL.</p>
-    </section>
-
-    <!-- ============== SLIDE 6 — Phase 1 ============== -->
-    <section>
-      <span class="badge B">Presenter B</span>
-      <span class="pagenum">6 / 15</span>
-
-      <h2 class="slide-title">Phase 1 &mdash; VisDrone Baseline (Model-Size Ablation)</h2>
-
-      <div class="reading" style="font-size:17px;">
-        <p><span class="bold">Setup:</span> VisDrone-DET filtered to <span class="mono">person + people</span> (<span class="mono">5,684</span> train / <span class="mono">548</span> val). 80 epochs, AdamW, <span class="mono">imgsz=640</span>, batch 16, AMP, Tesla T4.</p>
-        <p><span class="bold">Goal:</span> end-to-end setup smoke test + ablation YOLOv12-n vs YOLOv12-s.</p>
+      <div class="house-card">
+        <div class="label">The Builder</div>
+        <div class="tech">HTML</div>
+        <div class="equals">= the structure</div>
+        <p class="ex">Lays the <strong>foundation, walls, roof, doors</strong>. Decides <em>what rooms exist</em>.</p>
+        <ul class="ex-list">
+          <li>The walls</li>
+          <li>The door frame</li>
+          <li>The window holes</li>
+          <li>The roof</li>
+        </ul>
       </div>
 
-      <table>
-        <thead>
-          <tr><th>Metric</th><th>YOLOv12-n</th><th>YOLOv12-s</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>mAP@0.5</td><td>0.476</td><td><span class="ok">0.552</span></td></tr>
-          <tr><td>mAP@0.5:0.95</td><td>0.187</td><td><span class="ok">0.231</span></td></tr>
-          <tr><td>Recall</td><td>0.438</td><td><span class="ok">0.497</span></td></tr>
-        </tbody>
-      </table>
-
-      <p style="margin-top:16px; font-size:18px;">YOLOv12-s wins by <span class="mono ok">+0.076</span> mAP@0.5 at modest compute cost.</p>
-      <p style="font-size:18px;"><span class="bold">Locked in</span> for every subsequent phase &mdash; no more model-size changes.</p>
-    </section>
-
-    <!-- ============== SLIDE 7 — Phase 2 ============== -->
-    <section>
-      <span class="badge B">Presenter B</span>
-      <span class="pagenum">7 / 15</span>
-
-      <h2 class="slide-title">Phase 2 &mdash; HERIDAL Baseline (First Measurement on Target)</h2>
-
-      <div class="reading" style="font-size:17px;">
-        <p><span class="bold">Setup:</span> switched to HERIDAL (<span class="mono">1,124</span> train / <span class="mono">313</span> val / <span class="mono">163</span> test, <span class="mono">4000×3000</span> images). Same YOLOv12-s config as Phase 1, retrained from scratch, <span class="mono">imgsz=640</span>, 100 epochs.</p>
+      <div class="house-card">
+        <div class="label">The Interior Designer</div>
+        <div class="tech">CSS</div>
+        <div class="equals">= the style</div>
+        <p class="ex">Paints the walls, picks the <strong>color of the door</strong>, hangs the curtains, plants flowers.</p>
+        <ul class="ex-list">
+          <li>Coral door paint</li>
+          <li>Soft cream walls</li>
+          <li>Green window frames</li>
+          <li>Flowers out front</li>
+        </ul>
       </div>
 
-      <table>
-        <thead>
-          <tr><th>Metric</th><th>VisDrone (Phase 1)</th><th>HERIDAL (Phase 2)</th><th>Δ</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>mAP@0.5</td><td>0.552</td><td><span class="ok">0.759</span></td><td><span class="ok">+0.207</span></td></tr>
-          <tr><td>mAP@0.5:0.95</td><td>0.231</td><td>0.344</td><td>+0.113</td></tr>
-          <tr><td>Precision</td><td>0.690</td><td>0.749</td><td>+0.059</td></tr>
-          <tr><td>Recall</td><td>0.497</td><td><span class="ok">0.713</span></td><td><span class="ok">+0.216</span></td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout red" style="margin-top:14px;">
-        Observed limitation: mAP@0.5 = <span class="mono">0.759</span> is reasonable, but mAP@0.5:0.95 = <span class="mono">0.344</span> is low &mdash; the model <span class="bold">finds</span> persons but <span class="bold">does not localize tightly</span>. Diagnosis: at <span class="mono">imgsz=640</span> on a <span class="mono">4000×3000</span> image, a <span class="mono">30-px</span> person shrinks to <span class="mono">~5 px</span>. The detector never sees persons at native scale. &rarr; Motivates Plan A.
+      <div class="house-card">
+        <div class="label">The Electrician</div>
+        <div class="tech">JS</div>
+        <div class="equals">= the behavior</div>
+        <p class="ex">Wires up the <strong>doorbell, light switches, smart locks</strong>. Makes the house <em>do things</em>.</p>
+        <ul class="ex-list">
+          <li>Doorbell rings</li>
+          <li>Lights turn on</li>
+          <li>Door unlocks</li>
+          <li>Alarm beeps</li>
+        </ul>
       </div>
-    </section>
+    </div>
+    <span class="slide-num">05 / 16</span>
+  </section>
 
-    <!-- ============== SLIDE 8 — Scale mismatch ============== -->
-    <section>
-      <span class="badge B">Presenter B</span>
-      <span class="pagenum">8 / 15</span>
-
-      <h2 class="slide-title">The Hidden Problem: Train&ndash;Inference Scale Mismatch</h2>
-
-      <div class="stack">
-        <div class="box box-gray">
-          <div class="panel-label">What standard training does:</div>
-          <p style="font-size:15px; margin:2px 0;">Image <span class="mono">4000×3000</span> &rarr; resize to <span class="mono">640×640</span> &rarr; train detector</p>
-          <p style="font-size:15px; margin:2px 0;"><span class="mono">30-px</span> person shrinks to <span class="mono">~5 px</span> in training input</p>
-          <p style="font-size:15px; margin:2px 0;">Model never sees persons at their actual scale</p>
-        </div>
-
-        <div class="box box-gray">
-          <div class="panel-label">The natural fix: SAHI sliced inference</div>
-          <p style="font-size:15px; margin:2px 0;">Cut <span class="mono">4000×3000</span> into <span class="mono">640×640</span> tiles at native resolution</p>
-          <p style="font-size:15px; margin:2px 0;">Persons appear at their real <span class="mono">~30-px</span> size in each tile</p>
-        </div>
-
-        <div class="box box-red">
-          <div class="panel-label" style="color:var(--red);">Applying SAHI directly to Phase 2 model:</div>
-          <p style="font-size:15px; margin:2px 0;">mAP@0.5: <span class="mono">0.759 &rarr; 0.255</span> <span class="red-x">&#10060;</span></p>
-          <p style="font-size:15px; margin:2px 0;">AP_small &asymp; <span class="mono">0.002</span> &mdash; model hallucinates hundreds of detections per tile.</p>
-          <p style="font-size:15px; margin:2px 0;">A model trained on <span class="mono">5-px</span> persons cannot recognize <span class="mono">30-px</span> persons. Out-of-distribution input &rarr; catastrophic failure.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============== SLIDE 9 — Plan A method ============== -->
-    <section>
-      <span class="badge B">Presenter B</span>
-      <span class="pagenum">9 / 15</span>
-
-      <h2 class="slide-title">Plan A &mdash; Couple Training and Inference Scales <span class="star">&#9733;</span></h2>
-
-      <p style="font-size:17px; margin-bottom:10px;">Move the <span class="bold">density-aware step into training</span>, so that train distribution = inference distribution.</p>
-
-      <div class="steps">
-        <div class="step">
-          <span class="step-num">1</span><h3>Generate 640×640 crops</h3>
-          <ul>
-            <li>Per <span class="mono">4000×3000</span> image: <span class="mono">2</span> person-centered crops (jitter &plusmn;160 px) + <span class="mono">1</span> random crop</li>
-            <li>Native resolution, no resize</li>
-            <li>Keep GT box if &gt;50% of its area falls in the crop</li>
-            <li>Total: <span class="mono bold">~4,500</span> train crops</li>
-          </ul>
-        </div>
-        <div class="step">
-          <span class="step-num">2</span><h3>Train YOLOv12-s on crops</h3>
-          <ul>
-            <li>Init from COCO-pretrained weights</li>
-            <li><span class="mono">80</span> epochs, AdamW, <span class="mono">lr=0.001</span></li>
-            <li>Batch 16, AMP, single T4</li>
-          </ul>
-        </div>
-        <div class="step">
-          <span class="step-num">3</span><h3>SAHI inference on val</h3>
-          <ul>
-            <li>Original <span class="mono">4000×3000</span> &rarr; <span class="mono">640×640</span> tiles, overlap <span class="mono">0.2</span></li>
-            <li><span class="mono">~48</span> tiles per image, native resolution</li>
-            <li>NMS post-process, match threshold <span class="mono">0.5</span></li>
-          </ul>
+  <!-- ============ SLIDE 5: HTML DEEP DIVE ============ -->
+  <section class="slide" data-slide="5">
+    <span class="slide-tag">05 · Concept Deep Dive</span>
+    <div class="deep-dive">
+      <div class="left">
+        <span class="big-emoji">🦴</span>
+        <h2>HTML</h2>
+        <p class="tagline">The bones of every webpage</p>
+        <p class="what-is"><strong>HTML</strong> (HyperText Markup Language) is how you tell the browser <em>what's on the page</em> — headings, paragraphs, images, buttons, links.</p>
+        <div class="analogy">Think of it as the skeleton of a person. Without it, there's nothing to dress up.</div>
+        <div class="code-preview">
+<span class="com">&lt;!-- a heading and a paragraph --&gt;</span><br>
+<span class="tag-c">&lt;h1&gt;</span>Hello, world<span class="tag-c">&lt;/h1&gt;</span><br>
+<span class="tag-c">&lt;p&gt;</span>This is my first website.<span class="tag-c">&lt;/p&gt;</span>
         </div>
       </div>
-
-      <div class="callout green" style="margin-top:14px;">
-        Training distribution = Inference distribution. The model sees persons at the exact scale it will encounter at inference.
+      <div class="how-use">
+        <h3>How you'll use it</h3>
+        <ul>
+          <li><span class="num">1</span><div>Open VS Code and create a file ending in <span class="mono">.html</span></div></li>
+          <li><span class="num">2</span><div>Use <strong>tags</strong> like <span class="mono">&lt;h1&gt;</span>, <span class="mono">&lt;p&gt;</span>, <span class="mono">&lt;img&gt;</span> to add content</div></li>
+          <li><span class="num">3</span><div>Open it in your browser — boom, a webpage</div></li>
+          <li><span class="num">4</span><div>Or just ask Claude: <em>"add a section with my bio and a photo"</em></div></li>
+        </ul>
       </div>
-    </section>
+    </div>
+    <span class="slide-num">06 / 16</span>
+  </section>
 
-    <!-- ============== SLIDE 10 — Plan A results ============== -->
-    <section>
-      <span class="badge B">Presenter B</span>
-      <span class="pagenum">10 / 15</span>
-
-      <h2 class="slide-title">Plan A Results &mdash; Main Contribution <span class="star">&#9733;</span></h2>
-
-      <table class="res-table tight">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th>Phase 2 baseline</th>
-            <th>Naive SAHI <span class="red-x">&#10060;</span></th>
-            <th>Plan A <span class="star">&#9733;</span></th>
-            <th>Δ vs baseline</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>mAP@0.5</td><td>0.759</td><td class="naive">0.255</td><td class="plan-a">0.872</td><td><span class="ok">+0.113 (+15.0%)</span></td></tr>
-          <tr><td>mAP@0.5:0.95</td><td>0.344</td><td class="naive">0.129</td><td class="plan-a">0.574</td><td><span class="ok">+0.229 (+66.5%)</span></td></tr>
-          <tr><td>mAP@0.75</td><td>&mdash;</td><td class="naive">0.117</td><td class="plan-a">0.661</td><td><span class="ok">(large)</span></td></tr>
-          <tr><td>AP_small</td><td>&mdash;</td><td class="naive">0.002</td><td class="plan-a">0.494</td><td><span class="ok">~250× over naive SAHI</span></td></tr>
-          <tr><td>AR_100</td><td>&mdash;</td><td class="naive">0.438</td><td class="plan-a">0.662</td><td><span class="ok">+0.224</span></td></tr>
-        </tbody>
-      </table>
-
-      <div class="callout green" style="margin-top:14px; font-style:italic;">
-        Key insight: density-aware <span class="bold">INFERENCE</span> only works when paired with density-aware <span class="bold">TRAINING</span>. The two halves are coupled.
-      </div>
-
-      <p class="small" style="margin-top:8px;">Original SAHI (Akyon et al., ICIP 2022) was an inference-only trick. The contribution here is <span class="bold">pairing SAHI with native-resolution crop training</span>, treating it as half of a coupled train+inference pipeline.</p>
-    </section>
-
-    <!-- ============== SLIDE 11 — Phase 3+4 setup ============== -->
-    <section>
-      <span class="badge C">Presenter C</span>
-      <span class="pagenum">11 / 15</span>
-
-      <h2 class="slide-title">Trying to Push Further: Phase 3 + Phase 4 on Top of Plan A</h2>
-
-      <div class="reading">
-        <p>Plan A established a strong baseline: <span class="mono bold">mAP@0.5 = 0.872</span>.</p>
-
-        <p>We tried <span class="bold">three more enhancements</span> on top of Plan A: synthetic data, SAM2 bbox refinement, cascade classifier.</p>
-
-        <p><span class="bold" style="color:var(--red);">All three underperformed.</span> Each failed for a <span class="bold">different mechanical reason</span> &mdash; and the pattern itself is the interesting finding.</p>
-      </div>
-
-      <p class="preview" style="margin-top:30px;">Next 3 slides: synthetic data &rarr; SAM2 refinement &rarr; cascade classifier &rarr; convergent lesson.</p>
-    </section>
-
-    <!-- ============== SLIDE 12 — Phase 3 synthetic ============== -->
-    <section>
-      <span class="badge C">Presenter C</span>
-      <span class="pagenum">12 / 15</span>
-
-      <h2 class="slide-title">Phase 3 &mdash; Synthetic Data Augmentation (Negative)</h2>
-
-      <div class="box box-gray">
-        <div class="panel-label">Method</div>
-        <p style="font-size:15px; margin:2px 0;"><span class="bold">A.</span> Generate <span class="mono">2,000</span> aerial backgrounds with Stable Diffusion XL &rarr; composite HERIDAL person crops onto them</p>
-        <p style="font-size:15px; margin:2px 0;"><span class="bold">B.</span> Same-domain copy-paste: HERIDAL persons &rarr; other HERIDAL images (Ghiasi et al., CVPR 2021)</p>
-        <p style="font-size:15px; margin:2px 0;">Mix into training with raw <span class="mono">4000×3000</span> HERIDAL images; evaluate with SAHI</p>
-      </div>
-
-      <table class="tight" style="margin-top:10px; width:80%;">
-        <thead><tr><th>Method</th><th>mAP@0.5</th><th>mAP@0.5:0.95</th><th>AP_small</th></tr></thead>
-        <tbody>
-          <tr><td>Plan A baseline</td><td><span class="mono ok">0.872</span></td><td><span class="mono ok">0.574</span></td><td><span class="mono ok">0.494</span></td></tr>
-          <tr><td>A. SDXL synthetic + raw HERIDAL</td><td><span class="mono" style="color:var(--red); font-weight:700;">0.013</span> <span class="red-x">&#10060;</span></td><td><span class="mono" style="color:var(--red);">0.007</span></td><td><span class="mono" style="color:var(--red);">0.043</span></td></tr>
-          <tr><td>B. HERIDAL composite + raw HERIDAL</td><td><span class="mono" style="color:var(--red); font-weight:700;">0.000</span> <span class="red-x">&#10060;</span></td><td><span class="mono" style="color:var(--red);">0.000</span></td><td><span class="mono" style="color:var(--red);">0.0001</span></td></tr>
-        </tbody>
-      </table>
-
-      <div class="box box-red" style="margin-top:12px;">
-        <span class="bold">Diagnosis:</span> mixing synthetic data with raw <span class="mono">4000×3000</span> images at <span class="mono">imgsz=640</span> <span class="bold">re-introduced the exact scale mismatch Plan A had just solved</span>. Gradient is dominated by <span class="mono">~5-px</span> persons, while SAHI presents <span class="mono">~30-px</span> persons at inference. Domain mismatch is secondary; scale is the dominant cause.
-      </div>
-    </section>
-
-    <!-- ============== SLIDE 13 — Phase 4 SAM2 + Cascade ============== -->
-    <section>
-      <span class="badge C">Presenter C</span>
-      <span class="pagenum">13 / 15</span>
-
-      <h2 class="slide-title">Phase 4 &mdash; SAM2 and Cascade Classifier (Both Negative)</h2>
-
-      <div class="neg-split">
-        <div class="neg-card">
-          <h3>Module 1: SAM2 bbox refinement</h3>
-          <p class="method"><span class="bold">Method:</span> prompt SAM2 (Ravi et al., 2024) with each Plan A bbox &rarr; get mask &rarr; refit tight bbox from mask + 1-px outward padding.</p>
-          <table class="tight">
-            <thead><tr><th>Metric</th><th>Plan A</th><th>+ SAM2</th></tr></thead>
-            <tbody>
-              <tr><td>mAP@0.5</td><td>0.872</td><td>0.871</td></tr>
-              <tr><td>mAP@0.5:0.95</td><td>0.573</td><td>0.487</td></tr>
-              <tr><td>mAP@0.75</td><td>0.661</td><td style="color:var(--red); font-weight:700;">0.492 &#10060;</td></tr>
-              <tr><td>AP_small</td><td>0.494</td><td>0.450</td></tr>
-            </tbody>
-          </table>
-          <p class="diag"><span class="bold">Diagnosis:</span> SAM2 refit boxes are <span class="mono">2&ndash;3 px</span> tighter than HERIDAL GT convention. At <span class="mono">~30-px</span> person scale, that gap drops IoU below strict thresholds (0.75+).</p>
-        </div>
-
-        <div class="neg-card">
-          <h3>Module 2: Cascade classifier</h3>
-          <p class="method"><span class="bold">Method:</span> MobileNetV3-Small trained on Plan A TP/FP crops (input <span class="mono">64×64</span>), drops predictions with <span class="mono">p &lt; 0.5</span> at inference.</p>
-          <table class="tight">
-            <thead><tr><th>Metric</th><th>Plan A</th><th>+ Cascade</th></tr></thead>
-            <tbody>
-              <tr><td>mAP@0.5</td><td>0.872</td><td>0.869</td></tr>
-              <tr><td>mAP@0.5:0.95</td><td>0.573</td><td>0.571</td></tr>
-              <tr><td>AP_small</td><td>0.494</td><td style="color:var(--red); font-weight:700;">0.379 &#10060;</td></tr>
-              <tr><td>Filter rate</td><td>&mdash;</td><td>38.9%</td></tr>
-            </tbody>
-          </table>
-          <p class="diag"><span class="bold">Diagnosis:</span> <span class="mono">64×64</span> input is too small for confident classification at <span class="mono">~30-px</span> person scale. The 0.5 threshold disproportionately drops <span class="bold">small-scale TPs</span>, not the rocks/huts FPs it was designed to remove.</p>
+  <!-- ============ SLIDE 6: CSS DEEP DIVE ============ -->
+  <section class="slide" data-slide="6">
+    <span class="slide-tag">06 · Concept Deep Dive</span>
+    <div class="deep-dive">
+      <div class="left">
+        <span class="big-emoji">👗</span>
+        <h2>CSS</h2>
+        <p class="tagline">The clothes, the makeup, the vibe</p>
+        <p class="what-is"><strong>CSS</strong> (Cascading Style Sheets) is how you tell the browser <em>what things should look like</em> — colors, fonts, spacing, layout, animation.</p>
+        <div class="analogy">If HTML is your skeleton, CSS is your outfit, hairstyle, and how you walk into the room.</div>
+        <div class="code-preview">
+<span class="com">/* make the heading orange and big */</span><br>
+h1 {<br>
+&nbsp;&nbsp;<span class="prop">color</span>: <span class="val">coral</span>;<br>
+&nbsp;&nbsp;<span class="prop">font-size</span>: <span class="val">48px</span>;<br>
+}
         </div>
       </div>
-    </section>
-
-    <!-- ============== SLIDE 14 — Convergent lesson ============== -->
-    <section>
-      <span class="badge C">Presenter C</span>
-      <span class="pagenum">14 / 15</span>
-
-      <h2 class="slide-title">Three Failures, One Convergent Lesson</h2>
-
-      <table>
-        <thead><tr><th style="width:38%;">Module</th><th>Why it failed</th></tr></thead>
-        <tbody>
-          <tr><td>Phase 3 &mdash; SDXL + composite augmentation</td><td>Mixing synthetic with raw HERIDAL <span class="mono">4000×3000</span> at <span class="mono">imgsz=640</span> re-introduced the scale mismatch Plan A had just solved</td></tr>
-          <tr><td>Phase 4 &mdash; SAM2 bbox refinement</td><td>SAM2 refit boxes are <span class="mono">2&ndash;3 px</span> tighter than HERIDAL GT &rarr; IoU drops below strict thresholds at <span class="mono">~30-px</span> scale</td></tr>
-          <tr><td>Phase 4 &mdash; Cascade classifier</td><td><span class="mono">64×64</span> input too small for confident classification at <span class="mono">~30-px</span> person scale &rarr; drops small-scale TPs</td></tr>
-        </tbody>
-      </table>
-
-      <div class="lesson">
-        Plan A's scale alignment is the <span style="color:var(--green);">LOAD-BEARING</span> piece. Any post-hoc add-on that doesn't preserve scale-awareness breaks something &mdash; each by a different mechanism. Foundation models (SDXL, SAM2) <span class="bold">do not transfer for free</span> to aerial small-person settings; they need domain-specific, scale-aware adaptation.
+      <div class="how-use">
+        <h3>How you'll use it</h3>
+        <ul>
+          <li><span class="num">1</span><div>Write CSS in a <span class="mono">.css</span> file (or inside a <span class="mono">&lt;style&gt;</span> tag)</div></li>
+          <li><span class="num">2</span><div>Pick an HTML element, then describe its <strong>look</strong></div></li>
+          <li><span class="num">3</span><div>Change one number, refresh — instant feedback</div></li>
+          <li><span class="num">4</span><div>Or ask Claude: <em>"make the homepage warm and minimalist, soft beige background"</em></div></li>
+        </ul>
       </div>
-    </section>
+    </div>
+    <span class="slide-num">07 / 16</span>
+  </section>
 
-    <!-- ============== SLIDE 15 — Takeaways ============== -->
-    <section>
-      <span class="badge C">Presenter C</span>
-      <span class="pagenum">15 / 15</span>
+  <!-- ============ SLIDE 7: JS DEEP DIVE ============ -->
+  <section class="slide" data-slide="7">
+    <span class="slide-tag">07 · Concept Deep Dive</span>
+    <div class="deep-dive">
+      <div class="left">
+        <span class="big-emoji">🧠</span>
+        <h2>JavaScript</h2>
+        <p class="tagline">The brain that makes things move</p>
+        <p class="what-is"><strong>JavaScript</strong> is how your website <em>reacts</em> — when someone clicks a button, types in a form, or scrolls down, JS decides what happens next.</p>
+        <div class="analogy">HTML stands there. CSS looks pretty. JavaScript actually <em>does</em> things.</div>
+        <div class="code-preview">
+<span class="com">// when the button is clicked, say hi</span><br>
+button.<span class="prop">onclick</span> = () =&gt; {<br>
+&nbsp;&nbsp;<span class="val">alert</span>(<span class="val">"Hello!"</span>);<br>
+};
+        </div>
+      </div>
+      <div class="how-use">
+        <h3>How you'll use it</h3>
+        <ul>
+          <li><span class="num">1</span><div>Add a <span class="mono">.js</span> file — or a <span class="mono">&lt;script&gt;</span> tag in your HTML</div></li>
+          <li><span class="num">2</span><div>Use it for: dark mode toggle, image carousel, form validation, animations</div></li>
+          <li><span class="num">3</span><div>Don't worry about syntax — Claude writes it</div></li>
+          <li><span class="num">4</span><div>Ask Claude: <em>"add a button that switches between light and dark mode"</em></div></li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-num">08 / 16</span>
+  </section>
 
-      <h2 class="slide-title">Three Takeaways</h2>
+  <!-- ============ SLIDE 8: GIT + GITHUB DEEP DIVE ============ -->
+  <section class="slide" data-slide="8">
+    <span class="slide-tag">08 · Concept Deep Dive</span>
+    <div class="deep-dive">
+      <div class="left">
+        <span class="big-emoji">☁️</span>
+        <h2>Git &amp; GitHub</h2>
+        <p class="tagline">Save points + a home on the internet</p>
+        <p class="what-is"><strong>Git</strong> is a tool that saves <em>snapshots</em> of your project as you work — so you can always undo, compare, or rewind. <strong>GitHub</strong> is the website where those snapshots live online.</p>
+        <div class="analogy">Git = save points in a video game. GitHub = the cloud save so it doesn't die with your laptop.</div>
+        <div class="code-preview">
+<span class="com"># the three commands you'll use 90% of the time</span><br>
+<span class="prop">git</span> add .<br>
+<span class="prop">git</span> commit -m <span class="val">"added the about page"</span><br>
+<span class="prop">git</span> push
+        </div>
+      </div>
+      <div class="how-use">
+        <h3>How you'll use it</h3>
+        <ul>
+          <li><span class="num">1</span><div>Sign up at <span class="mono">github.com</span> (free, takes 2 min)</div></li>
+          <li><span class="num">2</span><div>Create a <strong>repository</strong> (a folder for your project)</div></li>
+          <li><span class="num">3</span><div><strong>Commit</strong> = save a snapshot · <strong>Push</strong> = send it to GitHub</div></li>
+          <li><span class="num">4</span><div>Bonus: <strong>GitHub Pages</strong> turns your repo into a live website — for free</div></li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-num">09 / 16</span>
+  </section>
 
-      <ol class="takeaways">
-        <li>
-          Train&ndash;inference distribution <span style="color:var(--blue);">ALIGNMENT</span> is the dominant lever in aerial small-object detection &mdash; more than architectural change.
-          <span class="sub">Plan A delivers <span class="mono">+0.113</span> mAP@0.5 and <span class="mono">+0.229</span> mAP@0.5:0.95 without touching the detector.</span>
-        </li>
-        <li>
-          SAHI works <span style="color:var(--blue);">only</span> when paired with native-resolution training.
-          <span class="sub">Naive SAHI alone: <span class="mono">0.759 &rarr; 0.255</span>. The two halves are coupled.</span>
-        </li>
-        <li>
-          Foundation models (SDXL, SAM2) don't <span style="color:var(--blue);">transfer for free</span> here.
-          <span class="sub">Both need scale-aware adaptation we haven't built yet &mdash; future work: crop-then-synthesize + StyleGAN2-ADA for data, SAM2 as a filter (drop) rather than a refit (replace) operator.</span>
-        </li>
-      </ol>
+  <!-- ============ SLIDE 9: SUPABASE DEEP DIVE ============ -->
+  <section class="slide" data-slide="9">
+    <span class="slide-tag">09 · Concept Deep Dive</span>
+    <div class="deep-dive">
+      <div class="left">
+        <span class="big-emoji">🗄️</span>
+        <h2>Supabase</h2>
+        <p class="tagline">Your website's memory</p>
+        <p class="what-is"><strong>Supabase</strong> is a free service that handles the <em>backend</em> for you — the database (where info is stored), user logins, and the connection between them.</p>
+        <div class="analogy">Think of it as a magical notebook your website can write to and read from — and it remembers everything, forever.</div>
+        <div class="code-preview">
+<span class="com">// save a new student's progress</span><br>
+<span class="prop">supabase</span><br>
+&nbsp;&nbsp;.from(<span class="val">"progress"</span>)<br>
+&nbsp;&nbsp;.<span class="prop">insert</span>({ user: <span class="val">"Lucas"</span>, level: <span class="val">3</span> });
+        </div>
+      </div>
+      <div class="how-use">
+        <h3>How you'll use it</h3>
+        <ul>
+          <li><span class="num">1</span><div>Sign up at <span class="mono">supabase.com</span> — create a project</div></li>
+          <li><span class="num">2</span><div>Make a <strong>table</strong> (like an Excel sheet) for your data</div></li>
+          <li><span class="num">3</span><div>Connect it to your site with one API key</div></li>
+          <li><span class="num">4</span><div>Now users can sign in, save things, come back later — like tocflfafa.com does</div></li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-num">10 / 16</span>
+  </section>
 
-      <div class="qa">Thank you. Questions?</div>
-      <div class="repo">Code, weights, positive + negative results: github.com/Lucas-on-the-cloud/UAV_res</div>
-    </section>
+  <!-- ============ SLIDE 5: WHO IT'S FOR ============ -->
+  <section class="slide s5" data-slide="5">
+    <span class="slide-tag">05 · The Audience</span>
+    <h2>Who can <span class="it">take</span> this?</h2>
+    <div class="layout">
+      <div>
+        <div class="big-num">18<span class="plus">+</span></div>
+        <div class="label">University students · any major</div>
+      </div>
+      <div class="points">
+        <div class="point">
+          <div class="dot"></div>
+          <div>
+            <strong>Zero coding required</strong>
+            <span>If you can write a text message, you can do this.</span>
+          </div>
+        </div>
+        <div class="point">
+          <div class="dot"></div>
+          <div>
+            <strong>Especially for non-tech majors</strong>
+            <span>Design, literature, business, language — all welcome.</span>
+          </div>
+        </div>
+        <div class="point">
+          <div class="dot"></div>
+          <div>
+            <strong>You need ideas, not skills</strong>
+            <span>The AI handles syntax. You handle imagination.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">11 / 16</span>
+  </section>
 
-  </div>
+  <!-- ============ SLIDE 6: HOW TO RUN IT ============ -->
+  <section class="slide s6" data-slide="6">
+    <span class="slide-tag">06 · How I'd Run It</span>
+    <h2>Three <span class="it">principles</span></h2>
+    <div class="principles">
+      <div class="principle">
+        <div class="num">01</div>
+        <h3>Learn by shipping</h3>
+        <p>No theory marathons. Every concept gets built into a real thing the same day.</p>
+      </div>
+      <div class="principle">
+        <div class="num">02</div>
+        <h3>Prompt, don't memorize</h3>
+        <p>Forget syntax. Practice describing what you want — clearly, like talking to a smart friend.</p>
+      </div>
+      <div class="principle">
+        <div class="num">03</div>
+        <h3>Break things on purpose</h3>
+        <p>The fastest way to learn is to mess it up, ask Claude why, and try again.</p>
+      </div>
+    </div>
+    <span class="slide-num">12 / 16</span>
+  </section>
+
+  <!-- ============ SLIDE 7: RUNDOWN ============ -->
+  <section class="slide s7" data-slide="7">
+    <span class="slide-tag">07 · The Rundown</span>
+    <h2>One day · <span class="it">six hours</span></h2>
+    <div class="timeline">
+      <div class="row">
+        <div class="time">00:00 – 00:30</div>
+        <div class="icon">👋</div>
+        <div class="title-cell">Welcome & "What is Vibe Coding?"<span class="sub">Mindset shift before tools</span></div>
+      </div>
+      <div class="row">
+        <div class="time">00:30 – 01:00</div>
+        <div class="icon">⚙️</div>
+        <div class="title-cell">Setup: VS Code · GitHub · Claude Code<span class="sub">Everyone gets the toolkit running</span></div>
+      </div>
+      <div class="row feature">
+        <div class="time">01:00 – 02:00</div>
+        <div class="icon">📝</div>
+        <div class="title-cell">Build #1 — Your Blog<span class="sub">HTML + CSS basics, deploy to GitHub Pages</span></div>
+      </div>
+      <div class="row break">
+        <div class="time">02:00 – 02:15</div>
+        <div class="icon">☕</div>
+        <div class="title-cell">Break<span class="sub">Stretch, snack, stare at your blog</span></div>
+      </div>
+      <div class="row feature">
+        <div class="time">02:15 – 03:30</div>
+        <div class="icon">🎨</div>
+        <div class="title-cell">Build #2 — Your Portfolio<span class="sub">Add JavaScript interactivity & animations</span></div>
+      </div>
+      <div class="row break">
+        <div class="time">03:30 – 04:00</div>
+        <div class="icon">🍱</div>
+        <div class="title-cell">Lunch<span class="sub">Recharge</span></div>
+      </div>
+      <div class="row feature">
+        <div class="time">04:00 – 05:30</div>
+        <div class="icon">🌏</div>
+        <div class="title-cell">Build #3 — Chinese Learning Site<span class="sub">Intro to Supabase + storing user data</span></div>
+      </div>
+      <div class="row">
+        <div class="time">05:30 – 06:00</div>
+        <div class="icon">🚀</div>
+        <div class="title-cell">Deploy + Show & Tell<span class="sub">Everyone shares their live URL</span></div>
+      </div>
+    </div>
+    <span class="slide-num">13 / 16</span>
+  </section>
+
+  <!-- ============ SLIDE 8: FUN SKILLS ============ -->
+  <section class="slide s8" data-slide="8">
+    <span class="slide-tag">08 · What You'll Walk Away With</span>
+    <h2>The <span class="it">fun</span> part</h2>
+    <div class="skills">
+      <div class="skill">
+        <div class="badge">🌐</div>
+        <div>
+          <h3>A real website with your name on it</h3>
+          <p>A live URL you can put on your CV, send to your mom, or share on Instagram.</p>
+        </div>
+      </div>
+      <div class="skill">
+        <div class="badge">🗣️</div>
+        <div>
+          <h3>The art of prompting</h3>
+          <p>How to talk to AI clearly enough to get exactly what you want — a superpower for any career.</p>
+        </div>
+      </div>
+      <div class="skill">
+        <div class="badge">🧩</div>
+        <div>
+          <h3>Problem-solving instinct</h3>
+          <p>When things break (they will), you'll learn to read errors and debug calmly.</p>
+        </div>
+      </div>
+      <div class="skill">
+        <div class="badge">💪</div>
+        <div>
+          <h3>"I can build that" confidence</h3>
+          <p>The biggest unlock isn't a skill — it's realizing the internet is something you can make, not just consume.</p>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">14 / 16</span>
+  </section>
+
+  <!-- ============ SLIDE 9: DEMO + PROMPTS ============ -->
+  <section class="slide s9" data-slide="9">
+    <span class="slide-tag">09 · Demo Time</span>
+    <h2>Let me <span class="it">show you</span></h2>
+    <div class="demos">
+      <div class="demo live">
+        <div class="tag">Live Demo</div>
+        <h3>tocflfafa.com</h3>
+        <span class="url">tocflfafa.com</span>
+        <div class="desc">
+          <strong>My Chinese learning site</strong>
+          Built with Claude Code + Supabase. Real users, real database, real deploy.
+        </div>
+      </div>
+      <div class="demo">
+        <div class="tag">Coming Soon · Try the Prompt</div>
+        <h3>The Blog</h3>
+        <div class="prompt-label">Starter prompt</div>
+        <div class="prompt">Build a personal blog with a warm minimalist design. Homepage shows post titles + dates. Each post is its own page. Use HTML, CSS, and a soft cream color scheme.</div>
+      </div>
+      <div class="demo">
+        <div class="tag">Coming Soon · Try the Prompt</div>
+        <h3>The Portfolio</h3>
+        <div class="prompt-label">Starter prompt</div>
+        <div class="prompt">Create a one-page portfolio with hero section, about me, 3 project cards with images, and contact links. Add subtle scroll animations. Make it mobile-friendly.</div>
+      </div>
+    </div>
+    <span class="slide-num">15 / 16</span>
+  </section>
+
+  <!-- ============ SLIDE 10: CLOSING ============ -->
+  <section class="slide s10" data-slide="10">
+    <span class="slide-tag">10 · The End</span>
+    <div class="big display">Anyone can <span class="it">build</span> now.</div>
+    <p class="closer">The bottleneck used to be skill. Today, it's just curiosity — and the willingness to start.</p>
+    <div class="thanks">Thank you</div>
+    <div class="signoff">— Lucas</div>
+    <span class="slide-num">16 / 16</span>
+  </section>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<!-- Navigation -->
+<div class="nav">
+  <button id="prev" aria-label="Previous slide">←</button>
+  <div class="counter"><span id="current">1</span> / <span id="total">10</span></div>
+  <button id="next" aria-label="Next slide">→</button>
+</div>
+
+<div class="hint">use ← → keys to navigate</div>
+
 <script>
-  Reveal.initialize({
-    width: 1280,
-    height: 720,
-    margin: 0,
-    minScale: 0.2,
-    maxScale: 2.0,
-    controls: true,
-    progress: true,
-    slideNumber: false,
-    hash: true,
-    transition: 'slide',
-    transitionSpeed: 'fast'
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const currentEl = document.getElementById('current');
+  const totalEl = document.getElementById('total');
+  let idx = 0;
+
+  totalEl.textContent = total;
+
+  function show(n) {
+    n = Math.max(0, Math.min(total - 1, n));
+    slides[idx].classList.remove('active');
+    idx = n;
+    slides[idx].classList.add('active');
+    currentEl.textContent = idx + 1;
+  }
+
+  document.getElementById('next').addEventListener('click', () => show(idx + 1));
+  document.getElementById('prev').addEventListener('click', () => show(idx - 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(idx + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(idx - 1);
+    } else if (e.key === 'Home') {
+      show(0);
+    } else if (e.key === 'End') {
+      show(total - 1);
+    } else if (/^[0-9]$/.test(e.key)) {
+      const n = parseInt(e.key);
+      show(n === 0 ? 9 : n - 1);
+    }
+  });
+
+  // Click on slide background to advance (but not on nav)
+  document.querySelector('.deck').addEventListener('click', (e) => {
+    if (e.target.closest('.nav')) return;
+    show(idx + 1);
   });
 </script>
+
 </body>
 </html>
