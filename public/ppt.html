@@ -14,42 +14,14 @@
 
 <style>
 :root{
-  /* Primary palette - indigo/blue */
-  --indigo-600:#4f46e5;
-  --indigo-500:#6366f1;
-  --indigo-100:#e0e7ff;
-  --indigo-50:#eef2ff;
-  --blue-600:#2563eb;
-  --blue-500:#3b82f6;
-  --blue-100:#dbeafe;
-  --blue-50:#eff6ff;
-  /* Success */
-  --emerald-600:#059669;
-  --emerald-500:#10b981;
-  --emerald-100:#d1fae5;
-  --emerald-50:#ecfdf5;
-  /* Failure */
-  --rose-600:#e11d48;
-  --rose-500:#f43f5e;
-  --rose-100:#ffe4e6;
-  --rose-50:#fff1f2;
-  /* Warning */
-  --amber-600:#d97706;
-  --amber-500:#f59e0b;
-  --amber-100:#fef3c7;
-  --amber-50:#fffbeb;
-  /* Neutrals */
-  --slate-950:#020617;
-  --slate-900:#0f172a;
-  --slate-800:#1e293b;
-  --slate-700:#334155;
-  --slate-600:#475569;
-  --slate-500:#64748b;
-  --slate-400:#94a3b8;
-  --slate-300:#cbd5e1;
-  --slate-200:#e2e8f0;
-  --slate-100:#f1f5f9;
-  --slate-50:#f8fafc;
+  --indigo-600:#4f46e5; --indigo-500:#6366f1; --indigo-100:#e0e7ff; --indigo-50:#eef2ff;
+  --blue-600:#2563eb; --blue-500:#3b82f6; --blue-100:#dbeafe; --blue-50:#eff6ff;
+  --emerald-600:#059669; --emerald-500:#10b981; --emerald-100:#d1fae5; --emerald-50:#ecfdf5;
+  --rose-600:#e11d48; --rose-500:#f43f5e; --rose-100:#ffe4e6; --rose-50:#fff1f2; --rose-700:#be123c;
+  --amber-600:#d97706; --amber-500:#f59e0b; --amber-100:#fef3c7; --amber-50:#fffbeb; --amber-700:#b45309;
+  --slate-950:#020617; --slate-900:#0f172a; --slate-800:#1e293b; --slate-700:#334155;
+  --slate-600:#475569; --slate-500:#64748b; --slate-400:#94a3b8; --slate-300:#cbd5e1;
+  --slate-200:#e2e8f0; --slate-100:#f1f5f9; --slate-50:#f8fafc;
 
   --grad-primary: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
   --grad-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
@@ -61,27 +33,18 @@ html, body{ background:var(--slate-50); }
 
 .reveal{
   font-family:'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color:var(--slate-900);
-  font-weight:400;
-  -webkit-font-smoothing:antialiased;
+  color:var(--slate-900); font-weight:400; -webkit-font-smoothing:antialiased;
 }
 .reveal .slides{ text-align:left; }
 .reveal .slides section{
-  padding:60px 56px 56px;
-  height:100%;
-  box-sizing:border-box;
-  background:#ffffff;
-  border-radius:0;
+  padding:60px 56px 56px; height:100%; box-sizing:border-box;
+  background:#ffffff; border-radius:0;
 }
 
 /* Typography */
 .reveal h1, .reveal h2, .reveal h3, .reveal h4{
-  font-family:'Inter', sans-serif;
-  font-weight:700;
-  text-transform:none;
-  letter-spacing:-0.025em;
-  color:var(--slate-900);
-  margin:0 0 0.4em 0;
+  font-family:'Inter', sans-serif; font-weight:700; text-transform:none;
+  letter-spacing:-0.025em; color:var(--slate-900); margin:0 0 0.4em 0;
 }
 .reveal h1{ font-size:2.6em; line-height:1.05; font-weight:800; }
 .reveal h2{ font-size:1.45em; line-height:1.15; margin-bottom:18px; }
@@ -94,22 +57,65 @@ html, body{ background:var(--slate-50); }
 .reveal em{ color:var(--slate-700); font-style:italic; }
 .mono{ font-family:'JetBrains Mono', monospace; font-weight:500; }
 
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+@keyframes fadeIn   { from {opacity:0;} to {opacity:1;} }
+@keyframes scaleIn  { from {opacity:0; transform:scale(0.92);} to {opacity:1; transform:scale(1);} }
+@keyframes slideInLeft  { from {opacity:0; transform:translateX(-30px);} to {opacity:1; transform:translateX(0);} }
+@keyframes slideInRight { from {opacity:0; transform:translateX(30px);} to {opacity:1; transform:translateX(0);} }
+@keyframes barRise  { from {height:0;} to {height:var(--target-h);} }
+@keyframes pulse    { 0%,100% {transform:scale(1); box-shadow:0 0 0 0 rgba(245,158,11,0.6);} 50% {transform:scale(1.05); box-shadow:0 0 0 12px rgba(245,158,11,0);} }
+@keyframes glow     { 0%,100% {box-shadow:0 0 18px rgba(16,185,129,0.35);} 50% {box-shadow:0 0 28px rgba(16,185,129,0.65);} }
+@keyframes flowDash { to { stroke-dashoffset:-20; } }
+@keyframes drawPath { from { stroke-dashoffset:300; } to { stroke-dashoffset:0; } }
+@keyframes bgShift  { 0%,100% {background-position:0% 50%;} 50% {background-position:100% 50%;} }
+@keyframes shake    { 0%,100% {transform:translateX(0);} 25% {transform:translateX(-2px);} 75% {transform:translateX(2px);} }
+
+/* Slide entrance animations */
+.reveal .slides section.present h2,
+.reveal .slides section.present > p:first-of-type {
+  animation: fadeInUp 0.45s ease-out 0.05s backwards;
+}
+.reveal .slides section.present .card,
+.reveal .slides section.present .step-card,
+.reveal .slides section.present .stat-tile,
+.reveal .slides section.present .delta-row,
+.reveal .slides section.present .callout,
+.reveal .slides section.present table {
+  animation: fadeInUp 0.5s ease-out backwards;
+}
+/* Stagger card animation */
+.reveal .slides section.present .cards-row > *:nth-child(1) { animation-delay: 0.12s; }
+.reveal .slides section.present .cards-row > *:nth-child(2) { animation-delay: 0.22s; }
+.reveal .slides section.present .cards-row > *:nth-child(3) { animation-delay: 0.32s; }
+.reveal .slides section.present .steps-flow > *:nth-child(1) { animation-delay: 0.10s; }
+.reveal .slides section.present .steps-flow > *:nth-child(2) { animation-delay: 0.18s; }
+.reveal .slides section.present .steps-flow > *:nth-child(3) { animation-delay: 0.26s; }
+.reveal .slides section.present .steps-flow > *:nth-child(4) { animation-delay: 0.34s; }
+.reveal .slides section.present .steps-flow > *:nth-child(5) { animation-delay: 0.42s; }
+.reveal .slides section.present .delta-row:nth-child(1) { animation-delay: 0.10s; }
+.reveal .slides section.present .delta-row:nth-child(2) { animation-delay: 0.20s; }
+.reveal .slides section.present .delta-row:nth-child(3) { animation-delay: 0.30s; }
+.reveal .slides section.present .delta-row:nth-child(4) { animation-delay: 0.40s; }
+.reveal .slides section.present .callout { animation-delay: 0.45s; }
+
 /* Top bar with phase tag + page number */
 .topbar{
   position:absolute; top:22px; left:56px; right:56px;
   display:flex; justify-content:space-between; align-items:center;
-  font-size:13px; color:var(--slate-500);
-  font-weight:500;
-  z-index:10;
+  font-size:13px; color:var(--slate-500); font-weight:500; z-index:10;
 }
 .tag{
   padding:6px 14px; border-radius:999px;
   background:var(--slate-100); color:var(--slate-700);
   font-weight:600; font-size:12px;
   display:inline-flex; align-items:center; gap:6px;
+  transition: all 0.3s ease;
 }
 .tag::before{
-  content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor;
+  content:""; display:inline-block; width:6px; height:6px;
+  border-radius:50%; background:currentColor;
+  animation: pulse 2s ease-in-out infinite;
 }
 .tag.blue{ background:var(--blue-50); color:var(--blue-600); }
 .tag.green{ background:var(--emerald-50); color:var(--emerald-600); }
@@ -120,9 +126,9 @@ html, body{ background:var(--slate-50); }
 /* Title slide */
 .title-slide{
   background:var(--grad-primary) !important;
-  color:white !important;
-  text-align:center !important;
-  padding-top:120px !important;
+  background-size:200% 200% !important;
+  animation: bgShift 12s ease-in-out infinite !important;
+  color:white !important; text-align:center !important; padding-top:120px !important;
 }
 .title-slide *{ color:white !important; }
 .title-slide h1{
@@ -138,6 +144,11 @@ html, body{ background:var(--slate-50); }
   background:rgba(255,255,255,0.18); backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,0.25);
   font-weight:600; font-size:0.85em; color:white;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.title-slide .headline:hover{
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
 }
 .title-slide .authors{
   margin-top:50px; color:rgba(255,255,255,0.75); font-size:0.7em; letter-spacing:0.04em;
@@ -145,14 +156,32 @@ html, body{ background:var(--slate-50); }
 .title-slide .topbar{ color:rgba(255,255,255,0.7); }
 .title-slide .tag{ background:rgba(255,255,255,0.2); color:white !important; }
 
-/* Cards */
+.hint{
+  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
+  color:rgba(255,255,255,0.6); font-size:11px; letter-spacing:0.08em;
+  text-transform:uppercase; font-weight:600;
+  animation: fadeIn 1s ease 1.5s backwards;
+}
+.hint .key{
+  display:inline-block; padding:2px 8px; border-radius:6px;
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25);
+  margin:0 4px; font-family:'JetBrains Mono', monospace;
+}
+
+/* Cards with hover */
 .card{
   background:white;
-  border:1px solid var(--slate-200);
-  border-radius:14px;
+  border:1px solid var(--slate-200); border-radius:14px;
   padding:18px 22px;
   box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 1px 1px rgba(15,23,42,0.03);
   display:flex; flex-direction:column;
+  transition: transform 0.3s cubic-bezier(.2,.8,.2,1), box-shadow 0.3s ease, border-color 0.3s ease;
+  cursor: default;
+}
+.card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15,23,42,0.10), 0 4px 8px rgba(15,23,42,0.06);
+  border-color: var(--slate-300);
 }
 .card h3{ font-size:0.95em; margin-bottom:8px; }
 .card.blue{ border-top:3px solid var(--blue-500); }
@@ -160,16 +189,22 @@ html, body{ background:var(--slate-50); }
 .card.red{ border-top:3px solid var(--rose-500); }
 .card.amber{ border-top:3px solid var(--amber-500); }
 .card.dim{ background:var(--slate-50); }
+.card.glow{ animation: glow 2.4s ease-in-out infinite; }
 
 .cards-row{ display:grid; gap:14px; margin-top:14px; }
 .cards-3{ grid-template-columns:repeat(3, 1fr); }
 .cards-2{ grid-template-columns:repeat(2, 1fr); }
 
-/* Stat tiles */
+/* Stat tiles with hover */
 .stat-tile{
   background:white; border:1px solid var(--slate-200); border-radius:14px;
   padding:16px 18px; text-align:center;
   box-shadow:0 1px 2px rgba(15,23,42,0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-tile:hover{
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(15,23,42,0.10);
 }
 .stat-tile.success{ background:var(--emerald-50); border-color:var(--emerald-100); }
 .stat-tile.fail{ background:var(--rose-50); border-color:var(--rose-100); }
@@ -180,23 +215,37 @@ html, body{ background:var(--slate-50); }
 }
 .stat-tile .value{
   font-family:'JetBrains Mono', monospace; font-weight:700;
-  font-size:1.8em; color:var(--slate-900); line-height:1;
-  margin-bottom:4px;
+  font-size:1.8em; color:var(--slate-900); line-height:1; margin-bottom:4px;
 }
 .stat-tile.success .value{ color:var(--emerald-600); }
 .stat-tile.fail .value{ color:var(--rose-600); }
 .stat-tile.primary .value{ color:var(--blue-600); }
-.stat-tile .delta{
-  font-size:0.65em; font-weight:600; color:var(--slate-500);
-}
+.stat-tile .delta{ font-size:0.65em; font-weight:600; color:var(--slate-500); }
 
-/* Tables */
-.reveal table{ width:100%; margin:6px 0; border-collapse:separate; border-spacing:0; font-size:0.7em; border-radius:10px; overflow:hidden; border:1px solid var(--slate-200); }
+/* Tables with hover */
+.reveal table{
+  width:100%; margin:6px 0; border-collapse:separate; border-spacing:0;
+  font-size:0.7em; border-radius:10px; overflow:hidden;
+  border:1px solid var(--slate-200);
+}
 .reveal thead tr{ background:var(--slate-50); }
-.reveal th{ text-align:left; padding:11px 14px; font-weight:600; color:var(--slate-700); border:none; font-size:0.95em; }
-.reveal td{ padding:10px 14px; border-top:1px solid var(--slate-100); color:var(--slate-700); }
+.reveal th{
+  text-align:left; padding:11px 14px; font-weight:600;
+  color:var(--slate-700); border:none; font-size:0.95em;
+}
+.reveal td{
+  padding:10px 14px; border-top:1px solid var(--slate-100);
+  color:var(--slate-700); transition: background 0.2s ease;
+}
+.reveal tbody tr:hover td{ background:var(--slate-50); }
 .reveal td.num, .reveal th.num{ text-align:right; font-family:'JetBrains Mono', monospace; }
-.reveal tr.highlight td{ background:linear-gradient(90deg, var(--blue-50) 0%, var(--indigo-50) 100%); font-weight:600; color:var(--blue-600); }
+.reveal tr.highlight td{
+  background:linear-gradient(90deg, var(--blue-50) 0%, var(--indigo-50) 100%);
+  font-weight:600; color:var(--blue-600);
+}
+.reveal tr.highlight:hover td{
+  background:linear-gradient(90deg, var(--blue-100) 0%, var(--indigo-100) 100%) !important;
+}
 .reveal tr.fail td{ background:var(--rose-50); }
 .reveal tr.fail td.label{ font-weight:600; color:var(--rose-700); }
 .reveal td.good{ color:var(--emerald-600); font-weight:600; }
@@ -207,9 +256,10 @@ html, body{ background:var(--slate-50); }
 .callout{
   margin-top:14px; padding:14px 20px; border-radius:12px;
   background:var(--blue-50); border-left:4px solid var(--blue-500);
-  font-size:0.78em; color:var(--slate-800); font-weight:500;
-  line-height:1.55;
+  font-size:0.78em; color:var(--slate-800); font-weight:500; line-height:1.55;
+  transition: all 0.3s ease;
 }
+.callout:hover{ transform: translateX(4px); }
 .callout.green{ background:var(--emerald-50); border-left-color:var(--emerald-500); }
 .callout.red{ background:var(--rose-50); border-left-color:var(--rose-500); }
 .callout.amber{ background:var(--amber-50); border-left-color:var(--amber-500); }
@@ -219,9 +269,14 @@ html, body{ background:var(--slate-50); }
 .steps-flow{ display:flex; align-items:stretch; gap:8px; margin:14px 0; }
 .step-card{
   flex:1; background:white; border:1px solid var(--slate-200); border-radius:14px;
-  padding:14px 16px;
-  display:flex; flex-direction:column;
-  position:relative;
+  padding:14px 16px; display:flex; flex-direction:column; position:relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  cursor:pointer;
+}
+.step-card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(79,70,229,0.15);
+  border-color: var(--indigo-500);
 }
 .step-card .step-num{
   display:inline-flex; align-items:center; justify-content:center;
@@ -229,19 +284,33 @@ html, body{ background:var(--slate-50); }
   background:var(--grad-primary); color:white;
   font-weight:700; font-size:14px; font-family:'JetBrains Mono', monospace;
   margin-bottom:8px;
+  transition: transform 0.3s ease;
 }
+.step-card:hover .step-num{ transform: rotate(-8deg) scale(1.1); }
 .step-card h4{ font-size:0.9em; margin:0 0 6px 0; color:var(--slate-900); }
 .step-card p{ font-size:0.7em; margin:0 0 4px 0; line-height:1.5; }
 .step-arrow{
   display:flex; align-items:center; color:var(--slate-300);
   font-size:24px; padding:0 2px;
+  animation: flowDash 1.2s linear infinite;
 }
 
 /* SVG diagrams container */
 .diagram{ margin:8px 0; display:flex; justify-content:center; }
 .diagram svg{ max-width:100%; height:auto; }
+.diagram svg .dash-flow{
+  stroke-dasharray: 6 4;
+  animation: flowDash 1.5s linear infinite;
+}
+.diagram svg .draw-in{
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+}
+.reveal .slides section.present .diagram svg .draw-in{
+  animation: drawPath 1.2s ease-out 0.3s forwards;
+}
 
-/* Bar chart */
+/* Bar chart with animation */
 .barchart{
   display:flex; align-items:flex-end; gap:24px; height:240px;
   padding:20px 30px 0; background:var(--slate-50); border-radius:14px;
@@ -250,39 +319,66 @@ html, body{ background:var(--slate-50); }
 .bar{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;
   height:100%; justify-content:flex-end;
+  position:relative;
 }
 .bar .bar-value{
   font-family:'JetBrains Mono', monospace; font-weight:700; font-size:14px;
-  color:var(--slate-700);
+  color:var(--slate-700); transition: color 0.3s ease;
 }
 .bar .bar-fill{
   width:100%; border-radius:8px 8px 0 0;
-  background:var(--grad-primary);
-  position:relative;
-  transition:height 0.6s ease;
-  min-height:8px;
+  background:var(--grad-primary); position:relative;
+  min-height:0;
+  transition: filter 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+.bar .bar-fill:hover{
+  filter: brightness(1.1);
+  transform: translateY(-3px);
 }
 .bar.fail .bar-fill{ background:var(--grad-fail); }
 .bar.success .bar-fill{ background:var(--grad-success); }
 .bar.baseline .bar-fill{ background:linear-gradient(135deg, var(--slate-500), var(--slate-400)); }
-.bar .bar-label{
-  font-size:11px; font-weight:600; color:var(--slate-700);
-  text-align:center; margin-top:6px;
+.bar .bar-label{ font-size:11px; font-weight:600; color:var(--slate-700); text-align:center; margin-top:6px; }
+.bar .bar-sublabel{ font-size:9px; color:var(--slate-500); text-align:center; }
+/* animate bar on slide visible */
+.reveal .slides section.present .bar .bar-fill{
+  animation: barRise 0.9s cubic-bezier(.2,.8,.2,1) 0.3s backwards;
 }
-.bar .bar-sublabel{
-  font-size:9px; color:var(--slate-500); text-align:center;
+/* tooltip on bar */
+.bar .bar-tooltip{
+  position:absolute; top:-40px; left:50%; transform:translateX(-50%) translateY(-5px);
+  background:var(--slate-900); color:white; padding:6px 10px; border-radius:6px;
+  font-size:10px; font-weight:600; white-space:nowrap;
+  opacity:0; pointer-events:none; transition: opacity 0.2s ease, transform 0.2s ease;
+  font-family:'JetBrains Mono', monospace;
 }
+.bar:hover .bar-tooltip{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-/* Inline pill */
+/* Inline pill with hover */
 .pill{
   display:inline-block; padding:3px 10px; border-radius:999px;
   font-size:0.85em; font-weight:600;
   background:var(--slate-100); color:var(--slate-700);
   font-family:'JetBrains Mono', monospace;
+  transition: all 0.2s ease; cursor:default;
 }
+.pill:hover{ transform: scale(1.05); }
 .pill.good{ background:var(--emerald-100); color:var(--emerald-700); }
 .pill.bad{ background:var(--rose-100); color:var(--rose-700); }
 .pill.primary{ background:var(--blue-100); color:var(--blue-700); }
+
+/* Tooltip wrapper */
+.tooltip{ position:relative; cursor:help; border-bottom:1px dashed var(--slate-400); }
+.tooltip::after{
+  content:attr(data-tip);
+  position:absolute; bottom:130%; left:50%; transform:translateX(-50%) translateY(4px);
+  background:var(--slate-900); color:white; padding:8px 12px; border-radius:8px;
+  font-size:0.78em; font-weight:500; white-space:normal; max-width:260px; width:max-content;
+  opacity:0; pointer-events:none; transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index:100; box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+.tooltip:hover::after{ opacity:1; transform:translateX(-50%) translateY(0); }
 
 /* Reveal controls styling */
 .reveal .progress{ color:var(--indigo-500); height:3px; }
@@ -296,39 +392,72 @@ html, body{ background:var(--slate-50); }
 .muted{ color:var(--slate-500); }
 .small{ font-size:0.72em; }
 
-/* Visual person-scale comparison */
-.scale-compare{
-  display:flex; align-items:center; justify-content:center; gap:30px;
-  padding:20px; background:var(--slate-50); border-radius:14px;
-  border:1px solid var(--slate-200); margin-top:8px;
-}
-.scale-frame{
-  text-align:center;
-}
-.scale-frame .frame-label{
-  font-size:11px; font-weight:600; color:var(--slate-700);
-  margin-bottom:8px;
-}
-.scale-frame .frame-meta{
-  font-size:10px; color:var(--slate-500); margin-top:6px;
-  font-family:'JetBrains Mono', monospace;
-}
-
 /* Result delta visual */
 .delta-row{
   display:flex; align-items:center; gap:14px; padding:10px 14px;
   background:white; border:1px solid var(--slate-200); border-radius:10px;
-  margin-bottom:8px;
+  margin-bottom:8px; transition: all 0.3s ease;
+}
+.delta-row:hover{
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.08);
 }
 .delta-row .delta-label{ flex:1; font-weight:600; font-size:0.8em; color:var(--slate-700); }
 .delta-row .delta-from{ font-family:'JetBrains Mono', monospace; color:var(--slate-500); font-size:0.85em; }
-.delta-row .delta-arrow{ color:var(--slate-400); }
+.delta-row .delta-arrow{ color:var(--slate-400); animation: flowDash 1.5s linear infinite; }
 .delta-row .delta-to{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:0.85em; }
 .delta-row .delta-pill{ padding:3px 10px; border-radius:8px; font-size:0.7em; font-weight:700; font-family:'JetBrains Mono', monospace; }
 .delta-row.good .delta-to{ color:var(--emerald-600); }
 .delta-row.good .delta-pill{ background:var(--emerald-100); color:var(--emerald-700); }
 .delta-row.bad .delta-to{ color:var(--rose-600); }
 .delta-row.bad .delta-pill{ background:var(--rose-100); color:var(--rose-700); }
+
+/* Animated counter */
+.counter{
+  font-family:'JetBrains Mono', monospace; font-weight:700;
+  display:inline-block; min-width:3ch; text-align:right;
+}
+
+/* Star icon pulse */
+.star-pulse{
+  display:inline-block; color:var(--amber-500);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Special big number display */
+.bignum{
+  font-family:'JetBrains Mono', monospace; font-weight:800;
+  font-size:1.4em; color:var(--emerald-600); padding:2px 8px;
+  border-radius:8px; background:var(--emerald-50);
+  transition: all 0.2s ease; display:inline-block;
+}
+.bignum.fail{ color:var(--rose-600); background:var(--rose-50); }
+.bignum:hover{ transform: scale(1.08); }
+
+/* Glassy hero stat */
+.glassy{
+  background:rgba(255,255,255,0.18) !important;
+  border-color:rgba(255,255,255,0.25) !important;
+  backdrop-filter:blur(8px);
+  transition: all 0.3s ease;
+}
+.glassy:hover{
+  background:rgba(255,255,255,0.25) !important;
+  transform: translateY(-4px) scale(1.02);
+}
+
+/* Reveal fragment overrides */
+.reveal .fragment.fade-up{ transform:translate(0,20px); }
+.reveal .fragment.fade-up.visible{ transform:translate(0,0); }
+
+/* Number-line for constraints */
+.numchip{
+  width:36px; height:36px; border-radius:10px;
+  background:var(--grad-primary); display:flex; align-items:center; justify-content:center;
+  color:white; font-weight:800; font-size:18px;
+  transition: transform 0.3s ease;
+}
+.card:hover .numchip{ transform: rotate(-8deg) scale(1.1); }
 </style>
 </head>
 <body>
@@ -344,12 +473,13 @@ html, body{ background:var(--slate-50); }
   <div class="subtitle">A scale-aligned pipeline for aerial small-object detection</div>
   <div class="headline">YOLOv12-s, unchanged · HERIDAL mAP@0.5: 0.759 → <span class="mono">0.872</span> · +15% relative</div>
   <div class="authors">Hoang Manh Hung &nbsp;·&nbsp; June 2026 &nbsp;·&nbsp; A 10-minute talk for 3 presenters</div>
+  <div class="hint">Press <span class="key">→</span> or <span class="key">Space</span> to advance · <span class="key">F</span> for full-screen · <span class="key">Esc</span> for overview</div>
 </section>
 
 <!-- ================================================================== -->
 <!-- SLIDE 2 - SCENARIO                                                  -->
 <!-- ================================================================== -->
-<section>
+<section data-anim="counters">
   <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">02 / 16</span></div>
   <h2>The Scenario: A Lost Hiker</h2>
   <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:18px; margin-top:14px;">
@@ -360,22 +490,25 @@ html, body{ background:var(--slate-50); }
       <p>But a human operator <strong>cannot reliably spot</strong> a 30-pixel person in hours of live drone footage. <strong>Automated detection</strong> is the real bottleneck.</p>
     </div>
     <div class="card">
-      <h3>Coverage per hour</h3>
+      <h3>Coverage per hour <span class="muted small">(hover bars)</span></h3>
       <div class="barchart" style="height:160px; margin-top:6px;">
-        <div class="bar baseline" style="--h:25%">
-          <div class="bar-value">~3</div>
+        <div class="bar baseline" style="--target-h:25%;">
+          <div class="bar-value"><span class="counter" data-target="3" data-suffix=" km²/h">~3</span></div>
+          <div class="bar-tooltip">1 searcher walking · 8h shift = 24 km²</div>
           <div class="bar-fill" style="height:25%"></div>
           <div class="bar-label">Ground team</div>
           <div class="bar-sublabel">km² / hour</div>
         </div>
-        <div class="bar baseline" style="--h:55%">
-          <div class="bar-value">~10</div>
+        <div class="bar baseline" style="--target-h:55%;">
+          <div class="bar-value"><span class="counter" data-target="10" data-suffix=" km²/h">~10</span></div>
+          <div class="bar-tooltip">Operator watches live feed manually</div>
           <div class="bar-fill" style="height:55%"></div>
           <div class="bar-label">Drone + manual</div>
           <div class="bar-sublabel">km² / hour</div>
         </div>
-        <div class="bar success">
-          <div class="bar-value">~30</div>
+        <div class="bar success" style="--target-h:95%;">
+          <div class="bar-value"><span class="counter" data-target="30" data-suffix=" km²/h">~30</span></div>
+          <div class="bar-tooltip">Automated detection · what we build</div>
           <div class="bar-fill" style="height:95%"></div>
           <div class="bar-label">Drone + automated</div>
           <div class="bar-sublabel">km² / hour</div>
@@ -391,28 +524,28 @@ html, body{ background:var(--slate-50); }
 <!-- ================================================================== -->
 <section>
   <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">03 / 16</span></div>
-  <h2>Why It's Hard — Three Constraints</h2>
+  <h2>Why It's Hard — Three Constraints <span class="muted small">(press space to reveal each)</span></h2>
   <div class="cards-row cards-3" style="margin-top:14px;">
-    <div class="card blue">
+    <div class="card blue fragment fade-up">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">1</div>
+        <div class="numchip">1</div>
         <h3 style="margin:0;">Tiny objects</h3>
       </div>
-      <p>Person ≈ <span class="pill primary">30 px</span> in a 4000×3000 image.</p>
+      <p>Person ≈ <span class="pill primary tooltip" data-tip="In a 4000×3000 image. After 640×640 resize, it shrinks to about 5 pixels.">30 px</span> in a 4000×3000 image.</p>
       <p>That is <span class="pill primary">&lt; 0.1%</span> of image area.</p>
       <p class="small muted">On a phone screen, ≈ the size of a fingertip nail.</p>
     </div>
-    <div class="card blue">
+    <div class="card blue fragment fade-up">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">2</div>
+        <div class="numchip">2</div>
         <h3 style="margin:0;">Natural decoys</h3>
       </div>
       <p>Rocks, huts, vegetation share <strong>person-like silhouettes</strong> from above.</p>
       <p class="small muted">False positives in SAR mean wasted resources sent to wrong locations.</p>
     </div>
-    <div class="card blue">
+    <div class="card blue fragment fade-up">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">3</div>
+        <div class="numchip">3</div>
         <h3 style="margin:0;">Scarce data</h3>
       </div>
       <p>HERIDAL: <span class="pill primary">1,124</span> train images.</p>
@@ -420,7 +553,7 @@ html, body{ background:var(--slate-50); }
       <p class="small muted">100× smaller — data-hungry methods are off the table.</p>
     </div>
   </div>
-  <div class="callout"><strong>These three constraints drive every design choice in the project.</strong></div>
+  <div class="callout fragment fade-up"><strong>These three constraints drive every design choice in the project.</strong></div>
 </section>
 
 <!-- ================================================================== -->
@@ -439,10 +572,10 @@ html, body{ background:var(--slate-50); }
         <li><strong>Risk:</strong> novel architectures overfit in 1,124-image regime</li>
       </ul>
     </div>
-    <div class="card blue" style="border-top:3px solid var(--blue-500); box-shadow: 0 4px 12px rgba(37,99,235,0.12), 0 2px 4px rgba(37,99,235,0.08);">
+    <div class="card blue glow" style="border-top:3px solid var(--blue-500);">
       <h3 style="color:var(--blue-600); display:flex; align-items:center; gap:8px;">
         <span>Path B — Improve AROUND a fixed detector</span>
-        <span style="font-size:16px;">⭐</span>
+        <span class="star-pulse">⭐</span>
       </h3>
       <ul>
         <li><strong>YOLOv12-s</strong>, released weights, never modified</li>
@@ -550,26 +683,19 @@ html, body{ background:var(--slate-50); }
   <div class="diagram" style="margin-top:8px;">
     <svg width="900" height="190" viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="primary-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#2563eb"/>
-        </linearGradient>
-        <linearGradient id="fail-g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#e11d48"/><stop offset="1" stop-color="#f43f5e"/>
-        </linearGradient>
+        <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+        </marker>
       </defs>
 
-      <!-- Box 1: Standard training -->
-      <g transform="translate(20, 20)">
+      <g class="fragment fade-in" data-fragment-index="0" transform="translate(20, 20)">
         <rect x="0" y="0" width="240" height="150" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
         <text x="120" y="22" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#0f172a">Standard training</text>
-        <!-- 4000x3000 image -->
         <rect x="20" y="40" width="80" height="60" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
         <circle cx="65" cy="68" r="3" fill="#dc2626"/>
         <text x="60" y="115" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">4000×3000</text>
-        <!-- arrow -->
-        <path d="M 110 70 L 135 70" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)"/>
+        <path d="M 110 70 L 135 70" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)" class="dash-flow" stroke-dasharray="6 4"/>
         <text x="122" y="60" text-anchor="middle" font-family="Inter" font-size="9" fill="#64748b">resize</text>
-        <!-- 640x640 image -->
         <rect x="145" y="50" width="40" height="40" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
         <circle cx="167" cy="73" r="1" fill="#dc2626"/>
         <text x="165" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">640×640</text>
@@ -577,11 +703,9 @@ html, body{ background:var(--slate-50); }
         <text x="120" y="138" text-anchor="middle" font-family="Inter" font-size="10" fill="#64748b" font-style="italic">never sees real-scale persons</text>
       </g>
 
-      <!-- Box 2: SAHI fix idea -->
-      <g transform="translate(290, 20)">
+      <g class="fragment fade-in" data-fragment-index="1" transform="translate(290, 20)">
         <rect x="0" y="0" width="280" height="150" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
         <text x="140" y="22" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#4f46e5">SAHI: slice at native res</text>
-        <!-- 4000x3000 with tiles -->
         <rect x="20" y="40" width="100" height="75" rx="4" fill="white" stroke="#6366f1"/>
         <line x1="20" y1="65" x2="120" y2="65" stroke="#a5b4fc" stroke-width="0.8"/>
         <line x1="20" y1="90" x2="120" y2="90" stroke="#a5b4fc" stroke-width="0.8"/>
@@ -590,9 +714,7 @@ html, body{ background:var(--slate-50); }
         <line x1="95" y1="40" x2="95" y2="115" stroke="#a5b4fc" stroke-width="0.8"/>
         <circle cx="80" cy="78" r="2" fill="#dc2626"/>
         <text x="70" y="130" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">48 tiles, native res</text>
-        <!-- arrow -->
-        <path d="M 130 75 L 160 75" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)"/>
-        <!-- One tile -->
+        <path d="M 130 75 L 160 75" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)" class="dash-flow" stroke-dasharray="6 4"/>
         <rect x="170" y="55" width="50" height="50" rx="3" fill="white" stroke="#6366f1"/>
         <circle cx="194" cy="80" r="4" fill="#dc2626"/>
         <text x="195" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">640×640</text>
@@ -600,8 +722,7 @@ html, body{ background:var(--slate-50); }
         <text x="140" y="138" text-anchor="middle" font-family="Inter" font-size="10" fill="#4f46e5" font-style="italic">persons appear at real scale</text>
       </g>
 
-      <!-- Box 3: But fails -->
-      <g transform="translate(600, 20)">
+      <g class="fragment fade-in" data-fragment-index="2" transform="translate(600, 20)">
         <rect x="0" y="0" width="280" height="150" rx="12" fill="#fff1f2" stroke="#f43f5e" stroke-width="2"/>
         <text x="140" y="22" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#e11d48">But applied naively → FAILS</text>
         <text x="140" y="55" text-anchor="middle" font-family="Inter" font-size="11" fill="#334155">Model trained on 5-px persons</text>
@@ -611,17 +732,10 @@ html, body{ background:var(--slate-50); }
         <text x="140" y="120" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="13" fill="#e11d48">mAP@0.5: 0.759 → 0.255</text>
         <text x="140" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#e11d48">AP_small: → 0.002 (collapse)</text>
       </g>
-
-      <!-- Arrows defs -->
-      <defs>
-        <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
-          <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
-        </marker>
-      </defs>
     </svg>
   </div>
 
-  <div class="callout red"><strong>SAHI alone is not enough.</strong> The model must also be <strong>TRAINED</strong> at native resolution — otherwise inference is out-of-distribution.</div>
+  <div class="callout red fragment fade-up"><strong>SAHI alone is not enough.</strong> The model must also be <strong>TRAINED</strong> at native resolution — otherwise inference is out-of-distribution.</div>
 </section>
 
 <!-- ================================================================== -->
@@ -629,7 +743,7 @@ html, body{ background:var(--slate-50); }
 <!-- ================================================================== -->
 <section>
   <div class="topbar"><span class="tag green">Presenter B · Method</span><span class="pageno">09 / 16</span></div>
-  <h2>Plan A — Couple Training and Inference Scales <span style="color:var(--amber-500);">⭐</span></h2>
+  <h2>Plan A — Couple Training and Inference Scales <span class="star-pulse">⭐</span></h2>
   <div class="steps-flow">
     <div class="step-card">
       <span class="step-num">01</span>
@@ -663,19 +777,16 @@ html, body{ background:var(--slate-50); }
           <stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/>
         </linearGradient>
       </defs>
-      <!-- Training side -->
       <rect x="20" y="20" width="320" height="60" rx="10" fill="url(#train-g)" stroke="#3b82f6"/>
       <text x="180" y="40" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#1e40af">Training distribution</text>
       <text x="180" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#1e40af">640×640 crops · native res · ~30 px persons</text>
       <text x="180" y="74" text-anchor="middle" font-family="Inter" font-size="10" fill="#3730a3" font-style="italic">drawn from HERIDAL train images</text>
 
-      <!-- equals sign -->
       <g transform="translate(360, 50)">
-        <rect x="-25" y="-18" width="50" height="36" rx="18" fill="url(#match-g)"/>
+        <rect x="-25" y="-18" width="50" height="36" rx="18" fill="url(#match-g)" style="animation: pulse 2.5s ease-in-out infinite; transform-origin:0 0;"/>
         <text x="0" y="6" text-anchor="middle" font-family="Inter" font-weight="800" font-size="20" fill="white">=</text>
       </g>
 
-      <!-- Inference side -->
       <rect x="440" y="20" width="320" height="60" rx="10" fill="url(#train-g)" stroke="#3b82f6"/>
       <text x="600" y="40" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#1e40af">Inference distribution</text>
       <text x="600" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#1e40af">640×640 tiles · native res · ~30 px persons</text>
@@ -690,7 +801,7 @@ html, body{ background:var(--slate-50); }
 <!-- ================================================================== -->
 <section>
   <div class="topbar"><span class="tag green">Presenter B · Result</span><span class="pageno">10 / 16</span></div>
-  <h2>Plan A Results <span style="color:var(--amber-500);">⭐</span> — Main Contribution</h2>
+  <h2>Plan A Results <span class="star-pulse">⭐</span> — Main Contribution</h2>
 
   <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:18px; margin-top:14px;">
     <table>
@@ -704,39 +815,42 @@ html, body{ background:var(--slate-50); }
         </tr>
       </thead>
       <tbody>
-        <tr class="highlight"><td><strong>mAP@0.5</strong></td><td class="num mono">0.759</td><td class="num mono bad">0.255</td><td class="num mono win">0.872</td><td class="num mono"><strong>+0.113 (+15%)</strong></td></tr>
-        <tr class="highlight"><td><strong>mAP@0.5:0.95</strong></td><td class="num mono">0.344</td><td class="num mono bad">0.129</td><td class="num mono win">0.573</td><td class="num mono"><strong>+0.229 (+66%)</strong></td></tr>
-        <tr><td>mAP@0.75</td><td class="num mono">—</td><td class="num mono bad">0.117</td><td class="num mono good">0.661</td><td class="num mono">large</td></tr>
-        <tr><td>AP<sub>small</sub></td><td class="num mono">—</td><td class="num mono bad">0.002</td><td class="num mono good">0.494</td><td class="num mono">~250× vs naive</td></tr>
-        <tr><td>AR<sub>100</sub></td><td class="num mono">—</td><td class="num mono">0.438</td><td class="num mono good">0.661</td><td class="num mono">+0.223</td></tr>
+        <tr class="highlight fragment fade-up"><td><strong>mAP@0.5</strong></td><td class="num mono">0.759</td><td class="num mono bad">0.255</td><td class="num mono win">0.872</td><td class="num mono"><strong>+0.113 (+15%)</strong></td></tr>
+        <tr class="highlight fragment fade-up"><td><strong>mAP@0.5:0.95</strong></td><td class="num mono">0.344</td><td class="num mono bad">0.129</td><td class="num mono win">0.573</td><td class="num mono"><strong>+0.229 (+66%)</strong></td></tr>
+        <tr class="fragment fade-up"><td>mAP@0.75</td><td class="num mono">—</td><td class="num mono bad">0.117</td><td class="num mono good">0.661</td><td class="num mono">large</td></tr>
+        <tr class="fragment fade-up"><td>AP<sub>small</sub></td><td class="num mono">—</td><td class="num mono bad">0.002</td><td class="num mono good">0.494</td><td class="num mono">~250× vs naive</td></tr>
+        <tr class="fragment fade-up"><td>AR<sub>100</sub></td><td class="num mono">—</td><td class="num mono">0.438</td><td class="num mono good">0.661</td><td class="num mono">+0.223</td></tr>
       </tbody>
     </table>
     <div>
       <div class="barchart" style="height:200px;">
         <div class="bar baseline">
           <div class="bar-value">0.759</div>
-          <div class="bar-fill" style="height:79%"></div>
+          <div class="bar-tooltip">Phase 2 baseline · resize 640</div>
+          <div class="bar-fill" style="--target-h:79%; height:79%"></div>
           <div class="bar-label">Phase 2</div>
           <div class="bar-sublabel">baseline</div>
         </div>
         <div class="bar fail">
           <div class="bar-value">0.255</div>
-          <div class="bar-fill" style="height:27%"></div>
+          <div class="bar-tooltip">SAHI applied to Phase 2 model · catastrophic</div>
+          <div class="bar-fill" style="--target-h:27%; height:27%"></div>
           <div class="bar-label">Naive SAHI</div>
           <div class="bar-sublabel">collapse ❌</div>
         </div>
         <div class="bar success">
           <div class="bar-value">0.872</div>
-          <div class="bar-fill" style="height:91%"></div>
+          <div class="bar-tooltip">Density-aware crops + SAHI · the contribution</div>
+          <div class="bar-fill" style="--target-h:91%; height:91%"></div>
           <div class="bar-label">Plan A ⭐</div>
           <div class="bar-sublabel">+15% over baseline</div>
         </div>
       </div>
-      <p class="small muted center" style="margin-top:6px;">HERIDAL mAP@0.5 across three configurations</p>
+      <p class="small muted center" style="margin-top:6px;">HERIDAL mAP@0.5 across three configurations <span class="muted">(hover bars for detail)</span></p>
     </div>
   </div>
 
-  <div class="callout green"><strong>Key insight:</strong> Density-aware INFERENCE works <em>only</em> when paired with density-aware TRAINING. The two halves are <strong>coupled</strong> — neither alone is sufficient.</div>
+  <div class="callout green fragment fade-up"><strong>Key insight:</strong> Density-aware INFERENCE works <em>only</em> when paired with density-aware TRAINING. The two halves are <strong>coupled</strong> — neither alone is sufficient.</div>
 </section>
 
 <!-- ================================================================== -->
@@ -749,7 +863,7 @@ html, body{ background:var(--slate-50); }
     <div class="card">
       <h3>What we tried</h3>
       <ol>
-        <li>Generate <strong>2,000 aerial backgrounds</strong> with Stable Diffusion XL</li>
+        <li>Generate <strong>2,000 aerial backgrounds</strong> with <span class="tooltip" data-tip="Stable Diffusion XL — open-source text-to-image diffusion model (Stability AI, 2023)">Stable Diffusion XL</span></li>
         <li>Composite real HERIDAL person crops onto them</li>
         <li>Mix into training together with raw HERIDAL images</li>
         <li>Evaluate with SAHI sliced inference</li>
@@ -782,7 +896,7 @@ html, body{ background:var(--slate-50); }
     <div class="card">
       <h3>What we tried</h3>
       <ol>
-        <li>For each Plan A bbox, prompt <strong>SAM2</strong> [Meta AI 2024] with the box</li>
+        <li>For each Plan A bbox, prompt <span class="tooltip" data-tip="Segment Anything Model 2 — Meta AI's 2024 foundation segmentation model, prompted with bbox or point.">SAM2</span> with the box</li>
         <li>SAM2 returns a person segmentation mask</li>
         <li>Refit a tight bbox from the mask boundary</li>
         <li>Filter: drop if mask area &lt; 50 px or aspect ratio out of [0.2, 5.0]</li>
@@ -830,7 +944,7 @@ html, body{ background:var(--slate-50); }
       <ol>
         <li>Run Plan A inference on HERIDAL <strong>train</strong> images</li>
         <li>Match preds vs GT: IoU ≥ 0.5 → <em>person</em>; IoU &lt; 0.1 → <em>not_person</em></li>
-        <li>Train <strong>MobileNetV3-Small</strong> on 64×64 crops with 1.5× padding</li>
+        <li>Train <span class="tooltip" data-tip="MobileNetV3-Small — lightweight ~5MB classifier (Howard et al., ICCV 2019).">MobileNetV3-Small</span> on 64×64 crops with 1.5× padding</li>
         <li>At inference: filter Plan A bboxes by classifier confidence (τ = 0.5)</li>
       </ol>
     </div>
@@ -879,33 +993,29 @@ html, body{ background:var(--slate-50); }
           <stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#f59e0b"/>
         </linearGradient>
       </defs>
-      <!-- Center: Plan A scale alignment -->
-      <circle cx="450" cy="110" r="65" fill="url(#amber-g)"/>
+      <circle cx="450" cy="110" r="65" fill="url(#amber-g)" style="animation: pulse 3s ease-in-out infinite; transform-origin:450px 110px;"/>
       <text x="450" y="100" text-anchor="middle" font-family="Inter" font-weight="800" font-size="14" fill="white">Plan A</text>
       <text x="450" y="118" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="white">Scale</text>
       <text x="450" y="132" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="white">Alignment</text>
 
-      <!-- Failure node 1: Phase 3 -->
-      <g>
-        <line x1="450" y1="80" x2="200" y2="40" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+      <g class="fragment fade-in" data-fragment-index="0">
+        <line x1="450" y1="80" x2="200" y2="40" stroke="#f43f5e" stroke-width="2" class="dash-flow" stroke-dasharray="4 4"/>
         <rect x="50" y="10" width="280" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
         <text x="65" y="32" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 3 — Synthetic data</text>
         <text x="65" y="50" font-family="JetBrains Mono" font-size="11" fill="#9f1239">mAP@0.5: 0.013</text>
         <text x="65" y="64" font-family="Inter" font-size="10" fill="#9f1239">Scale mismatch in TRAINING</text>
       </g>
 
-      <!-- Failure node 2: SAM2 -->
-      <g>
-        <line x1="525" y1="110" x2="700" y2="110" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+      <g class="fragment fade-in" data-fragment-index="1">
+        <line x1="525" y1="110" x2="700" y2="110" stroke="#f43f5e" stroke-width="2" class="dash-flow" stroke-dasharray="4 4"/>
         <rect x="555" y="80" width="320" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
         <text x="570" y="102" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 4 — SAM2 refinement</text>
         <text x="570" y="120" font-family="JetBrains Mono" font-size="11" fill="#9f1239">mAP@0.75: −0.169</text>
         <text x="570" y="134" font-family="Inter" font-size="10" fill="#9f1239">Box-tightness mismatch with GT</text>
       </g>
 
-      <!-- Failure node 3: Cascade -->
-      <g>
-        <line x1="450" y1="155" x2="200" y2="190" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+      <g class="fragment fade-in" data-fragment-index="2">
+        <line x1="450" y1="155" x2="200" y2="190" stroke="#f43f5e" stroke-width="2" class="dash-flow" stroke-dasharray="4 4"/>
         <rect x="50" y="160" width="300" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
         <text x="65" y="182" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 4 — Cascade classifier</text>
         <text x="65" y="200" font-family="JetBrains Mono" font-size="11" fill="#9f1239">AP_small: −0.115</text>
@@ -914,7 +1024,7 @@ html, body{ background:var(--slate-50); }
     </svg>
   </div>
 
-  <div class="callout amber">
+  <div class="callout amber fragment fade-up">
     <strong>Convergent lesson:</strong> Plan A's scale alignment is the <strong>load-bearing piece</strong> of the pipeline. Any post-hoc addition that doesn't preserve scale-awareness breaks something — each for its own specific reason.
   </div>
 </section>
@@ -926,21 +1036,21 @@ html, body{ background:var(--slate-50); }
   <div class="topbar"><span class="tag amber">Presenter C · Closing</span><span class="pageno">15 / 16</span></div>
   <h2>Three Takeaways</h2>
   <div class="cards-row" style="grid-template-columns:1fr; gap:12px; margin-top:18px;">
-    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+    <div class="card blue fragment fade-up" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
       <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">1</div>
       <div>
         <h3 style="color:var(--blue-600);">Train–inference distribution alignment is the dominant lever</h3>
         <p>In aerial small-object detection, matching the data scale at training and inference matters more than architectural change. <strong>Plan A's +0.113 mAP@0.5 comes from this alone</strong>, with no new model.</p>
       </div>
     </div>
-    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+    <div class="card blue fragment fade-up" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
       <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">2</div>
       <div>
         <h3 style="color:var(--blue-600);">SAHI works only when paired with native-resolution training</h3>
         <p>Naive SAHI alone: <span class="pill bad">0.759 → 0.255</span>. The technique cannot be treated as an inference-only drop-in. The two halves are coupled, not independent.</p>
       </div>
     </div>
-    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+    <div class="card blue fragment fade-up" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
       <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">3</div>
       <div>
         <h3 style="color:var(--blue-600);">Foundation models don't transfer for free in this domain</h3>
@@ -953,7 +1063,7 @@ html, body{ background:var(--slate-50); }
 <!-- ================================================================== -->
 <!-- SLIDE 16 - THANK YOU                                                -->
 <!-- ================================================================== -->
-<section class="title-slide">
+<section class="title-slide" data-anim="counters">
   <div class="topbar"><span class="tag">Presenter C · Closing</span><span class="pageno">16 / 16</span></div>
   <h1 style="margin-top:50px;">Thank you. Questions?</h1>
   <div class="subtitle" style="max-width:760px; margin-left:auto; margin-right:auto;">
@@ -961,24 +1071,24 @@ html, body{ background:var(--slate-50); }
   </div>
 
   <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; max-width:850px; margin:30px auto;">
-    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+    <div class="stat-tile glassy">
       <div class="label" style="color:rgba(255,255,255,0.75) !important;">mAP@0.5</div>
-      <div class="value" style="color:white !important;">0.872</div>
+      <div class="value" style="color:white !important;"><span class="counter" data-target="0.872" data-decimals="3">0.872</span></div>
       <div class="delta" style="color:rgba(255,255,255,0.85) !important;">+15% vs baseline</div>
     </div>
-    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+    <div class="stat-tile glassy">
       <div class="label" style="color:rgba(255,255,255,0.75) !important;">mAP@0.5:0.95</div>
-      <div class="value" style="color:white !important;">0.573</div>
+      <div class="value" style="color:white !important;"><span class="counter" data-target="0.573" data-decimals="3">0.573</span></div>
       <div class="delta" style="color:rgba(255,255,255,0.85) !important;">+66% relative</div>
     </div>
-    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+    <div class="stat-tile glassy">
       <div class="label" style="color:rgba(255,255,255,0.75) !important;">AP_small</div>
-      <div class="value" style="color:white !important;">0.494</div>
+      <div class="value" style="color:white !important;"><span class="counter" data-target="0.494" data-decimals="3">0.494</span></div>
       <div class="delta" style="color:rgba(255,255,255,0.85) !important;">~250× vs naive SAHI</div>
     </div>
   </div>
 
-  <div style="margin-top:30px; padding:14px 26px; background:rgba(255,255,255,0.12); border-radius:12px; display:inline-block; border:1px solid rgba(255,255,255,0.2);">
+  <div style="margin-top:30px; padding:14px 26px; background:rgba(255,255,255,0.12); border-radius:12px; display:inline-block; border:1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(-3px)';" onmouseout="this.style.background='rgba(255,255,255,0.12)'; this.style.transform='translateY(0)';">
     <span style="font-size:0.7em; color:rgba(255,255,255,0.75);">Code · weights · all results (positive and negative):</span><br>
     <span class="mono" style="font-weight:600; color:white; font-size:0.85em;">github.com/Lucas-on-the-cloud/UAV_res</span>
   </div>
@@ -1004,6 +1114,47 @@ Reveal.initialize({
   maxScale: 2.0,
   slideNumber: 'c/t',
 });
+
+// ==== INTERACTIVE: animated counters when slide becomes visible ====
+function animateCounter(el){
+  const target = parseFloat(el.dataset.target);
+  const decimals = parseInt(el.dataset.decimals || 0);
+  const suffix = el.dataset.suffix || '';
+  const dur = 900;
+  const start = performance.now();
+  function step(now){
+    const t = Math.min(1, (now - start) / dur);
+    const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+    const v = target * eased;
+    el.textContent = (decimals > 0 ? v.toFixed(decimals) : Math.round(v)) + suffix;
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = (decimals > 0 ? target.toFixed(decimals) : Math.round(target)) + suffix;
+  }
+  // start from 0
+  el.textContent = (decimals > 0 ? (0).toFixed(decimals) : '0') + suffix;
+  requestAnimationFrame(step);
+}
+
+Reveal.on('slidechanged', e => {
+  const section = e.currentSlide;
+  // animate counters
+  section.querySelectorAll('.counter').forEach(el => {
+    setTimeout(() => animateCounter(el), 250);
+  });
+});
+
+// trigger on initial load too
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const section = Reveal.getCurrentSlide();
+    if (section) {
+      section.querySelectorAll('.counter').forEach(el => animateCounter(el));
+    }
+  }, 400);
+});
+
+// ==== INTERACTIVE: keyboard shortcuts hint ====
+// (already in slide 1 via .hint element)
 </script>
 </body>
 </html>
