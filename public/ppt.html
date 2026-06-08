@@ -1,1 +1,1009 @@
-<p>https://canva.link/j7s6b1dbgyyzwj3</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, initial-scale=1">
+<title>UAV SAR Person Detection — 10 min Talk</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reset.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+
+<style>
+:root{
+  /* Primary palette - indigo/blue */
+  --indigo-600:#4f46e5;
+  --indigo-500:#6366f1;
+  --indigo-100:#e0e7ff;
+  --indigo-50:#eef2ff;
+  --blue-600:#2563eb;
+  --blue-500:#3b82f6;
+  --blue-100:#dbeafe;
+  --blue-50:#eff6ff;
+  /* Success */
+  --emerald-600:#059669;
+  --emerald-500:#10b981;
+  --emerald-100:#d1fae5;
+  --emerald-50:#ecfdf5;
+  /* Failure */
+  --rose-600:#e11d48;
+  --rose-500:#f43f5e;
+  --rose-100:#ffe4e6;
+  --rose-50:#fff1f2;
+  /* Warning */
+  --amber-600:#d97706;
+  --amber-500:#f59e0b;
+  --amber-100:#fef3c7;
+  --amber-50:#fffbeb;
+  /* Neutrals */
+  --slate-950:#020617;
+  --slate-900:#0f172a;
+  --slate-800:#1e293b;
+  --slate-700:#334155;
+  --slate-600:#475569;
+  --slate-500:#64748b;
+  --slate-400:#94a3b8;
+  --slate-300:#cbd5e1;
+  --slate-200:#e2e8f0;
+  --slate-100:#f1f5f9;
+  --slate-50:#f8fafc;
+
+  --grad-primary: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+  --grad-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --grad-fail: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+  --grad-warm: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+html, body{ background:var(--slate-50); }
+
+.reveal{
+  font-family:'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color:var(--slate-900);
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.reveal .slides{ text-align:left; }
+.reveal .slides section{
+  padding:60px 56px 56px;
+  height:100%;
+  box-sizing:border-box;
+  background:#ffffff;
+  border-radius:0;
+}
+
+/* Typography */
+.reveal h1, .reveal h2, .reveal h3, .reveal h4{
+  font-family:'Inter', sans-serif;
+  font-weight:700;
+  text-transform:none;
+  letter-spacing:-0.025em;
+  color:var(--slate-900);
+  margin:0 0 0.4em 0;
+}
+.reveal h1{ font-size:2.6em; line-height:1.05; font-weight:800; }
+.reveal h2{ font-size:1.45em; line-height:1.15; margin-bottom:18px; }
+.reveal h3{ font-size:1.0em; color:var(--slate-700); margin-bottom:6px; font-weight:600; }
+.reveal h4{ font-size:0.9em; margin-bottom:4px; }
+.reveal p{ font-size:0.78em; line-height:1.55; color:var(--slate-600); margin:0 0 0.5em; }
+.reveal ul, .reveal ol{ font-size:0.78em; line-height:1.55; color:var(--slate-600); margin:0; padding-left:1.2em; }
+.reveal li{ margin-bottom:4px; }
+.reveal strong{ color:var(--slate-900); font-weight:600; }
+.reveal em{ color:var(--slate-700); font-style:italic; }
+.mono{ font-family:'JetBrains Mono', monospace; font-weight:500; }
+
+/* Top bar with phase tag + page number */
+.topbar{
+  position:absolute; top:22px; left:56px; right:56px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:13px; color:var(--slate-500);
+  font-weight:500;
+  z-index:10;
+}
+.tag{
+  padding:6px 14px; border-radius:999px;
+  background:var(--slate-100); color:var(--slate-700);
+  font-weight:600; font-size:12px;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.tag::before{
+  content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:currentColor;
+}
+.tag.blue{ background:var(--blue-50); color:var(--blue-600); }
+.tag.green{ background:var(--emerald-50); color:var(--emerald-600); }
+.tag.red{ background:var(--rose-50); color:var(--rose-600); }
+.tag.amber{ background:var(--amber-50); color:var(--amber-600); }
+.pageno{ font-family:'JetBrains Mono', monospace; font-weight:600; font-size:12px; letter-spacing:0.05em; }
+
+/* Title slide */
+.title-slide{
+  background:var(--grad-primary) !important;
+  color:white !important;
+  text-align:center !important;
+  padding-top:120px !important;
+}
+.title-slide *{ color:white !important; }
+.title-slide h1{
+  font-size:3.4em; margin-bottom:18px; color:white; font-weight:800;
+  letter-spacing:-0.03em; line-height:1.05;
+}
+.title-slide .subtitle{
+  font-size:1.05em; color:rgba(255,255,255,0.85); margin-bottom:36px;
+  font-weight:500; letter-spacing:0.01em;
+}
+.title-slide .headline{
+  display:inline-block; padding:16px 32px; border-radius:16px;
+  background:rgba(255,255,255,0.18); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.25);
+  font-weight:600; font-size:0.85em; color:white;
+}
+.title-slide .authors{
+  margin-top:50px; color:rgba(255,255,255,0.75); font-size:0.7em; letter-spacing:0.04em;
+}
+.title-slide .topbar{ color:rgba(255,255,255,0.7); }
+.title-slide .tag{ background:rgba(255,255,255,0.2); color:white !important; }
+
+/* Cards */
+.card{
+  background:white;
+  border:1px solid var(--slate-200);
+  border-radius:14px;
+  padding:18px 22px;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 1px 1px rgba(15,23,42,0.03);
+  display:flex; flex-direction:column;
+}
+.card h3{ font-size:0.95em; margin-bottom:8px; }
+.card.blue{ border-top:3px solid var(--blue-500); }
+.card.green{ border-top:3px solid var(--emerald-500); }
+.card.red{ border-top:3px solid var(--rose-500); }
+.card.amber{ border-top:3px solid var(--amber-500); }
+.card.dim{ background:var(--slate-50); }
+
+.cards-row{ display:grid; gap:14px; margin-top:14px; }
+.cards-3{ grid-template-columns:repeat(3, 1fr); }
+.cards-2{ grid-template-columns:repeat(2, 1fr); }
+
+/* Stat tiles */
+.stat-tile{
+  background:white; border:1px solid var(--slate-200); border-radius:14px;
+  padding:16px 18px; text-align:center;
+  box-shadow:0 1px 2px rgba(15,23,42,0.04);
+}
+.stat-tile.success{ background:var(--emerald-50); border-color:var(--emerald-100); }
+.stat-tile.fail{ background:var(--rose-50); border-color:var(--rose-100); }
+.stat-tile.primary{ background:var(--blue-50); border-color:var(--blue-100); }
+.stat-tile .label{
+  font-size:10px; text-transform:uppercase; letter-spacing:0.08em;
+  color:var(--slate-500); font-weight:700; margin-bottom:4px;
+}
+.stat-tile .value{
+  font-family:'JetBrains Mono', monospace; font-weight:700;
+  font-size:1.8em; color:var(--slate-900); line-height:1;
+  margin-bottom:4px;
+}
+.stat-tile.success .value{ color:var(--emerald-600); }
+.stat-tile.fail .value{ color:var(--rose-600); }
+.stat-tile.primary .value{ color:var(--blue-600); }
+.stat-tile .delta{
+  font-size:0.65em; font-weight:600; color:var(--slate-500);
+}
+
+/* Tables */
+.reveal table{ width:100%; margin:6px 0; border-collapse:separate; border-spacing:0; font-size:0.7em; border-radius:10px; overflow:hidden; border:1px solid var(--slate-200); }
+.reveal thead tr{ background:var(--slate-50); }
+.reveal th{ text-align:left; padding:11px 14px; font-weight:600; color:var(--slate-700); border:none; font-size:0.95em; }
+.reveal td{ padding:10px 14px; border-top:1px solid var(--slate-100); color:var(--slate-700); }
+.reveal td.num, .reveal th.num{ text-align:right; font-family:'JetBrains Mono', monospace; }
+.reveal tr.highlight td{ background:linear-gradient(90deg, var(--blue-50) 0%, var(--indigo-50) 100%); font-weight:600; color:var(--blue-600); }
+.reveal tr.fail td{ background:var(--rose-50); }
+.reveal tr.fail td.label{ font-weight:600; color:var(--rose-700); }
+.reveal td.good{ color:var(--emerald-600); font-weight:600; }
+.reveal td.bad{ color:var(--rose-600); font-weight:600; }
+.reveal td.win{ background:var(--emerald-50); color:var(--emerald-700); font-weight:700; }
+
+/* Callout box */
+.callout{
+  margin-top:14px; padding:14px 20px; border-radius:12px;
+  background:var(--blue-50); border-left:4px solid var(--blue-500);
+  font-size:0.78em; color:var(--slate-800); font-weight:500;
+  line-height:1.55;
+}
+.callout.green{ background:var(--emerald-50); border-left-color:var(--emerald-500); }
+.callout.red{ background:var(--rose-50); border-left-color:var(--rose-500); }
+.callout.amber{ background:var(--amber-50); border-left-color:var(--amber-500); }
+.callout strong{ color:var(--slate-900); }
+
+/* Step flow with arrows */
+.steps-flow{ display:flex; align-items:stretch; gap:8px; margin:14px 0; }
+.step-card{
+  flex:1; background:white; border:1px solid var(--slate-200); border-radius:14px;
+  padding:14px 16px;
+  display:flex; flex-direction:column;
+  position:relative;
+}
+.step-card .step-num{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border-radius:8px;
+  background:var(--grad-primary); color:white;
+  font-weight:700; font-size:14px; font-family:'JetBrains Mono', monospace;
+  margin-bottom:8px;
+}
+.step-card h4{ font-size:0.9em; margin:0 0 6px 0; color:var(--slate-900); }
+.step-card p{ font-size:0.7em; margin:0 0 4px 0; line-height:1.5; }
+.step-arrow{
+  display:flex; align-items:center; color:var(--slate-300);
+  font-size:24px; padding:0 2px;
+}
+
+/* SVG diagrams container */
+.diagram{ margin:8px 0; display:flex; justify-content:center; }
+.diagram svg{ max-width:100%; height:auto; }
+
+/* Bar chart */
+.barchart{
+  display:flex; align-items:flex-end; gap:24px; height:240px;
+  padding:20px 30px 0; background:var(--slate-50); border-radius:14px;
+  border:1px solid var(--slate-200); margin-top:8px;
+}
+.bar{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;
+  height:100%; justify-content:flex-end;
+}
+.bar .bar-value{
+  font-family:'JetBrains Mono', monospace; font-weight:700; font-size:14px;
+  color:var(--slate-700);
+}
+.bar .bar-fill{
+  width:100%; border-radius:8px 8px 0 0;
+  background:var(--grad-primary);
+  position:relative;
+  transition:height 0.6s ease;
+  min-height:8px;
+}
+.bar.fail .bar-fill{ background:var(--grad-fail); }
+.bar.success .bar-fill{ background:var(--grad-success); }
+.bar.baseline .bar-fill{ background:linear-gradient(135deg, var(--slate-500), var(--slate-400)); }
+.bar .bar-label{
+  font-size:11px; font-weight:600; color:var(--slate-700);
+  text-align:center; margin-top:6px;
+}
+.bar .bar-sublabel{
+  font-size:9px; color:var(--slate-500); text-align:center;
+}
+
+/* Inline pill */
+.pill{
+  display:inline-block; padding:3px 10px; border-radius:999px;
+  font-size:0.85em; font-weight:600;
+  background:var(--slate-100); color:var(--slate-700);
+  font-family:'JetBrains Mono', monospace;
+}
+.pill.good{ background:var(--emerald-100); color:var(--emerald-700); }
+.pill.bad{ background:var(--rose-100); color:var(--rose-700); }
+.pill.primary{ background:var(--blue-100); color:var(--blue-700); }
+
+/* Reveal controls styling */
+.reveal .progress{ color:var(--indigo-500); height:3px; }
+.reveal .controls{ color:var(--indigo-500); }
+.reveal .slide-number{
+  font-family:'JetBrains Mono', monospace;
+  background:rgba(15,23,42,0.6); padding:3px 8px; border-radius:6px;
+}
+
+.center{ text-align:center; }
+.muted{ color:var(--slate-500); }
+.small{ font-size:0.72em; }
+
+/* Visual person-scale comparison */
+.scale-compare{
+  display:flex; align-items:center; justify-content:center; gap:30px;
+  padding:20px; background:var(--slate-50); border-radius:14px;
+  border:1px solid var(--slate-200); margin-top:8px;
+}
+.scale-frame{
+  text-align:center;
+}
+.scale-frame .frame-label{
+  font-size:11px; font-weight:600; color:var(--slate-700);
+  margin-bottom:8px;
+}
+.scale-frame .frame-meta{
+  font-size:10px; color:var(--slate-500); margin-top:6px;
+  font-family:'JetBrains Mono', monospace;
+}
+
+/* Result delta visual */
+.delta-row{
+  display:flex; align-items:center; gap:14px; padding:10px 14px;
+  background:white; border:1px solid var(--slate-200); border-radius:10px;
+  margin-bottom:8px;
+}
+.delta-row .delta-label{ flex:1; font-weight:600; font-size:0.8em; color:var(--slate-700); }
+.delta-row .delta-from{ font-family:'JetBrains Mono', monospace; color:var(--slate-500); font-size:0.85em; }
+.delta-row .delta-arrow{ color:var(--slate-400); }
+.delta-row .delta-to{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:0.85em; }
+.delta-row .delta-pill{ padding:3px 10px; border-radius:8px; font-size:0.7em; font-weight:700; font-family:'JetBrains Mono', monospace; }
+.delta-row.good .delta-to{ color:var(--emerald-600); }
+.delta-row.good .delta-pill{ background:var(--emerald-100); color:var(--emerald-700); }
+.delta-row.bad .delta-to{ color:var(--rose-600); }
+.delta-row.bad .delta-pill{ background:var(--rose-100); color:var(--rose-700); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ================================================================== -->
+<!-- SLIDE 1 - TITLE                                                     -->
+<!-- ================================================================== -->
+<section class="title-slide">
+  <div class="topbar"><span class="tag">Presenter A</span><span class="pageno">01 / 16</span></div>
+  <h1>UAV Search &amp; Rescue<br>Person Detection</h1>
+  <div class="subtitle">A scale-aligned pipeline for aerial small-object detection</div>
+  <div class="headline">YOLOv12-s, unchanged · HERIDAL mAP@0.5: 0.759 → <span class="mono">0.872</span> · +15% relative</div>
+  <div class="authors">Hoang Manh Hung &nbsp;·&nbsp; June 2026 &nbsp;·&nbsp; A 10-minute talk for 3 presenters</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 2 - SCENARIO                                                  -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">02 / 16</span></div>
+  <h2>The Scenario: A Lost Hiker</h2>
+  <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:18px; margin-top:14px;">
+    <div class="card blue">
+      <h3>The bottleneck is detection, not flight</h3>
+      <p>A hiker doesn't return by sunset. Search radius grows <strong>quadratically</strong> with elapsed time — within hours, dozens of km² must be covered.</p>
+      <p>Ground teams move at <span class="mono">3–4 km/h</span>. A drone covers <span class="mono">30 km/h</span> — an order of magnitude faster.</p>
+      <p>But a human operator <strong>cannot reliably spot</strong> a 30-pixel person in hours of live drone footage. <strong>Automated detection</strong> is the real bottleneck.</p>
+    </div>
+    <div class="card">
+      <h3>Coverage per hour</h3>
+      <div class="barchart" style="height:160px; margin-top:6px;">
+        <div class="bar baseline" style="--h:25%">
+          <div class="bar-value">~3</div>
+          <div class="bar-fill" style="height:25%"></div>
+          <div class="bar-label">Ground team</div>
+          <div class="bar-sublabel">km² / hour</div>
+        </div>
+        <div class="bar baseline" style="--h:55%">
+          <div class="bar-value">~10</div>
+          <div class="bar-fill" style="height:55%"></div>
+          <div class="bar-label">Drone + manual</div>
+          <div class="bar-sublabel">km² / hour</div>
+        </div>
+        <div class="bar success">
+          <div class="bar-value">~30</div>
+          <div class="bar-fill" style="height:95%"></div>
+          <div class="bar-label">Drone + automated</div>
+          <div class="bar-sublabel">km² / hour</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="callout">Task: <strong>detect every person</strong> in a 4000×3000 aerial RGB image, with tight bounding boxes, in near real time.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 3 - THREE CONSTRAINTS                                         -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">03 / 16</span></div>
+  <h2>Why It's Hard — Three Constraints</h2>
+  <div class="cards-row cards-3" style="margin-top:14px;">
+    <div class="card blue">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">1</div>
+        <h3 style="margin:0;">Tiny objects</h3>
+      </div>
+      <p>Person ≈ <span class="pill primary">30 px</span> in a 4000×3000 image.</p>
+      <p>That is <span class="pill primary">&lt; 0.1%</span> of image area.</p>
+      <p class="small muted">On a phone screen, ≈ the size of a fingertip nail.</p>
+    </div>
+    <div class="card blue">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">2</div>
+        <h3 style="margin:0;">Natural decoys</h3>
+      </div>
+      <p>Rocks, huts, vegetation share <strong>person-like silhouettes</strong> from above.</p>
+      <p class="small muted">False positives in SAR mean wasted resources sent to wrong locations.</p>
+    </div>
+    <div class="card blue">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div style="width:36px; height:36px; border-radius:10px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:18px;">3</div>
+        <h3 style="margin:0;">Scarce data</h3>
+      </div>
+      <p>HERIDAL: <span class="pill primary">1,124</span> train images.</p>
+      <p>COCO: <span class="pill">118,000</span> train images.</p>
+      <p class="small muted">100× smaller — data-hungry methods are off the table.</p>
+    </div>
+  </div>
+  <div class="callout"><strong>These three constraints drive every design choice in the project.</strong></div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 4 - APPROACH                                                  -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">04 / 16</span></div>
+  <h2>Our Approach: Pipeline, Not New Architecture</h2>
+  <div class="cards-row cards-2" style="margin-top:14px;">
+    <div class="card dim" style="opacity:0.72;">
+      <h3 class="muted">Path A — Design a new detector</h3>
+      <ul>
+        <li>New architecture, attention modules</li>
+        <li>New loss functions, custom backbone</li>
+        <li>The most common path in aerial small-object literature</li>
+        <li><strong>Risk:</strong> novel architectures overfit in 1,124-image regime</li>
+      </ul>
+    </div>
+    <div class="card blue" style="border-top:3px solid var(--blue-500); box-shadow: 0 4px 12px rgba(37,99,235,0.12), 0 2px 4px rgba(37,99,235,0.08);">
+      <h3 style="color:var(--blue-600); display:flex; align-items:center; gap:8px;">
+        <span>Path B — Improve AROUND a fixed detector</span>
+        <span style="font-size:16px;">⭐</span>
+      </h3>
+      <ul>
+        <li><strong>YOLOv12-s</strong>, released weights, never modified</li>
+        <li>Change training data, preprocessing, inference, post-processing</li>
+        <li>Every Δ attributable to one component</li>
+        <li>Pipeline <strong>portable</strong> to any detector (YOLOv11, RT-DETR, etc.)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout green"><strong>We chose Path B.</strong> The detector is held constant across every phase below — all improvements come from outside the model.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 5 - TWO DATASETS                                              -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag blue">Presenter A · Setup</span><span class="pageno">05 / 16</span></div>
+  <h2>Two Datasets, Two Roles</h2>
+  <table style="margin-top:14px;">
+    <thead>
+      <tr>
+        <th></th>
+        <th>VisDrone <span class="muted small">(Phase 1)</span></th>
+        <th>HERIDAL <span class="muted small">(Phase 2 onwards)</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Domain</strong></td><td>Urban aerial (streets, vehicles)</td><td>Wilderness aerial (forest, rocks)</td></tr>
+      <tr><td><strong>Train images</strong></td><td class="mono">5,684</td><td class="mono">1,124</td></tr>
+      <tr><td><strong>Person size</strong></td><td>varied 30–80 px</td><td>uniform ~30 px</td></tr>
+      <tr><td><strong>Role</strong></td><td>Methodology validation + variant ablation</td><td><strong>Actual SAR target</strong></td></tr>
+      <tr class="highlight"><td><strong>YOLOv12-s mAP@0.5</strong></td><td class="num mono">0.552</td><td class="num mono"><strong>0.759</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="callout"><strong>VisDrone</strong> is the smoke test. <strong>HERIDAL</strong> is where every contribution after Phase 1 is measured.</div>
+  <p class="small muted center" style="margin-top:6px;">Surprisingly, HERIDAL outperforms VisDrone with 5× less data — wilderness backgrounds are semantically simpler than urban traffic.</p>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 6 - PHASE 1                                                   -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag green">Presenter B · Method</span><span class="pageno">06 / 16</span></div>
+  <h2>Phase 1 — VisDrone: YOLOv12-n vs YOLOv12-s</h2>
+  <p>We use VisDrone (person-filtered, 5,684 / 548 images) to validate the pipeline end-to-end and select the YOLOv12 variant. Both variants trained 80 epochs from COCO init at <span class="pill">imgsz=640</span>.</p>
+  <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:18px; margin-top:14px;">
+    <table>
+      <thead><tr><th>Metric</th><th class="num">YOLOv12-n</th><th class="num">YOLOv12-s</th><th class="num">Δ</th></tr></thead>
+      <tbody>
+        <tr><td>mAP@0.5</td><td class="num mono">0.476</td><td class="num mono win">0.552</td><td class="num good mono">+0.076</td></tr>
+        <tr><td>mAP@0.5:0.95</td><td class="num mono">0.187</td><td class="num mono win">0.231</td><td class="num good mono">+0.044</td></tr>
+        <tr><td>Recall</td><td class="num mono">0.438</td><td class="num mono win">0.497</td><td class="num good mono">+0.059</td></tr>
+      </tbody>
+    </table>
+    <div class="cards-row" style="grid-template-columns:1fr; gap:10px;">
+      <div class="stat-tile success">
+        <div class="label">Winner</div>
+        <div class="value">YOLOv12-s</div>
+        <div class="delta">+0.076 mAP@0.5</div>
+      </div>
+      <div class="stat-tile primary">
+        <div class="label">Locked in for</div>
+        <div class="value" style="font-size:1em;">All phases</div>
+        <div class="delta">no more variant changes</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout green"><strong>Decision:</strong> YOLOv12-s wins at modest compute cost and becomes the fixed base detector for every subsequent phase.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 7 - PHASE 2                                                   -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag green">Presenter B · Method</span><span class="pageno">07 / 16</span></div>
+  <h2>Phase 2 — YOLOv12-s on HERIDAL (Baseline)</h2>
+  <p>Standard pipeline: each 4000×3000 image is resized to 640×640 → YOLOv12-s → predictions.</p>
+  <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:18px; margin-top:12px;">
+    <table>
+      <thead><tr><th>Metric</th><th class="num">VisDrone (Phase 1)</th><th class="num">HERIDAL (Phase 2)</th></tr></thead>
+      <tbody>
+        <tr><td>mAP@0.5</td><td class="num mono">0.552</td><td class="num mono win">0.759</td></tr>
+        <tr class="fail"><td><strong>mAP@0.5:0.95</strong></td><td class="num mono">0.231</td><td class="num mono">0.344</td></tr>
+        <tr><td>Precision</td><td class="num mono">0.690</td><td class="num mono">0.749</td></tr>
+        <tr><td>Recall</td><td class="num mono">0.497</td><td class="num mono good">0.713</td></tr>
+      </tbody>
+    </table>
+    <div class="card amber">
+      <h3 style="color:var(--amber-600);">The localization gap</h3>
+      <p><strong>mAP@0.5 = 0.759</strong> means we <em>find</em> persons.</p>
+      <p><strong>mAP@0.5:0.95 = 0.344</strong> means boxes are <strong>not tight enough</strong>.</p>
+      <p class="small muted">Why? 4000 → 640 resize shrinks a 30-px person to ~5 px. Detector never sees real-scale persons.</p>
+    </div>
+  </div>
+  <div class="callout amber"><strong>Diagnosis:</strong> the model has a fundamental scale mismatch between training (5-px persons) and the real deployment distribution (30-px persons).</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 8 - THE HIDDEN PROBLEM                                        -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag green">Presenter B · Method</span><span class="pageno">08 / 16</span></div>
+  <h2>The Hidden Problem: Train–Inference Scale Mismatch</h2>
+
+  <div class="diagram" style="margin-top:8px;">
+    <svg width="900" height="190" viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="primary-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#2563eb"/>
+        </linearGradient>
+        <linearGradient id="fail-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#e11d48"/><stop offset="1" stop-color="#f43f5e"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Box 1: Standard training -->
+      <g transform="translate(20, 20)">
+        <rect x="0" y="0" width="240" height="150" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="120" y="22" text-anchor="middle" font-family="Inter" font-weight="600" font-size="13" fill="#0f172a">Standard training</text>
+        <!-- 4000x3000 image -->
+        <rect x="20" y="40" width="80" height="60" rx="4" fill="#dbeafe" stroke="#3b82f6"/>
+        <circle cx="65" cy="68" r="3" fill="#dc2626"/>
+        <text x="60" y="115" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">4000×3000</text>
+        <!-- arrow -->
+        <path d="M 110 70 L 135 70" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)"/>
+        <text x="122" y="60" text-anchor="middle" font-family="Inter" font-size="9" fill="#64748b">resize</text>
+        <!-- 640x640 image -->
+        <rect x="145" y="50" width="40" height="40" rx="3" fill="#dbeafe" stroke="#3b82f6"/>
+        <circle cx="167" cy="73" r="1" fill="#dc2626"/>
+        <text x="165" y="105" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">640×640</text>
+        <text x="195" y="73" font-family="JetBrains Mono" font-size="9" fill="#64748b">~5 px</text>
+        <text x="120" y="138" text-anchor="middle" font-family="Inter" font-size="10" fill="#64748b" font-style="italic">never sees real-scale persons</text>
+      </g>
+
+      <!-- Box 2: SAHI fix idea -->
+      <g transform="translate(290, 20)">
+        <rect x="0" y="0" width="280" height="150" rx="12" fill="#eef2ff" stroke="#6366f1" stroke-width="2"/>
+        <text x="140" y="22" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#4f46e5">SAHI: slice at native res</text>
+        <!-- 4000x3000 with tiles -->
+        <rect x="20" y="40" width="100" height="75" rx="4" fill="white" stroke="#6366f1"/>
+        <line x1="20" y1="65" x2="120" y2="65" stroke="#a5b4fc" stroke-width="0.8"/>
+        <line x1="20" y1="90" x2="120" y2="90" stroke="#a5b4fc" stroke-width="0.8"/>
+        <line x1="45" y1="40" x2="45" y2="115" stroke="#a5b4fc" stroke-width="0.8"/>
+        <line x1="70" y1="40" x2="70" y2="115" stroke="#a5b4fc" stroke-width="0.8"/>
+        <line x1="95" y1="40" x2="95" y2="115" stroke="#a5b4fc" stroke-width="0.8"/>
+        <circle cx="80" cy="78" r="2" fill="#dc2626"/>
+        <text x="70" y="130" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">48 tiles, native res</text>
+        <!-- arrow -->
+        <path d="M 130 75 L 160 75" stroke="#64748b" stroke-width="2" marker-end="url(#arrow1)"/>
+        <!-- One tile -->
+        <rect x="170" y="55" width="50" height="50" rx="3" fill="white" stroke="#6366f1"/>
+        <circle cx="194" cy="80" r="4" fill="#dc2626"/>
+        <text x="195" y="120" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748b">640×640</text>
+        <text x="232" y="80" font-family="JetBrains Mono" font-size="9" fill="#4f46e5" font-weight="600">~30 px</text>
+        <text x="140" y="138" text-anchor="middle" font-family="Inter" font-size="10" fill="#4f46e5" font-style="italic">persons appear at real scale</text>
+      </g>
+
+      <!-- Box 3: But fails -->
+      <g transform="translate(600, 20)">
+        <rect x="0" y="0" width="280" height="150" rx="12" fill="#fff1f2" stroke="#f43f5e" stroke-width="2"/>
+        <text x="140" y="22" text-anchor="middle" font-family="Inter" font-weight="700" font-size="13" fill="#e11d48">But applied naively → FAILS</text>
+        <text x="140" y="55" text-anchor="middle" font-family="Inter" font-size="11" fill="#334155">Model trained on 5-px persons</text>
+        <text x="140" y="72" text-anchor="middle" font-family="Inter" font-size="11" fill="#334155">SAHI feeds it 30-px persons</text>
+        <text x="140" y="89" text-anchor="middle" font-family="Inter" font-size="11" fill="#334155">Out-of-distribution input</text>
+        <line x1="40" y1="100" x2="240" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="140" y="120" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="13" fill="#e11d48">mAP@0.5: 0.759 → 0.255</text>
+        <text x="140" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#e11d48">AP_small: → 0.002 (collapse)</text>
+      </g>
+
+      <!-- Arrows defs -->
+      <defs>
+        <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+
+  <div class="callout red"><strong>SAHI alone is not enough.</strong> The model must also be <strong>TRAINED</strong> at native resolution — otherwise inference is out-of-distribution.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 9 - PLAN A METHOD                                             -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag green">Presenter B · Method</span><span class="pageno">09 / 16</span></div>
+  <h2>Plan A — Couple Training and Inference Scales <span style="color:var(--amber-500);">⭐</span></h2>
+  <div class="steps-flow">
+    <div class="step-card">
+      <span class="step-num">01</span>
+      <h4>Native-resolution crops</h4>
+      <p>From each 4000×3000 image: <strong>2 person-centered + 1 random</strong> crops of 640×640.</p>
+      <p class="small muted">NO resize. ~4,500 crops from 1,124 images.</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step-card">
+      <span class="step-num">02</span>
+      <h4>Train YOLOv12-s on crops</h4>
+      <p>Same hyperparameters as baseline.</p>
+      <p class="small muted">80 epochs · AdamW · lr 10⁻³ · batch 16 · AMP · ~3h on T4</p>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step-card">
+      <span class="step-num">03</span>
+      <h4>SAHI inference on full image</h4>
+      <p>Original 4000×3000 val → 640×640 tiles, 20% overlap.</p>
+      <p class="small muted">~48 tiles per image · NMS merge with τ = 0.5</p>
+    </div>
+  </div>
+
+  <div class="diagram" style="margin-top:10px;">
+    <svg width="780" height="100" viewBox="0 0 780 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="train-g" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#dbeafe"/><stop offset="1" stop-color="#bfdbfe"/>
+        </linearGradient>
+        <linearGradient id="match-g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/>
+        </linearGradient>
+      </defs>
+      <!-- Training side -->
+      <rect x="20" y="20" width="320" height="60" rx="10" fill="url(#train-g)" stroke="#3b82f6"/>
+      <text x="180" y="40" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#1e40af">Training distribution</text>
+      <text x="180" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#1e40af">640×640 crops · native res · ~30 px persons</text>
+      <text x="180" y="74" text-anchor="middle" font-family="Inter" font-size="10" fill="#3730a3" font-style="italic">drawn from HERIDAL train images</text>
+
+      <!-- equals sign -->
+      <g transform="translate(360, 50)">
+        <rect x="-25" y="-18" width="50" height="36" rx="18" fill="url(#match-g)"/>
+        <text x="0" y="6" text-anchor="middle" font-family="Inter" font-weight="800" font-size="20" fill="white">=</text>
+      </g>
+
+      <!-- Inference side -->
+      <rect x="440" y="20" width="320" height="60" rx="10" fill="url(#train-g)" stroke="#3b82f6"/>
+      <text x="600" y="40" text-anchor="middle" font-family="Inter" font-weight="600" font-size="12" fill="#1e40af">Inference distribution</text>
+      <text x="600" y="58" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#1e40af">640×640 tiles · native res · ~30 px persons</text>
+      <text x="600" y="74" text-anchor="middle" font-family="Inter" font-size="10" fill="#3730a3" font-style="italic">SAHI slices of HERIDAL val images</text>
+    </svg>
+  </div>
+  <div class="callout green"><strong>Training distribution = Inference distribution.</strong> Both are native-resolution 640×640 patches; persons appear at ~30 px in both. The two halves are now coupled by construction.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 10 - PLAN A RESULTS                                           -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag green">Presenter B · Result</span><span class="pageno">10 / 16</span></div>
+  <h2>Plan A Results <span style="color:var(--amber-500);">⭐</span> — Main Contribution</h2>
+
+  <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:18px; margin-top:14px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th class="num">Phase 2 baseline</th>
+          <th class="num">Naive SAHI ❌</th>
+          <th class="num">Plan A ⭐</th>
+          <th class="num">Δ vs. baseline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td><strong>mAP@0.5</strong></td><td class="num mono">0.759</td><td class="num mono bad">0.255</td><td class="num mono win">0.872</td><td class="num mono"><strong>+0.113 (+15%)</strong></td></tr>
+        <tr class="highlight"><td><strong>mAP@0.5:0.95</strong></td><td class="num mono">0.344</td><td class="num mono bad">0.129</td><td class="num mono win">0.573</td><td class="num mono"><strong>+0.229 (+66%)</strong></td></tr>
+        <tr><td>mAP@0.75</td><td class="num mono">—</td><td class="num mono bad">0.117</td><td class="num mono good">0.661</td><td class="num mono">large</td></tr>
+        <tr><td>AP<sub>small</sub></td><td class="num mono">—</td><td class="num mono bad">0.002</td><td class="num mono good">0.494</td><td class="num mono">~250× vs naive</td></tr>
+        <tr><td>AR<sub>100</sub></td><td class="num mono">—</td><td class="num mono">0.438</td><td class="num mono good">0.661</td><td class="num mono">+0.223</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <div class="barchart" style="height:200px;">
+        <div class="bar baseline">
+          <div class="bar-value">0.759</div>
+          <div class="bar-fill" style="height:79%"></div>
+          <div class="bar-label">Phase 2</div>
+          <div class="bar-sublabel">baseline</div>
+        </div>
+        <div class="bar fail">
+          <div class="bar-value">0.255</div>
+          <div class="bar-fill" style="height:27%"></div>
+          <div class="bar-label">Naive SAHI</div>
+          <div class="bar-sublabel">collapse ❌</div>
+        </div>
+        <div class="bar success">
+          <div class="bar-value">0.872</div>
+          <div class="bar-fill" style="height:91%"></div>
+          <div class="bar-label">Plan A ⭐</div>
+          <div class="bar-sublabel">+15% over baseline</div>
+        </div>
+      </div>
+      <p class="small muted center" style="margin-top:6px;">HERIDAL mAP@0.5 across three configurations</p>
+    </div>
+  </div>
+
+  <div class="callout green"><strong>Key insight:</strong> Density-aware INFERENCE works <em>only</em> when paired with density-aware TRAINING. The two halves are <strong>coupled</strong> — neither alone is sufficient.</div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 11 - PHASE 3                                                  -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag red">Presenter C · Failures</span><span class="pageno">11 / 16</span></div>
+  <h2>Phase 3 — Synthetic Data Augmentation <span style="color:var(--rose-500);">❌</span></h2>
+  <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:18px; margin-top:14px;">
+    <div class="card">
+      <h3>What we tried</h3>
+      <ol>
+        <li>Generate <strong>2,000 aerial backgrounds</strong> with Stable Diffusion XL</li>
+        <li>Composite real HERIDAL person crops onto them</li>
+        <li>Mix into training together with raw HERIDAL images</li>
+        <li>Evaluate with SAHI sliced inference</li>
+      </ol>
+    </div>
+    <div class="card red">
+      <h3 style="color:var(--rose-600);">Result: mAP collapsed</h3>
+      <table style="font-size:0.8em;">
+        <thead><tr><th>Variant</th><th class="num">mAP@0.5</th></tr></thead>
+        <tbody>
+          <tr><td>Plan A baseline</td><td class="num mono good">0.872</td></tr>
+          <tr class="fail"><td><strong>SDXL synth + raw HERIDAL</strong></td><td class="num mono bad">0.013</td></tr>
+          <tr class="fail"><td><strong>HERIDAL composite + raw</strong></td><td class="num mono bad">0.000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="callout red">
+    <strong>Why it failed:</strong> Mixing synthetic data with <strong>raw 4000×3000 HERIDAL</strong> at <span class="pill bad">imgsz=640</span> re-introduced the scale mismatch Plan A had just solved. The synthetic data was fine; the pipeline consuming it was wrong.
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 12 - PHASE 4 SAM2                                             -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag red">Presenter C · Failures</span><span class="pageno">12 / 16</span></div>
+  <h2>Phase 4, Module 1 — SAM2 Bbox Refinement <span style="color:var(--rose-500);">❌</span></h2>
+  <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:18px; margin-top:14px;">
+    <div class="card">
+      <h3>What we tried</h3>
+      <ol>
+        <li>For each Plan A bbox, prompt <strong>SAM2</strong> [Meta AI 2024] with the box</li>
+        <li>SAM2 returns a person segmentation mask</li>
+        <li>Refit a tight bbox from the mask boundary</li>
+        <li>Filter: drop if mask area &lt; 50 px or aspect ratio out of [0.2, 5.0]</li>
+      </ol>
+    </div>
+    <div class="card red">
+      <h3 style="color:var(--rose-600);">Result</h3>
+      <div class="delta-row">
+        <div class="delta-label">mAP@0.5</div>
+        <div class="delta-from mono">0.872</div>
+        <div class="delta-arrow">→</div>
+        <div class="delta-to mono">0.871</div>
+        <div class="delta-pill" style="background:var(--slate-100); color:var(--slate-600);">−0.001</div>
+      </div>
+      <div class="delta-row bad">
+        <div class="delta-label">mAP@0.5:0.95</div>
+        <div class="delta-from mono">0.573</div>
+        <div class="delta-arrow">→</div>
+        <div class="delta-to mono">0.487</div>
+        <div class="delta-pill">−0.086</div>
+      </div>
+      <div class="delta-row bad">
+        <div class="delta-label">mAP@0.75</div>
+        <div class="delta-from mono">0.661</div>
+        <div class="delta-arrow">→</div>
+        <div class="delta-to mono">0.492</div>
+        <div class="delta-pill">−0.169</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout red">
+    <strong>Why it failed:</strong> SAM2 refit boxes are <strong>2–3 px tighter</strong> than the HERIDAL GT annotation convention. At ~30-px person scale this pushes IoU below the strict thresholds. SAM2 is "correct" — the GT has slight margin SAM2 doesn't respect.
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 13 - PHASE 4 CASCADE                                          -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag red">Presenter C · Failures</span><span class="pageno">13 / 16</span></div>
+  <h2>Phase 4, Module 2 — Hard-Negative Cascade <span style="color:var(--rose-500);">❌</span></h2>
+  <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:18px; margin-top:14px;">
+    <div class="card">
+      <h3>What we tried</h3>
+      <ol>
+        <li>Run Plan A inference on HERIDAL <strong>train</strong> images</li>
+        <li>Match preds vs GT: IoU ≥ 0.5 → <em>person</em>; IoU &lt; 0.1 → <em>not_person</em></li>
+        <li>Train <strong>MobileNetV3-Small</strong> on 64×64 crops with 1.5× padding</li>
+        <li>At inference: filter Plan A bboxes by classifier confidence (τ = 0.5)</li>
+      </ol>
+    </div>
+    <div class="card red">
+      <h3 style="color:var(--rose-600);">Result</h3>
+      <div class="delta-row">
+        <div class="delta-label">mAP@0.5</div>
+        <div class="delta-from mono">0.872</div>
+        <div class="delta-arrow">→</div>
+        <div class="delta-to mono">0.869</div>
+        <div class="delta-pill" style="background:var(--slate-100); color:var(--slate-600);">−0.003</div>
+      </div>
+      <div class="delta-row bad">
+        <div class="delta-label">AP<sub>small</sub></div>
+        <div class="delta-from mono">0.494</div>
+        <div class="delta-arrow">→</div>
+        <div class="delta-to mono">0.379</div>
+        <div class="delta-pill">−0.115</div>
+      </div>
+      <div class="delta-row">
+        <div class="delta-label">Filter rate</div>
+        <div class="delta-from mono">—</div>
+        <div class="delta-arrow"></div>
+        <div class="delta-to mono">38.9%</div>
+        <div class="delta-pill" style="background:var(--amber-100); color:var(--amber-700);">drops 389/1000</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout red">
+    <strong>Why it failed:</strong> 64×64 classifier input is too small for confident discrimination at ~30-px person scale. The 0.5 threshold disproportionately drops <strong>small-scale true positives</strong>, not the rocks/huts false positives it was designed to remove.
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 14 - CONVERGENT LESSON                                        -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag amber">Presenter C · Lesson</span><span class="pageno">14 / 16</span></div>
+  <h2>Three Failures, One Convergent Lesson</h2>
+  <p>Three different post-hoc additions on top of Plan A failed for <strong>three different mechanical reasons</strong>.</p>
+
+  <div class="diagram" style="margin-top:8px;">
+    <svg width="900" height="220" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="amber-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#d97706"/><stop offset="1" stop-color="#f59e0b"/>
+        </linearGradient>
+      </defs>
+      <!-- Center: Plan A scale alignment -->
+      <circle cx="450" cy="110" r="65" fill="url(#amber-g)"/>
+      <text x="450" y="100" text-anchor="middle" font-family="Inter" font-weight="800" font-size="14" fill="white">Plan A</text>
+      <text x="450" y="118" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="white">Scale</text>
+      <text x="450" y="132" text-anchor="middle" font-family="Inter" font-weight="600" font-size="11" fill="white">Alignment</text>
+
+      <!-- Failure node 1: Phase 3 -->
+      <g>
+        <line x1="450" y1="80" x2="200" y2="40" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="50" y="10" width="280" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="65" y="32" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 3 — Synthetic data</text>
+        <text x="65" y="50" font-family="JetBrains Mono" font-size="11" fill="#9f1239">mAP@0.5: 0.013</text>
+        <text x="65" y="64" font-family="Inter" font-size="10" fill="#9f1239">Scale mismatch in TRAINING</text>
+      </g>
+
+      <!-- Failure node 2: SAM2 -->
+      <g>
+        <line x1="525" y1="110" x2="700" y2="110" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="555" y="80" width="320" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="570" y="102" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 4 — SAM2 refinement</text>
+        <text x="570" y="120" font-family="JetBrains Mono" font-size="11" fill="#9f1239">mAP@0.75: −0.169</text>
+        <text x="570" y="134" font-family="Inter" font-size="10" fill="#9f1239">Box-tightness mismatch with GT</text>
+      </g>
+
+      <!-- Failure node 3: Cascade -->
+      <g>
+        <line x1="450" y1="155" x2="200" y2="190" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 4"/>
+        <rect x="50" y="160" width="300" height="60" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="65" y="182" font-family="Inter" font-weight="700" font-size="12" fill="#e11d48">Phase 4 — Cascade classifier</text>
+        <text x="65" y="200" font-family="JetBrains Mono" font-size="11" fill="#9f1239">AP_small: −0.115</text>
+        <text x="65" y="214" font-family="Inter" font-size="10" fill="#9f1239">SNR limit at small-person scale</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="callout amber">
+    <strong>Convergent lesson:</strong> Plan A's scale alignment is the <strong>load-bearing piece</strong> of the pipeline. Any post-hoc addition that doesn't preserve scale-awareness breaks something — each for its own specific reason.
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 15 - TAKEAWAYS                                                -->
+<!-- ================================================================== -->
+<section>
+  <div class="topbar"><span class="tag amber">Presenter C · Closing</span><span class="pageno">15 / 16</span></div>
+  <h2>Three Takeaways</h2>
+  <div class="cards-row" style="grid-template-columns:1fr; gap:12px; margin-top:18px;">
+    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+      <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">1</div>
+      <div>
+        <h3 style="color:var(--blue-600);">Train–inference distribution alignment is the dominant lever</h3>
+        <p>In aerial small-object detection, matching the data scale at training and inference matters more than architectural change. <strong>Plan A's +0.113 mAP@0.5 comes from this alone</strong>, with no new model.</p>
+      </div>
+    </div>
+    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+      <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">2</div>
+      <div>
+        <h3 style="color:var(--blue-600);">SAHI works only when paired with native-resolution training</h3>
+        <p>Naive SAHI alone: <span class="pill bad">0.759 → 0.255</span>. The technique cannot be treated as an inference-only drop-in. The two halves are coupled, not independent.</p>
+      </div>
+    </div>
+    <div class="card blue" style="display:flex; flex-direction:row; gap:14px; align-items:flex-start;">
+      <div style="flex-shrink:0; width:44px; height:44px; border-radius:12px; background:var(--grad-primary); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px;">3</div>
+      <div>
+        <h3 style="color:var(--blue-600);">Foundation models don't transfer for free in this domain</h3>
+        <p>Both <strong>SDXL</strong> (Phase 3) and <strong>SAM2</strong> (Phase 4) required scale-aware adaptation that we did not provide. Drop-in use of generic foundation models is not sufficient for the small-aerial-person setting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- SLIDE 16 - THANK YOU                                                -->
+<!-- ================================================================== -->
+<section class="title-slide">
+  <div class="topbar"><span class="tag">Presenter C · Closing</span><span class="pageno">16 / 16</span></div>
+  <h1 style="margin-top:50px;">Thank you. Questions?</h1>
+  <div class="subtitle" style="max-width:760px; margin-left:auto; margin-right:auto;">
+    Plan A is the contribution. Negative results are reported honestly because they explain <em>why</em> scale-awareness is the load-bearing constraint.
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; max-width:850px; margin:30px auto;">
+    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+      <div class="label" style="color:rgba(255,255,255,0.75) !important;">mAP@0.5</div>
+      <div class="value" style="color:white !important;">0.872</div>
+      <div class="delta" style="color:rgba(255,255,255,0.85) !important;">+15% vs baseline</div>
+    </div>
+    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+      <div class="label" style="color:rgba(255,255,255,0.75) !important;">mAP@0.5:0.95</div>
+      <div class="value" style="color:white !important;">0.573</div>
+      <div class="delta" style="color:rgba(255,255,255,0.85) !important;">+66% relative</div>
+    </div>
+    <div class="stat-tile" style="background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); backdrop-filter:blur(8px);">
+      <div class="label" style="color:rgba(255,255,255,0.75) !important;">AP_small</div>
+      <div class="value" style="color:white !important;">0.494</div>
+      <div class="delta" style="color:rgba(255,255,255,0.85) !important;">~250× vs naive SAHI</div>
+    </div>
+  </div>
+
+  <div style="margin-top:30px; padding:14px 26px; background:rgba(255,255,255,0.12); border-radius:12px; display:inline-block; border:1px solid rgba(255,255,255,0.2);">
+    <span style="font-size:0.7em; color:rgba(255,255,255,0.75);">Code · weights · all results (positive and negative):</span><br>
+    <span class="mono" style="font-weight:600; color:white; font-size:0.85em;">github.com/Lucas-on-the-cloud/UAV_res</span>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  controls: true,
+  progress: true,
+  history: true,
+  center: false,
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  width: 1280,
+  height: 720,
+  margin: 0,
+  minScale: 0.4,
+  maxScale: 2.0,
+  slideNumber: 'c/t',
+});
+</script>
+</body>
+</html>
