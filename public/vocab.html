@@ -84,54 +84,67 @@ a{text-decoration:none;color:inherit}
 .spinner-lg{width:40px;height:40px;border-width:3px}
 
 /* ── Vocab list ─────────────────────────────────────────── */
-.vocab-list{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-top:20px}
+.vocab-list{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 
-.vi{border-bottom:1px solid #f3f4f6}
-.vi:last-child{border-bottom:none}
+/* Card */
+.vi{background:#fff;border:1px solid #f1f5f9;border-radius:20px;overflow:hidden;transition:all .3s ease;box-shadow:0 4px 20px rgba(0,0,0,.03)}
+.vi:hover{box-shadow:0 8px 30px rgba(0,0,0,.06)}
+.vi-open{border-color:#bfdbfe;box-shadow:0 8px 30px rgba(0,0,0,.06)}
 
 /* Row */
-.vi-row{display:flex;align-items:center;gap:16px;padding:14px 18px;cursor:pointer;transition:background .1s;user-select:none}
-.vi-row:hover{background:#f9fafb}
-.vi-open .vi-row{background:var(--blue-lt)}
+.vi-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;transition:background .12s;user-select:none}
+.vi-row:hover{background:#f8fafc}
+.vi-left{display:flex;align-items:center;gap:12px;min-width:0}
 
-.vi-num{width:30px;height:30px;border-radius:50%;background:#f1f5f9;color:var(--text-3);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.vi-open .vi-num{background:var(--blue);color:#fff}
+.vi-num{width:24px;height:24px;border-radius:50%;background:rgba(26,86,219,.1);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:38px;font-weight:700;color:var(--blue);line-height:1;flex-shrink:0}
+.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:var(--blue);line-height:1;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.06))}
 
-.vi-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-left:4px}
-.vi-pinyin{font-size:14px;font-weight:600;color:var(--blue);opacity:.9}
-.vi-def{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
+.vi-pinyin{font-size:13px;font-weight:700;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vi-def{font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-.vi-acts{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.vi-detail-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
-.vi-detail-btn:hover,.vi-open .vi-detail-btn{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.vi-detail-btn i{font-size:9px}
-.vi-icon-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:.12s;flex-shrink:0}
-.vi-icon-btn:hover{border-color:var(--blue);color:var(--blue)}
-.vi-icon-btn.playing{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
-@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+/* Actions */
+.vi-acts{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:10px}
+.vi-toggle-btn{display:flex;align-items:center;gap:4px;padding:0 10px;height:32px;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;outline:none}
+.vi-toggle-btn:hover,.vi-open .vi-toggle-btn{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.vi-chevron{width:13px;height:13px;transition:transform .3s ease;flex-shrink:0}
+.vi-open .vi-chevron{transform:rotate(180deg)}
+.vi-icon-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;outline:none}
+.vi-icon-btn:hover{border-color:var(--blue);background:var(--blue);color:#fff}
+.vi-icon-btn.playing{border-color:var(--blue);background:rgba(26,86,219,.1);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
+@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* Detail panel */
-.vi-detail{background:#fff;border-top:1px solid #eef2f7;padding:20px 24px 24px 24px}
-.vi-detail-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.vi-pos{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#334155;background:#f1f5f9;padding:4px 12px;border-radius:99px}
-.vi-pos-dot{color:var(--orange)}
-.vi-band{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px}
+.vi-detail{background:#f8fbff;border-top:1px solid #f1f5f9;padding:16px 18px 20px}
+
+/* POS badges */
+.pos-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 12px;border-radius:999px;font-size:11.5px;font-weight:800}
+.pos-danh-tu   {background:#dbeafe;color:#1d4ed8}
+.pos-dong-tu   {background:#dcfce7;color:#15803d}
+.pos-tinh-tu   {background:#fce7f3;color:#9d174d}
+.pos-phu-tu    {background:#fef9c3;color:#854d0e}
+.pos-danh-rieng{background:#ede9fe;color:#6d28d9}
+.pos-default   {background:#f1f5f9;color:#475569}
+
+/* TOCFL band */
+.vi-band{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px}
 .vi-band.band-a{background:#fef9c3;color:#713f12}
 .vi-band.band-b{background:#dbeafe;color:#1e40af}
 .vi-band.band-c{background:#fce7f3;color:#9d174d}
 .vi-band.band-n{background:#f3f4f6;color:var(--text-3)}
-.vi-hanviet{font-size:11.5px;color:var(--text-3);font-style:italic}
+.vi-hanviet{font-size:11px;color:var(--text-3);font-style:italic}
 
 /* Examples */
-.vi-exs{display:flex;flex-direction:column;gap:0}
-.vi-ex{display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f1f5f9}
-.vi-exs .vi-ex:last-child{border-bottom:none;padding-bottom:0}
-.vi-ex-body{flex:1;min-width:0}
-.vi-ex-zh{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:#1e293b;line-height:1.6;margin-bottom:4px}
-.vi-ex-py{font-size:13px;color:var(--blue);margin-bottom:4px;font-weight:500}
-.vi-ex-vi{font-size:13px;color:var(--text-2);line-height:1.5}
+.vi-exs{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.vi-ex{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:#fff;border:1px solid rgba(241,245,249,.9);border-radius:16px;padding:12px 14px}
+.vi-ex-body{min-width:0}
+.vi-ex-zh{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:900;color:#1e293b;line-height:1.5;margin-bottom:4px}
+.vi-ex-py{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:3px}
+.vi-ex-vi{font-size:12px;color:var(--text-2);line-height:1.5}
+.vi-ex-audio{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;outline:none}
+.vi-ex-audio:hover{border-color:var(--blue);color:var(--blue)}
+.vi-ex-audio.playing{border-color:var(--blue);background:rgba(26,86,219,.1);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
 
 /* Empty states */
 .empty-state{text-align:center;padding:56px 24px;color:var(--text-3);margin-top:20px}
@@ -166,15 +179,31 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:768px){
   .vb-selects{flex-direction:column;height:auto;gap:5px}
   .vb-inner{height:auto;padding:10px 1rem;flex-wrap:wrap}
-  .vi-hanzi{font-size:28px}
+  .vi-hanzi{font-size:24px}
   .vi-def{display:none}
-  .vi-detail{padding:16px 14px 18px}
+  .vi-detail{padding:14px 14px 18px}
+  .vi-ex-zh{font-size:16px}
   .footer-inner{grid-template-columns:1fr 1fr}
   .nav-link{display:none}
 }
+@media(min-width:640px){
+  .vi{border-radius:24px}
+  .vi-row{padding:18px 24px}
+  .vi-left{gap:18px}
+  .vi-num{width:32px;height:32px;font-size:13px}
+  .vi-hanzi{font-size:38px}
+  .vi-pinyin{font-size:15px}
+  .vi-def{display:block;font-size:13px}
+  .vi-acts{gap:10px}
+  .vi-toggle-btn{height:40px;padding:0 14px;font-size:12px}
+  .vi-icon-btn{width:40px;height:40px}
+  .vi-detail{padding:20px 24px 24px}
+  .vi-ex-zh{font-size:22px}
+  .vi-ex-py,.vi-ex-vi{font-size:13px}
+  .vi-ex-audio{width:34px;height:34px}
+}
 @media(max-width:480px){
   .footer-inner{grid-template-columns:1fr;gap:1.5rem}
-  .vi-acts{gap:4px}
 }
 </style>
 </head>
@@ -269,20 +298,28 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
         <!-- ── Row ─────────────────────────────────────── -->
         <div class="vi-row" @click="toggleItem(v.id)">
-          <span class="vi-num" x-text="i+1"></span>
-          <span class="vi-hanzi" x-text="v.hanzi"></span>
-          <div class="vi-meta">
-            <span class="vi-pinyin" x-text="v.pinyin||''"></span>
-            <span class="vi-def" x-text="v.definition||''"></span>
+          <!-- Left: index + hanzi + pinyin/def -->
+          <div class="vi-left">
+            <div class="vi-num" x-text="i+1"></div>
+            <div class="vi-hanzi" x-text="v.hanzi"></div>
+            <div class="vi-meta">
+              <div class="vi-pinyin" x-text="v.pinyin||''"></div>
+              <div class="vi-def" x-text="v.definition||''"></div>
+            </div>
           </div>
+          <!-- Right: toggle + audio -->
           <div class="vi-acts" @click.stop>
-            <button class="vi-detail-btn" @click="toggleItem(v.id)">
-              <span x-text="openId===v.id ? 'Đóng' : 'Chi tiết'"></span>
-              <i :class="openId===v.id ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+            <button class="vi-toggle-btn" @click="toggleItem(v.id)">
+              <span x-text="openId===v.id ? 'Đóng' : 'Mở'"></span>
+              <svg class="vi-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+              </svg>
             </button>
             <button class="vi-icon-btn" :class="playingId===v.id ? 'playing' : ''"
-                    @click="playOne(v.hanzi, v.id)" title="Nghe từ">
-              <i class="fa-solid fa-volume-low"></i>
+                    @click="playOne(v.hanzi, v.id)" title="Phát âm">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -290,12 +327,11 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <!-- ── Detail panel ────────────────────────────── -->
         <div class="vi-detail" x-show="openId===v.id" x-transition.opacity.duration.150ms>
 
-          <!-- Part of speech + TOCFL band + Han Viet -->
-          <div class="vi-detail-meta">
+          <!-- POS badge + TOCFL band + Han Viet -->
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
             <template x-if="v.part_of_speech">
-              <span class="vi-pos">
-                <span class="vi-pos-dot">♦</span>
-                <span x-text="v.part_of_speech"></span>
+              <span class="pos-badge" :class="posClass(v.part_of_speech)">
+                ♦ <span x-text="v.part_of_speech"></span>
               </span>
             </template>
             <template x-if="v.tocfl_band">
@@ -316,10 +352,11 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
                     <div class="vi-ex-py" x-text="ex.pinyin||''"></div>
                     <div class="vi-ex-vi" x-text="ex.translation||''"></div>
                   </div>
-                  <button class="vi-icon-btn"
-                          :class="playingId==='ex'+ex.id ? 'playing' : ''"
+                  <button class="vi-ex-audio" :class="playingId==='ex'+ex.id ? 'playing' : ''"
                           @click="playOne(ex.hanzi, 'ex'+ex.id)" title="Nghe ví dụ">
-                    <i class="fa-solid fa-volume-low"></i>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07"/>
+                    </svg>
                   </button>
                 </div>
               </template>
@@ -572,6 +609,16 @@ function vocabApp() {
       if (b.startsWith('B')) return 'band-b';
       if (b.startsWith('C')) return 'band-c';
       return 'band-n';
+    },
+
+    posClass(pos = '') {
+      const p = pos.toLowerCase();
+      if (p.includes('danh từ') || p.includes('名詞') || p.includes('noun')) return 'pos-danh-tu';
+      if (p.includes('động từ') || p.includes('動詞') || p.includes('verb')) return 'pos-dong-tu';
+      if (p.includes('tính từ') || p.includes('形容詞') || p.includes('adj'))  return 'pos-tinh-tu';
+      if (p.includes('phó từ')  || p.includes('副詞')  || p.includes('adv'))  return 'pos-phu-tu';
+      if (p.includes('danh riêng') || p.includes('專有')) return 'pos-danh-rieng';
+      return 'pos-default';
     },
   };
 }
