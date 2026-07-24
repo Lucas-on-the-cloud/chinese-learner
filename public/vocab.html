@@ -90,46 +90,48 @@ a{text-decoration:none;color:inherit}
 .vi:last-child{border-bottom:none}
 
 /* Row */
-.vi-row{display:flex;align-items:center;gap:14px;padding:13px 18px;cursor:pointer;transition:background .1s;user-select:none}
+.vi-row{display:flex;align-items:center;gap:16px;padding:14px 18px;cursor:pointer;transition:background .1s;user-select:none}
 .vi-row:hover{background:#f9fafb}
 .vi-open .vi-row{background:var(--blue-lt)}
 
-.vi-num{width:28px;height:28px;border-radius:7px;background:var(--blue-lt);color:var(--blue);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vi-num{width:30px;height:30px;border-radius:50%;background:#f1f5f9;color:var(--text-3);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .vi-open .vi-num{background:var(--blue);color:#fff}
 
-.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--blue);line-height:1;flex-shrink:0;min-width:52px}
+.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:38px;font-weight:700;color:var(--blue);line-height:1;flex-shrink:0}
 
-.vi-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.vi-pinyin{font-size:12px;color:var(--blue);opacity:.85}
+.vi-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding-left:4px}
+.vi-pinyin{font-size:14px;font-weight:600;color:var(--blue);opacity:.9}
 .vi-def{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.vi-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.vi-detail-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
-.vi-detail-btn:hover,.vi-open .vi-detail-btn{border-color:var(--blue);color:var(--blue)}
+.vi-acts{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.vi-detail-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
+.vi-detail-btn:hover,.vi-open .vi-detail-btn{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .vi-detail-btn i{font-size:9px}
-.vi-icon-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:.12s;flex-shrink:0}
+.vi-icon-btn{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:.12s;flex-shrink:0}
 .vi-icon-btn:hover{border-color:var(--blue);color:var(--blue)}
 .vi-icon-btn.playing{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
 @keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.6}}
 
 /* Detail panel */
-.vi-detail{background:#f9fafb;border-top:1px dashed var(--border);padding:16px 18px 18px 60px}
-.vi-pos{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px}
-.vi-pos-dot{color:var(--orange);font-size:10px}
-.vi-band{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
+.vi-detail{background:#fff;border-top:1px solid #eef2f7;padding:20px 24px 24px 24px}
+.vi-detail-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.vi-pos{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#334155;background:#f1f5f9;padding:4px 12px;border-radius:99px}
+.vi-pos-dot{color:var(--orange)}
+.vi-band{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:99px}
 .vi-band.band-a{background:#fef9c3;color:#713f12}
 .vi-band.band-b{background:#dbeafe;color:#1e40af}
 .vi-band.band-c{background:#fce7f3;color:#9d174d}
 .vi-band.band-n{background:#f3f4f6;color:var(--text-3)}
-.vi-hanviet{font-size:11px;color:var(--text-3);font-style:italic;margin-bottom:12px}
+.vi-hanviet{font-size:11.5px;color:var(--text-3);font-style:italic}
 
 /* Examples */
-.vi-exs{display:flex;flex-direction:column;gap:12px}
-.vi-ex{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.vi-exs{display:flex;flex-direction:column;gap:0}
+.vi-ex{display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f1f5f9}
+.vi-exs .vi-ex:last-child{border-bottom:none;padding-bottom:0}
 .vi-ex-body{flex:1;min-width:0}
-.vi-ex-zh{font-family:'Noto Serif TC',serif;font-size:15px;color:var(--text);line-height:1.7;margin-bottom:2px}
-.vi-ex-py{font-size:11px;color:var(--blue);margin-bottom:2px;opacity:.85}
-.vi-ex-vi{font-size:12px;color:var(--text-2)}
+.vi-ex-zh{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:#1e293b;line-height:1.6;margin-bottom:4px}
+.vi-ex-py{font-size:13px;color:var(--blue);margin-bottom:4px;font-weight:500}
+.vi-ex-vi{font-size:13px;color:var(--text-2);line-height:1.5}
 
 /* Empty states */
 .empty-state{text-align:center;padding:56px 24px;color:var(--text-3);margin-top:20px}
@@ -164,9 +166,9 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:768px){
   .vb-selects{flex-direction:column;height:auto;gap:5px}
   .vb-inner{height:auto;padding:10px 1rem;flex-wrap:wrap}
-  .vi-hanzi{font-size:22px;min-width:44px}
+  .vi-hanzi{font-size:28px}
   .vi-def{display:none}
-  .vi-detail{padding-left:18px}
+  .vi-detail{padding:16px 14px 18px}
   .footer-inner{grid-template-columns:1fr 1fr}
   .nav-link{display:none}
 }
@@ -288,8 +290,8 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <!-- ── Detail panel ────────────────────────────── -->
         <div class="vi-detail" x-show="openId===v.id" x-transition.opacity.duration.150ms>
 
-          <!-- Part of speech + TOCFL band -->
-          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+          <!-- Part of speech + TOCFL band + Han Viet -->
+          <div class="vi-detail-meta">
             <template x-if="v.part_of_speech">
               <span class="vi-pos">
                 <span class="vi-pos-dot">♦</span>
@@ -300,8 +302,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
               <span class="vi-band" :class="bandClass(v.tocfl_band)" x-text="v.tocfl_band"></span>
             </template>
             <template x-if="v.han_viet">
-              <span style="font-size:11px;color:var(--text-3);font-style:italic"
-                    x-text="'Hán Việt: ' + v.han_viet"></span>
+              <span class="vi-hanviet" x-text="'Hán Việt: ' + v.han_viet"></span>
             </template>
           </div>
 
