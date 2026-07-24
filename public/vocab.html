@@ -267,7 +267,6 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
            @keydown.escape="search=''">
     <button class="search-clear" x-show="search" @click="search=''">×</button>
   </div>
-  <p class="search-hint">Danh sách dưới đây là từ vựng của bài học đang chọn. Lọc theo cấp độ TOCFL bên dưới nếu cần.</p>
 </div>
 
 <!-- ── LOADING OVERLAY (initial) ────────────────────────── -->
@@ -497,7 +496,11 @@ function vocabApp() {
         .from('vocab_books')
         .select('id, book_name, lesson_count, word_count')
         .order('id');
-      this.books = books || [];
+      this.books = (books || []).filter(b => {
+        const n = b.book_name.toLowerCase();
+        return n.includes('đương đại') || n.includes('thời đại') ||
+               n.includes('当代') || n.includes('時代') || n.includes('时代');
+      });
       this.loading = false;
 
       // Deep-link or auto-select first book + lesson
