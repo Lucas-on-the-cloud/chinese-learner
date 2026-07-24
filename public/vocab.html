@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
@@ -290,38 +291,53 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:640px){.chat-float-panel{width:calc(100vw - 24px)}}
 
 /* ═══════════════════════════════════════════════════════════
-   DECOMP OVERLAY (card drill-down)
+   DECOMP OVERLAY
 ═══════════════════════════════════════════════════════════ */
 .decomp-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .decomp-overlay.open{display:flex}
-.decomp-modal{background:#fff;border-radius:14px;width:92%;max-width:460px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;overflow:hidden;max-height:88vh;display:flex;flex-direction:column}
-.decomp-header{padding:12px 16px 0;flex-shrink:0}
+.decomp-modal{background:#fff;border-radius:14px;width:92%;max-width:520px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+.decomp-header{padding:12px 18px 0;flex-shrink:0}
 .dc-char-nav{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
 .dc-pip{font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600;width:32px;height:32px;border-radius:7px;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;background:#fff;transition:all .15s}
 .dc-pip.active{border-color:#027AB3;color:#027AB3;background:rgba(2,122,179,.08)}
-.dc-body{flex:1;overflow-y:auto;padding:4px 16px 16px}
-.dc-back-btn{background:none;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:700;color:#027AB3;cursor:pointer;padding:6px 0 10px;display:flex;align-items:center;gap:4px;letter-spacing:.01em}
-.dc-back-btn:hover{opacity:.7}
-.dc-hero{display:flex;align-items:center;gap:14px;padding:12px 14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;margin-bottom:14px}
-.dc-hero.is-radical{background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
-.dc-hero-ch{font-family:'Noto Serif TC',serif;font-size:56px;line-height:1;color:#027AB3;flex-shrink:0}
-.dc-hero.is-radical .dc-hero-ch{color:#16a34a}
-.dc-hero-nm{font-size:14px;font-weight:700;color:#1f2937;margin-bottom:4px;line-height:1.4}
-.dc-hero-hv{font-size:11px;color:#6b7280}
-.dc-hero-hv b{color:#027AB3}
-.dc-comp-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:8px}
-.dc-comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
-.dc-comp-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px 8px;cursor:pointer;transition:.15s;text-align:center}
-.dc-comp-card:hover{border-color:#027AB3;background:#f0f7ff;transform:translateY(-2px);box-shadow:0 4px 12px rgba(2,122,179,.1)}
-.dc-comp-card.is-radical{border-color:#bbf7d0;background:#f0fdf4}
-.dc-comp-card.is-radical:hover{border-color:#16a34a;background:#dcfce7}
-.dc-comp-ch{font-family:'Noto Serif TC',serif;font-size:36px;line-height:1;color:#1f2937;margin-bottom:6px}
-.dc-comp-nm{font-size:10px;font-weight:700;color:#374151;margin-bottom:2px;line-height:1.3}
-.dc-comp-mn{font-size:10px;color:#6b7280;line-height:1.3;margin-bottom:4px}
-.dc-comp-hv{display:inline-block;background:#f3f4f6;color:#6b7280;padding:1px 7px;border-radius:4px;font-size:9px;font-weight:600}
-.dc-comp-card.is-radical .dc-comp-hv{background:#dcfce7;color:#15803d}
-.dc-comp-more{font-size:9px;color:#027AB3;margin-top:4px;font-weight:600}
-.dc-empty{font-size:13px;color:#9ca3af;padding:12px 0;text-align:center;line-height:1.6}
+.decomp-tabs{display:flex;border-bottom:1px solid #e5e7eb;background:#fafafa;flex-shrink:0}
+.decomp-tab{background:none;border:none;padding:9px 16px;font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:inherit}
+.decomp-tab.active{color:#027AB3;border-bottom-color:#027AB3}
+.decomp-viewport{flex:1;position:relative;overflow:hidden}
+#dc-canvas{display:none;width:100%;height:320px;cursor:grab}
+#dc-canvas:active{cursor:grabbing}
+.dc-radicals-pane{overflow-y:auto;max-height:320px;padding:12px 14px}
+.dc-info{padding:9px 16px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:11px;color:#6b7280;min-height:34px;flex-shrink:0;line-height:1.5}
+.dc-info .title{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:700;color:#027AB3;margin-right:5px}
+.dc-node .ch{font-family:'Noto Serif TC',serif;font-size:17px;pointer-events:none;user-select:none;fill:#1f2937}
+.dc-node .label{font-family:'Be Vietnam Pro',sans-serif;font-size:8px;font-weight:600;pointer-events:none;user-select:none;fill:#374151}
+.dc-node .hv{font-family:'Be Vietnam Pro',sans-serif;font-size:7px;pointer-events:none;user-select:none;fill:#9ca3af;font-style:italic}
+.dc-node circle{fill:#fff;stroke:#9ca3af;stroke-width:1.5;cursor:pointer;transition:.15s}
+.dc-node:hover circle{stroke-width:2.5;filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
+.dc-node.root circle{fill:#027AB3;stroke:#027AB3}
+.dc-node.root .ch{fill:#fff}
+.dc-node.radical circle{fill:#dcfce7;stroke:#16a34a}
+.dc-node.radical .label{fill:#15803d}
+.dc-node.subchar circle{fill:#eff6ff;stroke:#027AB3}
+.dc-node.leaf circle{stroke-dasharray:3,3}
+.dc-link{fill:none;stroke:#bfdbfe;stroke-width:1.5}
+.dc-rad-hero{display:flex;align-items:center;gap:14px;padding:12px 14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:10px;margin-bottom:12px}
+.dc-rad-big{font-family:'Noto Serif TC',serif;font-size:52px;line-height:1;color:#027AB3;flex-shrink:0}
+.dc-rad-nm{font-size:14px;font-weight:700;color:#027AB3;margin-bottom:3px}
+.dc-rad-mn{font-size:11px;color:#374151}
+.dc-rad-hv{display:inline-block;background:#fff;border:1px solid #bfdbfe;color:#027AB3;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:600;margin-top:5px}
+.dc-rad-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:10px 0 6px}
+.dc-rad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px}
+.dc-rad-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;padding:10px;display:flex;gap:8px;align-items:center;cursor:pointer;transition:.15s}
+.dc-rad-card:hover{border-color:#027AB3;background:#f0f7ff;transform:translateY(-1px);box-shadow:0 3px 8px rgba(2,122,179,.1)}
+.dc-rad-card.is-radical{border-color:#bbf7d0;background:#f0fdf4}
+.dc-rad-card.is-radical:hover{border-color:#16a34a}
+.dc-rad-ch{font-family:'Noto Serif TC',serif;font-size:28px;line-height:1;flex-shrink:0;color:#1f2937}
+.dc-rad-body{flex:1;min-width:0}
+.dc-rad-cnm{font-size:10px;font-weight:700;color:#1f2937;margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dc-rad-cmn{font-size:10px;color:#6b7280;line-height:1.4}
+.dc-rad-chv{display:inline-block;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600;margin-top:3px}
+.dc-rad-card.is-radical .dc-rad-chv{background:#dcfce7;color:#15803d}
 </style>
 </head>
 <body x-data="vocabApp()" x-init="init()">
@@ -586,7 +602,16 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <div class="decomp-header">
       <div id="dc-nav" class="dc-char-nav"></div>
     </div>
-    <div class="dc-body" id="dc-body"></div>
+    <div class="decomp-tabs">
+      <button class="decomp-tab" data-dview="tree" onclick="dcSwitchView('tree')">Dạng cây</button>
+      <button class="decomp-tab" data-dview="graph" onclick="dcSwitchView('graph')">Đồ thị</button>
+      <button class="decomp-tab active" data-dview="radicals" onclick="dcSwitchView('radicals')">Bộ thủ</button>
+    </div>
+    <div class="decomp-viewport">
+      <svg id="dc-canvas"></svg>
+      <div class="dc-radicals-pane" id="dc-radicals"></div>
+    </div>
+    <div class="dc-info" id="dc-info">Click vào chữ để xem chi tiết</div>
   </div>
 </div>
 
@@ -1605,34 +1630,62 @@ var DC_RADICAL_SET = new Set([
   '鼠','鼻','齊','齒','龍','龜','龠',
 ]);
 
-function dcDecompose(char) {
+function dcDecompose(char, depth, maxDepth) {
+  if (depth === undefined) depth = 0;
+  if (maxDepth === undefined) maxDepth = 3;
+  if (depth >= maxDepth) return { char: char, children: [] };
   var ids = _dcIDS && _dcIDS[char];
   if (!ids || ids === char) return { char: char, children: [] };
   var comps = [...ids].filter(function(c){ return !DC_OPS.includes(c) && c !== char; });
-  return { char: char, children: comps.map(dcDecompose) };
+  return { char: char, children: comps.map(function(c){ return dcDecompose(c, depth+1, maxDepth); }) };
 }
 
 function dcEscHtml(s) {
   return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; });
 }
 
-var _dcChars = [], _dcIdx = 0, _dcRoot = null, _dcStack = [];
+function dcNodeClass(d) {
+  if (!d.parent) return 'root';
+  if (DC_RADICAL_SET.has(d.data.char)) return 'radical';
+  if (d.children && d.children.length) return 'subchar';
+  return 'leaf';
+}
+
+function dcShowInfo(nodeData) {
+  var m = DC_META[nodeData.char] || { name:'', meaning:'(chưa có dữ liệu)', hv:'—' };
+  var isRad = DC_RADICAL_SET.has(nodeData.char);
+  document.getElementById('dc-info').innerHTML =
+    '<span class="title">'+dcEscHtml(nodeData.char)+'</span> ' +
+    (m.name ? dcEscHtml(m.name)+' — ' : '') + dcEscHtml(m.meaning) +
+    ' · Hán-Việt: <b>'+dcEscHtml(m.hv)+'</b>' +
+    (isRad ? ' <span style="background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700">bộ thủ</span>' : '');
+}
+
+var _dcChars = [], _dcIdx = 0, _dcRoot = null, _dcView = 'radicals';
 
 function openDecomp(hanzi) {
   _dcChars = [...hanzi].filter(function(c){ return /\S/.test(c); });
   if (!_dcChars.length) return;
   _dcIdx = 0;
-  _dcStack = [];
+  _dcView = 'radicals';
+
   document.getElementById('dc-nav').innerHTML = '';
-  document.getElementById('dc-body').innerHTML =
-    '<div style="padding:32px 0;text-align:center;color:#9ca3af;font-size:13px">⏳ Đang tải dữ liệu…</div>';
+  document.getElementById('dc-info').textContent = 'Đang tải dữ liệu…';
+  document.getElementById('dc-canvas').style.display = 'none';
+  var rads = document.getElementById('dc-radicals');
+  rads.innerHTML = '<div style="padding:32px 0;text-align:center;color:#9ca3af;font-size:13px">⏳ Đang tải…</div>';
+  rads.style.display = 'block';
+  document.querySelectorAll('.decomp-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.dview === 'radicals'); });
+
   document.getElementById('decomp-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
   dcLoadIDS().then(function(){
+    _dcRoot = dcDecompose(_dcChars[0]);
     _dcRenderNav();
-    _dcRenderChar(0);
+    dcDraw();
   }).catch(function(e){
-    document.getElementById('dc-body').innerHTML =
+    document.getElementById('dc-radicals').innerHTML =
       '<div style="padding:20px;color:#ef4444;font-size:13px">❌ Lỗi: '+dcEscHtml(e.message)+'</div>';
   });
 }
@@ -1640,6 +1693,7 @@ function openDecomp(hanzi) {
 function closeDecomp() {
   document.getElementById('decomp-overlay').classList.remove('open');
   document.body.style.overflow = '';
+  if (window._dcSim) { window._dcSim.stop(); window._dcSim = null; }
 }
 
 function _dcRenderNav() {
@@ -1651,72 +1705,176 @@ function _dcRenderNav() {
 
 function dcSelectChar(i) {
   _dcIdx = i;
-  _dcStack = [];
   _dcRenderNav();
-  _dcRenderChar(i);
-}
-
-function _dcRenderChar(i) {
   _dcRoot = dcDecompose(_dcChars[i]);
-  dcRenderBody();
+  if (window._dcSim) { window._dcSim.stop(); window._dcSim = null; }
+  dcDraw();
 }
 
-function dcDrillDown(ch) {
-  _dcStack.push(_dcRoot.char);
-  _dcRoot = dcDecompose(ch);
-  dcRenderBody();
+function dcSwitchView(view) {
+  _dcView = view;
+  document.querySelectorAll('.decomp-tab').forEach(function(b){ b.classList.toggle('active', b.dataset.dview === view); });
+  if (window._dcSim) { window._dcSim.stop(); window._dcSim = null; }
+  dcDraw();
 }
 
-function dcGoBack() {
-  if (!_dcStack.length) return;
-  _dcRoot = dcDecompose(_dcStack.pop());
-  dcRenderBody();
+function dcDraw() {
+  if (!_dcRoot) return;
+  document.getElementById('dc-info').textContent = 'Click vào chữ để xem chi tiết';
+  if (_dcView === 'tree') dcDrawTree();
+  else if (_dcView === 'graph') dcDrawGraph();
+  else dcDrawRadicals();
 }
 
-function dcRenderBody() {
+function dcDrawTree() {
+  var canvas = document.getElementById('dc-canvas');
+  var rads = document.getElementById('dc-radicals');
+  canvas.style.display = 'block';
+  rads.style.display = 'none';
+
+  var svg = d3.select('#dc-canvas');
+  svg.selectAll('*').remove();
+  var W = canvas.clientWidth || 460, H = 320;
+  svg.attr('viewBox', '0 0 '+W+' '+H);
+
+  var root = d3.hierarchy(_dcRoot);
+  var pad = 50;
+  d3.tree().size([W - pad*2, H - pad*2])(root);
+
+  var g = svg.append('g').attr('transform', 'translate('+pad+','+pad+')');
+  svg.call(d3.zoom().scaleExtent([0.3, 3]).on('zoom', function(e){ g.attr('transform', e.transform); }));
+
+  g.selectAll('.dc-link')
+    .data(root.links())
+    .join('line')
+    .attr('class', 'dc-link')
+    .attr('x1', function(d){ return d.source.x; })
+    .attr('y1', function(d){ return d.source.y; })
+    .attr('x2', function(d){ return d.target.x; })
+    .attr('y2', function(d){ return d.target.y; });
+
+  var node = g.selectAll('.dc-node')
+    .data(root.descendants())
+    .join('g')
+    .attr('class', function(d){ return 'dc-node '+dcNodeClass(d); })
+    .attr('transform', function(d){ return 'translate('+d.x+','+d.y+')'; })
+    .on('click', function(e, d){ dcShowInfo(d.data); });
+
+  node.append('circle').attr('r', 22);
+  node.append('text').attr('class', 'ch').attr('text-anchor', 'middle').attr('dy', '6px').text(function(d){ return d.data.char; });
+}
+
+function dcDrawGraph() {
+  var canvas = document.getElementById('dc-canvas');
+  var rads = document.getElementById('dc-radicals');
+  canvas.style.display = 'block';
+  rads.style.display = 'none';
+
+  var svg = d3.select('#dc-canvas');
+  svg.selectAll('*').remove();
+  var W = canvas.clientWidth || 460, H = 320;
+  svg.attr('viewBox', '0 0 '+W+' '+H);
+
+  var g = svg.append('g');
+  var zoom = d3.zoom().scaleExtent([0.3, 3]).on('zoom', function(e){ g.attr('transform', e.transform); });
+  svg.call(zoom);
+
+  var gnodes = [], glinks = [];
+  (function flatten(node, parentId) {
+    var id = gnodes.length;
+    gnodes.push({ id: id, char: node.char, _ch: node.children });
+    if (parentId !== null) glinks.push({ source: parentId, target: id });
+    (node.children || []).forEach(function(c){ flatten(c, id); });
+  })(_dcRoot, null);
+
+  var sim = d3.forceSimulation(gnodes)
+    .force('link', d3.forceLink(glinks).id(function(d){ return d.id; }).distance(70))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(W/2, H/2))
+    .force('collision', d3.forceCollide(30));
+  window._dcSim = sim;
+
+  var link = g.selectAll('.dc-link')
+    .data(glinks)
+    .join('line')
+    .attr('class', 'dc-link');
+
+  var nodeDrag = d3.drag()
+    .on('start', function(e, d){
+      e.sourceEvent.stopPropagation();
+      if (!e.active) sim.alphaTarget(.3).restart();
+      d.fx = d.x; d.fy = d.y;
+    })
+    .on('drag', function(e, d){ d.fx = e.x; d.fy = e.y; })
+    .on('end', function(e, d){ if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; });
+
+  var node = g.selectAll('.dc-node')
+    .data(gnodes)
+    .join('g')
+    .attr('class', function(d){
+      if (d.id === 0) return 'dc-node root';
+      if (DC_RADICAL_SET.has(d.char)) return 'dc-node radical';
+      if (d._ch && d._ch.length) return 'dc-node subchar';
+      return 'dc-node leaf';
+    })
+    .on('click', function(e, d){ e.stopPropagation(); dcShowInfo(d); })
+    .call(nodeDrag);
+
+  node.append('circle').attr('r', 22);
+  node.append('text').attr('class', 'ch').attr('text-anchor', 'middle').attr('dy', '6px').text(function(d){ return d.char; });
+
+  sim.on('tick', function(){
+    link.attr('x1', function(d){ return d.source.x; })
+        .attr('y1', function(d){ return d.source.y; })
+        .attr('x2', function(d){ return d.target.x; })
+        .attr('y2', function(d){ return d.target.y; });
+    node.attr('transform', function(d){ return 'translate('+d.x+','+d.y+')'; });
+  });
+}
+
+function dcDrawRadicals() {
+  var canvas = document.getElementById('dc-canvas');
+  var rads = document.getElementById('dc-radicals');
+  canvas.style.display = 'none';
+  rads.style.display = 'block';
+
   var m = DC_META[_dcRoot.char] || { name:'', meaning:'(chưa có dữ liệu)', hv:'—' };
   var isRad = DC_RADICAL_SET.has(_dcRoot.char);
-  var children = _dcRoot.children || [];
 
-  var html = '';
-  if (_dcStack.length) {
-    html += '<button class="dc-back-btn" onclick="dcGoBack()">← Quay lại</button>';
-  }
-
-  html += '<div class="dc-hero'+(isRad?' is-radical':'')+'">' +
-    '<div class="dc-hero-ch">'+dcEscHtml(_dcRoot.char)+'</div>' +
-    '<div>' +
-      '<div class="dc-hero-nm">'+(m.name ? dcEscHtml(m.name)+' — ' : '')+dcEscHtml(m.meaning)+'</div>' +
-      '<div class="dc-hero-hv">Hán-Việt: <b>'+dcEscHtml(m.hv)+'</b>'+(isRad?' · <span style="background:#dcfce7;color:#15803d;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">bộ thủ</span>':'')+
-      '</div>' +
-    '</div>' +
+  var html = '<div class="dc-rad-hero">'+
+    '<div class="dc-rad-big">'+dcEscHtml(_dcRoot.char)+'</div>'+
+    '<div>'+
+      '<div class="dc-rad-nm">'+dcEscHtml(m.name || _dcRoot.char)+'</div>'+
+      '<div class="dc-rad-mn">'+dcEscHtml(m.meaning)+'</div>'+
+      '<span class="dc-rad-hv">'+dcEscHtml(m.hv)+'</span>'+
+      (isRad ? ' <span style="background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:4px">bộ thủ</span>' : '')+
+    '</div>'+
   '</div>';
 
+  var children = _dcRoot.children || [];
   if (children.length) {
-    html += '<div class="dc-comp-title">Gồm '+children.length+' thành phần</div>';
-    html += '<div class="dc-comp-grid">';
-    children.forEach(function(child) {
+    html += '<div class="dc-rad-section">Thành phần chính ('+children.length+')</div>';
+    html += '<div class="dc-rad-grid">';
+    children.forEach(function(child){
       var cm = DC_META[child.char] || { name:'', meaning:'(chưa rõ)', hv:'—' };
       var cIsRad = DC_RADICAL_SET.has(child.char);
-      var hasSub = child.children && child.children.length > 0;
-      var safeChar = dcEscHtml(child.char);
-      html += '<div class="dc-comp-card'+(cIsRad?' is-radical':'')+'" onclick="dcDrillDown(\''+safeChar+'\')">' +
-        '<div class="dc-comp-ch">'+safeChar+'</div>' +
-        '<div class="dc-comp-nm">'+dcEscHtml(cm.name || child.char)+'</div>' +
-        '<div class="dc-comp-mn">'+dcEscHtml(cm.meaning)+'</div>' +
-        '<div class="dc-comp-hv">'+dcEscHtml(cm.hv)+'</div>' +
-        (hasSub ? '<div class="dc-comp-more">▸ xem thêm</div>' : '') +
-        '</div>';
+      html += '<div class="dc-rad-card'+(cIsRad?' is-radical':'')+'" data-char="'+dcEscHtml(child.char)+'" onclick="dcShowInfo(this.dataset)">'+
+        '<div class="dc-rad-ch">'+dcEscHtml(child.char)+'</div>'+
+        '<div class="dc-rad-body">'+
+          '<div class="dc-rad-cnm">'+dcEscHtml(cm.name || child.char)+'</div>'+
+          '<div class="dc-rad-cmn">'+dcEscHtml(cm.meaning)+'</div>'+
+          '<span class="dc-rad-chv">'+dcEscHtml(cm.hv)+'</span>'+
+        '</div>'+
+      '</div>';
     });
     html += '</div>';
   } else {
-    html += '<div class="dc-empty">'+(isRad
-      ? '✓ Đây là bộ thủ cơ bản<br><span style="font-size:11px">không phân tích thêm</span>'
-      : '(Chưa có dữ liệu phân tích)'
-    )+'</div>';
+    html += '<div style="padding:20px;text-align:center;color:#9ca3af;font-size:12px">'+
+      (isRad ? '✓ Đây là bộ thủ cơ bản — không phân tích thêm' : '(Chưa có dữ liệu phân tích)')+
+    '</div>';
   }
 
-  document.getElementById('dc-body').innerHTML = html;
+  rads.innerHTML = html;
 }
 </script>
 
