@@ -6,6 +6,7 @@
 <title>Từ vựng — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/auth-service.js"></script>
@@ -98,7 +99,8 @@ a{text-decoration:none;color:inherit}
 
 .vi-num{width:24px;height:24px;border-radius:50%;background:rgba(2,122,179,.1);color:#027AB3;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#027AB3;line-height:1;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.06))}
+.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#027AB3;line-height:1;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.06));cursor:pointer;border-radius:8px;padding:2px 4px;transition:background .12s}
+.vi-hanzi:hover{background:rgba(2,122,179,.08)}
 
 .vi-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
 .vi-pinyin{font-size:13px;font-weight:700;color:#027AB3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -153,6 +155,11 @@ a{text-decoration:none;color:inherit}
 /* Count bar */
 .count-bar{max-width:64rem;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-3)}
 .count-bar strong{color:#027AB3}
+.count-acts{display:flex;gap:6px;align-items:center}
+.count-act-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;outline:none}
+.count-act-btn:hover{border-color:#027AB3;color:#027AB3;background:rgba(2,122,179,.06)}
+.count-act-btn.ws{border-color:#f97316;color:#f97316;background:#fff7ed}
+.count-act-btn.ws:hover{background:#fed7aa;border-color:#ea580c}
 
 /* ── Footer ─────────────────────────────────────────────── */
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
@@ -205,6 +212,82 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 @media(max-width:480px){
   .footer-inner{grid-template-columns:1fr;gap:1.5rem}
 }
+
+/* ═══════════════════════════════════════════════════════════
+   HANDWRITING OVERLAY
+═══════════════════════════════════════════════════════════ */
+.hw-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.hw-overlay.open{display:flex}
+.hw-modal{background:#fff;border-radius:14px;padding:1.75rem;width:92%;max-width:480px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;max-height:92vh;overflow-y:auto}
+.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;line-height:1}
+.hw-close:hover{color:#ef4444}
+.hw-word-title{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700;color:#027AB3;text-align:center;margin-bottom:4px}
+.hw-sub{font-size:13px;color:var(--text-2);text-align:center;font-style:italic;margin-bottom:4px}
+.hw-meaning{font-size:14px;font-weight:500;text-align:center;margin-bottom:1.25rem;color:var(--text)}
+.hw-char-nav{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.hw-pip{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;width:36px;height:36px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2);background:#fff;transition:all .15s}
+.hw-pip.active{border-color:#027AB3;color:#027AB3;background:rgba(2,122,179,.08)}
+.hw-pip.done{border-color:#bbf7d0;color:#15803d;background:#f0fdf4}
+.hw-mode-tabs{display:flex;gap:8px;justify-content:center;margin-bottom:1rem}
+.hw-mode-tab{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;padding:6px 18px;border-radius:16px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.hw-mode-tab.active{background:#027AB3;color:#fff;border-color:#027AB3}
+.hw-canvas-wrap{display:flex;justify-content:center;margin-bottom:1rem}
+#hw-target{border-radius:10px;background:#fff;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden}
+.hw-grid{position:absolute;background:#e5e7eb}
+.hw-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.hw-btn{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:500;color:var(--text);padding:8px 18px;border-radius:7px;cursor:pointer;transition:all .15s}
+.hw-btn:hover{background:var(--bg)}
+.hw-btn.primary{background:#027AB3;color:#fff;border-color:#027AB3}
+.hw-btn.primary:hover{background:#016094}
+.hw-btn.danger{border-color:#fcc;color:#ef4444}
+.hw-btn.danger:hover{background:#fef2f2}
+.hw-score{text-align:center;font-size:12px;color:var(--text-2);margin-top:10px;min-height:18px}
+.hw-score.good{color:#15803d;font-weight:600}
+.hw-score.bad{color:#ef4444}
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT WIDGET
+═══════════════════════════════════════════════════════════ */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-bubble-btn{width:52px;height:52px;border-radius:50%;background:#027AB3;color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(2,122,179,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;flex-shrink:0;position:relative}
+.chat-bubble-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(2,122,179,.45)}
+.chat-float-panel{width:360px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;height:70vh;max-height:640px;min-height:360px}
+.chat-float-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,var(--navy),#1e3a8a);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1;padding:0 2px}
+.chat-close-btn:hover{color:#fff}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap}
+.chat-msg.user{background:#027AB3;color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-msg.system{background:#fffbeb;border:1px solid #fde68a;align-self:center;font-size:11px;color:#92400e;text-align:center}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent}
+.chat-send{background:#027AB3;color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.chat-send:hover{background:#016094}
+
+/* ═══════════════════════════════════════════════════════════
+   WORKSHEET OVERLAY
+═══════════════════════════════════════════════════════════ */
+.ws-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,27,75,.55);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ws-overlay.open{display:flex}
+.ws-modal{background:#fff;border-radius:14px;padding:1.5rem;width:92%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.3)}
+.ws-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.ws-modal-header h3{font-size:15px;font-weight:700;color:var(--text)}
+.ws-top-actions{display:flex;gap:6px;margin-bottom:.75rem}
+.ws-sm-btn{background:#fff;border:1px solid var(--border);font-family:'Be Vietnam Pro',sans-serif;font-size:11px;font-weight:500;padding:5px 12px;border-radius:6px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.ws-sm-btn:hover{background:var(--bg);color:var(--text)}
+.ws-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);cursor:pointer}
+.ws-row:last-child{border-bottom:none}
+.ws-row input[type=checkbox]{accent-color:#027AB3;width:16px;height:16px;flex-shrink:0;cursor:pointer}
+.ws-zh{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:600;color:#027AB3;min-width:56px}
+.ws-py{font-size:11px;color:var(--text-2);font-style:italic;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws-vn{font-size:12px;color:var(--text);min-width:110px;text-align:right}
+.ws-footer{margin-top:1rem;display:flex;justify-content:center}
+.ws-gen-btn{background:#027AB3;color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;padding:10px 28px;border-radius:7px;cursor:pointer;transition:background .15s}
+.ws-gen-btn:hover{background:#016094}
+@media(max-width:640px){.chat-float-panel{width:calc(100vw - 24px)}}
 </style>
 </head>
 <body x-data="vocabApp()" x-init="init()">
@@ -282,7 +365,17 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       / <span x-text="vocab.length"></span> từ vựng
       <span x-show="search"> — lọc theo "<em x-text="search"></em>"</span>
     </span>
-    <span x-text="activeLesson?.lesson_name?.split('-')[0]?.trim()||''"></span>
+    <div class="count-acts">
+      <span x-text="activeLesson?.lesson_name?.split('-')[0]?.trim()||''" style="font-size:12px;color:var(--text-3)"></span>
+      <button class="count-act-btn" @click="exportCSV()" title="Tải CSV">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        CSV
+      </button>
+      <button class="count-act-btn ws" @click="wsOpen()" title="In chữ viết tay">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17H17.01M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4z"/></svg>
+        In
+      </button>
+    </div>
   </div>
 
   <!-- Loading vocab -->
@@ -301,7 +394,9 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
           <!-- Left: index + hanzi + pinyin/def -->
           <div class="vi-left">
             <div class="vi-num" x-text="i+1"></div>
-            <div class="vi-hanzi" x-text="v.hanzi"></div>
+            <div class="vi-hanzi" x-text="v.hanzi"
+                 @click.stop="hw.open(v.hanzi, v.pinyin, v.definition)"
+                 title="Luyện viết nét chữ ✏️"></div>
             <div class="vi-meta">
               <div class="vi-pinyin" x-text="v.pinyin||''"></div>
               <div class="vi-def" x-text="v.definition||''"></div>
@@ -401,6 +496,74 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 
 </div><!-- /vocab-main -->
 
+<!-- ── HANDWRITING OVERLAY ─────────────────────────────────── -->
+<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)hw.close()">
+  <div class="hw-modal">
+    <button class="hw-close" onclick="hw.close()">&#215;</button>
+    <div class="hw-word-title" id="hw-title"></div>
+    <div class="hw-sub" id="hw-py"></div>
+    <div class="hw-meaning" id="hw-mg"></div>
+    <div class="hw-char-nav" id="hw-nav"></div>
+    <div class="hw-mode-tabs">
+      <button class="hw-mode-tab active" id="mt-a" onclick="hw.setMode('a')">▶ Xem nét</button>
+      <button class="hw-mode-tab" id="mt-q" onclick="hw.setMode('q')">✏️ Viết</button>
+    </div>
+    <div class="hw-canvas-wrap"><div id="hw-target">
+      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+    </div></div>
+    <div class="hw-controls" id="hw-ca">
+      <button class="hw-btn primary" onclick="hw.animate()">▶ Animate</button>
+      <button class="hw-btn" onclick="hw.loop()">↺ Loop</button>
+    </div>
+    <div class="hw-controls" id="hw-cq" style="display:none">
+      <button class="hw-btn primary" onclick="hw.quiz()">Bắt đầu viết</button>
+      <button class="hw-btn danger" onclick="hw.reset()">↺ Reset</button>
+    </div>
+    <div class="hw-score" id="hw-sc"></div>
+  </div>
+</div>
+
+<!-- ── WORKSHEET OVERLAY ──────────────────────────────────── -->
+<div class="ws-overlay" id="ws-overlay">
+  <div class="ws-modal">
+    <div class="ws-modal-header">
+      <h3>📝 Tạo bài tập viết</h3>
+      <button class="hw-close" style="position:static" onclick="wsClose()">&#215;</button>
+    </div>
+    <div class="ws-top-actions">
+      <button class="ws-sm-btn" onclick="document.querySelectorAll('.ws-cb').forEach(c=>c.checked=true)">Chọn tất cả</button>
+      <button class="ws-sm-btn" onclick="document.querySelectorAll('.ws-cb').forEach(c=>c.checked=false)">Bỏ chọn</button>
+    </div>
+    <div id="ws-list"></div>
+    <div class="ws-footer">
+      <button class="ws-gen-btn" onclick="wsGenerate()">📄 Tạo &amp; In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CHAT WIDGET ────────────────────────────────────────── -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-float-panel" id="chat-float-panel">
+    <div class="chat-header">
+      <div class="dot"></div>Hỏi AI về từ vựng
+      <button class="chat-close-btn" onclick="chatToggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-msgs">
+      <div class="chat-msg system">Hỏi bất kỳ điều gì về từ vựng bài học đang chọn. 📖</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Hỏi về từ vựng..."
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}">
+      <button class="chat-send" onclick="chatSend()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" onclick="chatToggle()" title="Hỏi AI về từ vựng">
+    💬
+    <span style="position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.4px;line-height:1.4">AI</span>
+  </button>
+</div>
+
 <!-- ── FOOTER ─────────────────────────────────────────────── -->
 <footer>
   <div class="footer-inner">
@@ -442,6 +605,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   </div>
 </footer>
 
+<!-- ── MAIN APP SCRIPT ─────────────────────────────────────── -->
 <script>
 const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
@@ -499,6 +663,9 @@ function vocabApp() {
                n.includes('当代') || n.includes('時代') || n.includes('时代');
       });
       this.loading = false;
+
+      // Expose to global for chat/worksheet access
+      window._vocabApp = this;
 
       // Deep-link or auto-select first book + lesson
       const p = new URLSearchParams(location.search);
@@ -591,6 +758,39 @@ function vocabApp() {
       this.saved = { ...this.saved, [id]: !this.saved[id] };
     },
 
+    // ── CSV Export ────────────────────────────
+    exportCSV() {
+      if (!this.vocab.length) return;
+      const lesson = this.activeLesson;
+      const header = 'Từ vựng,Pinyin,Nghĩa,Hán Việt,Từ loại,TOCFL';
+      const q = s => `"${(s || '').replace(/"/g, '""')}"`;
+      const rows = this.vocab.map(v =>
+        [q(v.hanzi), q(v.pinyin), q(v.definition), q(v.han_viet), q(v.part_of_speech), q(v.tocfl_band)].join(',')
+      );
+      const csv = '﻿' + header + '\n' + rows.join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      const name = (lesson?.lesson_name || 'vocab').replace(/[^\w一-鿿]/g, '_');
+      a.download = `vocab_${name}.csv`;
+      a.click();
+    },
+
+    // ── Worksheet ─────────────────────────────
+    wsOpen() {
+      if (!this.vocab.length) return;
+      const list = document.getElementById('ws-list');
+      list.innerHTML = this.vocab.map((v, i) => `
+        <label class="ws-row">
+          <input type="checkbox" class="ws-cb" data-i="${i}" checked>
+          <span class="ws-zh">${v.hanzi}</span>
+          <span class="ws-py">${v.pinyin || ''}</span>
+          <span class="ws-vn">${(v.definition || '').slice(0, 30)}</span>
+        </label>
+      `).join('');
+      document.getElementById('ws-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    },
+
     // ── TTS ──────────────────────────────────
     async playOne(text, id) {
       if (!text) return;
@@ -632,14 +832,6 @@ function vocabApp() {
       history.replaceState({}, '', '?' + p.toString());
     },
 
-    bandClass(band = '') {
-      const b = band.toUpperCase();
-      if (b.startsWith('A')) return 'band-a';
-      if (b.startsWith('B')) return 'band-b';
-      if (b.startsWith('C')) return 'band-c';
-      return 'band-n';
-    },
-
     posClass(pos = '') {
       const p = pos.toLowerCase();
       if (p.includes('danh từ') || p.includes('名詞') || p.includes('noun')) return 'pos-danh-tu';
@@ -650,7 +842,6 @@ function vocabApp() {
       return 'pos-default';
     },
 
-    // Strip "[Động từ] " prefix from example hanzi before display/TTS
     stripTag(text) {
       return (text || '').replace(/^\[[^\]]+\]\s*/, '');
     },
@@ -661,6 +852,314 @@ function vocabApp() {
   };
 }
 </script>
+
+<!-- ── HANDWRITING ────────────────────────────────────────── -->
+<script>
+class HandwritingModal {
+  constructor() {
+    this.writer    = null;
+    this.mode      = 'a';
+    this.chars     = [];
+    this.charIndex = 0;
+    this.done      = [];
+  }
+
+  open(word, pinyin, meaning) {
+    this.chars     = [...word];
+    this.charIndex = 0;
+    this.done      = this.chars.map(() => false);
+    this.mode      = 'a';
+    document.getElementById('hw-title').textContent = word;
+    document.getElementById('hw-py').textContent    = pinyin || '';
+    document.getElementById('hw-mg').textContent    = meaning || '';
+    document.getElementById('hw-sc').textContent    = '';
+    document.getElementById('mt-a').classList.add('active');
+    document.getElementById('mt-q').classList.remove('active');
+    document.getElementById('hw-ca').style.display = 'flex';
+    document.getElementById('hw-cq').style.display = 'none';
+    this._renderNav();
+    document.getElementById('hw-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    this._loadChar(0);
+  }
+
+  selectChar(i) {
+    this.charIndex = i;
+    this._renderNav();
+    this._loadChar(i);
+  }
+
+  setMode(mode) {
+    this.mode = mode;
+    document.getElementById('mt-a').classList.toggle('active', mode === 'a');
+    document.getElementById('mt-q').classList.toggle('active', mode === 'q');
+    document.getElementById('hw-ca').style.display = mode === 'a' ? 'flex' : 'none';
+    document.getElementById('hw-cq').style.display = mode === 'q' ? 'flex' : 'none';
+    document.getElementById('hw-sc').textContent   = '';
+    if (this.writer) {
+      try { this.writer.cancelQuiz(); this.writer.showCharacter({ duration: 0 }); } catch (e) {}
+    }
+  }
+
+  animate() {
+    if (this.writer) { this.writer.showCharacter({ duration: 0 }); this.writer.animateCharacter(); }
+  }
+
+  loop() {
+    if (this.writer) this.writer.loopCharacterAnimation();
+  }
+
+  quiz() {
+    if (!this.writer) return;
+    this.writer.hideCharacter({ duration: 0 });
+    this.writer.showOutline({ duration: 0 });
+    document.getElementById('hw-sc').textContent = `Viết: ${this.chars[this.charIndex]} (${this.charIndex + 1}/${this.chars.length})`;
+    this.writer.quiz({
+      showHintAfterMisses: 3,
+      markStrokeCorrectAfterMisses: 5,
+      onMistake: d => {
+        document.getElementById('hw-sc').textContent = `❌ ${d.totalMistakes} lỗi — còn ${d.strokesRemaining} nét`;
+        document.getElementById('hw-sc').className   = 'hw-score bad';
+      },
+      onCorrectStroke: d => {
+        document.getElementById('hw-sc').textContent = `✓ Còn ${d.strokesRemaining} nét`;
+        document.getElementById('hw-sc').className   = 'hw-score good';
+      },
+      onComplete: d => {
+        this.done[this.charIndex] = true;
+        this._renderNav();
+        if (this.charIndex < this.chars.length - 1) {
+          document.getElementById('hw-sc').textContent = `✓ Xong "${this.chars[this.charIndex]}"!`;
+          setTimeout(() => { this.charIndex++; this._renderNav(); this._loadChar(this.charIndex); }, 700);
+        } else {
+          document.getElementById('hw-sc').textContent = this.chars.length > 1
+            ? `🎉 Xong "${this.chars.join('')}"!`
+            : (d.totalMistakes === 0 ? '🎉!!' : `✅ ${d.totalMistakes} lỗi`);
+          document.getElementById('hw-sc').className = 'hw-score good';
+        }
+      }
+    });
+  }
+
+  reset() {
+    this.done      = this.chars.map(() => false);
+    this.charIndex = 0;
+    this._renderNav();
+    this._loadChar(0);
+    document.getElementById('hw-sc').textContent = '';
+  }
+
+  close() {
+    if (this.writer) { try { this.writer.cancelQuiz(); } catch (e) {} }
+    document.getElementById('hw-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  _renderNav() {
+    document.getElementById('hw-nav').innerHTML = this.chars.map((c, i) =>
+      `<div class="hw-pip${i === this.charIndex ? ' active' : ''}${this.done[i] ? ' done' : ''}" onclick="hw.selectChar(${i})">${c}</div>`
+    ).join('');
+  }
+
+  _loadChar(i) {
+    const t = document.getElementById('hw-target');
+    Array.from(t.children).forEach(c => { if (!c.classList.contains('hw-grid')) c.remove(); });
+    if (this.writer) { try { this.writer.cancelQuiz(); } catch (e) {} this.writer = null; }
+    setTimeout(() => {
+      this.writer = HanziWriter.create('hw-target', this.chars[i], {
+        width: 200, height: 200, padding: 12, showOutline: true,
+        strokeColor: '#1a1208', outlineColor: '#ddd5c8', drawingColor: '#c0392b',
+        drawingWidth: 5, highlightColor: '#1a6b5a', radicalColor: '#b8860b',
+        strokeAnimationSpeed: 1, delayBetweenStrokes: 350,
+        showHintAfterMisses: 3, markStrokeCorrectAfterMisses: 5, highlightOnComplete: true
+      });
+      if (this.mode === 'q') this.quiz();
+    }, 50);
+  }
+}
+
+const hw = new HandwritingModal();
+</script>
+
+<!-- ── CHAT ──────────────────────────────────────────────── -->
+<script>
+let _chatOpen = false;
+let _chatHistory = [];
+let _chatBusy = false;
+
+function chatToggle() {
+  _chatOpen = !_chatOpen;
+  document.getElementById('chat-float-panel').classList.toggle('open', _chatOpen);
+  if (_chatOpen) {
+    const msgs = document.getElementById('chat-msgs');
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => document.getElementById('chat-input').focus(), 50);
+  }
+}
+
+async function chatSend() {
+  if (_chatBusy) return;
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+
+  if (!_chatOpen) chatToggle();
+
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="chat-msg user">${escHtml(msg)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  _chatHistory.push({ role: 'user', content: msg });
+  _chatBusy = true;
+
+  const loadId = 'cl-' + Date.now();
+  msgs.innerHTML += `<div class="chat-msg bot" id="${loadId}">⏳ …</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const app = window._vocabApp;
+  const lessonName = app?.activeLesson?.lesson_name || 'bài học';
+  const vocabLines = (app?.vocab || []).map((v, i) =>
+    `${i+1}. ${v.hanzi}（${v.pinyin || ''}）— ${v.definition || ''}`
+  ).join('\n');
+
+  const sys = `Bạn là trợ lý dạy tiếng Trung phồn thể Đài Loan (繁體中文，台灣) cho học viên Việt Nam.
+Học viên đang xem từ vựng bài "${lessonName}".
+
+BẮT BUỘC trả lời bằng TIẾNG VIỆT. Chỉ dùng chữ Hán khi trích dẫn, kèm pinyin và nghĩa tiếng Việt. Phải dùng chữ Hán phồn thể (繁體), không giản thể.
+
+TỪ VỰNG BÀI HỌC:
+${vocabLines || '(chưa có từ vựng)'}
+
+Trả lời ngắn gọn, rõ ràng, tập trung vào từ vựng và ngữ pháp tiếng Trung.`;
+
+  try {
+    const r = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'system', content: sys }, ..._chatHistory],
+        max_tokens: 800,
+        temperature: 0,
+      }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || data.error) throw new Error(typeof data.error === 'string' ? data.error : (data.error?.message || `HTTP ${r.status}`));
+    const reply = data.content || '';
+    _chatHistory.push({ role: 'assistant', content: reply });
+    const el = document.getElementById(loadId);
+    if (el) el.textContent = reply;
+  } catch (e) {
+    const el = document.getElementById(loadId);
+    if (el) el.outerHTML = `<div class="chat-msg system">❌ ${escHtml(e.message)}</div>`;
+  }
+
+  _chatBusy = false;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+
+<!-- ── WORKSHEET ──────────────────────────────────────────── -->
+<script>
+function wsClose() {
+  document.getElementById('ws-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function wsGenerate() {
+  const app = window._vocabApp;
+  if (!app) return;
+  const selected = [...document.querySelectorAll('.ws-cb:checked')]
+    .map(cb => app.vocab[+cb.dataset.i])
+    .filter(Boolean);
+  if (!selected.length) { alert('Chọn ít nhất 1 từ.'); return; }
+  wsClose();
+  const lessonTitle = app.activeLesson?.lesson_name || '';
+  const win = window.open('', '_blank');
+  win.document.write(_buildWorksheetHTML(selected, lessonTitle));
+  win.document.close();
+}
+
+function _buildWorksheetHTML(vocab, lessonTitle) {
+  const SZ = 58;
+  const N  = 10;
+  let rowsHTML = '';
+  let initJS   = '';
+
+  vocab.forEach((v, wi) => {
+    const chars = [...v.hanzi].filter(c => /\S/.test(c));
+
+    rowsHTML += `<div class="word-hd">
+      ${v.hanzi}
+      <span class="py">${v.pinyin || ''}</span>
+      <span class="vn">${(v.definition || '').slice(0, 40)}</span>
+    </div>`;
+
+    chars.forEach((ch, ci) => {
+      const eId  = `e-${wi}-${ci}`;
+      const pIds = Array.from({ length: N }, (_, k) => `p-${wi}-${ci}-${k}`);
+      const grid = `<div class="gl"></div><div class="gv"></div>`;
+
+      rowsHTML += `<div class="row">
+        <div class="box ex" id="${eId}">${grid}</div>
+        ${pIds.map(id => `<div class="box pr" id="${id}">${grid}</div>`).join('')}
+      </div>`;
+
+      initJS += `HanziWriter.create('${eId}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:false,showCharacter:true,strokeColor:'#111'});\n`;
+      pIds.forEach(id => {
+        initJS += `HanziWriter.create('${id}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:true,showCharacter:false,outlineColor:'#bbb'});\n`;
+      });
+    });
+  });
+
+  return `<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>漢字練習</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Be+Vietnam+Pro:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"><\/script>
+<style>
+@page{size:A4 portrait;margin:12mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#fff;padding:10px}
+.print-bar{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid #e0d8cc}
+.print-btn{background:#1a1208;color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit}
+.print-hint{font-size:11px;color:#999}
+h1{font-family:'Noto Serif TC',serif;font-size:15px;color:#333;margin-bottom:12px}
+.word-hd{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;color:#444;margin:12px 0 4px}
+.word-hd .py{color:#888;font-style:italic;font-weight:400;margin-left:8px;font-family:'Be Vietnam Pro',sans-serif}
+.word-hd .vn{color:#888;font-weight:400;margin-left:6px;font-family:'Be Vietnam Pro',sans-serif}
+.row{display:flex;gap:3px;margin-bottom:3px;page-break-inside:avoid}
+.box{width:${SZ}px;height:${SZ}px;border:1px solid #bbb;position:relative;flex-shrink:0;background:#fff}
+.ex{border:2px solid #333}
+.gl{position:absolute;top:50%;left:0;width:100%;height:1px;background:#e5ddd2}
+.gv{position:absolute;left:50%;top:0;height:100%;width:1px;background:#e5ddd2}
+@media print{.print-bar{display:none}body{padding:0}}
+</style>
+</head>
+<body>
+<div class="print-bar">
+  <button class="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>
+  <span class="print-hint">Chọn "Save as PDF" trong hộp thoại in để lưu file</span>
+</div>
+<h1>${lessonTitle ? lessonTitle + ' · ' : ''}漢字練習</h1>
+${rowsHTML}
+<script>
+window.onload=function(){try{
+${initJS}
+}catch(e){console.error(e)}};
+<\/script>
+</body>
+</html>`;
+}
+</script>
+
 <script src="/js/nav-mobile.js"></script>
 <script src="/js/track.js" defer></script>
 </body>
