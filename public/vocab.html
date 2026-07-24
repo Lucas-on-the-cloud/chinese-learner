@@ -99,8 +99,8 @@ a{text-decoration:none;color:inherit}
 
 .vi-num{width:24px;height:24px;border-radius:50%;background:rgba(2,122,179,.1);color:#027AB3;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#027AB3;line-height:1;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.06));cursor:pointer;border-radius:8px;padding:2px 4px;transition:background .12s}
-.vi-hanzi:hover{background:rgba(2,122,179,.08)}
+.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#c0392b;line-height:1;flex-shrink:0;filter:drop-shadow(0 1px 2px rgba(0,0,0,.06));cursor:pointer;border-radius:8px;padding:2px 4px;transition:background .12s}
+.vi-hanzi:hover{background:rgba(192,57,43,.08)}
 
 .vi-meta{min-width:0;display:flex;flex-direction:column;gap:2px}
 .vi-pinyin{font-size:13px;font-weight:700;color:#027AB3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -156,7 +156,7 @@ a{text-decoration:none;color:inherit}
 .count-bar{max-width:64rem;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-3)}
 .count-bar strong{color:#027AB3}
 .count-acts{display:flex;gap:6px;align-items:center}
-.count-act-btn{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;outline:none}
+.count-act-btn{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 14px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;outline:none}
 .count-act-btn:hover{border-color:#027AB3;color:#027AB3;background:rgba(2,122,179,.06)}
 .count-act-btn.ws{border-color:#f97316;color:#f97316;background:#fff7ed}
 .count-act-btn.ws:hover{background:#fed7aa;border-color:#ea580c}
@@ -1110,9 +1110,9 @@ function _buildWorksheetHTML(vocab, lessonTitle) {
         ${pIds.map(id => `<div class="box pr" id="${id}">${grid}</div>`).join('')}
       </div>`;
 
-      initJS += `HanziWriter.create('${eId}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:false,showCharacter:true,strokeColor:'#111'});\n`;
+      initJS += `hw('${eId}','${ch}',true);\n`;
       pIds.forEach(id => {
-        initJS += `HanziWriter.create('${id}','${ch}',{width:${SZ},height:${SZ},padding:4,showOutline:true,showCharacter:false,outlineColor:'#bbb'});\n`;
+        initJS += `hw('${id}','${ch}',false);\n`;
       });
     });
   });
@@ -1151,9 +1151,23 @@ h1{font-family:'Noto Serif TC',serif;font-size:15px;color:#333;margin-bottom:12p
 <h1>${lessonTitle ? lessonTitle + ' · ' : ''}漢字練習</h1>
 ${rowsHTML}
 <script>
-window.onload=function(){try{
-${initJS}
-}catch(e){console.error(e)}};
+function hw(id,ch,showChar){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var sz=${SZ};
+  HanziWriter.create(id,ch,{
+    width:sz,height:sz,padding:4,
+    showOutline:!showChar,showCharacter:showChar,
+    strokeColor:'#111',outlineColor:'#bbb',
+    onLoadCharDataError:function(){
+      el.innerHTML='<div class="gl"></div><div class="gv"></div>'
+        +'<span style="position:absolute;inset:0;display:flex;align-items:center;'
+        +'justify-content:center;font-family:Noto Serif TC,serif;font-size:32px;'
+        +'color:'+(showChar?'#333':'#ccc')+'">'+(ch)+'</span>';
+    }
+  });
+}
+window.onload=function(){${initJS}};
 <\/script>
 </body>
 </html>`;
