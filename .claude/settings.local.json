@@ -5,7 +5,9 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "WebFetch(domain:api.anthropic.com)",
-      "Bash(python3 split_admin.py)"
+      "Bash(python3 split_admin.py)",
+      "Bash(vercel env *)",
+      "Bash(vercel deploy *)"
     ]
   }
 }

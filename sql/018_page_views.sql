@@ -35,3 +35,9 @@ CREATE POLICY "page_views insert public" ON page_views
 
 -- No SELECT policy → RLS denies all reads from anon/authenticated.
 -- service_role bypasses RLS automatically.
+
+
+-- node scripts/analytics.mjs              # 30 ngày qua
+-- node scripts/analytics.mjs --days=7     # 7 ngày
+-- node scripts/analytics.mjs --days=1     # hôm nay
+
