@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Từ vựng — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/auth-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+.zh{font-family:'Noto Serif TC',serif}
+[x-cloak]{display:none!important}
+
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --r:12px;--nav-h:62px;
+}
+
+/* ── Navbar ─────────────────────────────────────────────── */
+.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;transition:.15s}
+.nav-btn:hover{background:var(--blue-dark)}
+.nav-user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7)}
+
+/* ── Page hero ──────────────────────────────────────────── */
+.page-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 60%,var(--blue) 100%);padding:44px 1.5rem 52px;position:relative;overflow:hidden}
+.page-hero::before{content:'詞';position:absolute;font-family:'Noto Serif TC',serif;font-size:380px;font-weight:700;color:rgba(255,255,255,.03);bottom:-100px;right:-20px;pointer-events:none;line-height:1}
+.ph-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.ph-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;padding:4px 14px;border-radius:50px;margin-bottom:14px}
+.ph-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3.5vw,36px);font-weight:700;color:#fff;line-height:1.2;margin-bottom:10px}
+.ph-sub{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:22px}
+.ph-stats{display:flex;gap:24px;flex-wrap:wrap}
+.ph-stat{color:rgba(255,255,255,.75);font-size:13px;display:flex;align-items:center;gap:8px}
+.ph-stat strong{font-size:20px;font-weight:800;color:#fff}
+
+/* ── Breadcrumb ─────────────────────────────────────────── */
+.breadcrumb{display:flex;align-items:center;gap:6px;padding:14px 1.5rem;max-width:1100px;margin:0 auto;font-size:13px;color:var(--text-3)}
+.breadcrumb button{color:var(--text-3);background:none;border:none;cursor:pointer;font-size:13px;padding:0;font-family:inherit;transition:.12s}
+.breadcrumb button:hover{color:var(--blue)}
+.breadcrumb .cur{color:var(--text-2);font-weight:600}
+.bc-sep{font-size:10px;opacity:.4}
+
+/* ── Book grid ──────────────────────────────────────────── */
+.grid-wrap{max-width:1100px;margin:0 auto;padding:0 1.5rem 60px}
+.grid-label{font-size:13px;font-weight:700;color:var(--text-2);margin-bottom:14px;margin-top:24px}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.book-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .15s;text-align:left;width:100%}
+.book-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:var(--shadow)}
+.book-cover{height:100px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.book-cover-wm{font-family:'Noto Serif TC',serif;font-size:60px;font-weight:700;color:rgba(255,255,255,.18);position:absolute;bottom:-10px;right:6px;line-height:1;pointer-events:none}
+.book-cover-icon{font-family:'Be Vietnam Pro',sans-serif;font-size:22px;font-weight:800;color:#fff;position:relative;z-index:1;letter-spacing:-1px}
+.book-card-body{padding:12px 14px}
+.book-card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;line-height:1.4}
+.book-card-sub{font-size:11px;color:var(--text-3)}
+
+/* ── Lesson list ────────────────────────────────────────── */
+.lesson-wrap{max-width:760px;margin:0 auto;padding:0 1.5rem 60px}
+.lesson-item{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:14px;margin-bottom:8px;width:100%;text-align:left;font-family:inherit}
+.lesson-item:hover{border-color:var(--blue);background:var(--blue-lt)}
+.lesson-num{width:34px;height:34px;border-radius:8px;background:#f3f4f6;color:var(--text-2);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lesson-title{font-size:14px;font-weight:600;color:var(--text);flex:1;line-height:1.4}
+.lesson-count{font-size:12px;color:var(--text-3);white-space:nowrap}
+
+/* ── Vocab section ──────────────────────────────────────── */
+.vocab-wrap{max-width:1100px;margin:0 auto;padding:0 1.5rem 60px}
+.vocab-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.vocab-search{flex:1;min-width:180px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:0 12px;height:38px;transition:.12s}
+.vocab-search:focus-within{border-color:var(--blue)}
+.vocab-search input{flex:1;border:none;outline:none;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;background:transparent;color:var(--text)}
+.vocab-search i{color:var(--text-3);font-size:13px}
+.vocab-count{font-size:12px;color:var(--text-3);white-space:nowrap}
+.toolbar-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text-2);transition:.12s;white-space:nowrap}
+.toolbar-btn:hover,.toolbar-btn.active{border-color:var(--blue);color:var(--blue)}
+
+/* ── Vocab grid ─────────────────────────────────────────── */
+.vocab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.vocab-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .15s}
+.vocab-card:hover{box-shadow:var(--shadow)}
+.vocab-card-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px 10px}
+.vc-tts{width:36px;height:36px;border-radius:9px;background:var(--blue-lt);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:14px;flex-shrink:0;transition:.12s}
+.vc-tts:hover{background:var(--blue);color:#fff}
+.vc-tts.playing{background:var(--blue);color:#fff;animation:tts-pulse .9s ease-in-out infinite}
+@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.65}}
+.vc-main{flex:1;min-width:0}
+.vc-hanzi{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--navy);line-height:1.2;margin-bottom:3px;word-break:break-all}
+.vc-pinyin{font-size:12px;color:var(--text-2);margin-bottom:5px;letter-spacing:.3px}
+.vc-badges{display:flex;gap:5px;flex-wrap:wrap}
+.vc-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;line-height:1.5}
+.vc-badge.pos{background:var(--green-lt);color:#166534}
+.vc-badge.ta{background:#fef9c3;color:#713f12}
+.vc-badge.tb{background:#dbeafe;color:#1e40af}
+.vc-badge.tc{background:#fce7f3;color:#9d174d}
+.vc-badge.tn{background:#f3f4f6;color:var(--text-3)}
+.vc-def{font-size:13px;color:var(--text);line-height:1.6;padding:0 16px 10px}
+.vc-han-viet{font-size:11px;color:var(--text-3);padding:0 16px 8px;font-style:italic}
+.vc-examples{border-top:1px solid #f3f4f6}
+.vc-ex-toggle{width:100%;background:none;border:none;padding:8px 16px;text-align:left;cursor:pointer;font-size:11px;font-weight:700;color:var(--text-3);display:flex;align-items:center;gap:6px;transition:.12s;font-family:inherit}
+.vc-ex-toggle:hover{color:var(--blue);background:#f9fafb}
+.vc-ex-body{padding:0 16px 12px;display:none}
+.vc-ex-body.open{display:block}
+.vc-ex-item{padding:8px 0;border-bottom:1px solid #f3f4f6}
+.vc-ex-item:last-child{border-bottom:none;padding-bottom:0}
+.vc-ex-zh{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);line-height:1.7}
+.vc-ex-py{font-size:11px;color:var(--text-3);margin-top:1px}
+.vc-ex-vi{font-size:12px;color:var(--text-2);margin-top:2px}
+
+/* ── Empty / loading states ─────────────────────────────── */
+.empty{text-align:center;padding:64px 20px;color:var(--text-3)}
+.empty-big{font-family:'Noto Serif TC',serif;font-size:72px;margin-bottom:16px;opacity:.15}
+.empty p{font-size:14px;line-height:1.8}
+.loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+.spinner-sm{width:20px;height:20px;border-width:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Footer ─────────────────────────────────────────────── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-inner{max-width:1100px;margin:0 auto;padding:40px 1.5rem 32px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:14px;max-width:320px}
+.footer-col-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:6px}
+.footer-links a{color:rgba(255,255,255,.5);transition:color .15s}
+.footer-links a:hover{color:rgba(255,255,255,.85)}
+.footer-socials{display:flex;gap:8px}
+.footer-social{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:13px;transition:.15s}
+.footer-social:hover{background:rgba(255,255,255,.15);color:#fff}
+.footer-info-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px}
+.footer-info-row i{width:14px;flex-shrink:0;color:rgba(255,255,255,.3)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.footer-bottom-links{display:flex;gap:1.5rem}
+.footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media(max-width:768px){
+  .book-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .vocab-grid{grid-template-columns:1fr}
+  .footer-inner{grid-template-columns:1fr 1fr}
+  .nav-link{display:none}
+}
+@media(max-width:480px){
+  .footer-inner{grid-template-columns:1fr;gap:1.5rem}
+}
+</style>
+</head>
+<body x-data="vocabApp()" x-init="init()">
+
+<!-- ── NAVBAR ───────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="container">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link active" href="/vocab.html">Từ vựng</a>
+      <a class="nav-link" href="/news.html">Đọc báo</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-link" href="/blog.html">Blog</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── LOADING ──────────────────────────────────────────── -->
+<div class="loading-overlay" x-show="loading" x-transition style="display:none">
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text-3)">Đang tải…</div>
+  </div>
+</div>
+
+<!-- ── MAIN ─────────────────────────────────────────────── -->
+<div style="flex:1" x-cloak>
+
+  <!-- ══ BOOKS VIEW ═══════════════════════════════════════ -->
+  <div x-show="view==='books'">
+    <div class="page-hero">
+      <div class="ph-inner">
+        <div class="ph-eyebrow">
+          <i class="fa-solid fa-book-open" style="font-size:9px"></i>
+          <span>Từ điển học tập</span>
+        </div>
+        <h1 class="ph-title">Từ vựng 繁體中文</h1>
+        <p class="ph-sub">Tra cứu, luyện nghe TTS, ôn tập theo bài học · TOCFL A1 → C2</p>
+        <div class="ph-stats">
+          <div class="ph-stat">
+            <strong x-text="totalWords.toLocaleString()"></strong> từ vựng
+          </div>
+          <div class="ph-stat">
+            <strong x-text="books.length"></strong> bộ sách
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="grid-label">Chọn bộ sách để bắt đầu</div>
+      <div class="book-grid">
+        <template x-for="(book, i) in books" :key="book.id">
+          <button class="book-card" @click="selectBook(book)">
+            <div class="book-cover" :style="`background:${gradient(i)}`">
+              <span class="book-cover-wm" x-text="bookWm(book.book_name)"></span>
+              <span class="book-cover-icon" x-text="bookShort(book.book_name)"></span>
+            </div>
+            <div class="book-card-body">
+              <div class="book-card-title" x-text="bookDisplay(book.book_name)"></div>
+              <div class="book-card-sub">
+                <span x-text="book.lesson_count || '?'"></span> bài ·
+                <span x-text="(book.word_count||0).toLocaleString()"></span> từ
+              </div>
+            </div>
+          </button>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LESSONS VIEW ══════════════════════════════════════ -->
+  <div x-show="view==='lessons'">
+    <div class="page-hero" style="padding:28px 1.5rem 36px">
+      <div class="ph-inner">
+        <div class="ph-eyebrow">
+          <i class="fa-solid fa-book" style="font-size:9px"></i>
+          <span x-text="bookDisplay(activeBook?.book_name||'')"></span>
+        </div>
+        <h1 class="ph-title" style="font-size:clamp(18px,3vw,28px)"
+            x-text="(activeBook?.book_name||'').split('|')[0].trim()||'—'"></h1>
+      </div>
+    </div>
+
+    <div class="breadcrumb">
+      <button @click="gotoBooks()">
+        <i class="fa-solid fa-arrow-left" style="font-size:10px;margin-right:4px"></i>Từ vựng
+      </button>
+      <span class="bc-sep">›</span>
+      <span class="cur" x-text="bookDisplay(activeBook?.book_name||'')"></span>
+    </div>
+
+    <div class="lesson-wrap">
+      <template x-for="(lesson, i) in lessons" :key="lesson.id">
+        <button class="lesson-item" @click="selectLesson(lesson)">
+          <div class="lesson-num" x-text="i+1"></div>
+          <div class="lesson-title zh" x-text="lesson.lesson_name"></div>
+          <div class="lesson-count" x-text="`${lesson.word_count||0} từ`"></div>
+          <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text-3)"></i>
+        </button>
+      </template>
+      <div class="empty" x-show="!lessons.length && !loading">
+        <div class="empty-big">無</div>
+        <p>Bộ sách này chưa có bài học nào.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ VOCAB VIEW ════════════════════════════════════════ -->
+  <div x-show="view==='vocab'">
+    <div class="page-hero" style="padding:24px 1.5rem 32px">
+      <div class="ph-inner">
+        <div class="ph-eyebrow">
+          <i class="fa-solid fa-list" style="font-size:9px"></i>
+          <span x-text="bookDisplay(activeBook?.book_name||'')"></span>
+        </div>
+        <h1 class="ph-title" style="font-size:clamp(16px,2.5vw,24px)"
+            x-text="activeLesson?.lesson_name||'—'"></h1>
+      </div>
+    </div>
+
+    <div class="breadcrumb">
+      <button @click="gotoBooks()">Từ vựng</button>
+      <span class="bc-sep">›</span>
+      <button @click="gotoLessons()" x-text="bookDisplay(activeBook?.book_name||'')"></button>
+      <span class="bc-sep">›</span>
+      <span class="cur" x-text="(activeLesson?.lesson_name||'').split(' - ')[0]||'—'"></span>
+    </div>
+
+    <div class="vocab-wrap">
+      <!-- Toolbar -->
+      <div class="vocab-toolbar">
+        <div class="vocab-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input x-model="search" placeholder="Tìm từ, pinyin, nghĩa…" type="search"
+                 @keydown.escape="search=''">
+          <button x-show="search" @click="search=''"
+            style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0;line-height:1">×</button>
+        </div>
+        <span class="vocab-count">
+          <span x-show="vocabLoading">
+            <span class="spinner spinner-sm" style="display:inline-block;vertical-align:middle"></span>
+          </span>
+          <span x-show="!vocabLoading" x-text="`${filteredVocab.length} từ`"></span>
+        </span>
+        <button class="toolbar-btn" :class="isPlayingAll ? 'active' : ''" @click="togglePlayAll()">
+          <i :class="isPlayingAll ? 'fa-solid fa-stop' : 'fa-solid fa-play'" style="font-size:10px"></i>
+          <span x-text="isPlayingAll ? 'Dừng' : 'Nghe tất cả'"></span>
+        </button>
+      </div>
+
+      <!-- Vocab grid -->
+      <div class="vocab-grid" x-show="filteredVocab.length && !vocabLoading">
+        <template x-for="v in filteredVocab" :key="v.id">
+          <div class="vocab-card">
+            <!-- Head: TTS + hanzi + pinyin + badges -->
+            <div class="vocab-card-head">
+              <button class="vc-tts" :class="playingId===v.id ? 'playing' : ''"
+                      @click="playOne(v.hanzi, v.id)" :title="`Nghe: ${v.hanzi}`">
+                <i :class="playingId===v.id
+                    ? 'fa-solid fa-volume-high'
+                    : 'fa-solid fa-volume-low'"></i>
+              </button>
+              <div class="vc-main">
+                <div class="vc-hanzi" x-text="v.hanzi"></div>
+                <div class="vc-pinyin" x-text="v.pinyin||''"></div>
+                <div class="vc-badges">
+                  <template x-if="v.part_of_speech">
+                    <span class="vc-badge pos" x-text="v.part_of_speech"></span>
+                  </template>
+                  <template x-if="v.tocfl_band">
+                    <span class="vc-badge" :class="bandClass(v.tocfl_band)"
+                          x-text="v.tocfl_band"></span>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Definition -->
+            <div class="vc-def" x-text="v.definition||''"></div>
+
+            <!-- Han-Viet -->
+            <template x-if="v.han_viet">
+              <div class="vc-han-viet" x-text="'Hán Việt: ' + v.han_viet"></div>
+            </template>
+
+            <!-- Examples accordion -->
+            <template x-if="v.examples && v.examples.length">
+              <div class="vc-examples">
+                <button class="vc-ex-toggle" @click="toggleEx(v.id)">
+                  <i :class="openEx.has(v.id)
+                      ? 'fa-solid fa-chevron-up'
+                      : 'fa-solid fa-chevron-down'"
+                     style="font-size:9px"></i>
+                  <span x-text="openEx.has(v.id)
+                      ? 'Ẩn ví dụ'
+                      : `${v.examples.length} ví dụ`"></span>
+                </button>
+                <div class="vc-ex-body" :class="openEx.has(v.id) ? 'open' : ''">
+                  <template x-for="ex in v.examples" :key="ex.id">
+                    <div class="vc-ex-item">
+                      <div class="vc-ex-zh zh" x-text="ex.hanzi||''"></div>
+                      <div class="vc-ex-py" x-text="ex.pinyin||''"></div>
+                      <div class="vc-ex-vi" x-text="ex.translation||''"></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+          </div>
+        </template>
+      </div>
+
+      <!-- Empty -->
+      <div class="empty" x-show="!filteredVocab.length && !vocabLoading">
+        <div class="empty-big">無</div>
+        <p x-show="search">
+          Không tìm thấy "<span x-text="search"></span>"
+        </p>
+        <p x-show="!search">Bài học này chưa có từ vựng.</p>
+      </div>
+
+    </div><!-- /vocab-wrap -->
+  </div><!-- /vocab view -->
+
+</div><!-- /main -->
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px" onerror="this.style.display='none'">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
+      <div class="footer-socials">
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/courses.html" title="Khóa học"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/vocab.html">Từ vựng</a></li>
+        <li><a href="/exams.html">Đề thi</a></li>
+        <li><a href="/blog.html">Blog</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div class="footer-info-row"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="footer-info-row"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="footer-info-row"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="footer-bottom-links">
+      <a href="/courses.html">Khóa học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const _db = supabase.createClient(_DB_URL, _DB_KEY);
+
+const GRADIENTS = [
+  ['#1a56db','#3b82f6'],['#7c3aed','#a855f7'],['#0d1b4b','#1e3a8a'],
+  ['#0ea5e9','#38bdf8'],['#16a34a','#4ade80'],['#f47b20','#fb923c'],
+  ['#dc2626','#ef4444'],['#d97706','#fbbf24'],['#0891b2','#22d3ee'],
+  ['#7c3aed','#c084fc'],['#1a56db','#60a5fa'],['#059669','#34d399'],
+  ['#b45309','#f59e0b'],['#6d28d9','#8b5cf6'],['#be185d','#ec4899'],
+  ['#047857','#10b981'],
+];
+
+const _audio = new Audio();
+let _stopAll = false;
+
+function renderNavAuth(user) {
+  const wrap = document.getElementById('nav-auth');
+  if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
+  const init = user.email?.[0]?.toUpperCase() || 'U';
+  wrap.innerHTML = `<a href="/dashboard.html" class="nav-user-avatar" title="Dashboard">${init}</a>`;
+}
+
+function vocabApp() {
+  return {
+    // ── State ────────────────────────────────
+    loading:      true,
+    vocabLoading: false,
+    view:         'books',
+    books:        [],
+    lessons:      [],
+    vocab:        [],
+    totalWords:   0,
+    activeBook:   null,
+    activeLesson: null,
+    search:       '',
+    openEx:       new Set(),
+    playingId:    null,
+    isPlayingAll: false,
+
+    // ── Computed ─────────────────────────────
+    get filteredVocab() {
+      if (!this.search) return this.vocab;
+      const q = this.search.toLowerCase();
+      return this.vocab.filter(v =>
+        (v.hanzi        ||'').includes(q) ||
+        (v.pinyin       ||'').toLowerCase().includes(q) ||
+        (v.definition   ||'').toLowerCase().includes(q) ||
+        (v.han_viet     ||'').toLowerCase().includes(q)
+      );
+    },
+
+    // ── Init ─────────────────────────────────
+    async init() {
+      if (typeof AuthService !== 'undefined') {
+        new AuthService(_db).init().then(u => renderNavAuth(u));
+      }
+
+      const { data: books } = await _db
+        .from('vocab_books')
+        .select('id, book_name, lesson_count, word_count')
+        .order('id');
+
+      this.books = books || [];
+      this.totalWords = (books||[]).reduce((s,b) => s+(b.word_count||0), 0);
+      this.loading = false;
+
+      // URL deep-link: ?book=1&lesson=3
+      const p = new URLSearchParams(location.search);
+      const bid = p.get('book'), lid = p.get('lesson');
+      if (bid) {
+        const b = this.books.find(b => String(b.id) === bid);
+        if (b) {
+          await this.selectBook(b, false);
+          if (lid) {
+            const l = this.lessons.find(l => String(l.id) === lid);
+            if (l) await this.selectLesson(l, false);
+          }
+        }
+      }
+    },
+
+    // ── Navigation ───────────────────────────
+    gotoBooks() {
+      this._haltAudio();
+      this.view = 'books';
+      history.pushState({}, '', location.pathname);
+    },
+
+    gotoLessons() {
+      this._haltAudio();
+      this.view = 'lessons';
+      history.pushState({}, '', `?book=${this.activeBook.id}`);
+    },
+
+    async selectBook(book, push = true) {
+      this.activeBook = book;
+      this.view = 'lessons';
+      if (push) history.pushState({}, '', `?book=${book.id}`);
+
+      const { data } = await _db
+        .from('vocab_lessons')
+        .select('id, lesson_name, word_count')
+        .eq('book_id', book.id)
+        .order('id');
+      this.lessons = data || [];
+    },
+
+    async selectLesson(lesson, push = true) {
+      this._haltAudio();
+      this.activeLesson = lesson;
+      this.view = 'vocab';
+      this.vocab = [];
+      this.search = '';
+      this.openEx = new Set();
+      this.vocabLoading = true;
+      if (push) history.pushState({}, '', `?book=${this.activeBook.id}&lesson=${lesson.id}`);
+      window.scrollTo(0, 0);
+
+      const { data: vocabData } = await _db
+        .from('vocabularies')
+        .select('id, hanzi, pinyin, definition, part_of_speech, audio_url, tocfl_band, han_viet')
+        .eq('lesson_id', lesson.id)
+        .order('id');
+
+      if (vocabData?.length) {
+        const ids = vocabData.map(v => v.id);
+        const { data: exData } = await _db
+          .from('vocab_examples')
+          .select('id, vocab_id, hanzi, pinyin, translation')
+          .in('vocab_id', ids)
+          .order('id');
+
+        const exMap = {};
+        (exData||[]).forEach(e => {
+          if (!exMap[e.vocab_id]) exMap[e.vocab_id] = [];
+          exMap[e.vocab_id].push(e);
+        });
+        this.vocab = vocabData.map(v => ({ ...v, examples: exMap[v.id]||[] }));
+      }
+
+      this.vocabLoading = false;
+    },
+
+    // ── TTS ──────────────────────────────────
+    async playOne(text, id) {
+      _stopAll = true;
+      this.isPlayingAll = false;
+      if (this.playingId === id) { this._haltAudio(); return; }
+      this.playingId = id;
+      await this._speak(text);
+      if (this.playingId === id) this.playingId = null;
+    },
+
+    async togglePlayAll() {
+      if (this.isPlayingAll) { _stopAll = true; this.isPlayingAll = false; this._haltAudio(); return; }
+      _stopAll = false;
+      this.isPlayingAll = true;
+      for (const v of this.filteredVocab) {
+        if (_stopAll) break;
+        this.playingId = v.id;
+        await this._speak(v.hanzi);
+        if (!_stopAll) await new Promise(r => setTimeout(r, 380));
+      }
+      this.playingId = null;
+      this.isPlayingAll = false;
+    },
+
+    async _speak(text) {
+      return new Promise(resolve => {
+        // Google TTS → Web Speech API fallback
+        _audio.pause();
+        _audio.src = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=zh-TW&q=${encodeURIComponent(text)}`;
+        _audio.play()
+          .then(() => { _audio.onended = resolve; })
+          .catch(() => {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-TW'; u.rate = 0.85;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+            u.onend = resolve;
+            // Failsafe timeout
+            setTimeout(resolve, 5000);
+          });
+        setTimeout(resolve, 6000); // global timeout
+      });
+    },
+
+    _haltAudio() {
+      this.playingId = null;
+      _audio.pause();
+      window.speechSynthesis.cancel();
+    },
+
+    // ── UI helpers ───────────────────────────
+    toggleEx(id) {
+      const s = new Set(this.openEx);
+      s.has(id) ? s.delete(id) : s.add(id);
+      this.openEx = s;
+    },
+
+    gradient(i) {
+      const [c1,c2] = GRADIENTS[i % GRADIENTS.length];
+      return `linear-gradient(135deg,${c1},${c2})`;
+    },
+
+    bookWm(name = '') {
+      if (name.includes('Đương Đại')) return '當';
+      if (name.includes('Thời Đại'))  return '時';
+      if (name.includes('TOCFL'))     return '試';
+      return '詞';
+    },
+
+    bookShort(name = '') {
+      const n = (name.match(/\d+/)||[])[0]||'';
+      if (name.includes('Đương Đại')) return `ĐĐ${n}`;
+      if (name.includes('Thời Đại'))  return `TĐ${n}`;
+      if (name.includes('Level'))     return `L${n}`;
+      if (name.includes('TOCFL'))     return `TC${n}`;
+      return name.slice(0,3);
+    },
+
+    bookDisplay(name = '') {
+      return name.split('|')[0].trim();
+    },
+
+    bandClass(band = '') {
+      const b = band.toUpperCase();
+      if (b.startsWith('A')) return 'vc-badge ta';
+      if (b.startsWith('B')) return 'vc-badge tb';
+      if (b.startsWith('C')) return 'vc-badge tc';
+      return 'vc-badge tn';
+    },
+  };
+}
+</script>
+<script src="/js/nav-mobile.js"></script>
+<script src="/js/track.js" defer></script>
+</body>
+</html>
