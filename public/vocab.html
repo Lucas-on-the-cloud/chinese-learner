@@ -366,12 +366,18 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
               <template x-for="ex in v.examples" :key="ex.id">
                 <div class="vi-ex">
                   <div class="vi-ex-body">
-                    <div class="vi-ex-zh" x-text="ex.hanzi||''"></div>
+                    <template x-if="extractTag(ex.hanzi)">
+                      <span class="pos-badge" :class="posClass(extractTag(ex.hanzi))"
+                            style="margin-bottom:7px;display:inline-flex">
+                        ♦ <span x-text="extractTag(ex.hanzi)"></span>
+                      </span>
+                    </template>
+                    <div class="vi-ex-zh" x-text="stripTag(ex.hanzi||'')"></div>
                     <div class="vi-ex-py" x-text="ex.pinyin||''"></div>
                     <div class="vi-ex-vi" x-text="ex.translation||''"></div>
                   </div>
                   <button class="vi-ex-audio" :class="playingId==='ex'+ex.id ? 'playing' : ''"
-                          @click="playOne(ex.hanzi, 'ex'+ex.id)" title="Nghe ví dụ">
+                          @click="playOne(stripTag(ex.hanzi), 'ex'+ex.id)" title="Nghe ví dụ">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07"/>
                     </svg>
@@ -642,6 +648,15 @@ function vocabApp() {
       if (p.includes('phó từ')  || p.includes('副詞')  || p.includes('adv'))  return 'pos-phu-tu';
       if (p.includes('danh riêng') || p.includes('專有')) return 'pos-danh-rieng';
       return 'pos-default';
+    },
+
+    // Strip "[Động từ] " prefix from example hanzi before display/TTS
+    stripTag(text) {
+      return (text || '').replace(/^\[[^\]]+\]\s*/, '');
+    },
+    extractTag(text) {
+      const m = (text || '').match(/^\[([^\]]+)\]/);
+      return m ? m[1] : null;
     },
   };
 }
