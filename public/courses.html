@@ -100,6 +100,10 @@ img{display:block;max-width:100%}
 .cf-btn:hover{background:var(--blue-dark)}
 .cf-btn.continue{background:var(--purple)}
 .cf-btn.continue:hover{background:var(--purple-dark,#6d28d9)}
+.course-card{cursor:pointer}
+.cf-btn-row{display:flex;gap:6px;align-items:center}
+.cf-vocab-btn{font-size:12px;font-weight:700;color:#027AB3;background:rgba(2,122,179,.08);border:1.5px solid rgba(2,122,179,.2);padding:7px 12px;border-radius:8px;transition:all .15s;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.cf-vocab-btn:hover{background:#027AB3;color:#fff;border-color:#027AB3}
 
 /* Empty state */
 .empty-grid{text-align:center;padding:4rem 2rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;color:var(--text-3);font-size:13px;grid-column:1/-1}
@@ -265,6 +269,7 @@ const GRADIENTS = [
 
 let allCourses   = [];
 let skillMap     = {}; // courseId → {reading, listening}
+let vocabMap     = {}; // courseId → vocab_book_id
 let activeLevel  = '';
 let activeSkill  = '';
 let currentUser  = null;
@@ -281,10 +286,11 @@ function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
   });
 
   // Load data in parallel
-  const [{ data: courses }, { data: links }, { data: lessonCount }] = await Promise.all([
+  const [{ data: courses }, { data: links }, { data: lessonCount }, { data: vocabBooks }] = await Promise.all([
     db.from('courses').select('*').eq('published', true).order('sort_order', { ascending: false }).order('created_at', { ascending: false }),
     db.from('course_books').select('course_id,skill_type'),
     db.from('lessons').select('id', { count: 'exact', head: true }),
+    db.from('vocab_books').select('id, book_name'),
   ]);
 
   allCourses = courses || [];
@@ -293,6 +299,16 @@ function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
   (links || []).forEach(l => {
     if (!skillMap[l.course_id]) skillMap[l.course_id] = { reading: false, listening: false };
     skillMap[l.course_id][l.skill_type] = true;
+  });
+
+  // Build vocabMap: fuzzy-match course title → vocab_book_id
+  allCourses.forEach(c => {
+    const t = c.title.toLowerCase().trim();
+    const match = (vocabBooks || []).find(vb => {
+      const vname = (vb.book_name.split('|')[0] || vb.book_name).trim().toLowerCase();
+      return vname === t || vname.includes(t) || t.includes(vname);
+    });
+    if (match) vocabMap[c.id] = match.id;
   });
 
   // Stats
@@ -361,8 +377,9 @@ function renderCourses() {
     const isFree  = c.is_free || !c.price || c.price === 'Miễn phí';
     const grad    = GRADIENTS[i % GRADIENTS.length];
     const char    = { A1:'入',A2:'基','A1–A2':'入基',B1:'進',B2:'中','B1–B2':'進中',C1:'高' }[c.level] || '學';
-    const ctaClass = currentUser ? 'continue' : '';
-    const ctaText  = currentUser ? '▶ Tiếp tục học' : 'Xem khóa học →';
+    const ctaClass  = currentUser ? 'continue' : '';
+    const ctaText   = currentUser ? '▶ Tiếp tục học' : 'Xem khóa học →';
+    const vocabId   = vocabMap[c.id];
 
     const thumbHtml = c.cover_url
       ? `<img src="${esc(c.cover_url)}" alt="${esc(c.title)}" style="width:100%;height:100%;object-fit:cover">`
@@ -373,7 +390,7 @@ function renderCourses() {
       skills.listening ? `<span class="skill-badge listening"><i class="fas fa-headphones" style="font-size:9px"></i> Listening</span>` : '',
     ].join('');
 
-    return `<a href="/course.html?id=${c.id}" class="course-card">
+    return `<div class="course-card" onclick="location.href='/course.html?id=${c.id}'">
       <div class="course-thumb">
         ${thumbHtml}
         ${c.level ? `<span class="ct-level-badge">${esc(c.level)}</span>` : ''}
@@ -388,9 +405,12 @@ function renderCourses() {
       </div>
       <div class="course-footer">
         <span class="cf-price ${isFree?'free':'paid'}">${isFree ? '🎁 Miễn phí' : esc(c.price)}</span>
-        <span class="cf-btn ${ctaClass}">${ctaText}</span>
+        <div class="cf-btn-row">
+          ${vocabId ? `<a class="cf-vocab-btn" href="/vocab.html?book=${vocabId}" onclick="event.stopPropagation()"><i class="fas fa-book" style="font-size:10px"></i> Từ vựng</a>` : ''}
+          <a class="cf-btn ${ctaClass}" href="/course.html?id=${c.id}" onclick="event.stopPropagation()">${ctaText}</a>
+        </div>
       </div>
-    </a>`;
+    </div>`;
   }).join('');
 }
 
