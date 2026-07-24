@@ -12,20 +12,24 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#334155;background:#f8fafc;min-height:100dvh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
+.zh{font-family:'Noto Serif TC',serif}
 [x-cloak]{display:none!important}
 
 :root{
   --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
   --orange:#f47b20;--navy:#0d1b4b;
-  --text:#334155;--text-2:#64748b;--text-3:#94a3b8;
-  --bg:#f8fafc;--border:#eef2f7;--surface:#fff;
-  --shadow-sm:0 1px 3px rgba(16,24,40,.04);
-  --r:24px;--nav-h:62px;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --r:12px;--nav-h:62px;
 }
 
-/* ── Navbar ────────────────────────────────────────────── */
+/* ── Navbar ─────────────────────────────────────────────── */
 .navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 .navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
@@ -35,136 +39,109 @@ a{text-decoration:none;color:inherit}
 .nav-brand-text em{color:var(--orange);font-style:normal}
 .nav-menu{display:flex;align-items:center;gap:2px}
 .nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s}
-.nav-link:hover{color:var(--text);background:#f1f5f9}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
 .nav-link.active{color:var(--blue);font-weight:600}
 .nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
 .nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;transition:.15s}
 .nav-btn:hover{background:var(--blue-dark)}
-.nav-user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,#7c3aed,#a855f7)}
+.nav-user-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--purple),#a855f7)}
 
-/* ── App shell ─────────────────────────────────────────── */
-.vna-app{flex:1;display:flex;height:calc(100dvh - var(--nav-h));overflow:hidden;background:var(--bg)}
+/* ── Vocab toolbar (sticky below navbar) ─────────────────── */
+.vocab-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
+.vb-inner{max-width:64rem;margin:0 auto;padding:0 1.5rem;height:54px;display:flex;align-items:center;gap:10px}
+.vb-title{font-size:17px;font-weight:800;color:var(--navy);white-space:nowrap;letter-spacing:-.3px;flex-shrink:0}
+.vb-selects{display:flex;gap:8px;flex:1;min-width:0}
+.vb-select{
+  flex:1;min-width:0;height:36px;
+  padding:0 28px 0 10px;
+  border:1.5px solid var(--border);border-radius:9px;
+  font-family:inherit;font-size:13px;color:var(--text);
+  background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 9px center;
+  appearance:none;cursor:pointer;transition:border-color .12s;
+}
+.vb-select:focus{outline:none;border-color:var(--blue)}
+.vb-select:disabled{opacity:.5;cursor:default}
 
-/* ── Loading overlay ───────────────────────────────────── */
-.loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
-.spinner{width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-.spinner-lg{width:38px;height:38px;border-width:3px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-box{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px 0;color:var(--text-3);font-size:13px}
-
-/* ── Sidebar ───────────────────────────────────────────── */
-.vna-sidebar{width:292px;flex-shrink:0;overflow-y:auto;padding:14px 10px 32px;display:flex;flex-direction:column;gap:10px;border-right:1px solid var(--border);background:var(--bg);scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent}
-.vna-sidebar::-webkit-scrollbar{width:4px}
-.vna-sidebar::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:99px}
-
-/* ── Panel card ────────────────────────────────────────── */
-.vnh-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm)}
-
-/* ── Panel heading ─────────────────────────────────────── */
-.vnh-h3{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:900;color:#212E4A;margin-bottom:12px;letter-spacing:-.2px}
-.vnh-h3-dot{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-
-/* ── Book grid ─────────────────────────────────────────── */
-.book-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
-.vnh-book{cursor:pointer;text-align:center;display:block;width:100%;background:none;border:none;padding:0;font-family:inherit}
-.vnh-book .b-cover{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(16,24,40,.1);border:2.5px solid transparent;transition:all .18s ease}
-.vnh-book:hover .b-cover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(16,24,40,.16)}
-.vnh-book.active .b-cover{border-color:var(--blue);box-shadow:0 8px 20px rgba(26,86,219,.3)}
-.vnh-book img{width:100%;height:100%;object-fit:cover;display:block}
-.vnh-book .b-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:6px}
-.vnh-book .b-ph-zh{font-family:'Noto Serif TC',serif;font-size:10px;font-weight:700;color:#fff;text-align:center;line-height:1.4;word-break:break-all}
-.vnh-book .b-label{font-size:9px;font-weight:700;color:#64748b;margin-top:5px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:left}
-
-/* ── Lesson list ───────────────────────────────────────── */
-.lesson-list{display:flex;flex-direction:column;gap:3px}
-button.vnh-lesson{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#F4F5F9;border:1.5px solid transparent;border-radius:12px;padding:9px 12px;cursor:pointer;transition:all .14s ease;text-align:left;width:100%;font-family:inherit}
-button.vnh-lesson:hover{background:#E3ECF6;border-color:#CDDFF0}
-button.vnh-lesson.active{background:var(--blue-lt);border-color:var(--blue)}
-.l-name{font-size:12px;font-weight:700;color:#333;line-height:1.3;flex:1}
-button.vnh-lesson.active .l-name{color:var(--blue)}
-.l-count{font-size:10px;font-weight:700;color:#a6a6a6;flex-shrink:0;white-space:nowrap}
-button.vnh-lesson.active .l-count{color:var(--blue);opacity:.7}
-
-/* ── Main pane ─────────────────────────────────────────── */
-.vna-main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent}
-.vna-main::-webkit-scrollbar{width:4px}
-.vna-main::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:99px}
-
-/* ── Search strip ──────────────────────────────────────── */
-.vna-search{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 20px}
-.search-inner{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:0 14px;height:40px;transition:border-color .15s}
-.search-inner:focus-within{border-color:var(--blue)}
-.search-inner i{color:var(--text-3);font-size:13px;flex-shrink:0}
+/* ── Search bar ─────────────────────────────────────────── */
+.search-wrap{background:var(--bg);border-bottom:1px solid var(--border);padding:12px 1.5rem 10px}
+.search-row{max-width:64rem;margin:0 auto;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;height:42px;transition:border-color .15s}
+.search-row:focus-within{border-color:var(--blue)}
+.search-row i{color:var(--text-3);font-size:14px;flex-shrink:0}
 .search-input{flex:1;border:none;outline:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;color:var(--text);background:transparent}
 .search-clear{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:17px;padding:0;line-height:1;flex-shrink:0}
+.search-clear:hover{color:var(--text)}
+.search-hint{max-width:64rem;margin:7px auto 0;font-size:11px;color:var(--text-3)}
 
-/* ── Words area ────────────────────────────────────────── */
-.vna-words{padding:14px 20px 80px}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.words-fadein{animation:fadeIn .32s cubic-bezier(.4,0,.2,1) forwards}
+/* ── Main content ───────────────────────────────────────── */
+.vocab-main{flex:1;padding:0 1.5rem 8rem;max-width:64rem;margin:0 auto;width:100%;animation:fadeIn .5s cubic-bezier(.4,0,.2,1) forwards}
 
-/* ── Count bar ─────────────────────────────────────────── */
-.count-bar{font-size:11.5px;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+/* ── Loading ────────────────────────────────────────────── */
+.loading-box{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--text-3)}
+.spinner{width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.spinner-lg{width:40px;height:40px;border-width:3px}
+
+/* ── Vocab list ─────────────────────────────────────────── */
+.vocab-list{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;overflow:hidden;margin-top:20px}
+
+.vi{border-bottom:1px solid #f3f4f6}
+.vi:last-child{border-bottom:none}
+
+/* Row */
+.vi-row{display:flex;align-items:center;gap:14px;padding:13px 18px;cursor:pointer;transition:background .1s;user-select:none}
+.vi-row:hover{background:#f9fafb}
+.vi-open .vi-row{background:var(--blue-lt)}
+
+.vi-num{width:28px;height:28px;border-radius:7px;background:var(--blue-lt);color:var(--blue);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vi-open .vi-num{background:var(--blue);color:#fff}
+
+.vi-hanzi{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700;color:var(--blue);line-height:1;flex-shrink:0;min-width:52px}
+
+.vi-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.vi-pinyin{font-size:12px;color:var(--blue);opacity:.85}
+.vi-def{font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.vi-acts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.vi-detail-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:700;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;white-space:nowrap}
+.vi-detail-btn:hover,.vi-open .vi-detail-btn{border-color:var(--blue);color:var(--blue)}
+.vi-detail-btn i{font-size:9px}
+.vi-icon-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;transition:.12s;flex-shrink:0}
+.vi-icon-btn:hover{border-color:var(--blue);color:var(--blue)}
+.vi-icon-btn.playing{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
+@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Detail panel */
+.vi-detail{background:#f9fafb;border-top:1px dashed var(--border);padding:16px 18px 18px 60px}
+.vi-pos{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px}
+.vi-pos-dot{color:var(--orange);font-size:10px}
+.vi-band{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:8px;vertical-align:middle}
+.vi-band.band-a{background:#fef9c3;color:#713f12}
+.vi-band.band-b{background:#dbeafe;color:#1e40af}
+.vi-band.band-c{background:#fce7f3;color:#9d174d}
+.vi-band.band-n{background:#f3f4f6;color:var(--text-3)}
+.vi-hanviet{font-size:11px;color:var(--text-3);font-style:italic;margin-bottom:12px}
+
+/* Examples */
+.vi-exs{display:flex;flex-direction:column;gap:12px}
+.vi-ex{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:#fff;border:1px solid var(--border);border-radius:10px}
+.vi-ex-body{flex:1;min-width:0}
+.vi-ex-zh{font-family:'Noto Serif TC',serif;font-size:15px;color:var(--text);line-height:1.7;margin-bottom:2px}
+.vi-ex-py{font-size:11px;color:var(--blue);margin-bottom:2px;opacity:.85}
+.vi-ex-vi{font-size:12px;color:var(--text-2)}
+
+/* Empty states */
+.empty-state{text-align:center;padding:56px 24px;color:var(--text-3);margin-top:20px}
+.empty-big{font-family:'Noto Serif TC',serif;font-size:64px;opacity:.12;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* Count bar */
+.count-bar{max-width:64rem;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-3)}
 .count-bar strong{color:var(--blue)}
-.count-bar .lesson-tag{font-weight:700;color:var(--text-2);font-size:11px}
 
-/* ── Vocab list container ──────────────────────────────── */
-.vocab-list{display:flex;flex-direction:column;gap:5px}
-
-/* ── Word row ──────────────────────────────────────────── */
-.vw-open .vw-row{border-color:var(--blue);border-bottom-left-radius:0;border-bottom-right-radius:0;background:var(--blue-lt)}
-.vw-row{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #f1f5f9;border-radius:14px;padding:11px 13px;cursor:pointer;transition:all .12s;user-select:none}
-.vw-row:hover{border-color:#dde3ec;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-
-.vw-num{width:26px;height:26px;border-radius:7px;background:#f1f5f9;color:var(--text-3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.12s}
-.vw-open .vw-num{background:var(--blue);color:#fff}
-
-.vw-hanzi{font-family:'Noto Serif TC',serif;font-weight:700;font-size:1.2rem;color:#1e293b;flex-shrink:0;min-width:40px;transition:.12s}
-.vw-open .vw-hanzi{color:var(--blue)}
-
-.vw-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.vw-pinyin{font-size:11px;color:var(--blue);opacity:.8}
-.vw-def{font-size:12.5px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.vw-acts{display:flex;align-items:center;gap:5px;flex-shrink:0}
-.vw-icon-btn{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:.12s;flex-shrink:0}
-.vw-icon-btn:hover{border-color:var(--blue);color:var(--blue)}
-.vw-icon-btn.playing{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
-@keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.vw-chevron{font-size:10px;color:var(--text-3);transition:transform .2s;margin-left:2px}
-.vw-open .vw-chevron{transform:rotate(180deg);color:var(--blue)}
-
-/* ── Detail panel ──────────────────────────────────────── */
-.vw-detail{background:#fff;border:1.5px solid var(--blue);border-top:1px dashed #c7d7f9;border-radius:0 0 14px 14px;padding:14px 14px 16px 51px}
-.vw-pos{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--text-2);margin-right:6px}
-.vw-pos-dot{color:var(--orange);font-size:9px}
-.vw-band{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;vertical-align:middle}
-.vw-band.band-a{background:#fef9c3;color:#713f12}
-.vw-band.band-b{background:#dbeafe;color:#1e40af}
-.vw-band.band-c{background:#fce7f3;color:#9d174d}
-.vw-band.band-n{background:#f3f4f6;color:var(--text-3)}
-.vw-hanviet{font-size:11px;color:var(--text-3);font-style:italic;margin:6px 0 10px}
-
-.vw-exs{display:flex;flex-direction:column;gap:7px}
-.vw-ex{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:10px}
-.vw-ex-body{flex:1;min-width:0}
-.vw-ex-zh{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--text);line-height:1.65;margin-bottom:2px}
-.vw-ex-py{font-size:11px;color:var(--blue);margin-bottom:2px;opacity:.8}
-.vw-ex-vi{font-size:11.5px;color:var(--text-2)}
-.vw-no-ex{font-size:11.5px;color:var(--text-3)}
-
-/* ── Empty states ──────────────────────────────────────── */
-.empty-state{text-align:center;padding:56px 24px;color:var(--text-3)}
-.empty-big{font-family:'Noto Serif TC',serif;font-size:56px;opacity:.1;margin-bottom:10px;line-height:1}
-
-/* ── Mobile toolbar (hidden on desktop) ────────────────── */
-.mobile-bar{display:none;position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);padding:10px 14px;gap:8px}
-.mb-select{flex:1;height:36px;padding:0 26px 0 10px;border:1.5px solid var(--border);border-radius:9px;font-family:inherit;font-size:13px;color:var(--text);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;appearance:none;cursor:pointer}
-.mb-select:focus{outline:none;border-color:var(--blue)}
-.mb-select:disabled{opacity:.5;cursor:default}
-
-/* ── Footer ────────────────────────────────────────────── */
-footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
+/* ── Footer ─────────────────────────────────────────────── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
 .footer-inner{max-width:1100px;margin:0 auto;padding:36px 1.5rem 28px;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem}
 .footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
@@ -183,30 +160,25 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
 .footer-bottom-links{display:flex;gap:1.5rem}
 .footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
 
-/* ── Responsive ────────────────────────────────────────── */
-@media(max-width:1023px){
-  .vna-app{flex-direction:column;height:auto;overflow:visible}
-  .vna-sidebar{display:none}
-  .vna-main{overflow:visible}
-  .mobile-bar{display:flex}
-  .vna-search{top:57px}
-}
+/* ── Responsive ─────────────────────────────────────────── */
 @media(max-width:768px){
+  .vb-selects{flex-direction:column;height:auto;gap:5px}
+  .vb-inner{height:auto;padding:10px 1rem;flex-wrap:wrap}
+  .vi-hanzi{font-size:22px;min-width:44px}
+  .vi-def{display:none}
+  .vi-detail{padding-left:18px}
   .footer-inner{grid-template-columns:1fr 1fr}
   .nav-link{display:none}
-  .vna-words{padding:12px 14px 60px}
-  .vna-search{padding:10px 14px}
-  .vw-def{display:none}
-  .vw-detail{padding-left:14px}
 }
 @media(max-width:480px){
   .footer-inner{grid-template-columns:1fr;gap:1.5rem}
+  .vi-acts{gap:4px}
 }
 </style>
 </head>
-<body>
+<body x-data="vocabApp()" x-init="init()">
 
-<!-- ── NAVBAR ─────────────────────────────────────────────── -->
+<!-- ── NAVBAR ────────────────────────────────────────────── -->
 <nav class="navbar">
   <div class="container">
     <a class="nav-brand" href="/courses.html">
@@ -228,188 +200,150 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px}
   </div>
 </nav>
 
-<!-- ── LOADING OVERLAY ─────────────────────────────────────── -->
-<div class="loading-overlay" id="loading-overlay">
-  <div class="spinner spinner-lg"></div>
-  <div style="font-size:13px;color:#94a3b8">Đang tải…</div>
+<!-- ── VOCAB TOOLBAR (sticky) ────────────────────────────── -->
+<div class="vocab-bar">
+  <div class="vb-inner">
+    <span class="vb-title">Từ vựng</span>
+    <div class="vb-selects">
+      <!-- Book selector -->
+      <select class="vb-select" x-model="selectedBookId" @change="onBookChange()">
+        <option value="" disabled>-- Bộ sách --</option>
+        <template x-for="b in books" :key="b.id">
+          <option :value="String(b.id)" x-text="b.book_name"></option>
+        </template>
+      </select>
+      <!-- Lesson selector -->
+      <select class="vb-select" x-model="selectedLessonId" @change="onLessonChange()" :disabled="!lessons.length">
+        <option value="" disabled>-- Bài --</option>
+        <template x-for="l in lessons" :key="l.id">
+          <option :value="String(l.id)" x-text="l.lesson_name"></option>
+        </template>
+      </select>
+    </div>
+  </div>
 </div>
 
-<!-- ── APP ────────────────────────────────────────────────── -->
-<div class="vna-app" x-data="vocabApp()" x-init="init()" x-cloak>
+<!-- ── SEARCH BAR ────────────────────────────────────────── -->
+<div class="search-wrap">
+  <div class="search-row">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input class="search-input" x-model="search"
+           placeholder="Tìm kiếm trong toàn bộ Từ điển: hanzi, pinyin, ý nghĩa…"
+           @keydown.escape="search=''">
+    <button class="search-clear" x-show="search" @click="search=''">×</button>
+  </div>
+  <p class="search-hint">Danh sách dưới đây là từ vựng của bài học đang chọn. Lọc theo cấp độ TOCFL bên dưới nếu cần.</p>
+</div>
 
-  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
-  <aside class="vna-sidebar">
+<!-- ── LOADING OVERLAY (initial) ────────────────────────── -->
+<div class="loading-overlay" x-show="loading" x-transition style="display:none">
+  <div class="spinner spinner-lg"></div>
+  <div style="font-size:13px;color:var(--text-3)">Đang tải…</div>
+</div>
 
-    <!-- Book grid -->
-    <div class="vnh-panel">
-      <div class="vnh-h3">
-        <span class="vnh-h3-dot" style="background:#eff6ff;color:var(--blue)"><i class="fa-solid fa-book"></i></span>
-        Giáo trình
-      </div>
-      <div class="book-grid">
-        <template x-for="(b, i) in books" :key="b.id">
-          <button class="vnh-book" :class="selectedBookId===String(b.id) ? 'active' : ''"
-                  @click="selectBook(String(b.id))">
-            <div class="b-cover" :style="bookGradient(i)">
-              <div class="b-ph">
-                <span class="b-ph-zh" x-text="b.book_name"></span>
-              </div>
-            </div>
-            <div class="b-label" x-text="b.book_name"></div>
-          </button>
-        </template>
-      </div>
-    </div>
+<!-- ── MAIN ──────────────────────────────────────────────── -->
+<div class="vocab-main" x-cloak>
 
-    <!-- Lesson list -->
-    <div class="vnh-panel" x-show="lessons.length">
-      <div class="vnh-h3">
-        <span class="vnh-h3-dot" style="background:#fff7ed;color:var(--orange)"><i class="fa-solid fa-list"></i></span>
-        Bài học
-        <span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--text-3)" x-text="lessons.length + ' bài'"></span>
-      </div>
-      <div class="lesson-list">
-        <template x-for="l in lessons" :key="l.id">
-          <button class="vnh-lesson" :class="selectedLessonId===String(l.id) ? 'active' : ''"
-                  @click="selectLesson(String(l.id))">
-            <span class="l-name" x-text="l.lesson_name"></span>
-            <span class="l-count" x-text="l.word_count + ' từ'"></span>
-          </button>
-        </template>
-      </div>
-    </div>
-
-  </aside>
-
-  <!-- ── MOBILE TOOLBAR ──────────────────────────────────── -->
-  <div class="mobile-bar">
-    <select class="mb-select" x-model="selectedBookId" @change="selectBook(selectedBookId)">
-      <option value="" disabled>-- Giáo trình --</option>
-      <template x-for="b in books" :key="b.id">
-        <option :value="String(b.id)" x-text="b.book_name"></option>
-      </template>
-    </select>
-    <select class="mb-select" x-model="selectedLessonId" @change="selectLesson(selectedLessonId)" :disabled="!lessons.length">
-      <option value="" disabled>-- Bài --</option>
-      <template x-for="l in lessons" :key="l.id">
-        <option :value="String(l.id)" x-text="l.lesson_name"></option>
-      </template>
-    </select>
+  <!-- Count bar -->
+  <div class="count-bar" x-show="vocab.length && !vocabLoading">
+    <span>
+      <strong x-text="filteredVocab.length"></strong>
+      / <span x-text="vocab.length"></span> từ vựng
+      <span x-show="search"> — lọc theo "<em x-text="search"></em>"</span>
+    </span>
+    <span x-text="activeLesson?.lesson_name?.split('-')[0]?.trim()||''"></span>
   </div>
 
-  <!-- ── MAIN PANE ────────────────────────────────────────── -->
-  <main class="vna-main">
+  <!-- Loading vocab -->
+  <div class="loading-box" x-show="vocabLoading">
+    <div class="spinner"></div>
+    <span>Đang tải từ vựng…</span>
+  </div>
 
-    <!-- Search -->
-    <div class="vna-search">
-      <div class="search-inner">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input class="search-input" x-model="search"
-               placeholder="Tìm hanzi, pinyin, nghĩa, hán việt…"
-               @keydown.escape="search=''">
-        <button class="search-clear" x-show="search" @click="search=''">×</button>
-      </div>
-    </div>
+  <!-- Vocab list -->
+  <div class="vocab-list" x-show="filteredVocab.length && !vocabLoading">
+    <template x-for="(v, i) in filteredVocab" :key="v.id">
+      <div class="vi" :class="openId===v.id ? 'vi-open' : ''">
 
-    <!-- Words -->
-    <div class="vna-words">
+        <!-- ── Row ─────────────────────────────────────── -->
+        <div class="vi-row" @click="toggleItem(v.id)">
+          <span class="vi-num" x-text="i+1"></span>
+          <span class="vi-hanzi" x-text="v.hanzi"></span>
+          <div class="vi-meta">
+            <span class="vi-pinyin" x-text="v.pinyin||''"></span>
+            <span class="vi-def" x-text="v.definition||''"></span>
+          </div>
+          <div class="vi-acts" @click.stop>
+            <button class="vi-detail-btn" @click="toggleItem(v.id)">
+              <span x-text="openId===v.id ? 'Đóng' : 'Chi tiết'"></span>
+              <i :class="openId===v.id ? 'fa-chevron-up' : 'fa-chevron-down'" class="fa-solid"></i>
+            </button>
+            <button class="vi-icon-btn" :class="playingId===v.id ? 'playing' : ''"
+                    @click="playOne(v.hanzi, v.id)" title="Nghe từ">
+              <i class="fa-solid fa-volume-low"></i>
+            </button>
+          </div>
+        </div>
 
-      <!-- Count bar -->
-      <div class="count-bar" x-show="vocab.length && !vocabLoading">
-        <span>
-          <strong x-text="filteredVocab.length"></strong>
-          <span x-show="search"> / <span x-text="vocab.length"></span></span>
-          &nbsp;từ vựng
-          <template x-if="search"> — lọc "<em x-text="search"></em>"</template>
-        </span>
-        <span class="lesson-tag" x-text="activeLesson?.lesson_name||''"></span>
-      </div>
+        <!-- ── Detail panel ────────────────────────────── -->
+        <div class="vi-detail" x-show="openId===v.id" x-transition.opacity.duration.150ms>
 
-      <!-- Loading -->
-      <div class="loading-box" x-show="vocabLoading">
-        <div class="spinner"></div>
-        <span>Đang tải từ vựng…</span>
-      </div>
+          <!-- Part of speech + TOCFL band -->
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+            <template x-if="v.part_of_speech">
+              <span class="vi-pos">
+                <span class="vi-pos-dot">♦</span>
+                <span x-text="v.part_of_speech"></span>
+              </span>
+            </template>
+            <template x-if="v.tocfl_band">
+              <span class="vi-band" :class="bandClass(v.tocfl_band)" x-text="v.tocfl_band"></span>
+            </template>
+            <template x-if="v.han_viet">
+              <span style="font-size:11px;color:var(--text-3);font-style:italic"
+                    x-text="'Hán Việt: ' + v.han_viet"></span>
+            </template>
+          </div>
 
-      <!-- Word list -->
-      <div class="vocab-list words-fadein" x-show="filteredVocab.length && !vocabLoading" key="filteredVocab.length">
-        <template x-for="(v, i) in filteredVocab" :key="v.id">
-          <div class="vw" :class="openId===v.id ? 'vw-open' : ''">
-
-            <!-- Row -->
-            <div class="vw-row" @click="toggleItem(v.id)">
-              <span class="vw-num" x-text="i+1"></span>
-              <span class="vw-hanzi" x-text="v.hanzi"></span>
-              <div class="vw-mid">
-                <span class="vw-pinyin" x-text="v.pinyin||''"></span>
-                <span class="vw-def" x-text="v.definition||''"></span>
-              </div>
-              <div class="vw-acts" @click.stop>
-                <button class="vw-icon-btn" :class="playingId===v.id ? 'playing' : ''"
-                        @click="playOne(v.hanzi, v.id)" title="Nghe">
-                  <i class="fa-solid fa-volume-low"></i>
-                </button>
-                <i class="fa-solid fa-chevron-down vw-chevron"></i>
-              </div>
-            </div>
-
-            <!-- Detail -->
-            <div class="vw-detail" x-show="openId===v.id" x-transition.opacity.duration.150ms>
-              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:6px">
-                <template x-if="v.part_of_speech">
-                  <span class="vw-pos">
-                    <span class="vw-pos-dot">♦</span>
-                    <span x-text="v.part_of_speech"></span>
-                  </span>
-                </template>
-                <template x-if="v.tocfl_band">
-                  <span class="vw-band" :class="bandClass(v.tocfl_band)" x-text="v.tocfl_band"></span>
-                </template>
-              </div>
-              <template x-if="v.han_viet">
-                <div class="vw-hanviet" x-text="'Hán Việt: ' + v.han_viet"></div>
-              </template>
-
-              <template x-if="v.examples && v.examples.length">
-                <div class="vw-exs">
-                  <template x-for="ex in v.examples" :key="ex.id">
-                    <div class="vw-ex">
-                      <div class="vw-ex-body">
-                        <div class="vw-ex-zh" x-text="ex.hanzi||''"></div>
-                        <div class="vw-ex-py" x-text="ex.pinyin||''"></div>
-                        <div class="vw-ex-vi" x-text="ex.translation||''"></div>
-                      </div>
-                      <button class="vw-icon-btn"
-                              :class="playingId==='ex'+ex.id ? 'playing' : ''"
-                              @click.stop="playOne(ex.hanzi, 'ex'+ex.id)" title="Nghe ví dụ">
-                        <i class="fa-solid fa-volume-low"></i>
-                      </button>
-                    </div>
-                  </template>
+          <!-- Examples -->
+          <template x-if="v.examples && v.examples.length">
+            <div class="vi-exs">
+              <template x-for="ex in v.examples" :key="ex.id">
+                <div class="vi-ex">
+                  <div class="vi-ex-body">
+                    <div class="vi-ex-zh" x-text="ex.hanzi||''"></div>
+                    <div class="vi-ex-py" x-text="ex.pinyin||''"></div>
+                    <div class="vi-ex-vi" x-text="ex.translation||''"></div>
+                  </div>
+                  <button class="vi-icon-btn"
+                          :class="playingId==='ex'+ex.id ? 'playing' : ''"
+                          @click="playOne(ex.hanzi, 'ex'+ex.id)" title="Nghe ví dụ">
+                    <i class="fa-solid fa-volume-low"></i>
+                  </button>
                 </div>
               </template>
-              <template x-if="!v.examples || !v.examples.length">
-                <div class="vw-no-ex">Chưa có câu ví dụ.</div>
-              </template>
             </div>
+          </template>
+          <template x-if="!v.examples || !v.examples.length">
+            <div style="font-size:12px;color:var(--text-3)">Chưa có câu ví dụ.</div>
+          </template>
 
-          </div>
-        </template>
-      </div>
+        </div><!-- /vi-detail -->
+      </div><!-- /vi -->
+    </template>
+  </div>
 
-      <!-- Empty: no lesson selected -->
-      <div class="empty-state" x-show="!vocab.length && !vocabLoading">
-        <div class="empty-big">詞</div>
-        <p style="font-size:13px" x-show="search">Không tìm thấy từ phù hợp với "<span x-text="search"></span>".</p>
-        <p style="font-size:13px" x-show="!search && selectedLessonId">Bài học này chưa có từ vựng.</p>
-        <p style="font-size:13px" x-show="!selectedLessonId">Chọn giáo trình và bài học ở bên trái để xem từ vựng.</p>
-      </div>
+  <!-- Empty: no vocab loaded -->
+  <div class="empty-state" x-show="!vocab.length && !vocabLoading && !loading">
+    <div class="empty-big">詞</div>
+    <p x-show="search">Không tìm thấy từ phù hợp với "<span x-text="search"></span>"</p>
+    <p x-show="!search && selectedLessonId">Bài học này chưa có từ vựng.</p>
+    <p x-show="!selectedLessonId">Chọn bộ sách và bài học để xem từ vựng.</p>
+  </div>
 
-    </div><!-- /vna-words -->
-  </main>
-</div><!-- /vna-app -->
+</div><!-- /vocab-main -->
 
-<!-- ── FOOTER ──────────────────────────────────────────────── -->
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
 <footer>
   <div class="footer-inner">
     <div>
@@ -456,15 +390,6 @@ const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
 const _db = supabase.createClient(_DB_URL, _DB_KEY);
 const _audio = new Audio();
 
-const BOOK_GRADIENTS = [
-  ['#667eea','#764ba2'],['#f093fb','#f5576c'],['#4facfe','#00f2fe'],
-  ['#43e97b','#38f9d7'],['#fa709a','#fee140'],['#a18cd1','#fbc2eb'],
-  ['#fddb92','#d1fdff'],['#96fbc4','#f9f586'],['#fbc2eb','#a6c1ee'],
-  ['#d299c2','#fef9d7'],['#89f7fe','#66a6ff'],['#f6d365','#fda085'],
-  ['#e0c3fc','#8ec5fc'],['#84fab0','#8fd3f4'],['#a1c4fd','#c2e9fb'],
-  ['#ffecd2','#fcb69f'],
-];
-
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
   if (!user) { wrap.innerHTML = `<a class="nav-btn" href="/courses.html">Bắt đầu học</a>`; return; }
@@ -474,6 +399,7 @@ function renderNavAuth(user) {
 
 function vocabApp() {
   return {
+    // ── State ────────────────────────────────
     loading:          true,
     vocabLoading:     false,
     books:            [],
@@ -486,6 +412,7 @@ function vocabApp() {
     playingId:        null,
     search:           '',
 
+    // ── Computed ─────────────────────────────
     get filteredVocab() {
       if (!this.search) return this.vocab;
       const q = this.search.toLowerCase();
@@ -497,19 +424,24 @@ function vocabApp() {
       );
     },
 
+    // ── Init ─────────────────────────────────
     async init() {
       if (typeof AuthService !== 'undefined') {
         new AuthService(_db).init().then(u => renderNavAuth(u));
       }
+
       const { data: books } = await _db
-        .from('vocab_books').select('id, book_name, lesson_count, word_count').order('id');
+        .from('vocab_books')
+        .select('id, book_name, lesson_count, word_count')
+        .order('id');
       this.books = books || [];
       this.loading = false;
-      document.getElementById('loading-overlay').style.display = 'none';
 
+      // Deep-link or auto-select first book + lesson
       const p = new URLSearchParams(location.search);
       const bid = p.get('book') || String(this.books[0]?.id || '');
       const lid = p.get('lesson') || '';
+
       if (bid) {
         this.selectedBookId = bid;
         await this._loadLessons(bid);
@@ -522,16 +454,15 @@ function vocabApp() {
       }
     },
 
-    async selectBook(bid) {
-      if (this.selectedBookId === bid && this.lessons.length) return;
-      this.selectedBookId = bid;
+    // ── Selects ───────────────────────────────
+    async onBookChange() {
       this.vocab = [];
       this.lessons = [];
       this.selectedLessonId = '';
       this.activeLesson = null;
       this.openId = null;
       this.search = '';
-      await this._loadLessons(bid);
+      await this._loadLessons(this.selectedBookId);
       if (this.lessons.length) {
         this.selectedLessonId = String(this.lessons[0].id);
         this.activeLesson = this.lessons[0];
@@ -540,35 +471,43 @@ function vocabApp() {
       this._pushUrl();
     },
 
-    async selectLesson(lid) {
-      if (this.selectedLessonId === lid && this.vocab.length) return;
-      this.selectedLessonId = lid;
+    async onLessonChange() {
       this.openId = null;
       this.search = '';
-      this.activeLesson = this.lessons.find(l => String(l.id) === lid) || null;
-      await this._loadVocab(lid);
+      this.activeLesson = this.lessons.find(l => String(l.id) === this.selectedLessonId) || null;
+      await this._loadVocab(this.selectedLessonId);
       this._pushUrl();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
+    // ── Data loaders ──────────────────────────
     async _loadLessons(bookId) {
       const { data } = await _db
-        .from('vocab_lessons').select('id, lesson_name, word_count')
-        .eq('book_id', bookId).order('id');
+        .from('vocab_lessons')
+        .select('id, lesson_name, word_count')
+        .eq('book_id', bookId)
+        .order('id');
       this.lessons = data || [];
     },
 
     async _loadVocab(lessonId) {
       this.vocab = [];
       this.vocabLoading = true;
+
       const { data: vocabData } = await _db
         .from('vocabularies')
         .select('id, hanzi, pinyin, definition, part_of_speech, audio_url, tocfl_band, han_viet')
-        .eq('lesson_id', lessonId).order('id');
+        .eq('lesson_id', lessonId)
+        .order('id');
+
       if (vocabData?.length) {
         const ids = vocabData.map(v => v.id);
         const { data: exData } = await _db
-          .from('vocab_examples').select('id, vocab_id, hanzi, pinyin, translation')
-          .in('vocab_id', ids).order('id');
+          .from('vocab_examples')
+          .select('id, vocab_id, hanzi, pinyin, translation')
+          .in('vocab_id', ids)
+          .order('id');
+
         const exMap = {};
         (exData || []).forEach(e => {
           if (!exMap[e.vocab_id]) exMap[e.vocab_id] = [];
@@ -576,13 +515,16 @@ function vocabApp() {
         });
         this.vocab = vocabData.map(v => ({ ...v, examples: exMap[v.id] || [] }));
       }
+
       this.vocabLoading = false;
     },
 
+    // ── Interaction ───────────────────────────
     toggleItem(id) {
       this.openId = (this.openId === id) ? null : id;
     },
 
+    // ── TTS ──────────────────────────────────
     async playOne(text, id) {
       if (!text) return;
       if (this.playingId === id) { this._halt(); return; }
@@ -615,16 +557,12 @@ function vocabApp() {
       window.speechSynthesis.cancel();
     },
 
+    // ── Helpers ───────────────────────────────
     _pushUrl() {
       const p = new URLSearchParams();
       if (this.selectedBookId)   p.set('book',   this.selectedBookId);
       if (this.selectedLessonId) p.set('lesson', this.selectedLessonId);
       history.replaceState({}, '', '?' + p.toString());
-    },
-
-    bookGradient(i) {
-      const [c1, c2] = BOOK_GRADIENTS[i % BOOK_GRADIENTS.length];
-      return `background: linear-gradient(145deg, ${c1}, ${c2})`;
     },
 
     bandClass(band = '') {
