@@ -131,11 +131,7 @@ a{text-decoration:none;color:inherit}
 .pos-default   {background:#f1f5f9;color:#475569}
 
 /* TOCFL band */
-.vi-band{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px}
-.vi-band.band-a{background:#fef9c3;color:#713f12}
-.vi-band.band-b{background:#dbeafe;color:#1e40af}
-.vi-band.band-c{background:#fce7f3;color:#9d174d}
-.vi-band.band-n{background:#f3f4f6;color:var(--text-3)}
+.vi-band{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 11px;border-radius:999px;border:1.5px solid #EAB942;background:#fffbeb;color:#92400e;letter-spacing:.01em}
 .vi-hanviet{font-size:11px;color:var(--text-3);font-style:italic}
 
 /* Examples */
@@ -353,7 +349,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
               </span>
             </template>
             <template x-if="v.tocfl_band">
-              <span class="vi-band" :class="bandClass(v.tocfl_band)" x-text="v.tocfl_band"></span>
+              <span class="vi-band" x-text="'TOCFL ' + v.tocfl_band"></span>
             </template>
             <template x-if="v.han_viet">
               <span class="vi-hanviet" x-text="'Hán Việt: ' + v.han_viet"></span>
