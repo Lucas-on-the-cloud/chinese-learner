@@ -110,8 +110,11 @@ a{text-decoration:none;color:inherit}
 .vi-toggle-btn:hover,.vi-open .vi-toggle-btn{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
 .vi-chevron{width:13px;height:13px;transition:transform .3s ease;flex-shrink:0}
 .vi-open .vi-chevron{transform:rotate(180deg)}
+.vi-toggle-label{display:none}
 .vi-icon-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;color:var(--text-3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;outline:none}
 .vi-icon-btn:hover{border-color:var(--blue);background:var(--blue);color:#fff}
+.vi-icon-btn.report:hover{border-color:#fca5a5;background:#fef2f2;color:#ef4444}
+.vi-icon-btn.bookmark:hover,.vi-icon-btn.bookmark.saved{border-color:#EAB942;background:#EAB942;color:#fff}
 .vi-icon-btn.playing{border-color:var(--blue);background:rgba(26,86,219,.1);color:var(--blue);animation:tts-pulse .9s ease-in-out infinite}
 @keyframes tts-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
@@ -188,6 +191,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 }
 @media(min-width:640px){
   .vi{border-radius:24px}
+  .vi-toggle-label{display:inline}
   .vi-row{padding:18px 24px}
   .vi-left{gap:18px}
   .vi-num{width:32px;height:32px;font-size:13px}
@@ -307,18 +311,32 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
               <div class="vi-def" x-text="v.definition||''"></div>
             </div>
           </div>
-          <!-- Right: toggle + audio -->
+          <!-- Right: toggle + report + audio + bookmark -->
           <div class="vi-acts" @click.stop>
             <button class="vi-toggle-btn" @click="toggleItem(v.id)">
-              <span x-text="openId===v.id ? 'Đóng' : 'Mở'"></span>
+              <span class="vi-toggle-label" x-text="openId===v.id ? 'Đóng' : 'Mở'"></span>
               <svg class="vi-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
+            <button class="vi-icon-btn report" title="Báo lỗi">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              </svg>
+            </button>
             <button class="vi-icon-btn" :class="playingId===v.id ? 'playing' : ''"
                     @click="playOne(v.hanzi, v.id)" title="Phát âm">
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+              </svg>
+            </button>
+            <button class="vi-icon-btn bookmark" :class="saved[v.id] ? 'saved' : ''"
+                    @click="toggleSave(v.id)" title="Lưu từ">
+              <svg x-show="!saved[v.id]" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+              </svg>
+              <svg x-show="saved[v.id]" width="15" height="15" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
               </svg>
             </button>
           </div>
@@ -449,6 +467,7 @@ function vocabApp() {
     openId:           null,
     playingId:        null,
     search:           '',
+    saved:            {},
 
     // ── Computed ─────────────────────────────
     get filteredVocab() {
@@ -560,6 +579,10 @@ function vocabApp() {
     // ── Interaction ───────────────────────────
     toggleItem(id) {
       this.openId = (this.openId === id) ? null : id;
+    },
+
+    toggleSave(id) {
+      this.saved = { ...this.saved, [id]: !this.saved[id] };
     },
 
     // ── TTS ──────────────────────────────────
