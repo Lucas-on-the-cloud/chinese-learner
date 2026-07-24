@@ -762,11 +762,14 @@ function vocabApp() {
     exportCSV() {
       if (!this.vocab.length) return;
       const lesson = this.activeLesson;
-      const header = 'Từ vựng,Pinyin,Nghĩa,Hán Việt,Từ loại,TOCFL';
+      const header = 'Từ vựng,Pinyin,Nghĩa,Ví dụ,Pinyin ví dụ,Nghĩa ví dụ';
       const q = s => `"${(s || '').replace(/"/g, '""')}"`;
-      const rows = this.vocab.map(v =>
-        [q(v.hanzi), q(v.pinyin), q(v.definition), q(v.han_viet), q(v.part_of_speech), q(v.tocfl_band)].join(',')
-      );
+      const strip = t => (t || '').replace(/^\[[^\]]+\]\s*/, '');
+      const rows = this.vocab.map(v => {
+        const ex = v.examples?.[0];
+        return [q(v.hanzi), q(v.pinyin), q(v.definition),
+                q(strip(ex?.hanzi)), q(ex?.pinyin), q(ex?.translation)].join(',');
+      });
       const csv = '﻿' + header + '\n' + rows.join('\n');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
