@@ -660,7 +660,8 @@ function vocabApp() {
       this.books = (books || []).filter(b => {
         const n = b.book_name.toLowerCase();
         return n.includes('đương đại') || n.includes('thời đại') ||
-               n.includes('当代') || n.includes('時代') || n.includes('时代');
+               n.includes('当代') || n.includes('時代') || n.includes('时代') ||
+               n.includes('ultimate');
       });
       this.loading = false;
 
