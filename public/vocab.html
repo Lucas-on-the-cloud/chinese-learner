@@ -48,7 +48,7 @@ a{text-decoration:none;color:inherit}
 
 /* ── Vocab toolbar (sticky below navbar) ─────────────────── */
 .vocab-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1.5px solid var(--border);box-shadow:var(--shadow-sm)}
-.vb-inner{max-width:920px;margin:0 auto;padding:0 1.5rem;height:54px;display:flex;align-items:center;gap:10px}
+.vb-inner{max-width:64rem;margin:0 auto;padding:0 1.5rem;height:54px;display:flex;align-items:center;gap:10px}
 .vb-title{font-size:17px;font-weight:800;color:var(--navy);white-space:nowrap;letter-spacing:-.3px;flex-shrink:0}
 .vb-selects{display:flex;gap:8px;flex:1;min-width:0}
 .vb-select{
@@ -64,21 +64,22 @@ a{text-decoration:none;color:inherit}
 
 /* ── Search bar ─────────────────────────────────────────── */
 .search-wrap{background:var(--bg);border-bottom:1px solid var(--border);padding:12px 1.5rem 10px}
-.search-row{max-width:920px;margin:0 auto;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;height:42px;transition:border-color .15s}
+.search-row{max-width:64rem;margin:0 auto;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;height:42px;transition:border-color .15s}
 .search-row:focus-within{border-color:var(--blue)}
 .search-row i{color:var(--text-3);font-size:14px;flex-shrink:0}
 .search-input{flex:1;border:none;outline:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;color:var(--text);background:transparent}
 .search-clear{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:17px;padding:0;line-height:1;flex-shrink:0}
 .search-clear:hover{color:var(--text)}
-.search-hint{max-width:920px;margin:7px auto 0;font-size:11px;color:var(--text-3)}
+.search-hint{max-width:64rem;margin:7px auto 0;font-size:11px;color:var(--text-3)}
 
 /* ── Main content ───────────────────────────────────────── */
-.vocab-main{flex:1;padding:0 1.5rem 60px;max-width:920px;margin:0 auto;width:100%}
+.vocab-main{flex:1;padding:0 1.5rem 8rem;max-width:64rem;margin:0 auto;width:100%;animation:fadeIn .5s cubic-bezier(.4,0,.2,1) forwards}
 
 /* ── Loading ────────────────────────────────────────────── */
 .loading-box{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--text-3)}
 .spinner{width:22px;height:22px;border:2.5px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 .spinner-lg{width:40px;height:40px;border-width:3px}
 
@@ -136,7 +137,7 @@ a{text-decoration:none;color:inherit}
 .empty-state p{font-size:14px}
 
 /* Count bar */
-.count-bar{max-width:920px;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-3)}
+.count-bar{max-width:64rem;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text-3)}
 .count-bar strong{color:var(--blue)}
 
 /* ── Footer ─────────────────────────────────────────────── */
