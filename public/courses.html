@@ -302,12 +302,26 @@ function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
   });
 
   // Build vocabMap: fuzzy-match course title → vocab_book_id
+  const norm  = s => (s || '').toLowerCase().replace(/[()[\]]/g,'').trim();
+  const words = s => norm(s).split(/\s+/).filter(w => w.length > 1);
+  const lvl   = s => (norm(s).match(/\b(a1|a2|b1|b2|c1|c2|\d+)\b/) || [])[1] || '';
+
+  console.log('[vocab match] vocab_books:', (vocabBooks||[]).map(v=>v.book_name));
   allCourses.forEach(c => {
-    const t = c.title.toLowerCase().trim();
-    const match = (vocabBooks || []).find(vb => {
-      const vname = (vb.book_name.split('|')[0] || vb.book_name).trim().toLowerCase();
-      return vname === t || vname.includes(t) || t.includes(vname);
+    const t      = norm(c.title);
+    const tWords = new Set(words(t));
+    const tLvl   = lvl(t);
+    const match  = (vocabBooks || []).find(vb => {
+      const vname  = norm(vb.book_name.split('|')[0] || vb.book_name);
+      if (vname === t || vname.includes(t) || t.includes(vname)) return true;
+      // word-level fallback: ≥50% word overlap + same level suffix
+      const vWords   = words(vname);
+      const vLvl     = lvl(vname);
+      const common   = vWords.filter(w => tWords.has(w)).length;
+      const overlap  = common / Math.max(tWords.size, vWords.length);
+      return overlap >= 0.5 && (!tLvl || !vLvl || tLvl === vLvl);
     });
+    console.log(`[vocab match] "${c.title}" →`, match ? match.book_name : 'NO MATCH');
     if (match) vocabMap[c.id] = match.id;
   });
 
