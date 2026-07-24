@@ -1092,7 +1092,7 @@ function _buildWorksheetHTML(vocab, lessonTitle) {
   const SZ = 58;
   const N  = 10;
   let rowsHTML = '';
-  let initJS   = '';
+  const charData = []; // [{id, ch, show}]
 
   vocab.forEach((v, wi) => {
     const chars = [...v.hanzi].filter(c => /\S/.test(c));
@@ -1113,10 +1113,8 @@ function _buildWorksheetHTML(vocab, lessonTitle) {
         ${pIds.map(id => `<div class="box pr" id="${id}">${grid}</div>`).join('')}
       </div>`;
 
-      initJS += `hw('${eId}','${ch}',true);\n`;
-      pIds.forEach(id => {
-        initJS += `hw('${id}','${ch}',false);\n`;
-      });
+      charData.push({ id: eId, ch, show: true });
+      pIds.forEach(id => charData.push({ id, ch, show: false }));
     });
   });
 
@@ -1132,8 +1130,9 @@ function _buildWorksheetHTML(vocab, lessonTitle) {
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;background:#fff;padding:10px}
 .print-bar{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid #e0d8cc}
-.print-btn{background:#1a1208;color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit}
-.print-hint{font-size:11px;color:#999}
+.print-btn{background:#1a1208;color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;opacity:.4;pointer-events:none}
+.print-btn.ready{opacity:1;pointer-events:auto}
+.progress{font-size:11px;color:#888;min-width:90px}
 h1{font-family:'Noto Serif TC',serif;font-size:15px;color:#333;margin-bottom:12px}
 .word-hd{font-family:'Noto Serif TC',serif;font-size:13px;font-weight:600;color:#444;margin:12px 0 4px}
 .word-hd .py{color:#888;font-style:italic;font-weight:400;margin-left:8px;font-family:'Be Vietnam Pro',sans-serif}
@@ -1148,29 +1147,64 @@ h1{font-family:'Noto Serif TC',serif;font-size:15px;color:#333;margin-bottom:12p
 </head>
 <body>
 <div class="print-bar">
-  <button class="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>
-  <span class="print-hint">Chọn "Save as PDF" trong hộp thoại in để lưu file</span>
+  <button class="print-btn" id="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>
+  <span class="progress" id="prog">Đang render…</span>
 </div>
 <h1>${lessonTitle ? lessonTitle + ' · ' : ''}漢字練習</h1>
 ${rowsHTML}
 <script>
-function hw(id,ch,showChar){
-  var el=document.getElementById(id);
-  if(!el)return;
-  var sz=${SZ};
-  HanziWriter.create(id,ch,{
-    width:sz,height:sz,padding:4,
-    showOutline:!showChar,showCharacter:showChar,
-    strokeColor:'#111',outlineColor:'#bbb',
-    onLoadCharDataError:function(){
-      el.innerHTML='<div class="gl"></div><div class="gv"></div>'
-        +'<span style="position:absolute;inset:0;display:flex;align-items:center;'
-        +'justify-content:center;font-family:Noto Serif TC,serif;font-size:32px;'
-        +'color:'+(showChar?'#333':'#ccc')+'">'+(ch)+'</span>';
-    }
+var CHARS = ${JSON.stringify(charData)};
+var SZ = ${SZ};
+var BATCH = 8;
+var idx = 0;
+var done = 0;
+var total = CHARS.length;
+
+function updateProgress() {
+  done++;
+  var pct = Math.round(done / total * 100);
+  var el = document.getElementById('prog');
+  if (el) el.textContent = pct < 100 ? ('Đang render… ' + pct + '%') : 'Sẵn sàng in ✓';
+  if (done >= total) {
+    var btn = document.getElementById('print-btn');
+    if (btn) btn.classList.add('ready');
+  }
+}
+
+function nextBatch() {
+  var batch = CHARS.slice(idx, idx + BATCH);
+  if (!batch.length) return;
+  idx += BATCH;
+  var pending = batch.length;
+
+  function onDone() {
+    updateProgress();
+    pending--;
+    if (pending === 0) setTimeout(nextBatch, 0);
+  }
+
+  batch.forEach(function(item) {
+    var el = document.getElementById(item.id);
+    if (!el) { onDone(); return; }
+    HanziWriter.create(item.id, item.ch, {
+      width: SZ, height: SZ, padding: 4,
+      showOutline: !item.show,
+      showCharacter: item.show,
+      strokeColor: '#111',
+      outlineColor: '#bbb',
+      onLoadCharDataSuccess: onDone,
+      onLoadCharDataError: function() {
+        el.innerHTML = '<div class="gl"></div><div class="gv"></div>'
+          + '<span style="position:absolute;inset:0;display:flex;align-items:center;'
+          + 'justify-content:center;font-family:Noto Serif TC,serif;font-size:32px;'
+          + 'color:' + (item.show ? '#333' : '#ccc') + '">' + item.ch + '</span>';
+        onDone();
+      }
+    });
   });
 }
-window.onload=function(){${initJS}};
+
+window.onload = function() { if (total > 0) nextBatch(); };
 <\/script>
 </body>
 </html>`;
