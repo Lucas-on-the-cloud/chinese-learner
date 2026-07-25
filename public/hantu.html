@@ -65,6 +65,55 @@ a{text-decoration:none;color:inherit}
 .toggle-top50.on .tog-dot{background:var(--orange);border-color:var(--orange)}
 .study-btn-top{height:38px;padding:0 16px;background:linear-gradient(135deg,var(--navy),#1e3a8a);border:none;border-radius:9px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:.15s;white-space:nowrap;font-family:inherit;flex-shrink:0}
 .study-btn-top:hover{opacity:.9}
+.quiz-btn-top{height:38px;padding:0 16px;background:#fff;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-weight:700;color:var(--text-2);cursor:pointer;transition:.15s;white-space:nowrap;font-family:inherit;flex-shrink:0}
+.quiz-btn-top:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── SELECTION MODAL ── */
+.sel-overlay{display:none;position:fixed;inset:0;z-index:1400;background:rgba(10,29,55,.55);align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.sel-overlay.open{display:flex}
+.sel-modal{background:#fff;border-radius:20px;padding:32px 28px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:modalIn .2s ease}
+.sel-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.sel-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
+.sel-opts{display:flex;flex-direction:column;gap:10px}
+.sel-opt{border:2px solid var(--border);border-radius:12px;padding:15px 18px;cursor:pointer;background:#fff;font-family:'Inter',sans-serif;text-align:left;transition:all .15s;width:100%}
+.sel-opt:hover{border-color:var(--blue);background:var(--blue-lt)}
+.sel-opt.active{border-color:var(--blue);background:var(--blue-lt)}
+.sel-opt-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.sel-opt-sub{font-size:12px;color:var(--text-2)}
+.sel-btns{display:flex;gap:10px;margin-top:20px}
+.sel-btn{flex:1;padding:11px;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.sel-cancel{background:#f3f4f6;color:var(--text-2)}
+.sel-cancel:hover{background:#e5e7eb}
+.sel-start{background:var(--blue);color:#fff}
+.sel-start:hover{background:var(--blue-dark)}
+
+/* ── QUIZ OVERLAY ── */
+.quiz-overlay{display:none;position:fixed;inset:0;z-index:1200;background:#f4f5f7;flex-direction:column;align-items:center;overflow-y:auto;padding-bottom:40px}
+.quiz-overlay.open{display:flex}
+.quiz-topbar{width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;padding:18px 20px 0}
+.quiz-exit{background:rgba(0,0,0,.07);border:none;color:var(--text-2);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.15s}
+.quiz-exit:hover{background:rgba(0,0,0,.12)}
+.quiz-counter{font-size:13px;font-weight:600;color:var(--text-2)}
+.quiz-score{font-size:13px;font-weight:700;color:var(--blue)}
+.quiz-prog-wrap{width:100%;max-width:600px;padding:10px 20px}
+.quiz-prog-bar{height:6px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.quiz-prog-fill{height:100%;background:var(--blue);border-radius:100px;transition:width .3s ease}
+.quiz-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.09);width:100%;max-width:560px;margin:0 20px;padding:28px 24px;text-align:center}
+.quiz-q{font-size:14px;color:var(--text-2);margin-bottom:20px}
+.quiz-hw{width:180px;height:180px;position:relative;overflow:hidden;margin:0 auto 24px;background:#f8f9fb;border-radius:16px;border:1px solid var(--border)}
+.quiz-opts{display:flex;flex-direction:column;gap:10px}
+.quiz-opt{background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:14px 20px;text-align:left;cursor:pointer;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:var(--text);transition:all .15s;width:100%}
+.quiz-opt:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
+.quiz-opt.correct{border-color:#16a34a!important;background:#f0fdf4!important;color:#15803d!important}
+.quiz-opt.wrong{border-color:#dc2626!important;background:#fef2f2!important;color:#dc2626!important}
+.quiz-opt:disabled{cursor:default}
+.quiz-end{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.09);width:100%;max-width:560px;margin:0 20px;padding:44px 24px;text-align:center;animation:modalIn .25s ease}
+.quiz-end-emoji{font-size:56px;margin-bottom:12px;line-height:1}
+.quiz-end-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.quiz-end-score{font-size:42px;font-weight:700;margin-bottom:6px}
+.quiz-end-sub{font-size:14px;color:var(--text-2);margin-bottom:28px;line-height:1.6}
+.quiz-end-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.quiz-end-btn{padding:11px 26px;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
 
 /* ── GRID ── */
 .main-wrap{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 1.5rem 60px}
@@ -257,7 +306,8 @@ a{text-decoration:none;color:inherit}
       <div class="tog-dot"></div>
       50 phổ biến nhất
     </div>
-    <button class="study-btn-top" onclick="startStudy()">✦ Luyện tập</button>
+    <button class="quiz-btn-top" onclick="openSel('quiz')">📝 Trắc nghiệm</button>
+    <button class="study-btn-top" onclick="openSel('study')">✦ Flashcard</button>
   </div>
 </div>
 
@@ -309,8 +359,50 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="bm-actions">
       <button class="bm-btn bm-btn-learn" id="bm-btn-learn" onclick="toggleLearnedModal()"></button>
-      <button class="bm-btn bm-btn-study" onclick="startStudy('modal')">✦ Ôn nhóm này</button>
+      <button class="bm-btn bm-btn-study" onclick="closeModal();openSel('study')">✦ Flashcard</button>
     </div>
+  </div>
+</div>
+
+<!-- SELECTION MODAL -->
+<div class="sel-overlay" id="sel-overlay">
+  <div class="sel-modal">
+    <div class="sel-title" id="sel-title">Chọn bộ luyện tập</div>
+    <div class="sel-sub">Bạn muốn luyện tập với bao nhiêu bộ thủ?</div>
+    <div class="sel-opts">
+      <button class="sel-opt active" id="sel-opt-50" onclick="selChoose(50)">
+        <div class="sel-opt-title">⭐ 50 bộ phổ biến nhất</div>
+        <div class="sel-opt-sub">Xuất hiện nhiều nhất trong văn bản tiếng Trung</div>
+      </button>
+      <button class="sel-opt" id="sel-opt-214" onclick="selChoose(214)">
+        <div class="sel-opt-title">📚 214 bộ thủ Khang Hy</div>
+        <div class="sel-opt-sub">Toàn bộ hệ thống bộ thủ — thách thức hơn</div>
+      </button>
+    </div>
+    <div class="sel-btns">
+      <button class="sel-btn sel-cancel" onclick="closeSel()">Hủy</button>
+      <button class="sel-btn sel-start" onclick="confirmSel()">Bắt đầu →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ OVERLAY -->
+<div class="quiz-overlay" id="quiz-overlay">
+  <div class="quiz-topbar">
+    <button class="quiz-exit" onclick="endQuiz()">✕ Thoát</button>
+    <span class="quiz-counter" id="quiz-counter">Câu 1/10</span>
+    <span class="quiz-score" id="quiz-score">Điểm: 0</span>
+  </div>
+  <div class="quiz-prog-wrap">
+    <div class="quiz-prog-bar"><div class="quiz-prog-fill" id="quiz-prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="quiz-card" id="quiz-card">
+    <div class="quiz-q">Ý nghĩa của bộ thủ này là gì?</div>
+    <div class="quiz-hw" id="quiz-hw-target">
+      <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+      <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+    </div>
+    <div class="quiz-opts" id="quiz-opts"></div>
   </div>
 </div>
 
@@ -634,15 +726,169 @@ function initSingleCardHW(el){
 
 function hwCardAnim(num,playing){}
 
+// ── SELECTION MODAL ────────────────────────────────────────────
+var _selMode='';
+var _selPool=null;
+
+function openSel(mode){
+  _selMode=mode;
+  _selPool=null;
+  document.getElementById('sel-opt-50').classList.add('active');
+  document.getElementById('sel-opt-214').classList.remove('active');
+  document.getElementById('sel-title').textContent=
+    mode==='quiz' ? 'Chọn bộ trắc nghiệm' : 'Chọn bộ Flashcard';
+  document.getElementById('sel-overlay').classList.add('open');
+}
+
+function closeSel(){
+  document.getElementById('sel-overlay').classList.remove('open');
+}
+
+function selChoose(n){
+  document.getElementById('sel-opt-50').classList.toggle('active',n===50);
+  document.getElementById('sel-opt-214').classList.toggle('active',n===214);
+  _selPool=n===50
+    ? allRadicals.filter(function(r){return top50.has(r.number);})
+    : allRadicals.slice();
+}
+
+function confirmSel(){
+  var pool=_selPool||allRadicals.filter(function(r){return top50.has(r.number);});
+  closeSel();
+  if(_selMode==='quiz') startQuiz(pool);
+  else startStudy(null,pool);
+}
+
+// ── QUIZ MODE ──────────────────────────────────────────────────
+var quizCards=[];
+var quizIdx=0;
+var quizScore=0;
+var _quizHW=null;
+var quizAnswered=false;
+
+function startQuiz(pool){
+  var p=pool.slice();
+  shuffle(p);
+  quizCards=p.slice(0,10);
+  quizIdx=0; quizScore=0; quizAnswered=false;
+
+  // Restore card view (in case end screen was showing)
+  document.getElementById('quiz-card').style.display='';
+  document.getElementById('quiz-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderQuizQ();
+}
+
+function renderQuizQ(){
+  var r=quizCards[quizIdx];
+  var ch=radChar(r.radical);
+  var total=quizCards.length;
+
+  document.getElementById('quiz-counter').textContent='Câu '+(quizIdx+1)+'/'+total;
+  document.getElementById('quiz-score').textContent='Điểm: '+quizScore;
+  document.getElementById('quiz-prog-fill').style.width=Math.round(quizIdx/total*100)+'%';
+
+  // Reset HanziWriter target
+  var t=document.getElementById('quiz-hw-target');
+  Array.from(t.children).forEach(function(c){if(!c.classList.contains('hw-grid')) c.remove();});
+  if(_quizHW){try{_quizHW.cancelQuiz();}catch(e){} _quizHW=null;}
+  setTimeout(function(){
+    _quizHW=HanziWriter.create('quiz-hw-target',ch,{
+      width:180,height:180,padding:10,
+      showOutline:true,outlineColor:'rgba(10,29,55,.12)',
+      strokeColor:'#027ab3',strokeAnimationSpeed:1,delayBetweenStrokes:280,
+      charDataLoader:function(char,onLoad,onError){
+        var src='https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/'+encodeURIComponent(char)+'.json';
+        fetch(src).then(function(r){return r.json();}).then(onLoad).catch(onError);
+      },
+      onLoadCharDataSuccess:function(){if(_quizHW) _quizHW.loopCharacterAnimation();}
+    });
+  },50);
+
+  // Build 4 options: 1 correct + 3 random wrong
+  var wrong=allRadicals.filter(function(x){return x.number!==r.number;});
+  shuffle(wrong);
+  var opts=[r,wrong[0],wrong[1],wrong[2]];
+  shuffle(opts);
+
+  quizAnswered=false;
+  document.getElementById('quiz-opts').innerHTML=opts.map(function(opt){
+    return '<button class="quiz-opt" data-num="'+opt.number+'" onclick="answerQuiz('+opt.number+','+r.number+')">'
+      +escH(opt.meaning_vi)+' <span style="color:var(--text-3);font-weight:400;font-size:12px">('+escH(opt.han_viet)+')</span>'
+      +'</button>';
+  }).join('');
+}
+
+function answerQuiz(chosen,correct){
+  if(quizAnswered) return;
+  quizAnswered=true;
+  if(chosen===correct) quizScore++;
+
+  document.querySelectorAll('.quiz-opt').forEach(function(b){
+    b.disabled=true;
+    var n=parseInt(b.dataset.num);
+    if(n===correct) b.classList.add('correct');
+    else if(n===chosen) b.classList.add('wrong');
+  });
+
+  setTimeout(function(){
+    quizIdx++;
+    if(quizIdx>=quizCards.length){showQuizEnd();return;}
+    renderQuizQ();
+  },1100);
+}
+
+function showQuizEnd(){
+  if(_quizHW){try{_quizHW.cancelQuiz();}catch(e){} _quizHW=null;}
+  var total=quizCards.length;
+  var pct=Math.round(quizScore/total*100);
+  var emoji=pct>=80?'🎉':pct>=50?'💪':'📚';
+  var sub=pct>=80?'Xuất sắc! Bạn đã trả lời đúng '+pct+'% câu hỏi.'
+         :pct>=50?'Tốt lắm! Luyện thêm để đạt điểm cao hơn nhé.'
+         :'Cố lên! Hãy ôn thêm các bộ thủ rồi thử lại.';
+  var scoreColor=pct>=60?'#16a34a':'#dc2626';
+  document.getElementById('quiz-card').style.display='none';
+  document.getElementById('quiz-prog-fill').style.width='100%';
+  // Reuse card area with end screen
+  var end=document.createElement('div');
+  end.className='quiz-end';
+  end.id='quiz-end-screen';
+  end.innerHTML=
+    '<div class="quiz-end-emoji">'+emoji+'</div>'
+    +'<div class="quiz-end-title">Kết quả trắc nghiệm</div>'
+    +'<div class="quiz-end-score" style="color:'+scoreColor+'">'+quizScore+'/'+total+'</div>'
+    +'<div class="quiz-end-sub">'+sub+'</div>'
+    +'<div class="quiz-end-btns">'
+    +'<button class="quiz-end-btn" style="background:var(--blue);color:#fff" onclick="retryQuiz()">↺ Thử lại</button>'
+    +'<button class="quiz-end-btn" style="background:#f3f4f6;color:var(--text-2)" onclick="endQuiz()">Xong</button>'
+    +'</div>';
+  document.getElementById('quiz-overlay').appendChild(end);
+}
+
+function retryQuiz(){
+  var old=document.getElementById('quiz-end-screen');
+  if(old) old.remove();
+  document.getElementById('quiz-card').style.display='';
+  openSel('quiz');
+}
+
+function endQuiz(){
+  if(_quizHW){try{_quizHW.cancelQuiz();}catch(e){} _quizHW=null;}
+  var old=document.getElementById('quiz-end-screen');
+  if(old) old.remove();
+  document.getElementById('quiz-card').style.display='';
+  document.getElementById('quiz-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
 // ── STUDY MODE ─────────────────────────────────────────────────
-function startStudy(mode){
+function startStudy(mode,pool){
   closeModal();
-  var pool=filtered();
-  if(!pool.length) pool=allRadicals;
+  var p=pool||(function(){var f=filtered();return f.length?f:allRadicals;})();
 
   // Prioritise unlearned, then shuffle
-  var unlearned=pool.filter(function(r){return !learned.has(r.number);});
-  var lnd=pool.filter(function(r){return learned.has(r.number);});
+  var unlearned=p.filter(function(r){return !learned.has(r.number);});
+  var lnd=p.filter(function(r){return learned.has(r.number);});
   shuffle(unlearned); shuffle(lnd);
   var combined=unlearned.concat(lnd);
   studyCards=combined.slice(0,20);
