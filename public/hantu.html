@@ -115,6 +115,50 @@ a{text-decoration:none;color:inherit}
 .quiz-end-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .quiz-end-btn{padding:11px 26px;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
 
+.print-btn-top{height:38px;padding:0 16px;background:#fff;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-weight:700;color:var(--text-2);cursor:pointer;transition:.15s;white-space:nowrap;font-family:inherit;flex-shrink:0}
+.print-btn-top:hover{border-color:#dc2626;color:#dc2626}
+
+/* ── PRINT SELECTION MODAL ── */
+.print-sel-overlay{display:none;position:fixed;inset:0;z-index:1400;background:rgba(10,29,55,.55);align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.print-sel-overlay.open{display:flex}
+.print-sel-modal{background:#fff;border-radius:20px;padding:32px 28px;max-width:420px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:modalIn .2s ease}
+.print-sel-title{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.print-sel-sub{font-size:13px;color:var(--text-2);margin-bottom:22px;line-height:1.5}
+.print-opts{display:flex;flex-direction:column;gap:10px}
+.print-opt{border:2px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;background:#fff;font-family:'Inter',sans-serif;text-align:left;transition:all .15s;width:100%}
+.print-opt:hover{border-color:#dc2626;background:#fff5f5}
+.print-opt.active{border-color:#dc2626;background:#fff5f5}
+.print-opt-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.print-opt-sub{font-size:12px;color:var(--text-2)}
+.print-sel-btns{display:flex;gap:10px;margin-top:20px}
+.print-sel-btn{flex:1;padding:11px;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.print-cancel{background:#f3f4f6;color:var(--text-2)}
+.print-cancel:hover{background:#e5e7eb}
+.print-go{background:#dc2626;color:#fff}
+.print-go:hover{background:#b91c1c}
+
+/* ── PRINT CUSTOM PICKER ── */
+.print-custom-overlay{display:none;position:fixed;inset:0;z-index:1500;background:rgba(10,29,55,.6);align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+.print-custom-overlay.open{display:flex}
+.print-custom-modal{background:#fff;border-radius:20px;width:92%;max-width:680px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:modalIn .2s ease}
+.print-custom-head{padding:22px 24px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.print-custom-title{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.print-custom-search{display:flex;align-items:center;gap:8px;background:#f9fafb;border:1.5px solid var(--border);border-radius:9px;padding:0 12px;height:36px;transition:.15s}
+.print-custom-search:focus-within{border-color:var(--blue)}
+.print-custom-search input{flex:1;border:none;outline:none;font-family:'Inter',sans-serif;font-size:13px;background:transparent}
+.print-custom-toolbar{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--text-2)}
+.print-custom-toolbar button{font-size:12px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+.print-chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;overflow-y:auto;padding:16px 24px;flex:1}
+.print-chip{border:1.5px solid var(--border);border-radius:9px;padding:8px 4px 6px;cursor:pointer;background:#fff;text-align:center;transition:all .15s;user-select:none}
+.print-chip:hover{border-color:var(--blue)}
+.print-chip.picked{border-color:#dc2626;background:#fff5f5}
+.print-chip-char{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:var(--navy);line-height:1;display:block}
+.print-chip-num{font-size:9px;color:var(--text-3);display:block;margin-top:2px}
+.print-chip-vi{font-size:9px;color:var(--text-2);display:block;line-height:1.2;margin-top:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:100%}
+.print-custom-foot{padding:14px 24px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.print-custom-count{flex:1;font-size:13px;font-weight:600;color:var(--text-2)}
+.print-custom-count span{color:#dc2626}
+
 /* ── GRID ── */
 .main-wrap{flex:1;max-width:1100px;margin:0 auto;width:100%;padding:24px 1.5rem 60px}
 .grid-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -312,6 +356,7 @@ a{text-decoration:none;color:inherit}
     </div>
     <button class="quiz-btn-top" onclick="openSel('quiz')">📝 Trắc nghiệm</button>
     <button class="study-btn-top" onclick="openSel('study')">✦ Flashcard</button>
+    <button class="print-btn-top" onclick="openPrintSel()">🖨️ In viết tay</button>
   </div>
 </div>
 
@@ -364,6 +409,56 @@ a{text-decoration:none;color:inherit}
     <div class="bm-actions">
       <button class="bm-btn bm-btn-learn" id="bm-btn-learn" onclick="toggleLearnedModal()"></button>
       <button class="bm-btn bm-btn-study" onclick="closeModal();openSel('study')">✦ Flashcard</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT SELECTION MODAL -->
+<div class="print-sel-overlay" id="print-sel-overlay">
+  <div class="print-sel-modal">
+    <div class="print-sel-title">🖨️ In tập viết bộ thủ</div>
+    <div class="print-sel-sub">Chọn bộ thủ muốn in phiếu luyện viết</div>
+    <div class="print-opts">
+      <button class="print-opt active" id="popt-50" onclick="pickPrintOpt(50)">
+        <div class="print-opt-title">⭐ 50 bộ phổ biến nhất</div>
+        <div class="print-opt-sub">Bộ thủ xuất hiện nhiều nhất — khoảng 3–4 trang</div>
+      </button>
+      <button class="print-opt" id="popt-214" onclick="pickPrintOpt(214)">
+        <div class="print-opt-title">📚 214 bộ thủ Khang Hy</div>
+        <div class="print-opt-sub">Toàn bộ hệ thống bộ thủ — khoảng 15 trang</div>
+      </button>
+      <button class="print-opt" id="popt-custom" onclick="pickPrintOpt('custom')">
+        <div class="print-opt-title">✏️ Tự chọn bộ cần in</div>
+        <div class="print-opt-sub">Chọn thủ công những bộ bạn muốn luyện</div>
+      </button>
+    </div>
+    <div class="print-sel-btns">
+      <button class="print-sel-btn print-cancel" onclick="closePrintSel()">Hủy</button>
+      <button class="print-sel-btn print-go" id="print-go-btn" onclick="confirmPrint()">🖨️ In ngay</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT CUSTOM PICKER -->
+<div class="print-custom-overlay" id="print-custom-overlay">
+  <div class="print-custom-modal">
+    <div class="print-custom-head">
+      <div class="print-custom-title">Chọn bộ thủ cần in</div>
+      <div class="print-custom-search">
+        <i class="fas fa-search" style="color:var(--text-3);font-size:13px"></i>
+        <input id="print-custom-search-inp" placeholder="Tìm bộ thủ, pinyin, nghĩa…" oninput="filterPrintChips()">
+      </div>
+      <div class="print-custom-toolbar">
+        <button onclick="selectAllChips()">Chọn tất cả</button>
+        <button onclick="clearAllChips()">Bỏ chọn</button>
+        <span id="print-chip-count">Đã chọn: <span>0</span> bộ</span>
+      </div>
+    </div>
+    <div class="print-chip-grid" id="print-chip-grid"></div>
+    <div class="print-custom-foot">
+      <div class="print-custom-count">Đã chọn <span id="print-foot-count">0</span> bộ thủ</div>
+      <button class="print-sel-btn print-cancel" style="flex:0;padding:11px 20px" onclick="closePrintCustom()">Hủy</button>
+      <button class="print-sel-btn print-go" style="flex:0;padding:11px 20px" onclick="doPrintCustom()">🖨️ In</button>
     </div>
   </div>
 </div>
@@ -982,6 +1077,183 @@ function endStudy(){
   document.getElementById('study-overlay').classList.remove('open');
   document.body.style.overflow='';
   document.removeEventListener('keydown',onStudyKey);
+}
+
+// ── PRINT HANDWRITING ─────────────────────────────────────────
+var _printOpt = 50; // 50 | 214 | 'custom'
+var _printPicked = new Set();
+var _printChipAll = []; // filtered list for custom grid
+
+function openPrintSel(){
+  _printOpt = 50;
+  document.getElementById('popt-50').classList.add('active');
+  document.getElementById('popt-214').classList.remove('active');
+  document.getElementById('popt-custom').classList.remove('active');
+  document.getElementById('print-go-btn').textContent = '🖨️ In ngay';
+  document.getElementById('print-sel-overlay').classList.add('open');
+}
+
+function closePrintSel(){
+  document.getElementById('print-sel-overlay').classList.remove('open');
+}
+
+function pickPrintOpt(opt){
+  _printOpt = opt;
+  document.getElementById('popt-50').classList.toggle('active', opt===50);
+  document.getElementById('popt-214').classList.toggle('active', opt===214);
+  document.getElementById('popt-custom').classList.toggle('active', opt==='custom');
+  document.getElementById('print-go-btn').textContent = opt==='custom' ? 'Chọn bộ →' : '🖨️ In ngay';
+}
+
+function confirmPrint(){
+  if(_printOpt === 'custom'){
+    closePrintSel();
+    openPrintCustom();
+    return;
+  }
+  var list = _printOpt === 50
+    ? allRadicals.filter(function(r){return top50.has(r.number);})
+    : allRadicals.slice();
+  // sort by number
+  list = list.slice().sort(function(a,b){return a.number-b.number;});
+  closePrintSel();
+  printRadicals(list);
+}
+
+// ── CUSTOM PICKER ─────────────────────────────────────────────
+function openPrintCustom(){
+  _printPicked = new Set();
+  document.getElementById('print-custom-search-inp').value = '';
+  document.getElementById('print-custom-overlay').classList.add('open');
+  renderPrintChips(allRadicals);
+  updatePrintCount();
+}
+
+function closePrintCustom(){
+  document.getElementById('print-custom-overlay').classList.remove('open');
+}
+
+function filterPrintChips(){
+  var q = document.getElementById('print-custom-search-inp').value.trim().toLowerCase();
+  var list = q ? allRadicals.filter(function(r){
+    var ch = radChar(r.radical);
+    return ch.includes(q) || r.pinyin.toLowerCase().includes(q) ||
+           r.han_viet.toLowerCase().includes(q) || r.meaning_vi.toLowerCase().includes(q) ||
+           String(r.number) === q;
+  }) : allRadicals;
+  renderPrintChips(list);
+}
+
+function renderPrintChips(list){
+  _printChipAll = list;
+  document.getElementById('print-chip-grid').innerHTML = list.map(function(r){
+    var ch = radChar(r.radical);
+    var picked = _printPicked.has(r.number);
+    return '<div class="print-chip'+(picked?' picked':'')+'" id="pchip-'+r.number+'" onclick="togglePrintChip('+r.number+')">'
+      +'<span class="print-chip-char">'+ch+'</span>'
+      +'<span class="print-chip-num">#'+r.number+'</span>'
+      +'<span class="print-chip-vi">'+escH(r.meaning_vi)+'</span>'
+      +'</div>';
+  }).join('');
+}
+
+function togglePrintChip(num){
+  if(_printPicked.has(num)) _printPicked.delete(num);
+  else _printPicked.add(num);
+  var el = document.getElementById('pchip-'+num);
+  if(el) el.classList.toggle('picked', _printPicked.has(num));
+  updatePrintCount();
+}
+
+function selectAllChips(){
+  _printChipAll.forEach(function(r){ _printPicked.add(r.number); });
+  document.querySelectorAll('.print-chip').forEach(function(el){
+    el.classList.add('picked');
+  });
+  updatePrintCount();
+}
+
+function clearAllChips(){
+  _printChipAll.forEach(function(r){ _printPicked.delete(r.number); });
+  document.querySelectorAll('.print-chip').forEach(function(el){
+    el.classList.remove('picked');
+  });
+  updatePrintCount();
+}
+
+function updatePrintCount(){
+  var n = _printPicked.size;
+  document.getElementById('print-foot-count').textContent = n;
+  document.querySelectorAll('#print-chip-count span').forEach(function(el){ el.textContent = n; });
+}
+
+function doPrintCustom(){
+  if(!_printPicked.size) return;
+  var list = allRadicals.filter(function(r){ return _printPicked.has(r.number); });
+  list.sort(function(a,b){ return a.number-b.number; });
+  closePrintCustom();
+  printRadicals(list);
+}
+
+// ── PRINT GENERATION ──────────────────────────────────────────
+function printRadicals(list){
+  var css = [
+    '@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Inter:wght@400;500;600;700&display=swap");',
+    '@page{size:A4;margin:12mm 14mm}',
+    '*{box-sizing:border-box;margin:0;padding:0}',
+    'body{font-family:Inter,sans-serif;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
+    '.page-title{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:700;color:#0a1d37;text-align:center;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #0a1d37}',
+    '.subtitle{font-size:10px;color:#888;text-align:center;margin-top:-8px;margin-bottom:10px}',
+    '.grid{display:flex;flex-direction:column;gap:4px}',
+    '.row{display:flex;align-items:stretch;gap:3px;break-inside:avoid}',
+    '.info{width:74px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f7fa;border:1px solid #ccc;border-radius:4px;padding:5px 3px;gap:1px}',
+    '.ch{font-family:"Noto Serif TC",serif;font-size:30px;font-weight:700;color:#0a1d37;line-height:1}',
+    '.py{font-size:8px;color:#888;font-style:italic;margin-top:2px}',
+    '.hv{font-size:9px;font-weight:700;color:#0a1d37}',
+    '.vi{font-size:8px;color:#555;text-align:center;line-height:1.2}',
+    '.boxes{display:flex;gap:3px;flex:1}',
+    '.box{flex:1;aspect-ratio:1/1;border:1px solid #bbb;position:relative;border-radius:3px;background:#fff}',
+    '.box::before{content:"";position:absolute;left:50%;top:0;width:.5px;height:100%;background:#ddd;transform:translateX(-50%)}',
+    '.box::after{content:"";position:absolute;top:50%;left:0;height:.5px;width:100%;background:#ddd;transform:translateY(-50%)}',
+    '.diag{position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - .3px),#ebebeb calc(50% - .3px),#ebebeb calc(50% + .3px),transparent calc(50% + .3px)),linear-gradient(to bottom left,transparent calc(50% - .3px),#ebebeb calc(50% - .3px),#ebebeb calc(50% + .3px),transparent calc(50% + .3px));border-radius:3px}',
+    '.bnum{font-size:7px;color:#ccc;position:absolute;top:2px;left:3px;font-family:Inter,sans-serif}'
+  ].join('\n');
+
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  var rows = list.map(function(r){
+    var ch = radChar(r.radical);
+    var boxes = '';
+    for(var i=0;i<6;i++){
+      boxes += '<div class="box"><div class="diag"></div>'+(i===0?'<span class="bnum">#'+r.number+'</span>':'')+'</div>';
+    }
+    return '<div class="row">'
+      +'<div class="info">'
+      +'<div class="ch">'+ch+'</div>'
+      +'<div class="py">'+esc(r.pinyin)+'</div>'
+      +'<div class="hv">'+esc(r.han_viet)+'</div>'
+      +'<div class="vi">'+esc(r.meaning_vi)+'</div>'
+      +'</div>'
+      +'<div class="boxes">'+boxes+'</div>'
+      +'</div>';
+  }).join('');
+
+  var now = new Date();
+  var dateStr = now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Tập viết bộ thủ — TOCFL FAFA</title>'
+    +'<style>'+css+'</style></head><body>'
+    +'<div class="page-title">Bộ thủ Khang Hy — Phiếu luyện viết ('+list.length+' bộ)</div>'
+    +'<div class="subtitle">TOCFL FAFA · tocflfafa.com · '+dateStr+'</div>'
+    +'<div class="grid">'+rows+'</div>'
+    +'<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>'
+    +'</body></html>';
+
+  var w = window.open('', '_blank');
+  if(w){
+    w.document.write(html);
+    w.document.close();
+  }
 }
 </script>
 </body>
