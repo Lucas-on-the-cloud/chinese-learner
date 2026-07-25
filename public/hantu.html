@@ -191,49 +191,52 @@ a{text-decoration:none;color:inherit}
 .bm-btn-study:hover{background:var(--blue);color:#fff}
 
 /* ── STUDY MODE ── */
-.study-overlay{display:none;position:fixed;inset:0;z-index:1100;background:#0a1d37;flex-direction:column;align-items:center;justify-content:center}
+.study-overlay{display:none;position:fixed;inset:0;z-index:1100;background:#f4f5f7;flex-direction:column;align-items:center;overflow-y:auto;padding-bottom:40px}
 .study-overlay.open{display:flex}
-.study-close{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);font-size:16px;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;transition:.15s}
-.study-close:hover{background:rgba(255,255,255,.2)}
-.study-prog{width:100%;max-width:460px;margin-bottom:24px;padding:0 1.5rem}
-.study-prog-bar{height:5px;background:rgba(255,255,255,.15);border-radius:100px;overflow:hidden}
-.study-prog-fill{height:100%;background:linear-gradient(90deg,#4f96ff,#60efff);border-radius:100px;transition:width .35s ease}
-.study-prog-txt{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.5);margin-top:6px}
-.flashcard{width:340px;height:240px;perspective:1200px;cursor:pointer;margin-bottom:20px}
+.study-topbar{width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;padding:18px 20px 0}
+.study-close{background:rgba(0,0,0,.07);border:none;color:var(--text-2);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.15s}
+.study-close:hover{background:rgba(0,0,0,.12)}
+.study-counter{font-size:13px;font-weight:600;color:var(--text-2)}
+.study-known-lbl{font-size:13px;font-weight:700;color:#16a34a}
+.study-prog{width:100%;max-width:600px;padding:10px 20px;margin-bottom:0}
+.study-prog-bar{height:6px;background:#e5e7eb;border-radius:100px;overflow:hidden}
+.study-prog-fill{height:100%;background:var(--blue);border-radius:100px;transition:width .35s ease}
+.study-prog-txt{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3);margin-top:6px}
+.flashcard{width:100%;max-width:560px;height:280px;perspective:1200px;cursor:pointer;margin:0 20px 20px}
 .flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
 .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
-.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-.fc-front{background:#fff;box-shadow:0 16px 48px rgba(0,0,0,.4)}
-.fc-back{background:linear-gradient(135deg,#1e3a8a,#0a1d37);transform:rotateY(180deg);box-shadow:0 16px 48px rgba(0,0,0,.4)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px}
+.fc-front{background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.09)}
+.fc-back{background:#fff;border-top:4px solid var(--blue);transform:rotateY(180deg);box-shadow:0 4px 24px rgba(0,0,0,.09)}
 .fc-front-char{font-family:'Noto Serif TC',serif;font-size:88px;font-weight:700;color:var(--navy);line-height:1}
 .fc-front-hint{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:1px}
-.fc-back-num{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.5px;font-weight:600}
-.fc-back-char{font-family:'Noto Serif TC',serif;font-size:48px;font-weight:700;color:rgba(255,255,255,.9);line-height:1}
-.fc-back-py{font-size:13px;color:#fbbf24;font-style:italic}
-.fc-back-hv{font-size:18px;font-weight:700;color:#fff}
-.fc-back-vi{font-size:13px;color:rgba(255,255,255,.75);text-align:center;max-width:220px;line-height:1.5}
-.study-actions{display:flex;gap:12px}
+.fc-back-num{font-size:11px;color:var(--text-3);letter-spacing:.5px;font-weight:600}
+.fc-back-char{font-family:'Noto Serif TC',serif;font-size:48px;font-weight:700;color:var(--navy);line-height:1}
+.fc-back-py{font-size:13px;color:var(--blue);font-style:italic}
+.fc-back-hv{font-size:18px;font-weight:700;color:var(--navy)}
+.fc-back-vi{font-size:13px;color:var(--text-2);text-align:center;max-width:220px;line-height:1.5}
+.study-actions{display:flex;gap:12px;margin:0 20px}
 .sa-btn{padding:11px 28px;border-radius:10px;border:2px solid;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s}
-.sa-known{background:transparent;border-color:#4ade80;color:#4ade80}
-.sa-known:hover{background:#4ade80;color:#0a1d37}
-.sa-unknown{background:transparent;border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.6)}
-.sa-unknown:hover{background:rgba(255,255,255,.1)}
-.study-tap-hint{font-size:11px;color:rgba(255,255,255,.35);margin-top:8px}
+.sa-known{background:#f0fdf4;border-color:#16a34a;color:#16a34a}
+.sa-known:hover{background:#16a34a;color:#fff}
+.sa-unknown{background:#fff;border-color:var(--border);color:var(--text-2)}
+.sa-unknown:hover{background:#f3f4f6;border-color:var(--text-3)}
+.study-tap-hint{font-size:11px;color:var(--text-3);margin-top:8px}
 
 /* ── STUDY END SCREEN ── */
 .study-end{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:2rem;animation:modalIn .3s ease}
 .se-emoji{font-size:52px;line-height:1}
-.se-title{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:#fff}
-.se-sub{font-size:14px;color:rgba(255,255,255,.6);max-width:300px;line-height:1.6}
+.se-title{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:var(--navy)}
+.se-sub{font-size:14px;color:var(--text-2);max-width:300px;line-height:1.6}
 .se-score{display:flex;gap:24px;margin:4px 0}
 .se-s{text-align:center}
-.se-s-n{font-size:36px;font-weight:700;color:#4ade80;line-height:1}
-.se-s-n.bad{color:#f87171}
-.se-s-l{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.se-s-n{font-size:36px;font-weight:700;color:#16a34a;line-height:1}
+.se-s-n.bad{color:#dc2626}
+.se-s-l{font-size:12px;color:var(--text-3);margin-top:4px}
 .se-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .se-btn{padding:10px 22px;border-radius:9px;border:none;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
-.se-btn-again{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
-.se-btn-again:hover{background:rgba(255,255,255,.2)}
+.se-btn-again{background:#f3f4f6;color:var(--text-2)}
+.se-btn-again:hover{background:#e5e7eb}
 .se-btn-done{background:var(--blue);color:#fff;border:none}
 .se-btn-done:hover{background:var(--blue-dark)}
 
@@ -244,7 +247,7 @@ a{text-decoration:none;color:inherit}
 @media(max-width:700px){
   .filters-inner{gap:8px}
   .ph-stats{gap:14px}
-  .flashcard{width:300px;height:210px}
+  .flashcard{height:240px}
   .fc-front-char{font-size:72px}
 }
 @media(max-width:500px){
@@ -408,13 +411,15 @@ a{text-decoration:none;color:inherit}
 
 <!-- STUDY OVERLAY -->
 <div class="study-overlay" id="study-overlay">
-  <button class="study-close" onclick="endStudy()">✕ Thoát</button>
-
   <!-- CARD VIEW -->
-  <div id="study-card-view">
+  <div id="study-card-view" style="display:flex;flex-direction:column;align-items:center;width:100%">
+    <div class="study-topbar">
+      <button class="study-close" onclick="endStudy()">✕ Thoát</button>
+      <span class="study-counter" id="study-prog-txt-l"></span>
+      <span class="study-known-lbl" id="study-prog-txt-r"></span>
+    </div>
     <div class="study-prog" id="study-prog-wrap">
       <div class="study-prog-bar"><div class="study-prog-fill" id="study-prog-fill"></div></div>
-      <div class="study-prog-txt"><span id="study-prog-txt-l"></span><span id="study-prog-txt-r"></span></div>
     </div>
     <div class="flashcard" id="study-fc" onclick="flipCard()">
       <div class="flashcard-inner">
@@ -769,7 +774,7 @@ var quizAnswered=false;
 function startQuiz(pool){
   var p=pool.slice();
   shuffle(p);
-  quizCards=p.slice(0,10);
+  quizCards=p;
   quizIdx=0; quizScore=0; quizAnswered=false;
 
   // Restore card view (in case end screen was showing)
@@ -890,8 +895,7 @@ function startStudy(mode,pool){
   var unlearned=p.filter(function(r){return !learned.has(r.number);});
   var lnd=p.filter(function(r){return learned.has(r.number);});
   shuffle(unlearned); shuffle(lnd);
-  var combined=unlearned.concat(lnd);
-  studyCards=combined.slice(0,20);
+  studyCards=unlearned.concat(lnd);
 
   if(!studyCards.length) return;
   studyIdx=0; studyKnown=[]; studyUnknown=[];
