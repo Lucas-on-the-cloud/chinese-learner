@@ -110,7 +110,13 @@ a{text-decoration:none;color:inherit}
 .bm-close:hover{background:#f3f4f6;color:var(--text)}
 .bm-hero{display:flex;flex-direction:column;align-items:center;padding:28px 24px 20px;border-bottom:1px solid var(--border);position:relative}
 .bm-num{font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:8px;letter-spacing:.5px}
-.bm-char-big{font-family:'Noto Serif TC',serif;font-size:88px;font-weight:700;color:var(--navy);line-height:1;margin:8px 0 12px}
+#hw-target{border-radius:12px;background:#f8f9fb;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden;margin-bottom:10px}
+.hw-grid{position:absolute;background:rgba(10,29,55,.08)}
+.hw-controls{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.hw-btn{background:#fff;border:1.5px solid var(--border);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);padding:7px 16px;border-radius:7px;cursor:pointer;transition:.15s}
+.hw-btn:hover{background:var(--bg);border-color:var(--navy)}
+.hw-btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.hw-btn.primary:hover{opacity:.88}
 .bm-py{font-size:16px;color:var(--text-2);font-style:italic;margin-bottom:2px}
 .bm-hv{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px}
 .bm-vi{font-size:14px;color:var(--text);font-weight:500}
@@ -132,26 +138,8 @@ a{text-decoration:none;color:inherit}
 .bm-btn-learn{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
 .bm-btn-learn:hover{background:#15803d;color:#fff}
 .bm-btn-learn.done{background:#dcfce7;color:#15803d;border-color:#86efac}
-.bm-btn-hw{background:var(--blue-lt);color:var(--blue);border-color:#a5d8f0}
-.bm-btn-hw:hover{background:var(--blue);color:#fff}
-.bm-btn-study{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
-.bm-btn-study:hover{background:#15803d;color:#fff}
-
-/* ── HW OVERLAY ── */
-.hw-overlay{display:none;position:fixed;inset:0;z-index:1100;background:rgba(10,29,55,.65);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
-.hw-overlay.open{display:flex}
-.hw-modal{background:#fff;border-radius:14px;padding:1.75rem;width:92%;max-width:400px;box-shadow:0 12px 48px rgba(0,0,0,.3);position:relative;animation:modalIn .22s ease}
-.hw-close{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;line-height:1;padding:4px}
-.hw-close:hover{color:var(--text)}
-.hw-title{font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:1rem}
-.hw-canvas-wrap{display:flex;justify-content:center;margin-bottom:1rem}
-#hw-target{border-radius:10px;background:#fafafa;border:1px solid var(--border);position:relative;width:200px;height:200px;overflow:hidden}
-.hw-grid{position:absolute;background:#e5e7eb}
-.hw-controls{display:flex;gap:8px;justify-content:center}
-.hw-btn{background:#fff;border:1.5px solid var(--border);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--text);padding:8px 18px;border-radius:7px;cursor:pointer;transition:.15s}
-.hw-btn:hover{background:var(--bg)}
-.hw-btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
-.hw-btn.primary:hover{background:var(--blue-dark)}
+.bm-btn-study{background:var(--blue-lt);color:var(--blue);border-color:#a5d8f0}
+.bm-btn-study:hover{background:var(--blue);color:#fff}
 
 /* ── STUDY MODE ── */
 .study-overlay{display:none;position:fixed;inset:0;z-index:1100;background:#0a1d37;flex-direction:column;align-items:center;justify-content:center}
@@ -289,7 +277,14 @@ a{text-decoration:none;color:inherit}
     <button class="bm-close" onclick="closeModal()">&#215;</button>
     <div class="bm-hero">
       <div class="bm-num" id="bm-num"></div>
-      <div class="bm-char-big" id="bm-char-big"></div>
+      <div id="hw-target">
+        <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
+        <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
+      </div>
+      <div class="hw-controls">
+        <button class="hw-btn primary" onclick="hwAnimate()">▶ Animate</button>
+        <button class="hw-btn" onclick="hwLoop()">↺ Loop</button>
+      </div>
       <div class="bm-py" id="bm-py"></div>
       <div class="bm-hv" id="bm-hv"></div>
       <div class="bm-vi" id="bm-vi"></div>
@@ -312,26 +307,7 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="bm-actions">
       <button class="bm-btn bm-btn-learn" id="bm-btn-learn" onclick="toggleLearnedModal()"></button>
-      <button class="bm-btn bm-btn-hw" onclick="openHW()">▶ Xem cách viết</button>
       <button class="bm-btn bm-btn-study" onclick="startStudy('modal')">✦ Ôn nhóm này</button>
-    </div>
-  </div>
-</div>
-
-<!-- HW OVERLAY -->
-<div class="hw-overlay" id="hw-overlay" onclick="if(event.target===this)closeHW()">
-  <div class="hw-modal">
-    <button class="hw-close" onclick="closeHW()">&#215;</button>
-    <div class="hw-title" id="hw-title"></div>
-    <div class="hw-canvas-wrap">
-      <div id="hw-target">
-        <div class="hw-grid" style="left:50%;top:0;width:1px;height:100%"></div>
-        <div class="hw-grid" style="top:50%;left:0;height:1px;width:100%"></div>
-      </div>
-    </div>
-    <div class="hw-controls">
-      <button class="hw-btn primary" onclick="hwAnimate()">▶ Animate</button>
-      <button class="hw-btn" onclick="hwLoop()">↺ Loop</button>
     </div>
   </div>
 </div>
@@ -393,7 +369,6 @@ var filterStrokes = 0;   // 0 = all
 var filterSearch  = '';
 var top50Only     = false;
 var modalNum      = 0;
-var modalChar     = '';
 var _hwWriter     = null;
 var studyCards    = [];
 var studyIdx      = 0;
@@ -523,8 +498,6 @@ function openModal(num){
   document.getElementById('bm-hv').textContent=r.han_viet;
   document.getElementById('bm-vi').textContent=r.meaning_vi;
   document.getElementById('bm-en').textContent=r.meaning_en;
-  document.getElementById('bm-char-big').textContent=ch;
-  modalChar=ch;
   document.getElementById('bm-strokes').textContent=r.strokes+' nét';
   document.getElementById('bm-freq').textContent=r.frequency.toLocaleString()+' chữ';
 
@@ -566,12 +539,30 @@ function openModal(num){
   // Learn button
   updateLearnBtn();
 
+  // HanziWriter
+  var t=document.getElementById('hw-target');
+  Array.from(t.children).forEach(function(c){ if(!c.classList.contains('hw-grid')) c.remove(); });
+  if(_hwWriter){try{_hwWriter.cancelQuiz();}catch(e){} _hwWriter=null;}
+  setTimeout(function(){
+    _hwWriter=HanziWriter.create('hw-target',ch,{
+      width:200,height:200,padding:12,
+      showOutline:true,outlineColor:'rgba(10,29,55,.12)',
+      strokeColor:'#0a1d37',
+      strokeAnimationSpeed:1,delayBetweenStrokes:350,
+      charDataLoader:function(char,onLoad,onError){
+        var src='https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/'+encodeURIComponent(char)+'.json';
+        fetch(src).then(function(r){return r.json();}).then(onLoad).catch(onError);
+      }
+    });
+    _hwWriter.animateCharacter();
+  },50);
+
   document.getElementById('bt-overlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
 
 function closeModal(){
-  closeHW();
+  if(_hwWriter){try{_hwWriter.cancelQuiz();}catch(e){} _hwWriter=null;}
   document.getElementById('bt-overlay').classList.remove('open');
   document.body.style.overflow='';
 }
@@ -591,33 +582,7 @@ function toggleLearnedModal(){
   render();
 }
 
-// ── HANZIWRITER OVERLAY ────────────────────────────────────────
-function openHW(){
-  if(!modalChar) return;
-  var ch=modalChar;
-  var t=document.getElementById('hw-target');
-  Array.from(t.children).forEach(function(c){ if(!c.classList.contains('hw-grid')) c.remove(); });
-  if(_hwWriter){try{_hwWriter.cancelQuiz();}catch(e){} _hwWriter=null;}
-  document.getElementById('hw-title').textContent=ch;
-  document.getElementById('hw-overlay').classList.add('open');
-  setTimeout(function(){
-    _hwWriter=HanziWriter.create('hw-target',ch,{
-      width:200,height:200,padding:12,
-      showOutline:true,outlineColor:'#dde8f0',
-      strokeColor:'#027AB3',
-      strokeAnimationSpeed:1,delayBetweenStrokes:350,
-      charDataLoader:function(char,onLoad,onError){
-        var src='https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/'+encodeURIComponent(char)+'.json';
-        fetch(src).then(function(r){return r.json();}).then(onLoad).catch(onError);
-      }
-    });
-    _hwWriter.animateCharacter();
-  },50);
-}
-function closeHW(){
-  if(_hwWriter){try{_hwWriter.cancelQuiz();}catch(e){} _hwWriter=null;}
-  document.getElementById('hw-overlay').classList.remove('open');
-}
+// ── HANZIWRITER ────────────────────────────────────────────────
 function hwAnimate(){
   if(_hwWriter){_hwWriter.showCharacter({duration:0});_hwWriter.animateCharacter();}
 }
