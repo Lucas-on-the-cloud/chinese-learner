@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện thi TOCFL — Band A · B · C — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;background:#f4f5f7;color:#1f2937}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+.zh{font-family:'Noto Serif TC',serif}
+[x-cloak]{display:none!important}
+
+/* ── Navbar ── */
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e5e7eb;height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nb-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#0d1b4b}
+.nav-brand-text em{color:#f47b20;font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:#6b7280;padding:6px 12px;border-radius:6px;transition:.15s;text-decoration:none;white-space:nowrap}
+.nav-link:hover{color:#1f2937;background:#f3f4f6}
+.nav-link.active{color:#1a56db;font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:#1a56db;padding:7px 18px;border-radius:7px;text-decoration:none;transition:.15s;white-space:nowrap}
+.nav-btn:hover{background:#1544b8}
+
+/* ── Hero ── */
+.hero{background:linear-gradient(135deg,#0d1b4b 0%,#1e3a8a 60%,#1a56db 100%);padding:52px 1.5rem 56px;position:relative;overflow:hidden}
+.hero::before{content:'試';position:absolute;font-family:'Noto Serif TC',serif;font-size:380px;font-weight:700;color:rgba(255,255,255,.03);bottom:-80px;right:-20px;pointer-events:none;line-height:1;user-select:none}
+.hero-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;padding:4px 14px;border-radius:50px;margin-bottom:16px}
+.hero-title{font-family:'Noto Serif TC',serif;font-size:clamp(26px,4vw,40px);font-weight:700;color:#fff;line-height:1.2;margin-bottom:10px}
+.hero-sub{font-size:14px;color:rgba(255,255,255,.68);max-width:580px;line-height:1.75;margin-bottom:24px}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap}
+.hs{color:rgba(255,255,255,.7);font-size:13px;display:flex;align-items:center;gap:8px}
+.hs strong{font-size:20px;font-weight:800;color:#fff;line-height:1}
+
+/* ── Band tabs ── */
+.band-bar{position:sticky;top:62px;z-index:40;background:#fff;border-bottom:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.band-bar-inner{max-width:1100px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;gap:4px;min-height:52px}
+.band-tab{font-size:13px;font-weight:700;padding:6px 20px;border-radius:8px;border:1.5px solid transparent;cursor:pointer;transition:.14s;font-family:inherit;background:transparent;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.band-tab:hover{background:#f3f4f6}
+.band-tab.ta{color:#1a56db;background:#eff6ff;border-color:#bfdbfe}
+.band-tab.tb{color:#7c3aed;background:#f5f3ff;border-color:#ddd6fe}
+.band-tab.tc{color:#16a34a;background:#f0fdf4;border-color:#bbf7d0}
+.band-count{font-size:11px;font-weight:500;opacity:.7}
+.band-sep{width:1px;height:20px;background:#e5e7eb;margin:0 6px}
+.band-info{margin-left:auto;font-size:12px;color:#9ca3af}
+
+/* ── Grid ── */
+.main-body{flex:1;padding:28px 1.5rem 60px}
+.main-inner{max-width:1100px;margin:0 auto}
+.exam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+
+/* ── Card ── */
+.exam-card{background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s,border-color .2s;text-decoration:none;color:inherit}
+.exam-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.12);border-color:transparent}
+.card-head{height:132px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-head-bg{position:absolute;inset:0;font-family:'Noto Serif TC',serif;font-size:110px;font-weight:700;color:rgba(255,255,255,.1);display:flex;align-items:flex-end;justify-content:flex-end;padding:0 12px;line-height:1;user-select:none}
+.card-head-content{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.card-band-badge{font-size:10px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:1.5px}
+.card-vol-num{font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700;color:#fff;line-height:1}
+.card-vol-label{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);color:rgba(255,255,255,.9);font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px}
+.card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:8px}
+.card-title{font-weight:700;font-size:13.5px;color:#0d1b4b;line-height:1.45;font-family:'Noto Serif TC',serif}
+.card-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#9ca3af;background:#f3f4f6;padding:2px 8px;border-radius:20px}
+.card-score-wrap{margin-top:auto;padding-top:6px}
+.score-bar-bg{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-bottom:4px}
+.score-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.card-score-text{font-size:11px;color:#6b7280}
+.card-footer{padding:10px 16px;border-top:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.card-time{font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px}
+.card-cta{font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px;transition:.15s}
+
+/* ── Skeleton ── */
+.skel{background:#e5e7eb;border-radius:4px;animation:sk 1.5s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Empty ── */
+.empty-state{text-align:center;padding:60px 20px;background:#fff;border-radius:16px;border:1.5px solid #e5e7eb}
+
+/* ── Footer ── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.ft-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.ft-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.ft-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.ft-brand-name em{color:#f47b20;font-style:normal}
+.ft-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.ft-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:12px}
+.ft-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ft-links a{color:rgba(255,255,255,.6);transition:color .15s;text-decoration:none}
+.ft-links a:hover{color:#fff}
+.ft-socials{display:flex;gap:8px}
+.ft-social{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:13px;transition:.15s;text-decoration:none}
+.ft-social:hover{background:rgba(255,255,255,.15);color:#fff}
+.ft-info{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px}
+.ft-info i{width:14px;flex-shrink:0;color:rgba(255,255,255,.3)}
+.ft-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.ft-bottom-links{display:flex;gap:1.5rem}
+.ft-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px;text-decoration:none}
+@media(max-width:720px){.ft-main{grid-template-columns:1fr;gap:1.5rem}.nav-link{display:none}.exam-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.exam-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body x-data="tocflApp()" x-init="init()">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nb-inner">
+    <a class="nav-brand" href="/courses.html">
+      <img src="/images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/vocab.html">Từ vựng</a>
+      <a class="nav-link" href="/hantu.html">Bộ thủ</a>
+      <a class="nav-link" href="/news.html">Đọc báo</a>
+      <a class="nav-link active" href="/tocfl.html">TOCFL</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Đăng nhập</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <i class="fa-solid fa-file-pen" style="font-size:9px"></i>
+      TOCFL FAFA · Thi thử chuẩn SC-TOP
+    </div>
+    <h1 class="hero-title zh">模擬試卷 · Luyện thi TOCFL</h1>
+    <p class="hero-sub">Bộ đề mô phỏng chuẩn TOCFL — đầy đủ Nghe &amp; Đọc hiểu, tự chấm điểm ngay. Phủ đầy 3 cấp độ: Band A (A1–A2) · Band B (B1–B2) · Band C (C1–C2).</p>
+    <div class="hero-stats">
+      <div class="hs"><strong x-text="exams.length || 18"></strong> bộ đề</div>
+      <div class="hs"><strong>1.800</strong> câu hỏi</div>
+      <div class="hs"><strong>A → C</strong> cấp độ</div>
+      <div class="hs"><strong>繁體</strong> Phồn thể</div>
+    </div>
+  </div>
+</div>
+
+<!-- BAND TABS -->
+<div class="band-bar">
+  <div class="band-bar-inner">
+    <button @click="activeBand='Band A'" :class="activeBand==='Band A'?'ta':''" class="band-tab">
+      <i class="fa-solid fa-headphones" style="font-size:12px"></i>
+      Band A
+      <span class="band-count">(A1–A2)</span>
+    </button>
+    <div class="band-sep"></div>
+    <button @click="activeBand='Band B'" :class="activeBand==='Band B'?'tb':''" class="band-tab">
+      <i class="fa-solid fa-book-open" style="font-size:12px"></i>
+      Band B
+      <span class="band-count">(B1–B2)</span>
+    </button>
+    <div class="band-sep"></div>
+    <button @click="activeBand='Band C'" :class="activeBand==='Band C'?'tc':''" class="band-tab">
+      <i class="fa-solid fa-graduation-cap" style="font-size:12px"></i>
+      Band C
+      <span class="band-count">(C1–C2)</span>
+    </button>
+    <span class="band-info" x-text="bandFiltered.length + ' bộ đề'"></span>
+  </div>
+</div>
+
+<!-- MAIN BODY -->
+<div class="main-body">
+  <div class="main-inner">
+
+    <!-- Loading -->
+    <div x-show="loading" class="exam-grid">
+      <template x-for="i in 6" :key="i">
+        <div class="exam-card" style="pointer-events:none">
+          <div style="height:132px" class="skel"></div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+            <div class="skel" style="height:14px;width:72%;border-radius:4px"></div>
+            <div class="skel" style="height:11px;width:50%;border-radius:4px"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Empty -->
+    <div x-show="!loading && !bandFiltered.length" x-cloak class="empty-state">
+      <i class="fa-solid fa-file-circle-xmark" style="font-size:40px;color:#d1d5db;display:block;margin:0 auto 14px"></i>
+      <p style="font-weight:600;color:#6b7280;margin-bottom:4px">Chưa có bộ đề nào cho Band này.</p>
+      <p style="font-size:13px;color:#9ca3af">Dữ liệu đang được cập nhật — thử lại sau.</p>
+    </div>
+
+    <!-- Exam grid -->
+    <div x-show="!loading && bandFiltered.length" x-cloak class="exam-grid">
+      <template x-for="(exam, idx) in bandFiltered" :key="exam.id">
+        <a :href="`/tocfl-exam.html?exam=${exam.id}`" class="exam-card">
+
+          <!-- Coloured header -->
+          <div class="card-head" :style="cardHeadStyle(exam, idx)">
+            <div class="card-head-bg zh" x-text="volNum(exam.title)"></div>
+            <div class="card-head-content">
+              <div class="card-band-badge" x-text="exam.band"></div>
+              <div class="card-vol-num zh" x-text="'Vol ' + volNum(exam.title)"></div>
+              <div class="card-vol-label">
+                <i class="fa-solid fa-file-pen" style="font-size:8px"></i>
+                Đề thi mô phỏng
+              </div>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="card-body">
+            <div class="card-title" x-text="cardTitle(exam)"></div>
+            <div class="card-tags">
+              <span class="card-tag">
+                <i class="fa-solid fa-headphones" style="font-size:9px"></i> 50 câu Nghe
+              </span>
+              <span class="card-tag">
+                <i class="fa-solid fa-book-open" style="font-size:9px"></i> 50 câu Đọc
+              </span>
+              <span class="card-tag" x-text="bandLevel(exam.band)"></span>
+            </div>
+
+            <!-- User best score -->
+            <template x-if="userResults[exam.id]">
+              <div class="card-score-wrap">
+                <div class="score-bar-bg">
+                  <div class="score-bar-fill"
+                    :style="`width:${pct(exam.id)}%;background:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"></div>
+                </div>
+                <div class="card-score-text">
+                  Điểm cao nhất:
+                  <b :style="`color:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"
+                     x-text="`${userResults[exam.id].score}/${userResults[exam.id].total} — ${pct(exam.id)}%`"></b>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Footer -->
+          <div class="card-footer">
+            <span class="card-time">
+              <i class="fa-regular fa-clock"></i> ~60 phút · 100 câu
+            </span>
+            <span class="card-cta" :style="`color:${bandAccent(exam.band)}`">
+              Làm bài <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
+            </span>
+          </div>
+
+        </a>
+      </template>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-main">
+    <div>
+      <div class="ft-brand">
+        <img src="/images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px" onerror="this.style.display='none'">
+        <span class="ft-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="ft-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
+      <div class="ft-socials">
+        <a class="ft-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+        <a class="ft-social" href="/courses.html"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="ft-col-title">Liên kết</div>
+      <ul class="ft-links">
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/exams.html">Đề thi khác</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="ft-col-title">Thông tin</div>
+      <div class="ft-info"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="ft-info"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="ft-info"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="ft-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="ft-bottom-links">
+      <a href="/courses.html">Khóa học</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const _db   = supabase.createClient(_DB_URL, _DB_KEY);
+const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
+
+const BAND_ACCENT = { 'Band A': '#1a56db', 'Band B': '#7c3aed', 'Band C': '#16a34a' };
+const BAND_LEVEL  = { 'Band A': 'A1–A2', 'Band B': 'B1–B2', 'Band C': 'C1–C2' };
+const BAND_GRADS  = {
+  'Band A': [['#0d1b4b','#1a56db'],['#1e3a8a','#3b82f6'],['#1e40af','#60a5fa'],
+             ['#075985','#0ea5e9'],['#0f172a','#1d4ed8'],['#1e3a8a','#0284c7']],
+  'Band B': [['#4c1d95','#7c3aed'],['#5b21b6','#a855f7'],['#3b0764','#9333ea'],
+             ['#4c1d95','#c084fc'],['#2e1065','#7c3aed'],['#581c87','#a21caf']],
+  'Band C': [['#064e3b','#16a34a'],['#14532d','#22c55e'],['#052e16','#15803d'],
+             ['#064e3b','#059669'],['#0f172a','#16a34a'],['#14532d','#10b981']],
+};
+
+function tocflApp() {
+  return {
+    loading: true,
+    exams: [],
+    activeBand: 'Band A',
+    userResults: {},
+
+    get bandFiltered() {
+      return this.exams.filter(e => e.band === this.activeBand);
+    },
+
+    async init() {
+      if (_auth) {
+        _auth.init().then(user => {
+          if (user) this.loadResults(user.id);
+          renderNavAuth(user);
+        });
+      }
+      const { data } = await _db
+        .from('tocfl_exams')
+        .select('id, title, band, total_questions, publish_year')
+        .order('band').order('id');
+      this.exams = data || [];
+      this.loading = false;
+    },
+
+    async loadResults(uid) {
+      const { data } = await _db
+        .from('tocfl_results')
+        .select('exam_id, score, total')
+        .eq('user_id', uid)
+        .eq('skill_filter', 'both');
+      const best = {};
+      for (const r of data || []) {
+        if (!best[r.exam_id] || r.score > best[r.exam_id].score) best[r.exam_id] = r;
+      }
+      this.userResults = best;
+    },
+
+    pct(examId) {
+      const r = this.userResults[examId];
+      return r ? Math.round(r.score / r.total * 100) : 0;
+    },
+
+    volNum(title) {
+      return (String(title).match(/Vol\s*(\d+)/i) || [])[1] || '1';
+    },
+
+    cardTitle(exam) {
+      const b = { 'Band A': 'A', 'Band B': 'B', 'Band C': 'C' }[exam.band] || exam.band;
+      return `TOCFL Band ${b} — Bộ ${this.volNum(exam.title)}`;
+    },
+
+    bandAccent(band) { return BAND_ACCENT[band] || '#1a56db'; },
+    bandLevel(band) { return BAND_LEVEL[band] || ''; },
+
+    cardHeadStyle(exam, idx) {
+      const g = BAND_GRADS[exam.band] || BAND_GRADS['Band A'];
+      const [f, t] = g[idx % g.length];
+      return `background:linear-gradient(135deg,${f},${t})`;
+    },
+  };
+}
+
+function renderNavAuth(user) {
+  const el = document.getElementById('nav-auth');
+  if (!user) { el.innerHTML = `<a class="nav-btn" href="/login.html">Đăng nhập</a>`; return; }
+  const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
+  el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+</script>
+<script src="/js/nav-mobile.js" defer></script>
+<script src="/js/track.js" defer></script>
+</body>
+</html>

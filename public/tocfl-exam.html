@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện thi TOCFL — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/auth-service.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+img{display:block;max-width:100%}
+.zh{font-family:'Noto Serif TC',serif}
+[x-cloak]{display:none!important}
+
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.14);
+  --nav-h:62px;--bar-h:52px;--prog-h:3px;
+}
+
+/* ── Navbar ── */
+.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
+.nb-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;text-decoration:none;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+.nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;text-decoration:none;transition:.15s;white-space:nowrap}
+.nav-btn:hover{background:var(--blue-dark)}
+
+/* ── Setup screen ── */
+.setup-screen{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1.5rem}
+.setup-card{width:100%;max-width:480px;background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);overflow:hidden}
+.setup-head{padding:28px 28px 24px;position:relative;overflow:hidden}
+.setup-head::before{content:'試';position:absolute;font-family:'Noto Serif TC',serif;font-size:200px;font-weight:700;color:rgba(255,255,255,.07);bottom:-40px;right:-10px;line-height:1;user-select:none;pointer-events:none}
+.setup-head-content{position:relative;z-index:1}
+.setup-band-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);color:rgba(255,255,255,.9);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 12px;border-radius:20px;margin-bottom:10px}
+.setup-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:6px}
+.setup-meta{font-size:13px;color:rgba(255,255,255,.7);display:flex;gap:14px;flex-wrap:wrap}
+.setup-body{padding:24px 28px}
+.setup-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.skill-pills{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.skill-pill{flex:1;min-width:100px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-2);background:#fff;transition:.14s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.skill-pill:hover{border-color:var(--blue);color:var(--blue)}
+.skill-pill.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.skill-pill i{font-size:16px}
+.skill-pill small{font-size:11px;font-weight:400;opacity:.75}
+.setup-info{background:#f9fafb;border-radius:10px;padding:14px 16px;margin-bottom:20px;display:flex;gap:20px;flex-wrap:wrap}
+.si-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-2)}
+.si-item i{width:16px;text-align:center;color:var(--text-3);font-size:12px}
+.setup-start-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.setup-start-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,86,219,.3)}
+
+/* ── Exam bar ── */
+.exam-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);height:var(--bar-h)}
+.eb-inner{padding:0 1.5rem;display:flex;align-items:center;height:100%;gap:10px}
+.eb-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-3);transition:.15s;white-space:nowrap;text-decoration:none;flex-shrink:0;padding:6px 10px;border-radius:6px;border:1px solid var(--border)}
+.eb-back:hover{color:var(--blue);border-color:var(--blue)}
+.eb-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.eb-info{flex:1;min-width:0}
+.eb-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eb-subtitle{font-size:11px;color:var(--text-3);margin-top:1px}
+.eb-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.eb-timer{font-variant-numeric:tabular-nums;font-size:14px;font-weight:700;color:var(--text-2);display:flex;align-items:center;gap:6px;white-space:nowrap;background:#f9fafb;padding:6px 14px;border-radius:8px;border:1px solid var(--border)}
+.eb-timer.urgent{color:var(--red);background:var(--red-lt);border-color:#fecaca}
+.eb-timer i{font-size:11px}
+.eb-count{font-size:12px;color:var(--text-3);white-space:nowrap}
+.eb-count strong{color:var(--blue)}
+.eb-submit{font-size:13px;font-weight:700;color:#fff;background:var(--blue);padding:7px 18px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+.eb-submit:hover{background:var(--blue-dark)}
+
+/* ── Progress bar ── */
+.exam-progress{position:sticky;top:calc(var(--nav-h) + var(--bar-h));z-index:199;height:var(--prog-h);background:#e5e7eb}
+.exam-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),#60a5fa);transition:width .4s ease}
+
+/* ── Exam layout ── */
+.exam-layout{display:flex;flex:1;align-items:flex-start}
+.exam-sidebar{width:188px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:16px 12px;position:sticky;top:calc(var(--nav-h) + var(--bar-h) + var(--prog-h));height:calc(100vh - var(--nav-h) - var(--bar-h) - var(--prog-h));overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.sidebar-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:0 2px}
+.sidebar-part-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.3px;margin:10px 0 6px 2px;padding-top:8px;border-top:1px solid var(--border)}
+.sidebar-part-label:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.q-grid-nums{display:flex;flex-wrap:wrap;gap:4px}
+.qg-num{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);background:#fff;transition:.1s;font-family:inherit}
+.qg-num:hover{border-color:var(--blue);color:var(--blue)}
+.qg-num.current{background:var(--blue);border-color:var(--blue);color:#fff}
+.qg-num.ans{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.qg-num.correct{background:var(--green-lt);border-color:var(--green);color:var(--green)}
+.qg-num.wrong{background:var(--red-lt);border-color:var(--red);color:var(--red)}
+
+/* ── Content area ── */
+.exam-content-outer{flex:1;min-width:0;padding:24px 32px 80px;display:flex;justify-content:center}
+.exam-content{width:100%;max-width:720px}
+
+/* ── Question header ── */
+.q-nav-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.q-part-badge{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:4px 12px;border-radius:20px;flex-shrink:0}
+.badge-listening{background:var(--purple-lt);color:var(--purple)}
+.badge-reading{background:var(--green-lt);color:var(--green)}
+.q-counter{font-size:14px;font-weight:600;color:var(--text-2)}
+.q-counter strong{color:var(--text);font-size:16px}
+.q-auto-next{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-3);cursor:pointer;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-family:inherit;transition:.13s;white-space:nowrap}
+.q-auto-next:hover{border-color:var(--blue);color:var(--blue)}
+.q-auto-next.on{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+
+/* ── Single question card ── */
+.q-single-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+.q-single-inner{padding:24px 28px}
+
+/* ── Custom audio player ── */
+.ca-wrap{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid #ddd6fe;border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.ca-play-btn{width:38px;height:38px;border-radius:50%;background:var(--purple);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:.15s;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.25)}
+.ca-play-btn:hover{transform:scale(1.06);background:#6d28d9}
+.ca-track{flex:1;min-width:0}
+.ca-track-label{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:5px}
+.ca-bar{height:5px;background:rgba(124,58,237,.15);border-radius:3px;cursor:pointer;position:relative}
+.ca-bar-fill{position:absolute;left:0;top:0;height:100%;background:var(--purple);border-radius:3px;pointer-events:none}
+.ca-times{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--purple);font-variant-numeric:tabular-nums}
+/* Question-level audio (blue) */
+.ca-wrap.ca-q{background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#bfdbfe;margin-bottom:12px;padding:9px 12px}
+.ca-wrap.ca-q .ca-play-btn{width:30px;height:30px;font-size:11px;background:var(--blue);box-shadow:0 2px 6px rgba(26,86,219,.2)}
+.ca-wrap.ca-q .ca-play-btn:hover{background:var(--blue-dark)}
+.ca-wrap.ca-q .ca-bar{background:rgba(26,86,219,.12)}
+.ca-wrap.ca-q .ca-bar-fill{background:var(--blue)}
+.ca-wrap.ca-q .ca-times{color:var(--blue)}
+
+/* ── Passage ── */
+.passage-block{background:linear-gradient(135deg,var(--green-lt),#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:16px;max-height:44vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#86efac transparent}
+.passage-block::-webkit-scrollbar{width:4px}.passage-block::-webkit-scrollbar-track{background:transparent}.passage-block::-webkit-scrollbar-thumb{background:#86efac;border-radius:2px}
+.passage-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
+.group-img{max-width:100%;border-radius:10px;border:1.5px solid var(--border);margin-bottom:16px;display:block}
+
+/* ── Question render ── */
+.q-text{font-family:'Noto Serif TC',serif;font-size:16px;line-height:1.8;color:var(--text);background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1.5px solid #bae6fd;border-radius:10px;padding:14px 18px;display:block;margin-bottom:16px}
+.q-img{max-width:100%;border-radius:8px;border:1px solid var(--border);margin-bottom:12px;display:block}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choices-col{grid-template-columns:1fr}
+.choice-btn{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;background:#fff;font-family:'Noto Serif TC',serif;font-size:14px;color:var(--text);transition:all .12s;text-align:left;width:100%;line-height:1.5}
+.choice-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
+.choice-lbl{font-weight:800;color:var(--text-3);min-width:18px;flex-shrink:0;font-family:'Be Vietnam Pro',sans-serif;margin-top:1px}
+.choice-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.choice-btn.selected .choice-lbl{color:var(--blue)}
+.choice-btn.c-correct{border-color:var(--green)!important;background:var(--green-lt)!important;color:#166534!important}
+.choice-btn.c-correct .choice-lbl{color:var(--green)!important}
+.choice-btn.c-wrong{border-color:var(--red)!important;background:var(--red-lt)!important;color:var(--red)!important}
+.choice-btn.c-wrong .choice-lbl{color:var(--red)!important}
+.choice-btn.c-miss{border-color:var(--green)!important;border-style:dashed!important;color:#166534}
+.choice-btn.c-miss .choice-lbl{color:var(--green)!important}
+.choice-btn:disabled{cursor:default}
+.choices-img{grid-template-columns:1fr 1fr}
+.choices-img .choice-btn{flex-direction:column;align-items:center;padding:16px 12px;text-align:center;gap:8px}
+.choices-img .choice-lbl{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center;font-size:12px;margin:0}
+.choices-img .choice-btn.selected .choice-lbl{background:var(--blue);color:#fff}
+.choice-img{max-width:100%;max-height:130px;border-radius:8px;display:block;object-fit:contain}
+.q-feedback{font-size:13px;font-weight:700;margin-top:14px;display:none;padding:10px 14px;border-radius:8px}
+.q-feedback.show{display:block}
+.q-feedback.ok{color:var(--green);background:var(--green-lt)}
+.q-feedback.err{color:var(--red);background:var(--red-lt)}
+.q-explanation{font-size:12px;font-weight:400;color:var(--text-2);font-family:'Noto Serif TC',serif;margin-top:6px;line-height:1.7;border-left:3px solid rgba(220,38,38,.2);padding-left:8px}
+
+/* ── Nav footer ── */
+.q-nav-footer{display:flex;align-items:center;gap:10px}
+.q-nav-btn{display:flex;align-items:center;gap:7px;padding:10px 20px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;background:#fff;color:var(--text-2);transition:.15s}
+.q-nav-btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.q-nav-btn:disabled{opacity:.35;cursor:default}
+.q-nav-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;margin-left:auto}
+.q-nav-btn.primary:hover{background:var(--blue-dark)}
+.q-nav-btn.submit{background:linear-gradient(135deg,var(--blue),#3b82f6);border-color:var(--blue);color:#fff;margin-left:auto;box-shadow:0 4px 14px rgba(26,86,219,.3)}
+.q-nav-btn.submit:hover{box-shadow:0 6px 20px rgba(26,86,219,.4);transform:translateY(-1px)}
+.q-nav-mid{font-size:12px;color:var(--text-3);flex:1;text-align:center}
+
+/* ── Loading ── */
+.loading-overlay{position:fixed;inset:0;background:#fff;z-index:400;display:flex;align-items:center;justify-content:center}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Result modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+.modal-card{background:#fff;border-radius:20px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hero{padding:28px 28px 20px;position:relative;overflow:hidden}
+.modal-hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--navy),#1e3a8a,var(--blue));opacity:.9}
+.modal-hero-content{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.modal-score{text-align:center}
+.modal-score-val{font-size:54px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+.modal-score-total{font-size:14px;color:rgba(255,255,255,.65);margin-top:4px}
+.modal-score-pct{font-size:28px;font-weight:800;color:#fff;margin-top:2px}
+.modal-grade{text-align:right}
+.modal-grade-icon{font-size:48px;line-height:1;margin-bottom:4px}
+.modal-grade-label{font-size:14px;font-weight:700;color:rgba(255,255,255,.85)}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.modal-stat{background:#fff;padding:12px;text-align:center}
+.modal-stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.modal-stat-lbl{font-size:11px;color:var(--text-3);margin-top:2px}
+.modal-stat-val.good{color:var(--green)}
+.modal-stat-val.bad{color:var(--red)}
+.modal-body{padding:20px 24px}
+.skill-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:6px;background:#f9fafb}
+.skill-row-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.skill-row-title{flex:1;font-weight:500;color:var(--text-2)}
+.skill-row-score{font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px}
+.skill-row-score.good{background:var(--green-lt);color:var(--green)}
+.skill-row-score.mid{background:#fffbeb;color:#92400e}
+.skill-row-score.bad{background:var(--red-lt);color:var(--red)}
+/* TOCFL level */
+.tocfl-level{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;margin:10px 0 6px}
+.tocfl-level.lv-high{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac}
+.tocfl-level.lv-low{background:linear-gradient(135deg,#fefce8,#fef9c3);border:1.5px solid #fde047}
+.tocfl-level.lv-fail{background:var(--red-lt);border:1.5px solid #fecaca}
+.tocfl-lv-code{font-family:'Noto Serif TC',serif;font-size:26px;font-weight:900;line-height:1;flex-shrink:0}
+.tocfl-level.lv-high .tocfl-lv-code{color:#166534}
+.tocfl-level.lv-low .tocfl-lv-code{color:#854d0e}
+.tocfl-level.lv-fail .tocfl-lv-code{color:var(--red)}
+.tocfl-lv-info{flex:1;min-width:0}
+.tocfl-lv-name{font-size:13px;font-weight:700}
+.tocfl-level.lv-high .tocfl-lv-name{color:#166534}
+.tocfl-level.lv-low .tocfl-lv-name{color:#854d0e}
+.tocfl-level.lv-fail .tocfl-lv-name{color:var(--red)}
+.tocfl-lv-sub{font-size:11px;opacity:.8;margin-top:2px}
+.tocfl-level.lv-high .tocfl-lv-sub{color:#16a34a}
+.tocfl-level.lv-low .tocfl-lv-sub{color:#a16207}
+.tocfl-level.lv-fail .tocfl-lv-sub{color:var(--red)}
+.modal-actions{display:flex;gap:10px;padding:0 24px 24px;flex-wrap:wrap}
+.modal-btn{flex:1;min-width:110px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--text-2);transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none}
+.modal-btn:hover{border-color:var(--blue);color:var(--blue)}
+.modal-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.modal-btn.primary:hover{background:var(--blue-dark)}
+
+/* ── Footer ── */
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.ft-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.ft-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.ft-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.ft-brand-name em{color:var(--orange);font-style:normal}
+.ft-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.ft-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4);margin-bottom:12px}
+.ft-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ft-links a{color:rgba(255,255,255,.6);transition:color .15s;text-decoration:none}
+.ft-links a:hover{color:#fff}
+.ft-socials{display:flex;gap:8px}
+.ft-social{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:13px;transition:.15s;text-decoration:none}
+.ft-social:hover{background:rgba(255,255,255,.15);color:#fff}
+.ft-info{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px}
+.ft-info i{width:14px;flex-shrink:0;color:rgba(255,255,255,.3)}
+.ft-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
+.ft-bottom-links{display:flex;gap:1.5rem}
+.ft-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px;text-decoration:none}
+
+@media(max-width:860px){
+  .exam-sidebar{display:none}
+  .exam-content-outer{padding:16px 16px 80px}
+}
+@media(max-width:720px){
+  .ft-main{grid-template-columns:1fr;gap:1.5rem}
+  .nav-link{display:none}
+  .choices{grid-template-columns:1fr}
+  .choices-img{grid-template-columns:1fr 1fr}
+  .q-single-inner{padding:16px}
+}
+@media(max-width:480px){
+  .modal-card{border-radius:16px}
+  .modal-score-val{font-size:44px}
+  .q-nav-btn{padding:9px 14px;font-size:12px}
+}
+</style>
+</head>
+<body x-data="tocflExamApp()" x-init="init()">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nb-inner">
+    <a class="nav-brand" href="/courses.html">
+      <img src="/images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/vocab.html">Từ vựng</a>
+      <a class="nav-link" href="/hantu.html">Bộ thủ</a>
+      <a class="nav-link" href="/news.html">Đọc báo</a>
+      <a class="nav-link active" href="/tocfl.html">TOCFL</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <div class="nav-auth" id="nav-auth">
+        <a class="nav-btn" href="/login.html">Đăng nhập</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div class="loading-overlay" x-show="loading" x-transition style="display:none">
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    <div style="margin-top:14px;font-size:13px;color:var(--text-3)">Đang tải đề thi…</div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="setup-screen" x-show="!loading && view==='setup'" x-cloak>
+  <div class="setup-card">
+    <div class="setup-head" :style="setupHeadStyle()">
+      <div class="setup-head-content">
+        <div class="setup-band-badge" x-text="exam?.band || 'TOCFL'"></div>
+        <h1 class="setup-title zh" x-text="examDisplayTitle()"></h1>
+        <div class="setup-meta">
+          <span><i class="fa-solid fa-circle-question" style="margin-right:5px"></i><span x-text="exam?.total_questions || 100"></span> câu hỏi</span>
+          <span><i class="fa-solid fa-layer-group" style="margin-right:5px"></i>Nghe + Đọc hiểu</span>
+        </div>
+      </div>
+    </div>
+    <div class="setup-body">
+      <div class="setup-label">Chọn phần muốn luyện tập</div>
+      <div class="skill-pills">
+        <button class="skill-pill" :class="skillFilter==='both'      ? 'active':''" @click="skillFilter='both'">
+          <i class="fa-solid fa-layer-group"></i>Cả hai<small>Nghe + Đọc</small>
+        </button>
+        <button class="skill-pill" :class="skillFilter==='listening' ? 'active':''" @click="skillFilter='listening'">
+          <i class="fa-solid fa-headphones"></i>Chỉ Nghe<small>Listening</small>
+        </button>
+        <button class="skill-pill" :class="skillFilter==='reading'   ? 'active':''" @click="skillFilter='reading'">
+          <i class="fa-solid fa-book-open"></i>Chỉ Đọc<small>Reading</small>
+        </button>
+      </div>
+      <div class="setup-info">
+        <div class="si-item"><i class="fa-regular fa-clock"></i><span x-text="setupTimeLabel()"></span></div>
+        <div class="si-item"><i class="fa-solid fa-list-check"></i><span x-text="setupQCount() + ' câu hỏi'"></span></div>
+        <div class="si-item"><i class="fa-solid fa-rotate-right"></i><span>Tự chấm điểm</span></div>
+      </div>
+      <button class="setup-start-btn" @click="startExam()">
+        <i class="fa-solid fa-play" style="font-size:12px"></i>
+        Bắt đầu làm bài
+        <i class="fa-solid fa-arrow-right" style="font-size:12px"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EXAM BAR -->
+<div class="exam-bar" x-show="view==='exam' && !loading" x-cloak>
+  <div class="eb-inner">
+    <a class="eb-back" href="/tocfl.html">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+    <div class="eb-sep"></div>
+    <div class="eb-info">
+      <div class="eb-title" x-text="exam ? exam.band + ' · ' + exam.title : '…'"></div>
+      <div class="eb-subtitle" x-text="skillFilterLabel() + ' · ' + setupTimeLabel()"></div>
+    </div>
+    <div class="eb-right">
+      <div class="eb-timer" :class="timerUrgent ? 'urgent' : ''">
+        <i class="fa-regular fa-clock"></i>
+        <span x-text="timerDisplay"></span>
+      </div>
+      <div class="eb-count">
+        <strong x-text="answeredQ"></strong>/<span x-text="totalQ"></span>
+      </div>
+      <button class="eb-submit" @click="submitExam()" x-show="!submitted">Nộp bài</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="exam-progress" x-show="view==='exam' && !loading" x-cloak>
+  <div class="exam-progress-fill" :style="`width:${examProgress}%`"></div>
+</div>
+
+<!-- EXAM LAYOUT (sidebar + content) -->
+<div class="exam-layout" x-show="view==='exam' && !loading" x-cloak>
+
+  <!-- Left sidebar -->
+  <aside class="exam-sidebar">
+    <div class="sidebar-title">Mục lục câu hỏi</div>
+    <template x-for="(part, pi) in parts" :key="part.id">
+      <div>
+        <div class="sidebar-part-label" x-text="part.skill === 'Listening' ? 'Nghe hiểu' : 'Đọc hiểu'"></div>
+        <div class="q-grid-nums">
+          <template x-for="q in partQuestions(pi)" :key="q.id">
+            <div class="qg-num" :class="qGridClass(q)" x-text="q.question_num" @click="goToQById(q.id)"></div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </aside>
+
+  <!-- Main content: one question at a time -->
+  <div class="exam-content-outer">
+    <div class="exam-content">
+      <template x-if="currentQ">
+        <div>
+
+          <!-- Part badge + counter -->
+          <div class="q-nav-header">
+            <span class="q-part-badge"
+              :class="currentQPart?.skill === 'Listening' ? 'badge-listening' : 'badge-reading'"
+              x-text="currentQPart?.skill === 'Listening' ? 'PHẦN NGHE' : 'PHẦN ĐỌC'">
+            </span>
+            <span class="q-counter">
+              Câu <strong x-text="currentQIdx + 1"></strong> / <span x-text="totalQ"></span>
+            </span>
+            <button class="q-auto-next" :class="autoNext ? 'on' : ''" @click="autoNext = !autoNext" x-show="!submitted">
+              <i class="fa-solid fa-forward-step" style="font-size:10px"></i>
+              Tự động chuyển câu
+            </button>
+          </div>
+
+          <!-- Shared audio: use x-for trick so Alpine recreates component on group change -->
+          <template x-for="ga in currentGroupAudioList" :key="ga.id">
+            <div class="ca-wrap" x-data="customAudio(ga.src)">
+              <button class="ca-play-btn" @click="toggle()">
+                <i :class="playing ? 'fa-solid fa-pause' : 'fa-solid fa-headphones'"></i>
+              </button>
+              <div class="ca-track">
+                <div class="ca-track-label">🔊 Nghe đoạn hội thoại trước khi trả lời</div>
+                <div class="ca-bar" @click="seek($event)">
+                  <div class="ca-bar-fill" :style="`width:${progress}%`"></div>
+                </div>
+                <div class="ca-times">
+                  <span x-text="timeDisplay">0:00</span>
+                  <span x-text="durationDisplay">--:--</span>
+                </div>
+              </div>
+              <audio class="ca-audio-el" x-ref="audio" :src="src" preload="metadata"
+                @timeupdate="onTime()" @ended="onEnded()" @loadedmetadata="onMeta()"></audio>
+            </div>
+          </template>
+
+          <!-- Shared image -->
+          <template x-if="currentGroup?.shared_image_url">
+            <img :src="currentGroup.shared_image_url" class="group-img" alt="">
+          </template>
+
+          <!-- Shared passage -->
+          <template x-if="currentGroup?.shared_text">
+            <div class="passage-block">
+              <div class="passage-label">
+                <i class="fa-solid fa-paragraph" style="font-size:9px"></i> Đoạn văn
+              </div>
+              <div class="passage-text zh" x-text="currentGroup.shared_text"></div>
+            </div>
+          </template>
+
+          <!-- Question card -->
+          <div class="q-single-card">
+            <div class="q-single-inner">
+              <div x-html="renderQ(currentQ)"></div>
+            </div>
+          </div>
+
+          <!-- Navigation footer -->
+          <div class="q-nav-footer">
+            <button class="q-nav-btn" @click="prevQ()" :disabled="currentQIdx === 0">
+              <i class="fa-solid fa-arrow-left" style="font-size:11px"></i> Câu trước
+            </button>
+            <div class="q-nav-mid">
+              <span x-text="currentQIdx + 1"></span> / <span x-text="totalQ"></span>
+            </div>
+            <template x-if="currentQIdx < totalQ - 1">
+              <button class="q-nav-btn primary" @click="nextQ()">
+                Câu tiếp <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+              </button>
+            </template>
+            <template x-if="currentQIdx === totalQ - 1 && !submitted">
+              <button class="q-nav-btn submit" @click="submitExam()">
+                <i class="fa-solid fa-paper-plane" style="font-size:11px"></i> Nộp bài
+              </button>
+            </template>
+          </div>
+
+        </div>
+      </template>
+    </div>
+  </div>
+
+</div>
+
+<!-- RESULT MODAL -->
+<div class="modal-backdrop" x-show="showResult" x-transition style="display:none">
+  <div class="modal-card">
+    <div class="modal-hero">
+      <div class="modal-hero-content">
+        <div class="modal-score">
+          <div class="modal-score-val" x-text="examScore"></div>
+          <div class="modal-score-total">/ <span x-text="totalQ"></span> câu</div>
+          <div class="modal-score-pct" x-text="`${scorePct}%`"></div>
+        </div>
+        <div class="modal-grade">
+          <div class="modal-grade-icon" x-text="scorePct >= 80 ? '🏆' : scorePct >= 60 ? '🎉' : '📚'"></div>
+          <div class="modal-grade-label" x-text="scorePct >= 80 ? 'Xuất sắc!' : scorePct >= 60 ? 'Đạt chuẩn!' : 'Cần luyện thêm'"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-val good" x-text="examScore"></div>
+        <div class="modal-stat-lbl">Câu đúng</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val bad" x-text="totalQ - examScore"></div>
+        <div class="modal-stat-lbl">Câu sai</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" x-text="timeUsedDisplay"></div>
+        <div class="modal-stat-lbl">Thời gian</div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Kết quả từng kỹ năng</div>
+
+      <template x-if="listeningTotal > 0">
+        <div class="skill-row">
+          <div class="skill-row-icon" style="background:#f5f3ff;color:var(--purple)"><i class="fa-solid fa-headphones"></i></div>
+          <span class="skill-row-title">Nghe hiểu (Listening)</span>
+          <span class="skill-row-score" :class="listeningPct >= 60 ? 'good' : listeningPct >= 40 ? 'mid' : 'bad'"
+            x-text="`${listeningScore}/${listeningTotal} — ${listeningPct}%`"></span>
+        </div>
+      </template>
+      <template x-if="readingTotal > 0">
+        <div class="skill-row">
+          <div class="skill-row-icon" style="background:var(--green-lt);color:var(--green)"><i class="fa-solid fa-book-open"></i></div>
+          <span class="skill-row-title">Đọc hiểu (Reading)</span>
+          <span class="skill-row-score" :class="readingPct >= 60 ? 'good' : readingPct >= 40 ? 'mid' : 'bad'"
+            x-text="`${readingScore}/${readingTotal} — ${readingPct}%`"></span>
+        </div>
+      </template>
+
+      <template x-if="tocflLevel">
+        <div class="tocfl-level" :class="tocflLevel.tier === 'high' ? 'lv-high' : tocflLevel.tier === 'low' ? 'lv-low' : 'lv-fail'">
+          <div class="tocfl-lv-code zh" x-text="tocflLevel.code || '✗'"></div>
+          <div class="tocfl-lv-info">
+            <div class="tocfl-lv-name">
+              <span x-text="tocflLevel.label"></span>
+              <span class="zh" x-text="tocflLevel.name ? ' · ' + tocflLevel.name : ''"></span>
+            </div>
+            <div class="tocfl-lv-sub" x-text="tocflLevel.pass
+              ? `Ước tính đạt chứng chỉ (điểm trung bình ${tocflLevel.pct}%)`
+              : `Chưa đủ điểm đạt (điểm trung bình ${tocflLevel.pct}%)`"></div>
+          </div>
+        </div>
+      </template>
+
+      <div style="margin-top:8px;padding:10px 14px;background:#f9fafb;border-radius:10px;font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:8px">
+        <i class="fa-solid fa-circle-info" style="color:var(--blue)"></i>
+        Tiêu chuẩn đạt TOCFL: từ 60% trở lên · Cần thêm
+        <strong style="color:var(--text-2)" x-text="Math.max(0, Math.ceil(totalQ * 0.6) - examScore)"></strong> câu đúng để đạt
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn" @click="viewReview()">
+        <i class="fa-solid fa-eye" style="font-size:11px"></i> Xem lại
+      </button>
+      <button class="modal-btn" @click="retry()">
+        <i class="fa-solid fa-rotate-right" style="font-size:11px"></i> Làm lại
+      </button>
+      <a class="modal-btn primary" href="/tocfl.html">
+        <i class="fa-solid fa-arrow-left" style="font-size:11px"></i> Danh sách
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-main">
+    <div>
+      <div class="ft-brand">
+        <img src="/images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px" onerror="this.style.display='none'">
+        <span class="ft-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="ft-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
+      <div class="ft-socials">
+        <a class="ft-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+        <a class="ft-social" href="/courses.html"><i class="fas fa-graduation-cap"></i></a>
+      </div>
+    </div>
+    <div>
+      <div class="ft-col-title">Liên kết</div>
+      <ul class="ft-links">
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/tocfl.html">Luyện thi TOCFL</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="ft-col-title">Thông tin</div>
+      <div class="ft-info"><i class="fas fa-location-dot"></i><span>Taoyuan, Taiwan</span></div>
+      <div class="ft-info"><i class="fab fa-facebook"></i><span>facebook.com/tocflfafa</span></div>
+      <div class="ft-info"><i class="fas fa-calendar"></i><span>Since 2026</span></div>
+    </div>
+  </div>
+  <div class="ft-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+    <div class="ft-bottom-links">
+      <a href="/tocfl.html">TOCFL</a>
+      <a href="/about.html">Giới thiệu</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const _db   = supabase.createClient(_DB_URL, _DB_KEY);
+const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
+let _user         = null;
+let _tocflAnswers = {};
+let _caActive     = null; // { audio, btn } — the currently playing JS-driven audio
+
+function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function pickTocflAnswer(qId, label) {
+  if (window.getSelection()?.toString().trim()) return;
+  document.dispatchEvent(new CustomEvent('pick-tocfl-answer', { detail: { qId, label } }));
+}
+
+/* Global JS-driven audio player (used for per-question audio via onclick) */
+function caToggle(btn, audioId) {
+  const audio = document.getElementById(audioId);
+  if (!audio) return;
+  if (_caActive && _caActive.audio !== audio) {
+    _caActive.audio.pause();
+    _caActive.btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    _caActive = null;
+  }
+  if (audio.paused) {
+    if (!audio._caWired) {
+      audio._caWired = true;
+      const wrap   = btn.closest('.ca-wrap');
+      const fill   = wrap?.querySelector('.ca-bar-fill');
+      const timeEl = document.getElementById(audioId + '_t');
+      const durEl  = document.getElementById(audioId + '_d');
+      audio.addEventListener('timeupdate', () => {
+        if (fill)   fill.style.width = (audio.duration ? audio.currentTime/audio.duration*100 : 0) + '%';
+        if (timeEl) { const s=Math.floor(audio.currentTime); timeEl.textContent=Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); }
+      });
+      audio.addEventListener('ended', () => { btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; });
+      audio.addEventListener('loadedmetadata', () => {
+        if (durEl) { const s=Math.floor(audio.duration||0); durEl.textContent=Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); }
+      });
+    }
+    audio.play();
+    btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    _caActive = { audio, btn };
+  } else {
+    audio.pause();
+    btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    _caActive = null;
+  }
+}
+
+function caSeek(barEl, audioId, e) {
+  const audio = document.getElementById(audioId);
+  if (!audio || !audio.duration) return;
+  const r = barEl.getBoundingClientRect();
+  audio.currentTime = Math.max(0, Math.min(1, (e.clientX-r.left)/r.width)) * audio.duration;
+}
+
+/* Alpine component for group-level audio (recreated on group change via :key) */
+function customAudio(src) {
+  return {
+    src,
+    playing: false,
+    progress: 0,
+    currentSec: 0,
+    durationSec: 0,
+    get timeDisplay()     { const s=this.currentSec;  return Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); },
+    get durationDisplay() { const s=this.durationSec; return s ? Math.floor(s/60)+':'+(s%60+'').padStart(2,'0') : '--:--'; },
+    toggle() {
+      const a = this.$refs.audio;
+      if (_caActive) { _caActive.audio.pause(); _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
+      if (a.paused) { a.play(); this.playing=true; }
+      else          { a.pause(); this.playing=false; }
+    },
+    seek(e) {
+      const a = this.$refs.audio;
+      if (!a.duration) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      a.currentTime = Math.max(0, Math.min(1, (e.clientX-r.left)/r.width)) * a.duration;
+    },
+    onTime()  { const a=this.$refs.audio; this.currentSec=Math.floor(a.currentTime); this.progress=a.duration?a.currentTime/a.duration*100:0; },
+    onEnded() { this.playing=false; this.progress=0; this.currentSec=0; },
+    onMeta()  { this.durationSec=Math.floor(this.$refs.audio.duration||0); },
+  };
+}
+
+function estimateTocflLevel(band, skillFilter, lPct, rPct) {
+  const LEVELS = {
+    'Band A': { high:{label:'TOCFL 2',name:'基礎級',code:'A2'}, low:{label:'TOCFL 1',name:'入門級',code:'A1'} },
+    'Band B': { high:{label:'TOCFL 4',name:'高階級',code:'B2'}, low:{label:'TOCFL 3',name:'進階級',code:'B1'} },
+    'Band C': { high:{label:'TOCFL 6',name:'精通級',code:'C2'}, low:{label:'TOCFL 5',name:'流利級',code:'C1'} },
+  };
+  const pct  = skillFilter==='listening' ? lPct : skillFilter==='reading' ? rPct : Math.round((lPct+rPct)/2);
+  const tier = LEVELS[band] || LEVELS['Band A'];
+  if (pct >= 80) return { ...tier.high, pct, pass:true,  tier:'high' };
+  if (pct >= 60) return { ...tier.low,  pct, pass:true,  tier:'low'  };
+  return { label:'Chưa đạt', name:'Cần luyện thêm', code:null, pct, pass:false, tier:'fail' };
+}
+
+const BAND_STYLE = {
+  'Band A': { grad:'linear-gradient(135deg,#0d1b4b,#1a56db)' },
+  'Band B': { grad:'linear-gradient(135deg,#4c1d95,#7c3aed)' },
+  'Band C': { grad:'linear-gradient(135deg,#064e3b,#16a34a)' },
+};
+
+function tocflExamApp() {
+  return {
+    loading: true,
+    view: 'setup',
+    exam: null,
+    parts: [],
+    currentQIdx: 0,
+    answers: {},
+    submitted: false,
+    showResult: false,
+    skillFilter: 'both',
+    autoNext: false,
+
+    timer: 0,
+    _timerInitial: 0,
+    timerHandle: null,
+    timeUsedSec: 0,
+
+    examScore: 0,
+    listeningScore: 0,
+    listeningTotal: 0,
+    readingScore: 0,
+    readingTotal: 0,
+    tocflLevel: null,
+
+    /* ── Computed ── */
+    get allQuestions() { return this.parts.flatMap(p => p.tocfl_groups.flatMap(g => g.tocfl_questions)); },
+    get currentQ()     { return this.allQuestions[this.currentQIdx] || null; },
+    get currentGroup() {
+      const q = this.currentQ; if (!q) return null;
+      for (const p of this.parts) for (const g of p.tocfl_groups) if (g.tocfl_questions.some(x=>x.id===q.id)) return g;
+      return null;
+    },
+    get currentQPart() {
+      const q = this.currentQ; if (!q) return null;
+      for (const p of this.parts) for (const g of p.tocfl_groups) if (g.tocfl_questions.some(x=>x.id===q.id)) return p;
+      return null;
+    },
+    // x-for trick: recreates customAudio() Alpine component whenever group changes
+    get currentGroupAudioList() {
+      const g = this.currentGroup;
+      return (g && g.shared_audio_url) ? [{ id: g.id, src: g.shared_audio_url }] : [];
+    },
+    get totalQ()         { return this.allQuestions.length; },
+    get answeredQ()      { return Object.keys(this.answers).length; },
+    get examProgress()   { return this.totalQ ? Math.round((this.currentQIdx+1)/this.totalQ*100) : 0; },
+    get timerDisplay()   { const t=Math.max(0,this.timer); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); },
+    get timerUrgent()    { return this.timer <= 300; },
+    get scorePct()       { return this.totalQ ? Math.round(this.examScore/this.totalQ*100) : 0; },
+    get listeningPct()   { return this.listeningTotal ? Math.round(this.listeningScore/this.listeningTotal*100) : 0; },
+    get readingPct()     { return this.readingTotal   ? Math.round(this.readingScore/this.readingTotal*100)     : 0; },
+    get timeUsedDisplay(){ const s=this.timeUsedSec; return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },
+
+    /* ── Init ── */
+    async init() {
+      document.addEventListener('pick-tocfl-answer', e => this.pick(e.detail.qId, e.detail.label));
+      if (_auth) _auth.init().then(u => { _user=u; renderNavAuth(u); });
+
+      const p = new URLSearchParams(location.search);
+      const examId = p.get('exam');
+      if (!examId) { location.href='/tocfl.html'; return; }
+
+      const { data:exam, error } = await _db.from('tocfl_exams').select(`
+        id, title, band, total_questions,
+        tocfl_parts(
+          id, part_number, skill, instruction, question_count,
+          tocfl_groups(
+            id, order_num, level, shared_text, shared_audio_url, shared_image_url,
+            tocfl_questions(
+              id, question_num, question_text, question_audio_url, question_image_url, explanation,
+              tocfl_options(id, label, text, image_url, is_correct)
+            )
+          )
+        )
+      `).eq('id', examId).single();
+
+      if (error || !exam) { location.href='/tocfl.html'; return; }
+
+      exam.tocfl_parts.sort((a,b) => {
+        if (a.skill !== b.skill) return a.skill==='Listening' ? -1 : 1;
+        return a.part_number - b.part_number;
+      });
+      for (const part of exam.tocfl_parts) {
+        part.tocfl_groups.sort((a,b) => a.order_num - b.order_num);
+        for (const g of part.tocfl_groups) {
+          g.tocfl_questions.sort((a,b) => a.question_num - b.question_num);
+          for (const q of g.tocfl_questions) {
+            q.tocfl_options.sort((a,b) => a.label.localeCompare(b.label));
+            q.correct = q.tocfl_options.find(o=>o.is_correct)?.label || null;
+          }
+        }
+      }
+
+      this.exam = exam;
+      document.title = `${exam.title} — TOCFL FAFA`;
+      this.loading = false;
+    },
+
+    /* ── Start exam ── */
+    startExam() {
+      const f = this.skillFilter;
+      this.parts = f==='listening' ? this.exam.tocfl_parts.filter(p=>p.skill==='Listening')
+                 : f==='reading'   ? this.exam.tocfl_parts.filter(p=>p.skill==='Reading')
+                 :                   [...this.exam.tocfl_parts];
+      const isA = this.exam.band === 'Band A';
+      this.timer = f==='listening' ? (isA?20*60:30*60)
+                 : f==='reading'   ? (isA?30*60:60*60)
+                 :                   (isA?50*60:90*60);
+      this._timerInitial = this.timer;
+      this.currentQIdx   = 0;
+      _tocflAnswers      = {};
+      this.answers       = {};
+      this.submitted     = false;
+      this.showResult    = false;
+      this.tocflLevel    = null;
+      this.view          = 'exam';
+      this.startTimer();
+      window.scrollTo(0,0);
+    },
+
+    /* ── Sidebar helpers ── */
+    partQuestions(partIdx) {
+      const part = this.parts[partIdx];
+      return part ? part.tocfl_groups.flatMap(g => g.tocfl_questions) : [];
+    },
+    qGridClass(q) {
+      const i = this.allQuestions.findIndex(aq => aq.id===q.id);
+      if (i === this.currentQIdx) return 'current';
+      if (this.submitted) return this.answers[q.id]===q.correct ? 'correct' : this.answers[q.id] ? 'wrong' : '';
+      return this.answers[q.id] ? 'ans' : '';
+    },
+
+    /* ── Navigation ── */
+    goToQ(idx) {
+      document.querySelectorAll('.ca-audio-el').forEach(a => a.pause());
+      if (_caActive) { _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
+      this.currentQIdx = idx;
+      window.scrollTo({ top:0, behavior:'smooth' });
+    },
+    goToQById(qId) {
+      const idx = this.allQuestions.findIndex(q => q.id===qId);
+      if (idx !== -1) this.goToQ(idx);
+    },
+    prevQ() { if (this.currentQIdx > 0) this.goToQ(this.currentQIdx-1); },
+    nextQ() { if (this.currentQIdx < this.totalQ-1) this.goToQ(this.currentQIdx+1); },
+
+    /* ── Labels ── */
+    skillFilterLabel() {
+      return this.skillFilter==='listening' ? 'Chỉ Nghe' : this.skillFilter==='reading' ? 'Chỉ Đọc' : 'Đầy đủ';
+    },
+    setupHeadStyle() {
+      return `background:${(BAND_STYLE[this.exam?.band]||BAND_STYLE['Band A']).grad}`;
+    },
+    examDisplayTitle() {
+      if (!this.exam) return '…';
+      const b = {'Band A':'A','Band B':'B','Band C':'C'}[this.exam.band] || this.exam.band;
+      const vol = (String(this.exam.title).match(/Vol\s*(\d+)/i)||[])[1] || '1';
+      return `TOCFL Band ${b} — Bộ ${vol}`;
+    },
+    setupTimeLabel() {
+      const isA = this.exam?.band==='Band A';
+      if (this.skillFilter==='listening') return isA ? '~20 phút · Nghe' : '~30 phút · Nghe';
+      if (this.skillFilter==='reading')   return isA ? '~30 phút · Đọc'  : '~60 phút · Đọc';
+      return isA ? '~50 phút · Cả hai' : '~90 phút · Cả hai';
+    },
+    setupQCount() {
+      if (!this.exam) return 0;
+      const f = this.skillFilter;
+      return this.exam.tocfl_parts
+        .filter(p => f==='both'||(f==='listening'&&p.skill==='Listening')||(f==='reading'&&p.skill==='Reading'))
+        .reduce((n,p) => n + p.tocfl_groups.reduce((m,g) => m+g.tocfl_questions.length, 0), 0);
+    },
+
+    /* ── Render question (pure JS, no Alpine directives inside) ── */
+    renderQ(q) {
+      if (!q) return '';
+      const ans = _tocflAnswers[q.id];
+      const corr = q.correct;
+      const sub  = this.submitted;
+      const hasImgOpts = q.tocfl_options.some(o => o.image_url);
+
+      let html = '';
+
+      if (q.question_audio_url) {
+        const qaId = '_qa' + q.id;
+        html += `<div class="ca-wrap ca-q">
+          <button class="ca-play-btn" onclick="caToggle(this,'${qaId}')"><i class="fa-solid fa-play"></i></button>
+          <div class="ca-track">
+            <div class="ca-bar" onclick="caSeek(this,'${qaId}',event)"><div class="ca-bar-fill" style="width:0%"></div></div>
+            <div class="ca-times"><span id="${qaId}_t">0:00</span><span id="${qaId}_d">--:--</span></div>
+          </div>
+          <audio id="${qaId}" src="${esc(q.question_audio_url)}" preload="metadata" style="display:none" class="ca-audio-el"></audio>
+        </div>`;
+      }
+      if (q.question_image_url) {
+        html += `<img src="${esc(q.question_image_url)}" class="q-img" alt="">`;
+      }
+      if (q.question_text) {
+        html += `<div class="q-text zh">${esc(q.question_text)}</div>`;
+      }
+
+      const btns = q.tocfl_options.map(o => {
+        let cls = 'choice-btn';
+        if (!sub && ans===o.label)                cls += ' selected';
+        if (sub && o.is_correct && o.label===ans) cls += ' c-correct';
+        if (sub && !o.is_correct && o.label===ans)cls += ' c-wrong';
+        if (sub && o.is_correct && o.label!==ans) cls += ' c-miss';
+
+        const inner = o.image_url
+          ? `<span class="choice-lbl">${esc(o.label)}</span><img src="${esc(o.image_url)}" class="choice-img" alt="${esc(o.label)}">`
+          : `<span class="choice-lbl">${esc(o.label)}</span><span class="zh">${esc(o.text||'')}</span>`;
+
+        return `<button class="${cls}" data-q="${q.id}" data-label="${esc(o.label)}"
+          onclick="pickTocflAnswer(${q.id},'${esc(o.label)}')" ${sub?'disabled':''}>${inner}</button>`;
+      }).join('');
+
+      html += `<div class="${hasImgOpts ? 'choices choices-img' : 'choices'}">${btns}</div>`;
+
+      if (sub) {
+        const ok = ans===corr;
+        let fb = `<div class="q-feedback show ${ok?'ok':'err'}">
+          ${ok ? '<i class="fa-solid fa-check"></i> Chính xác!'
+               : `<i class="fa-solid fa-xmark"></i> Sai — Đáp án đúng: <strong>${esc(corr||'?')}</strong>`}`;
+        if (!ok && q.explanation) fb += `<div class="q-explanation">${esc(q.explanation)}</div>`;
+        fb += '</div>';
+        html += fb;
+      }
+
+      return html;
+    },
+
+    /* ── Answer pick ── */
+    pick(qId, label) {
+      if (this.submitted) return;
+      _tocflAnswers[qId] = label;
+      this.answers = { ..._tocflAnswers };
+      document.querySelectorAll(`.choice-btn[data-q="${qId}"]`).forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.label===label);
+      });
+      if (this.autoNext && this.currentQIdx < this.totalQ-1) {
+        setTimeout(() => this.nextQ(), 400);
+      }
+    },
+
+    /* ── Timer ── */
+    startTimer() {
+      this.stopTimer();
+      this.timerHandle = setInterval(() => {
+        if (this.timer <= 0) { this.stopTimer(); this.submitExam(); return; }
+        this.timer--;
+      }, 1000);
+    },
+    stopTimer() {
+      if (this.timerHandle) { clearInterval(this.timerHandle); this.timerHandle=null; }
+      this.timeUsedSec = this._timerInitial - this.timer;
+    },
+
+    /* ── Submit ── */
+    async submitExam() {
+      if (this.submitted) return;
+      this.submitted = true;
+      this.stopTimer();
+
+      let total=0, lScore=0, lTotal=0, rScore=0, rTotal=0;
+      for (const part of this.parts) {
+        for (const g of part.tocfl_groups) {
+          for (const q of g.tocfl_questions) {
+            const ok = _tocflAnswers[q.id]===q.correct;
+            total += ok ? 1 : 0;
+            if (part.skill==='Listening') { lTotal++; lScore+=ok?1:0; }
+            else                          { rTotal++; rScore+=ok?1:0; }
+          }
+        }
+      }
+      this.examScore      = total;
+      this.listeningScore = lScore;
+      this.listeningTotal = lTotal;
+      this.readingScore   = rScore;
+      this.readingTotal   = rTotal;
+      this.tocflLevel     = estimateTocflLevel(
+        this.exam.band, this.skillFilter,
+        lTotal ? Math.round(lScore/lTotal*100) : 0,
+        rTotal ? Math.round(rScore/rTotal*100) : 0
+      );
+
+      if (_user && this.exam) {
+        await _db.from('tocfl_results').upsert({
+          user_id:_user.id, exam_id:this.exam.id,
+          answers:this.answers, score:total, total:this.totalQ,
+          skill_filter:this.skillFilter,
+        }, { onConflict:'user_id,exam_id,skill_filter' });
+      }
+
+      await new Promise(r => setTimeout(r, 350));
+      this.showResult = true;
+    },
+
+    viewReview() {
+      this.showResult  = false;
+      this.currentQIdx = 0;
+      window.scrollTo(0,0);
+    },
+
+    retry() {
+      _tocflAnswers    = {};
+      this.answers     = {};
+      this.submitted   = false;
+      this.showResult  = false;
+      this.tocflLevel  = null;
+      this.currentQIdx = 0;
+      this.timer       = this._timerInitial;
+      window.scrollTo(0,0);
+      this.startTimer();
+    },
+  };
+}
+
+function renderNavAuth(user) {
+  const el = document.getElementById('nav-auth');
+  if (!user) { el.innerHTML=`<a class="nav-btn" href="/login.html">Đăng nhập</a>`; return; }
+  const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
+  el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+</script>
+<script src="/js/nav-mobile.js" defer></script>
+<script src="/js/track.js" defer></script>
+</body>
+</html>
