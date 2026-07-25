@@ -96,8 +96,7 @@ img{display:block;max-width:100%}
 .exam-layout{display:flex;flex:1;align-items:flex-start}
 .exam-sidebar{width:188px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:16px 12px;position:sticky;top:calc(var(--nav-h) + var(--bar-h) + var(--prog-h));height:calc(100vh - var(--nav-h) - var(--bar-h) - var(--prog-h));overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
 .sidebar-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:0 2px}
-.sidebar-part-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.3px;margin:10px 0 6px 2px;padding-top:8px;border-top:1px solid var(--border)}
-.sidebar-part-label:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.sidebar-part-label{display:block}
 .q-grid-nums{display:flex;flex-wrap:wrap;gap:4px}
 .qg-num{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);background:#fff;transition:.1s;font-family:inherit}
 .qg-num:hover{border-color:var(--blue);color:var(--blue)}
@@ -391,11 +390,16 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   <!-- Left sidebar -->
   <aside class="exam-sidebar">
     <div class="sidebar-title">Mục lục câu hỏi</div>
-    <template x-for="(part, pi) in parts" :key="part.id">
+    <div class="q-grid-nums">
+      <template x-for="q in allQuestions.slice(0, 50)" :key="q.id">
+        <div class="qg-num" :class="qGridClass(q)" x-text="q.question_num" @click="goToQById(q.id)"></div>
+      </template>
+    </div>
+    <template x-if="allQuestions.length > 50">
       <div>
-        <div class="sidebar-part-label" x-text="part.skill === 'Listening' ? 'Nghe hiểu' : 'Đọc hiểu'"></div>
+        <div class="sidebar-part-label" style="border-top:1px solid var(--border);margin-top:10px;padding-top:8px"></div>
         <div class="q-grid-nums">
-          <template x-for="q in partQuestions(pi)" :key="q.id">
+          <template x-for="q in allQuestions.slice(50)" :key="q.id">
             <div class="qg-num" :class="qGridClass(q)" x-text="q.question_num" @click="goToQById(q.id)"></div>
           </template>
         </div>
