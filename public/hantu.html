@@ -22,17 +22,17 @@ a{text-decoration:none;color:inherit}
 }
 
 /* ── NAVBAR ── */
-.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
+.navbar{position:sticky;top:0;z-index:300;background:#0a1d37;border-bottom:1px solid rgba(255,255,255,.08);height:var(--nav-h);display:flex;align-items:center}
 .container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 .navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
 .nav-brand{display:flex;align-items:center;gap:10px}
 .nav-brand img{height:32px;border-radius:5px}
-.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy);text-decoration:none}
-.nav-brand-text em{color:#d97706;font-style:normal}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:#fff;text-decoration:none}
+.nav-brand-text em{color:#e9b842;font-style:normal}
 .nav-menu{display:flex;align-items:center;gap:2px}
-.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
-.nav-link:hover{color:var(--text);background:#f3f4f6}
-.nav-link.active{color:var(--blue);font-weight:600}
+.nav-link{font-size:14px;font-weight:500;color:rgba(255,255,255,.65);padding:6px 12px;border-radius:6px;transition:.15s;white-space:nowrap}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-link.active{color:#fff;font-weight:600;background:rgba(255,255,255,.12)}
 .nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s;margin-left:8px}
 .nav-btn:hover{background:var(--blue-dark)}
 
@@ -78,8 +78,7 @@ a{text-decoration:none;color:inherit}
 .bt-card-num{position:absolute;top:8px;left:9px;font-size:10px;font-weight:700;color:var(--text-3);line-height:1}
 .bt-card-badge-hot{position:absolute;top:6px;right:8px;font-size:9px;font-weight:700;background:#fef9c3;color:#854d0e;padding:1px 5px;border-radius:4px}
 .bt-card-learned-mark{position:absolute;top:6px;right:8px;width:16px;height:16px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;font-size:9px;color:#16a34a;font-weight:700}
-.bt-card-char{font-family:'Noto Serif TC',serif;font-size:40px;font-weight:700;line-height:1;margin:4px 0;transition:transform .18s}
-.bt-card:hover .bt-card-char{transform:scale(1.08)}
+.bt-card-hw{width:72px;height:72px;position:relative;overflow:hidden;margin:4px 0;flex-shrink:0}
 .bt-card-py{font-size:11px;color:var(--text-2);font-style:italic;line-height:1.3}
 .bt-card-hv{font-size:10px;color:var(--text-3);font-weight:600;line-height:1.2}
 .bt-card-vi{font-size:11px;color:var(--text);font-weight:500;line-height:1.3;margin-top:2px}
@@ -370,6 +369,8 @@ var filterSearch  = '';
 var top50Only     = false;
 var modalNum      = 0;
 var _hwWriter     = null;
+var hwCards       = {};
+var _hwObs        = null;
 var studyCards    = [];
 var studyIdx      = 0;
 var studyFlipped  = false;
@@ -461,6 +462,10 @@ function render(){
   var empty=document.getElementById('bt-empty');
   document.getElementById('grid-count').textContent=list.length+' bộ thủ';
 
+  // Reset card writers
+  hwCards={};
+  if(_hwObs){_hwObs.disconnect();_hwObs=null;}
+
   if(!list.length){
     grid.innerHTML=''; empty.style.display='';
     return;
@@ -474,16 +479,18 @@ function render(){
     var badge=isL
       ? '<div class="bt-card-learned-mark">✓</div>'
       : (isH ? '<div class="bt-card-badge-hot">★</div>' : '');
-    return '<div class="bt-card'+(isL?' learned':'')+'" data-s="'+r.strokes+'" onclick="openModal('+r.number+')">'+
+    return '<div class="bt-card'+(isL?' learned':'')+'" data-s="'+r.strokes+'" onclick="openModal('+r.number+')" onmouseenter="hwCardAnim('+r.number+',1)" onmouseleave="hwCardAnim('+r.number+',0)">'+
       '<div class="bt-card-num">'+r.number+'</div>'+
       badge+
-      '<div class="bt-card-char">'+ch+'</div>'+
+      '<div class="bt-card-hw" id="bch-'+r.number+'" data-ch="'+escH(ch)+'"></div>'+
       '<div class="bt-card-py">'+escH(r.pinyin)+'</div>'+
       '<div class="bt-card-hv">'+escH(r.han_viet)+'</div>'+
       '<div class="bt-card-vi">'+escH(r.meaning_vi)+'</div>'+
       '<div class="bt-card-s '+strokeClass(r.strokes)+'">'+r.strokes+' nét</div>'+
     '</div>';
   }).join('');
+
+  initCardHWObserver();
 }
 
 // ── MODAL ──────────────────────────────────────────────────────
@@ -588,6 +595,41 @@ function hwAnimate(){
 }
 function hwLoop(){
   if(_hwWriter) _hwWriter.loopCharacterAnimation();
+}
+
+// ── CARD HANZIWRITER ───────────────────────────────────────────
+function initCardHWObserver(){
+  _hwObs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting) initSingleCardHW(e.target);
+    });
+  },{rootMargin:'150px'});
+  document.querySelectorAll('.bt-card-hw').forEach(function(el){
+    _hwObs.observe(el);
+  });
+}
+
+function initSingleCardHW(el){
+  var num=parseInt(el.id.replace('bch-',''));
+  if(hwCards[num]) return;
+  var ch=el.dataset.ch;
+  _hwObs.unobserve(el);
+  hwCards[num]=HanziWriter.create(el.id,ch,{
+    width:72,height:72,padding:5,
+    showOutline:true,outlineColor:'rgba(10,29,55,.1)',
+    showCharacter:true,strokeColor:'#0a1d37',
+    charDataLoader:function(char,onLoad,onError){
+      var src='https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0/'+encodeURIComponent(char)+'.json';
+      fetch(src).then(function(r){return r.json();}).then(onLoad).catch(onError);
+    }
+  });
+}
+
+function hwCardAnim(num,playing){
+  var w=hwCards[num];
+  if(!w) return;
+  if(playing) w.animateCharacter();
+  else{try{w.cancelQuiz();}catch(e){} w.showCharacter({duration:0});}
 }
 
 // ── STUDY MODE ─────────────────────────────────────────────────
