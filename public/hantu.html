@@ -1197,63 +1197,104 @@ function doPrintCustom(){
 
 // ── PRINT GENERATION ──────────────────────────────────────────
 function printRadicals(list){
-  var css = [
-    '@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Inter:wght@400;500;600;700&display=swap");',
-    '@page{size:A4;margin:12mm 14mm}',
-    '*{box-sizing:border-box;margin:0;padding:0}',
-    'body{font-family:Inter,sans-serif;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
-    '.page-title{font-family:"Noto Serif TC",serif;font-size:15px;font-weight:700;color:#0a1d37;text-align:center;margin-bottom:10px;padding-bottom:6px;border-bottom:1.5px solid #0a1d37}',
-    '.subtitle{font-size:10px;color:#888;text-align:center;margin-top:-8px;margin-bottom:10px}',
-    '.grid{display:flex;flex-direction:column;gap:4px}',
-    '.row{display:flex;align-items:stretch;gap:3px;break-inside:avoid}',
-    '.info{width:74px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f5f7fa;border:1px solid #ccc;border-radius:4px;padding:5px 3px;gap:1px}',
-    '.ch{font-family:"Noto Serif TC",serif;font-size:30px;font-weight:700;color:#0a1d37;line-height:1}',
-    '.py{font-size:8px;color:#888;font-style:italic;margin-top:2px}',
-    '.hv{font-size:9px;font-weight:700;color:#0a1d37}',
-    '.vi{font-size:8px;color:#555;text-align:center;line-height:1.2}',
-    '.boxes{display:flex;gap:3px;flex:1}',
-    '.box{flex:1;aspect-ratio:1/1;border:1px solid #bbb;position:relative;border-radius:3px;background:#fff}',
-    '.box::before{content:"";position:absolute;left:50%;top:0;width:.5px;height:100%;background:#ddd;transform:translateX(-50%)}',
-    '.box::after{content:"";position:absolute;top:50%;left:0;height:.5px;width:100%;background:#ddd;transform:translateY(-50%)}',
-    '.diag{position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - .3px),#ebebeb calc(50% - .3px),#ebebeb calc(50% + .3px),transparent calc(50% + .3px)),linear-gradient(to bottom left,transparent calc(50% - .3px),#ebebeb calc(50% - .3px),#ebebeb calc(50% + .3px),transparent calc(50% + .3px));border-radius:3px}',
-    '.bnum{font-size:7px;color:#ccc;position:absolute;top:2px;left:3px;font-family:Inter,sans-serif}'
-  ].join('\n');
+  var SZ = 58;
+  var N  = 8; // practice boxes per radical
+  var charData = [];
+  var rowsHTML = '';
 
-  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-
-  var rows = list.map(function(r){
+  list.forEach(function(r){
     var ch = radChar(r.radical);
-    var boxes = '';
-    for(var i=0;i<6;i++){
-      boxes += '<div class="box"><div class="diag"></div>'+(i===0?'<span class="bnum">#'+r.number+'</span>':'')+'</div>';
-    }
-    return '<div class="row">'
-      +'<div class="info">'
-      +'<div class="ch">'+ch+'</div>'
-      +'<div class="py">'+esc(r.pinyin)+'</div>'
-      +'<div class="hv">'+esc(r.han_viet)+'</div>'
-      +'<div class="vi">'+esc(r.meaning_vi)+'</div>'
-      +'</div>'
-      +'<div class="boxes">'+boxes+'</div>'
+    var eId = 'e-' + r.number;
+    var grid = '<div class="gl"></div><div class="gv"></div>';
+
+    rowsHTML += '<div class="word-hd">'
+      +'<span class="num">#'+r.number+'</span>'
+      +'<span class="char-hd">'+ch+'</span>'
+      +' <span class="py">'+escH(r.pinyin)+'</span>'
+      +' <span class="hv">'+escH(r.han_viet)+'</span>'
+      +' <span class="vn">— '+escH(r.meaning_vi)+'</span>'
       +'</div>';
-  }).join('');
+
+    var pIds = [];
+    for(var k=0;k<N;k++) pIds.push('p-'+r.number+'-'+k);
+
+    rowsHTML += '<div class="row">'
+      +'<div class="box ex" id="'+eId+'">'+grid+'</div>'
+      +pIds.map(function(id){return '<div class="box pr" id="'+id+'">'+grid+'</div>';}).join('')
+      +'</div>';
+
+    charData.push({id:eId,ch:ch,show:true});
+    pIds.forEach(function(id){charData.push({id:id,ch:ch,show:false});});
+  });
 
   var now = new Date();
   var dateStr = now.getDate()+'/'+(now.getMonth()+1)+'/'+now.getFullYear();
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<title>Tập viết bộ thủ — TOCFL FAFA</title>'
-    +'<style>'+css+'</style></head><body>'
-    +'<div class="page-title">Bộ thủ Khang Hy — Phiếu luyện viết ('+list.length+' bộ)</div>'
-    +'<div class="subtitle">TOCFL FAFA · tocflfafa.com · '+dateStr+'</div>'
-    +'<div class="grid">'+rows+'</div>'
-    +'<script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>'
+
+  var html = '<!DOCTYPE html><html lang="zh"><head>'
+    +'<meta charset="UTF-8">'
+    +'<title>Bộ thủ · Tập viết — TOCFL FAFA</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">'
+    +'<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"><\/script>'
+    +'<style>'
+    +'@page{size:A4 portrait;margin:12mm}'
+    +'*{box-sizing:border-box;margin:0;padding:0}'
+    +'body{font-family:Inter,sans-serif;background:#fff;padding:10px}'
+    +'.print-bar{display:flex;align-items:center;gap:12px;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid #e0d8cc}'
+    +'.print-btn{background:#0a1d37;color:#fff;border:none;padding:8px 22px;border-radius:7px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;opacity:.35;pointer-events:none;transition:.15s}'
+    +'.print-btn.ready{opacity:1;pointer-events:auto}'
+    +'.print-btn.ready:hover{background:#132f55}'
+    +'.progress{font-size:11px;color:#888;min-width:130px}'
+    +'h1{font-family:"Noto Serif TC",serif;font-size:14px;color:#0a1d37;margin-bottom:10px}'
+    +'.word-hd{font-size:11px;color:#555;margin:10px 0 3px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}'
+    +'.word-hd .num{font-size:10px;color:#bbb;font-weight:600;min-width:28px}'
+    +'.word-hd .char-hd{font-family:"Noto Serif TC",serif;font-size:17px;font-weight:700;color:#0a1d37}'
+    +'.word-hd .py{color:#888;font-style:italic}'
+    +'.word-hd .hv{color:#0a1d37;font-weight:700}'
+    +'.word-hd .vn{color:#888}'
+    +'.row{display:flex;gap:3px;margin-bottom:3px;page-break-inside:avoid}'
+    +'.box{width:'+SZ+'px;height:'+SZ+'px;border:1px solid #bbb;position:relative;flex-shrink:0;background:#fff}'
+    +'.ex{border:2px solid #0a1d37}'
+    +'.gl{position:absolute;top:50%;left:0;width:100%;height:1px;background:#e5ddd2}'
+    +'.gv{position:absolute;left:50%;top:0;height:100%;width:1px;background:#e5ddd2}'
+    +'@media print{.print-bar{display:none}body{padding:0}}'
+    +'</style></head><body>'
+    +'<div class="print-bar">'
+    +'<button class="print-btn" id="print-btn" onclick="window.print()">🖨 In / Lưu PDF</button>'
+    +'<span class="progress" id="prog">Đang render…</span>'
+    +'</div>'
+    +'<h1>Bộ thủ Khang Hy — Phiếu luyện viết ('+list.length+' bộ) · TOCFL FAFA · '+dateStr+'</h1>'
+    +rowsHTML
+    +'<script>'
+    +'var CHARS='+JSON.stringify(charData)+';'
+    +'var SZ='+SZ+';'
+    +'var BATCH=8;var idx=0;var done=0;var total=CHARS.length;'
+    +'function updateProgress(){'
+    +'done++;var pct=Math.round(done/total*100);'
+    +'var el=document.getElementById("prog");'
+    +'if(el)el.textContent=pct<100?("Đang render… "+pct+"%"):"Sẵn sàng in ✓";'
+    +'if(done>=total){var btn=document.getElementById("print-btn");if(btn)btn.classList.add("ready");}}'
+    +'function nextBatch(){'
+    +'var batch=CHARS.slice(idx,idx+BATCH);if(!batch.length)return;idx+=BATCH;'
+    +'var pending=batch.length;'
+    +'function onDone(){updateProgress();pending--;if(pending===0)setTimeout(nextBatch,0);}'
+    +'batch.forEach(function(item){'
+    +'var el=document.getElementById(item.id);if(!el){onDone();return;}'
+    +'HanziWriter.create(item.id,item.ch,{'
+    +'width:SZ,height:SZ,padding:4,'
+    +'showOutline:!item.show,showCharacter:item.show,'
+    +'strokeColor:"#0a1d37",outlineColor:"#bbb",'
+    +'onLoadCharDataSuccess:onDone,'
+    +'onLoadCharDataError:function(){'
+    +'el.innerHTML="<div class=\\"gl\\"></div><div class=\\"gv\\"></div>'
+    +'<span style=\\"position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:Noto Serif TC,serif;font-size:32px;color:"+(item.show?"#0a1d37":"#ccc")+"\\">"+'
+    +'item.ch+"<\\/span>";'
+    +'onDone();}});});}'
+    +'window.onload=function(){if(total>0)nextBatch();};'
+    +'<\/script>'
     +'</body></html>';
 
   var w = window.open('', '_blank');
-  if(w){
-    w.document.write(html);
-    w.document.close();
-  }
+  if(w){w.document.write(html);w.document.close();}
 }
 </script>
 </body>
