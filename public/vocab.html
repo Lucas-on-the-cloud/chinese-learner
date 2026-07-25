@@ -1287,14 +1287,28 @@ window.onload = function() { if (total > 0) nextBatch(); };
 
 <!-- ── DECOMP ─────────────────────────────────────────────── -->
 <script>
-// IDS data loaded lazily from /data/cjk-ids.json (9,500+ chars from makemeahanzi)
-var _dcIDS = null;
-var _dcLoadPromise = null;
+// IDS + component metadata loaded lazily from makemeahanzi-generated JSON files
+var _dcIDS = null, _dcCOMPMETA = null, _dcLoadPromise = null;
 function dcLoadIDS() {
   if (_dcIDS) return Promise.resolve();
   if (_dcLoadPromise) return _dcLoadPromise;
-  _dcLoadPromise = fetch('/data/cjk-ids.json').then(function(r){ return r.json(); }).then(function(d){ _dcIDS = d; });
+  _dcLoadPromise = Promise.all([
+    fetch('/data/cjk-ids.json').then(function(r){ return r.json(); }),
+    fetch('/data/component-meta.json').then(function(r){ return r.json(); }).catch(function(){ return {}; })
+  ]).then(function(res){ _dcIDS = res[0]; _dcCOMPMETA = res[1]; });
   return _dcLoadPromise;
+}
+
+// Resolve metadata for any character: Vietnamese DC_META first, then makemeahanzi fallback
+function dcMeta(char) {
+  if (DC_META[char]) return DC_META[char];
+  var cm = _dcCOMPMETA && _dcCOMPMETA[char];
+  if (!cm) return { name: '', meaning: '(chưa có dữ liệu)', hv: '—' };
+  return {
+    name: cm.py || '',
+    meaning: cm.def || '',
+    hv: cm.rad ? 'bộ ' + cm.rad : '—'
+  };
 }
 var DC_OPS = '⿰⿱⿸⿹⿺⿵⿶⿷⿴⿲⿳⿻？';
 
@@ -1652,7 +1666,7 @@ function dcNodeClass(d) {
 }
 
 function dcShowInfo(nodeData) {
-  var m = DC_META[nodeData.char] || { name:'', meaning:'(chưa có dữ liệu)', hv:'—' };
+  var m = dcMeta(nodeData.char);
   var isRad = DC_RADICAL_SET.has(nodeData.char);
   document.getElementById('dc-info').innerHTML =
     '<span class="title">'+dcEscHtml(nodeData.char)+'</span> ' +
@@ -1838,7 +1852,7 @@ function dcDrawRadicals() {
   canvas.style.display = 'none';
   rads.style.display = 'block';
 
-  var m = DC_META[_dcRoot.char] || { name:'', meaning:'(chưa có dữ liệu)', hv:'—' };
+  var m = dcMeta(_dcRoot.char);
   var isRad = DC_RADICAL_SET.has(_dcRoot.char);
 
   var html = '<div class="dc-rad-hero">'+
@@ -1856,7 +1870,7 @@ function dcDrawRadicals() {
     html += '<div class="dc-rad-section">Thành phần chính ('+children.length+')</div>';
     html += '<div class="dc-rad-grid">';
     children.forEach(function(child){
-      var cm = DC_META[child.char] || { name:'', meaning:'(chưa rõ)', hv:'—' };
+      var cm = dcMeta(child.char);
       var cIsRad = DC_RADICAL_SET.has(child.char);
       html += '<div class="dc-rad-card'+(cIsRad?' is-radical':'')+'" data-char="'+dcEscHtml(child.char)+'" onclick="dcShowInfo(this.dataset)">'+
         '<div class="dc-rad-ch">'+dcEscHtml(child.char)+'</div>'+
