@@ -192,6 +192,55 @@ img{display:block;max-width:100%}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── Selection popup & highlight ── */
+.sel-popup{position:fixed;display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:8px 12px;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:9999;white-space:nowrap}
+.sel-popup.show{display:flex}
+.sel-popup::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--border)}
+.sel-popup::before{content:'';position:absolute;top:calc(100% - 1px);left:50%;transform:translateX(-50%);z-index:1;border:6px solid transparent;border-top-color:#fff}
+.sel-text{font-family:'Noto Serif TC',serif;font-size:12px;color:var(--text-2);max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.sel-divider{width:1px;height:18px;background:var(--border);flex-shrink:0}
+.hl-color{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.12s;flex-shrink:0}
+.hl-color:hover{transform:scale(1.2);border-color:rgba(0,0,0,.2)}
+.sel-dismiss{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;padding:2px 4px;line-height:1;transition:.12s}
+.sel-dismiss:hover{color:var(--red)}
+.sel-note-btn{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;line-height:1;display:flex;align-items:center;transition:.12s}
+.sel-note-btn:hover{transform:scale(1.15)}
+mark.hl-1{background:#FDE68A;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-2{background:#BAE6FD;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-3{background:#E9D5FF;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
+mark.hl-active{outline:2px solid #f59e0b;outline-offset:1px}
+
+/* ── Note input bar (bottom) ── */
+.note-input-bar{position:fixed;bottom:0;left:0;right:0;z-index:450;background:#fff;border-top:2px solid var(--blue);padding:12px 20px;display:none;align-items:center;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.12)}
+.note-input-bar.show{display:flex}
+.nib-quote{font-family:'Noto Serif TC',serif;font-size:12px;color:var(--text-3);background:#fffbeb;border-radius:6px;padding:4px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid #FDE68A;flex-shrink:0}
+.nib-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:14px;outline:none;transition:.15s}
+.nib-input:focus{border-color:var(--blue)}
+.nib-submit{background:var(--blue);color:#fff;border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;font-size:14px}
+.nib-submit:hover{background:var(--blue-dark)}
+.nib-cancel{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;line-height:1;flex-shrink:0;transition:.12s}
+.nib-cancel:hover{color:var(--red)}
+
+/* ── Notes column ── */
+.notes-col{width:252px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);position:sticky;top:calc(var(--nav-h) + var(--bar-h) + var(--prog-h));height:calc(100vh - var(--nav-h) - var(--bar-h) - var(--prog-h));overflow-y:auto;display:flex;flex-direction:column;padding:14px 12px;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.notes-col-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.note-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;margin-bottom:8px;position:relative}
+.note-card:hover{border-color:var(--blue);box-shadow:var(--shadow-sm)}
+.note-card.active{border-color:#f59e0b;background:#fffbeb;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.note-card-quote{font-family:'Noto Serif TC',serif;font-size:11px;color:var(--text-3);border-left:3px solid #FDE68A;padding-left:6px;margin-bottom:6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal}
+.note-card-text{font-size:13px;font-weight:500;color:var(--text);line-height:1.5;margin-bottom:5px}
+.note-card-meta{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text-3)}
+.note-card-del{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:11px;opacity:0;transition:.12s;padding:0}
+.note-card:hover .note-card-del{opacity:1}
+.note-card-del:hover{color:var(--red)}
+.notes-empty{font-size:12px;color:var(--text-3);text-align:center;padding:24px 8px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.notes-empty i{font-size:22px;opacity:.25}
+.eb-notes-btn{font-size:12px;font-weight:600;color:var(--text-2);padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;white-space:nowrap}
+.eb-notes-btn:hover{border-color:#f59e0b;color:#92400e}
+.eb-notes-btn.on{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+@media(max-width:1160px){.notes-col{display:none}.eb-notes-btn{display:none}}
+
 /* ── Result modal ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
 .modal-card{background:#fff;border-radius:20px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .25s ease}
@@ -375,6 +424,11 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <strong x-text="answeredQ"></strong>/<span x-text="totalQ"></span>
       </div>
       <button class="eb-submit" @click="submitExam()" x-show="!submitted">Nộp bài</button>
+      <button class="eb-notes-btn" :class="showNotes ? 'on' : ''" @click="showNotes = !showNotes">
+        <i class="fa-solid fa-note-sticky"></i>
+        Ghi chú
+        <span x-show="notes.length" x-text="`(${notes.length})`" style="font-size:10px;opacity:.7"></span>
+      </button>
     </div>
   </div>
 </div>
@@ -496,6 +550,45 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     </div>
   </div>
 
+  <!-- Notes column -->
+  <div class="notes-col" x-show="showNotes" x-cloak style="display:none">
+    <div class="notes-col-title">
+      <span><i class="fa-solid fa-note-sticky" style="margin-right:5px;opacity:.6"></i>Ghi chú</span>
+      <span x-show="notes.length" x-text="notes.length + ' ghi chú'" style="font-size:10px"></span>
+    </div>
+    <template x-if="!notes.length">
+      <div class="notes-empty">
+        <i class="fa-solid fa-note-sticky"></i>
+        <span>Chọn văn bản trong đề để tạo ghi chú</span>
+      </div>
+    </template>
+    <template x-for="note in notes" :key="note.id">
+      <div class="note-card" :class="activeNote === note.id ? 'active' : ''" @click="clickNote(note)">
+        <div class="note-card-quote" x-text="note.quote"></div>
+        <div class="note-card-text" x-text="note.text"></div>
+        <div class="note-card-meta">
+          <span x-text="note.qNum ? 'Câu ' + note.qNum : ''"></span>
+          <button class="note-card-del" @click.stop="removeNote(note.id)" title="Xóa">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+
+</div>
+
+<!-- SELECTION POPUP -->
+<div id="sel-popup" class="sel-popup">
+  <span class="sel-text" id="sel-text-preview"></span>
+  <div class="sel-divider"></div>
+  <div class="hl-color" style="background:#FDE68A" title="Vàng" onclick="selHighlight(1)"></div>
+  <div class="hl-color" style="background:#BAE6FD" title="Xanh dương" onclick="selHighlight(2)"></div>
+  <div class="hl-color" style="background:#E9D5FF" title="Tím" onclick="selHighlight(3)"></div>
+  <div class="hl-color" style="background:#FCA5A5" title="Đỏ" onclick="selHighlight(4)"></div>
+  <div class="sel-divider"></div>
+  <button class="sel-note-btn" title="Thêm ghi chú" onclick="selAddNote()">📝</button>
+  <button class="sel-dismiss" title="Bỏ chọn" onclick="selDismiss()"><i class="fa-solid fa-xmark"></i></button>
 </div>
 
 <!-- RESULT MODAL -->
@@ -584,6 +677,15 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </a>
     </div>
   </div>
+</div>
+
+<!-- NOTE INPUT BAR -->
+<div id="note-input-bar" class="note-input-bar">
+  <span class="nib-quote" id="nib-quote-preview"></span>
+  <input class="nib-input" id="nib-input" placeholder="Nhập ghi chú của bạn…" type="text"
+         onkeydown="if(event.key==='Enter')submitNote();if(event.key==='Escape')cancelNote()">
+  <button class="nib-submit" onclick="submitNote()" title="Lưu ghi chú"><i class="fa-solid fa-check"></i></button>
+  <button class="nib-cancel" onclick="cancelNote()" title="Hủy">×</button>
 </div>
 
 <!-- FOOTER -->
@@ -743,6 +845,10 @@ function tocflExamApp() {
     skillFilter: 'both',
     autoNext: false,
 
+    notes: [],
+    showNotes: false,
+    activeNote: null,
+
     timer: 0,
     _timerInitial: 0,
     timerHandle: null,
@@ -786,6 +892,8 @@ function tocflExamApp() {
     /* ── Init ── */
     async init() {
       document.addEventListener('pick-tocfl-answer', e => this.pick(e.detail.qId, e.detail.label));
+      document.addEventListener('add-note',   e => { this.addNote(e.detail.quote, e.detail.text, e.detail.qNum, e.detail.markId); if (!this.showNotes) this.showNotes = true; });
+      document.addEventListener('mark-click', e => this.onMarkClick(e.detail.markId));
       if (_auth) _auth.init().then(u => { _user=u; renderNavAuth(u); });
 
       const p = new URLSearchParams(location.search);
@@ -1054,6 +1162,43 @@ function tocflExamApp() {
       window.scrollTo(0,0);
       this.startTimer();
     },
+
+    /* ── Notes ── */
+    addNote(quote, text, qNum, markId) {
+      this.notes.unshift({ id: Date.now(), quote, text, qNum, markId });
+    },
+    onMarkClick(markId) {
+      const note = this.notes.find(n => n.markId === markId);
+      document.querySelectorAll('mark.hl-active').forEach(m => m.classList.remove('hl-active'));
+      if (!note) return;
+      if (this.activeNote === note.id) { this.activeNote = null; return; }
+      this.activeNote = note.id;
+      document.querySelectorAll(`mark[data-nid="${markId}"]`).forEach(m => {
+        m.classList.add('hl-active');
+        m.scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+    },
+    clickNote(note) {
+      document.querySelectorAll('mark.hl-active').forEach(m => m.classList.remove('hl-active'));
+      if (this.activeNote === note.id) { this.activeNote = null; return; }
+      this.activeNote = note.id;
+      document.querySelectorAll(`mark[data-nid="${note.markId}"]`).forEach(m => {
+        m.classList.add('hl-active');
+        m.scrollIntoView({ behavior:'smooth', block:'center' });
+      });
+    },
+    removeNote(id) {
+      const note = this.notes.find(n => n.id === id);
+      if (note?.markId) {
+        document.querySelectorAll(`mark[data-nid="${note.markId}"]`).forEach(m => {
+          const p = m.parentNode;
+          while (m.firstChild) p.insertBefore(m.firstChild, m);
+          p.removeChild(m);
+        });
+      }
+      this.notes = this.notes.filter(n => n.id !== id);
+      if (this.activeNote === id) this.activeNote = null;
+    },
   };
 }
 
@@ -1062,6 +1207,111 @@ function renderNavAuth(user) {
   if (!user) { el.innerHTML=`<a class="nav-btn" href="/login.html">Đăng nhập</a>`; return; }
   const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
   el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+
+/* ── Text selection / highlight / notes ── */
+let _selText = '', _selRange = null, _selMarkId = null, _selQNum = null;
+
+const _SEL_ZONES = '.passage-text,.q-text,.q-single-inner,.passage-block';
+
+document.addEventListener('mouseup', function(e) {
+  if (e.target.closest('#sel-popup') || e.target.closest('#note-input-bar')) return;
+  const sel = window.getSelection();
+  const text = sel?.toString().trim();
+  if (!text || text.length < 2) { selDismiss(); return; }
+  const range = sel.getRangeAt(0);
+  const anc = range.commonAncestorContainer;
+  const el  = anc.nodeType === 3 ? anc.parentElement : anc;
+  if (!el.closest(_SEL_ZONES)) { selDismiss(); return; }
+  _selText  = text;
+  _selRange = range.cloneRange();
+  // Capture current question number for note context
+  const appEl = document.querySelector('[x-data]');
+  _selQNum = appEl?._x_dataStack?.[0]?.currentQ?.question_num || null;
+  // Position popup above selection
+  const popup = document.getElementById('sel-popup');
+  if (!popup) return;
+  document.getElementById('sel-text-preview').textContent = text.length > 18 ? text.slice(0,18)+'…' : text;
+  const rect = range.getBoundingClientRect();
+  const pw   = popup.offsetWidth || 240;
+  let left   = rect.left + rect.width / 2 - pw / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+  let top = rect.top + window.scrollY - 58;
+  if (top < window.scrollY + 8) top = rect.bottom + window.scrollY + 8;
+  popup.style.left = left + 'px';
+  popup.style.top  = top  + 'px';
+  popup.classList.add('show');
+});
+
+document.addEventListener('mousedown', function(e) {
+  if (!e.target.closest('#sel-popup')) selDismiss();
+});
+
+/* Mark click → onMarkClick in Alpine */
+document.addEventListener('click', function(e) {
+  const mark = e.target.closest('mark[data-nid]');
+  if (!mark) return;
+  document.dispatchEvent(new CustomEvent('mark-click', { detail: { markId: mark.dataset.nid } }));
+});
+
+function selDismiss() {
+  const popup = document.getElementById('sel-popup');
+  if (popup) popup.classList.remove('show');
+  window.getSelection()?.removeAllRanges();
+  _selRange = null;
+}
+
+function _doWrap(colorN) {
+  const markId = 'hl_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+  const mark = document.createElement('mark');
+  mark.className = `hl-${colorN}`;
+  mark.dataset.nid = markId;
+  try {
+    _selRange.surroundContents(mark);
+  } catch {
+    try {
+      const frag = _selRange.extractContents();
+      mark.appendChild(frag);
+      _selRange.insertNode(mark);
+    } catch(e2) { console.warn('highlight failed', e2); return null; }
+  }
+  _selMarkId = markId;
+  return markId;
+}
+
+function selHighlight(n) {
+  if (!_selRange) return;
+  _doWrap(n);
+  selDismiss();
+}
+
+function selAddNote() {
+  if (!_selRange && !_selText) return;
+  if (_selRange) _doWrap(1);
+  const bar   = document.getElementById('note-input-bar');
+  const quote = document.getElementById('nib-quote-preview');
+  const input = document.getElementById('nib-input');
+  if (quote) quote.textContent = _selText.length > 28 ? _selText.slice(0,28)+'…' : _selText;
+  if (input) input.value = '';
+  if (bar)   bar.classList.add('show');
+  selDismiss();
+  setTimeout(() => input?.focus(), 60);
+}
+
+function cancelNote() {
+  const bar = document.getElementById('note-input-bar');
+  if (bar) bar.classList.remove('show');
+}
+
+function submitNote() {
+  const input = document.getElementById('nib-input');
+  const text  = input?.value.trim();
+  if (!text) { input?.focus(); return; }
+  document.dispatchEvent(new CustomEvent('add-note', {
+    detail: { quote: _selText, text, qNum: _selQNum, markId: _selMarkId }
+  }));
+  _selText = ''; _selMarkId = null; _selQNum = null;
+  cancelNote();
 }
 </script>
 <script src="/js/nav-mobile.js" defer></script>
