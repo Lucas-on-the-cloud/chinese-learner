@@ -34,8 +34,8 @@ a{text-decoration:none;color:inherit}
 .nav-link:hover{color:var(--text);background:#f3f4f6}
 .nav-link.active{color:var(--blue);font-weight:600}
 .nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
-.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
-.nav-btn:hover{background:var(--blue-dark)}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--navy);padding:7px 18px;border-radius:7px;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.nav-btn:hover{background:#132f55}
 
 /* ── HEADER ── */
 .page-header{background:linear-gradient(135deg,#0a1d37 0%,#1e3a8a 100%);padding:38px 1.5rem 32px;position:relative;overflow:hidden}
@@ -193,6 +193,7 @@ a{text-decoration:none;color:inherit}
 /* ── STUDY MODE ── */
 .study-overlay{display:none;position:fixed;inset:0;z-index:1100;background:#f4f5f7;flex-direction:column;align-items:center;overflow-y:auto;padding-bottom:40px}
 .study-overlay.open{display:flex}
+#study-card-view,#study-end-view{display:flex;flex-direction:column;align-items:center;width:100%}
 .study-topbar{width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;padding:18px 20px 0}
 .study-close{background:rgba(0,0,0,.07);border:none;color:var(--text-2);font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:inherit;transition:.15s}
 .study-close:hover{background:rgba(0,0,0,.12)}
@@ -412,7 +413,7 @@ a{text-decoration:none;color:inherit}
 <!-- STUDY OVERLAY -->
 <div class="study-overlay" id="study-overlay">
   <!-- CARD VIEW -->
-  <div id="study-card-view" style="display:flex;flex-direction:column;align-items:center;width:100%">
+  <div id="study-card-view">
     <div class="study-topbar">
       <button class="study-close" onclick="endStudy()">✕ Thoát</button>
       <span class="study-counter" id="study-prog-txt-l"></span>
@@ -874,6 +875,8 @@ function retryQuiz(){
   var old=document.getElementById('quiz-end-screen');
   if(old) old.remove();
   document.getElementById('quiz-card').style.display='';
+  document.getElementById('quiz-overlay').classList.remove('open');
+  document.body.style.overflow='';
   openSel('quiz');
 }
 
@@ -900,7 +903,7 @@ function startStudy(mode,pool){
   if(!studyCards.length) return;
   studyIdx=0; studyKnown=[]; studyUnknown=[];
 
-  document.getElementById('study-card-view').style.display='';
+  document.getElementById('study-card-view').style.display='flex';
   document.getElementById('study-end-view').style.display='none';
   document.getElementById('study-overlay').classList.add('open');
   document.body.style.overflow='hidden';
@@ -954,7 +957,7 @@ function onStudyKey(e){
 
 function showStudyEnd(){
   document.getElementById('study-card-view').style.display='none';
-  document.getElementById('study-end-view').style.display='';
+  document.getElementById('study-end-view').style.display='flex';
   var k=studyKnown.length, u=studyUnknown.length;
   document.getElementById('se-known').textContent=k;
   document.getElementById('se-unknown').textContent=u;
@@ -970,7 +973,7 @@ function repeatUnknown(){
   studyCards=studyUnknown.slice();
   shuffle(studyCards);
   studyIdx=0; studyKnown=[]; studyUnknown=[];
-  document.getElementById('study-card-view').style.display='';
+  document.getElementById('study-card-view').style.display='flex';
   document.getElementById('study-end-view').style.display='none';
   renderStudyCard();
 }
