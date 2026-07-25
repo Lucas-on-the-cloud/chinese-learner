@@ -687,6 +687,15 @@ function customAudio(src) {
     progress: 0,
     currentSec: 0,
     durationSec: 0,
+    init() {
+      // Auto-play when component mounts (triggered by user action — browser allows it)
+      this.$nextTick(() => {
+        const a = this.$refs.audio;
+        if (!a) return;
+        if (_caActive) { _caActive.audio.pause(); _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
+        a.play().then(() => { this.playing = true; }).catch(() => {});
+      });
+    },
     get timeDisplay()     { const s=this.currentSec;  return Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); },
     get durationDisplay() { const s=this.durationSec; return s ? Math.floor(s/60)+':'+(s%60+'').padStart(2,'0') : '--:--'; },
     toggle() {
@@ -833,7 +842,7 @@ function tocflExamApp() {
       const isA = this.exam.band === 'Band A';
       this.timer = f==='listening' ? (isA?20*60:30*60)
                  : f==='reading'   ? (isA?30*60:60*60)
-                 :                   (isA?50*60:90*60);
+                 :                   140*60;
       this._timerInitial = this.timer;
       this.currentQIdx   = 0;
       _tocflAnswers      = {};
@@ -864,6 +873,17 @@ function tocflExamApp() {
       if (_caActive) { _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
       this.currentQIdx = idx;
       window.scrollTo({ top:0, behavior:'smooth' });
+      // If the new question has per-question audio (no group audio), auto-play it
+      this.$nextTick(() => {
+        const q = this.allQuestions[idx];
+        const g = this.currentGroup;
+        if (q?.question_audio_url && !g?.shared_audio_url) {
+          setTimeout(() => {
+            const btn = document.querySelector('.ca-wrap.ca-q .ca-play-btn');
+            if (btn) btn.click();
+          }, 80);
+        }
+      });
     },
     goToQById(qId) {
       const idx = this.allQuestions.findIndex(q => q.id===qId);
@@ -889,7 +909,7 @@ function tocflExamApp() {
       const isA = this.exam?.band==='Band A';
       if (this.skillFilter==='listening') return isA ? '~20 phút · Nghe' : '~30 phút · Nghe';
       if (this.skillFilter==='reading')   return isA ? '~30 phút · Đọc'  : '~60 phút · Đọc';
-      return isA ? '~50 phút · Cả hai' : '~90 phút · Cả hai';
+      return '~140 phút · Cả hai';
     },
     setupQCount() {
       if (!this.exam) return 0;
