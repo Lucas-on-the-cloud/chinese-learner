@@ -687,15 +687,6 @@ function customAudio(src) {
     progress: 0,
     currentSec: 0,
     durationSec: 0,
-    init() {
-      // Auto-play when component mounts (triggered by user action — browser allows it)
-      this.$nextTick(() => {
-        const a = this.$refs.audio;
-        if (!a) return;
-        if (_caActive) { _caActive.audio.pause(); _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
-        a.play().then(() => { this.playing = true; }).catch(() => {});
-      });
-    },
     get timeDisplay()     { const s=this.currentSec;  return Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); },
     get durationDisplay() { const s=this.durationSec; return s ? Math.floor(s/60)+':'+(s%60+'').padStart(2,'0') : '--:--'; },
     toggle() {
@@ -853,6 +844,8 @@ function tocflExamApp() {
       this.view          = 'exam';
       this.startTimer();
       window.scrollTo(0,0);
+      // Auto-play first question audio after exam layout renders
+      this.$nextTick(() => setTimeout(() => this._autoPlay(), 150));
     },
 
     /* ── Sidebar helpers ── */
@@ -868,22 +861,19 @@ function tocflExamApp() {
     },
 
     /* ── Navigation ── */
+    _autoPlay() {
+      // Click the first visible play button (group audio first, then per-question audio)
+      const btn = document.querySelector('.ca-wrap:not(.ca-q) .ca-play-btn')
+               || document.querySelector('.ca-wrap.ca-q .ca-play-btn');
+      if (btn) btn.click();
+    },
     goToQ(idx) {
       document.querySelectorAll('.ca-audio-el').forEach(a => a.pause());
       if (_caActive) { _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
       this.currentQIdx = idx;
       window.scrollTo({ top:0, behavior:'smooth' });
-      // If the new question has per-question audio (no group audio), auto-play it
-      this.$nextTick(() => {
-        const q = this.allQuestions[idx];
-        const g = this.currentGroup;
-        if (q?.question_audio_url && !g?.shared_audio_url) {
-          setTimeout(() => {
-            const btn = document.querySelector('.ca-wrap.ca-q .ca-play-btn');
-            if (btn) btn.click();
-          }, 80);
-        }
-      });
+      // Wait for Alpine to finish rendering the new question, then auto-play
+      this.$nextTick(() => setTimeout(() => this._autoPlay(), 120));
     },
     goToQById(qId) {
       const idx = this.allQuestions.findIndex(q => q.id===qId);
