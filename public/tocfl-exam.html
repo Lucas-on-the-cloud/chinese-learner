@@ -211,16 +211,18 @@ mark.hl-3{background:#E9D5FF;color:inherit;border-radius:2px;cursor:pointer}
 mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
 mark.hl-active{outline:2px solid #f59e0b;outline-offset:1px}
 
-/* ── Note input bar (bottom) ── */
-.note-input-bar{position:fixed;bottom:0;left:0;right:0;z-index:450;background:#fff;border-top:2px solid var(--blue);padding:12px 20px;display:none;align-items:center;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.12)}
-.note-input-bar.show{display:flex}
-.nib-quote{font-family:'Noto Serif TC',serif;font-size:12px;color:var(--text-3);background:#fffbeb;border-radius:6px;padding:4px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid #FDE68A;flex-shrink:0}
-.nib-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-family:inherit;font-size:14px;outline:none;transition:.15s}
-.nib-input:focus{border-color:var(--blue)}
-.nib-submit{background:var(--blue);color:#fff;border:none;border-radius:8px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;font-size:14px}
-.nib-submit:hover{background:var(--blue-dark)}
-.nib-cancel{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;line-height:1;flex-shrink:0;transition:.12s}
-.nib-cancel:hover{color:var(--red)}
+/* ── Note popover (inline, near highlighted text) ── */
+.note-popover{position:fixed;z-index:9998;display:none;background:#fff;border:1.5px solid var(--blue);border-radius:12px;padding:12px 14px;box-shadow:0 8px 32px rgba(0,0,0,.18);width:288px}
+.note-popover.show{display:block}
+.np-quote{font-family:'Noto Serif TC',serif;font-size:12px;color:var(--text-3);border-left:3px solid #FDE68A;padding-left:7px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np-row{display:flex;gap:6px;align-items:center}
+.np-input{flex:1;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-family:inherit;font-size:13px;outline:none;transition:.15s;min-width:0}
+.np-input:focus{border-color:var(--blue)}
+.np-btn{width:32px;height:32px;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:.14s}
+.np-submit{background:var(--blue);color:#fff}
+.np-submit:hover{background:var(--blue-dark)}
+.np-cancel{background:#f3f4f6;color:var(--text-3);font-size:18px;line-height:1}
+.np-cancel:hover{background:var(--red-lt);color:var(--red)}
 
 /* ── Notes column ── */
 .notes-col{width:252px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);position:sticky;top:calc(var(--nav-h) + var(--bar-h) + var(--prog-h));height:calc(100vh - var(--nav-h) - var(--bar-h) - var(--prog-h));overflow-y:auto;display:flex;flex-direction:column;padding:14px 12px;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
@@ -679,13 +681,15 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   </div>
 </div>
 
-<!-- NOTE INPUT BAR -->
-<div id="note-input-bar" class="note-input-bar">
-  <span class="nib-quote" id="nib-quote-preview"></span>
-  <input class="nib-input" id="nib-input" placeholder="Nhập ghi chú của bạn…" type="text"
-         onkeydown="if(event.key==='Enter')submitNote();if(event.key==='Escape')cancelNote()">
-  <button class="nib-submit" onclick="submitNote()" title="Lưu ghi chú"><i class="fa-solid fa-check"></i></button>
-  <button class="nib-cancel" onclick="cancelNote()" title="Hủy">×</button>
+<!-- NOTE POPOVER (inline, near highlighted text) -->
+<div id="note-popover" class="note-popover">
+  <div class="np-quote" id="np-quote"></div>
+  <div class="np-row">
+    <input class="np-input" id="np-input" placeholder="Ghi chú…" type="text"
+           onkeydown="if(event.key==='Enter')submitNote();if(event.key==='Escape')cancelNote()">
+    <button class="np-btn np-submit" onclick="submitNote()" title="Lưu"><i class="fa-solid fa-check"></i></button>
+    <button class="np-btn np-cancel" onclick="cancelNote()" title="Hủy">×</button>
+  </div>
 </div>
 
 <!-- FOOTER -->
@@ -892,7 +896,7 @@ function tocflExamApp() {
     /* ── Init ── */
     async init() {
       document.addEventListener('pick-tocfl-answer', e => this.pick(e.detail.qId, e.detail.label));
-      document.addEventListener('add-note',   e => { this.addNote(e.detail.quote, e.detail.text, e.detail.qNum, e.detail.markId); if (!this.showNotes) this.showNotes = true; });
+      document.addEventListener('add-note',   e => { this.addNote(e.detail.quote, e.detail.text, e.detail.qNum, e.detail.markId, e.detail.qIdx); if (!this.showNotes) this.showNotes = true; });
       document.addEventListener('mark-click', e => this.onMarkClick(e.detail.markId));
       if (_auth) _auth.init().then(u => { _user=u; renderNavAuth(u); });
 
@@ -1164,8 +1168,8 @@ function tocflExamApp() {
     },
 
     /* ── Notes ── */
-    addNote(quote, text, qNum, markId) {
-      this.notes.unshift({ id: Date.now(), quote, text, qNum, markId });
+    addNote(quote, text, qNum, markId, qIdx) {
+      this.notes.unshift({ id: Date.now(), quote, text, qNum, markId, qIdx: qIdx ?? this.currentQIdx });
     },
     onMarkClick(markId) {
       const note = this.notes.find(n => n.markId === markId);
@@ -1173,19 +1177,23 @@ function tocflExamApp() {
       if (!note) return;
       if (this.activeNote === note.id) { this.activeNote = null; return; }
       this.activeNote = note.id;
-      document.querySelectorAll(`mark[data-nid="${markId}"]`).forEach(m => {
-        m.classList.add('hl-active');
-        m.scrollIntoView({ behavior:'smooth', block:'center' });
-      });
+      document.querySelectorAll(`mark[data-nid="${markId}"]`).forEach(m => m.classList.add('hl-active'));
     },
     clickNote(note) {
       document.querySelectorAll('mark.hl-active').forEach(m => m.classList.remove('hl-active'));
       if (this.activeNote === note.id) { this.activeNote = null; return; }
       this.activeNote = note.id;
-      document.querySelectorAll(`mark[data-nid="${note.markId}"]`).forEach(m => {
-        m.classList.add('hl-active');
-        m.scrollIntoView({ behavior:'smooth', block:'center' });
-      });
+      const doHL = () => {
+        const marks = document.querySelectorAll(`mark[data-nid="${note.markId}"]`);
+        marks.forEach(m => m.classList.add('hl-active'));
+        if (marks.length) marks[0].scrollIntoView({ behavior:'smooth', block:'center' });
+      };
+      if (note.qIdx !== undefined && note.qIdx !== null && note.qIdx !== this.currentQIdx) {
+        this.goToQ(note.qIdx);
+        this.$nextTick(() => setTimeout(doHL, 220));
+      } else {
+        doHL();
+      }
     },
     removeNote(id) {
       const note = this.notes.find(n => n.id === id);
@@ -1210,41 +1218,44 @@ function renderNavAuth(user) {
 }
 
 /* ── Text selection / highlight / notes ── */
-let _selText = '', _selRange = null, _selMarkId = null, _selQNum = null;
-
-const _SEL_ZONES = '.passage-text,.q-text,.q-single-inner,.passage-block';
+let _selText = '', _selRange = null, _selMarkId = null, _selQNum = null, _selQIdx = null;
 
 document.addEventListener('mouseup', function(e) {
-  if (e.target.closest('#sel-popup') || e.target.closest('#note-input-bar')) return;
-  const sel = window.getSelection();
+  if (e.target.closest('#sel-popup') || e.target.closest('#note-popover')) return;
+  const sel  = window.getSelection();
   const text = sel?.toString().trim();
   if (!text || text.length < 2) { selDismiss(); return; }
   const range = sel.getRangeAt(0);
-  const anc = range.commonAncestorContainer;
-  const el  = anc.nodeType === 3 ? anc.parentElement : anc;
-  if (!el.closest(_SEL_ZONES)) { selDismiss(); return; }
+  const anc   = range.commonAncestorContainer;
+  const el    = anc.nodeType === 3 ? anc.parentElement : anc;
+  // Allow highlight anywhere inside the exam content area
+  if (!el.closest('.exam-content-outer')) { selDismiss(); return; }
   _selText  = text;
   _selRange = range.cloneRange();
-  // Capture current question number for note context
-  const appEl = document.querySelector('[x-data]');
-  _selQNum = appEl?._x_dataStack?.[0]?.currentQ?.question_num || null;
-  // Position popup above selection
+  // Capture current question context for note navigation
+  const app = document.querySelector('[x-data]')?._x_dataStack?.[0];
+  _selQNum  = app?.currentQ?.question_num || null;
+  _selQIdx  = app?.currentQIdx ?? null;
+  // Position colour popup above selection
   const popup = document.getElementById('sel-popup');
   if (!popup) return;
   document.getElementById('sel-text-preview').textContent = text.length > 18 ? text.slice(0,18)+'…' : text;
   const rect = range.getBoundingClientRect();
-  const pw   = popup.offsetWidth || 240;
+  const pw   = 240;
   let left   = rect.left + rect.width / 2 - pw / 2;
   left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
-  let top = rect.top + window.scrollY - 58;
-  if (top < window.scrollY + 8) top = rect.bottom + window.scrollY + 8;
+  let top = rect.top - 56;
+  if (top < 8) top = rect.bottom + 8;
   popup.style.left = left + 'px';
   popup.style.top  = top  + 'px';
   popup.classList.add('show');
 });
 
 document.addEventListener('mousedown', function(e) {
-  if (!e.target.closest('#sel-popup')) selDismiss();
+  if (!e.target.closest('#sel-popup') && !e.target.closest('#note-popover')) {
+    selDismiss();
+    cancelNote();
+  }
 });
 
 /* Mark click → onMarkClick in Alpine */
@@ -1288,29 +1299,43 @@ function selHighlight(n) {
 function selAddNote() {
   if (!_selRange && !_selText) return;
   if (_selRange) _doWrap(1);
-  const bar   = document.getElementById('note-input-bar');
-  const quote = document.getElementById('nib-quote-preview');
-  const input = document.getElementById('nib-input');
-  if (quote) quote.textContent = _selText.length > 28 ? _selText.slice(0,28)+'…' : _selText;
-  if (input) input.value = '';
-  if (bar)   bar.classList.add('show');
+  const popover = document.getElementById('note-popover');
+  const quoteEl = document.getElementById('np-quote');
+  const inputEl = document.getElementById('np-input');
+  if (!popover) return;
+  if (quoteEl) quoteEl.textContent = _selText.length > 32 ? _selText.slice(0,32)+'…' : _selText;
+  if (inputEl) inputEl.value = '';
+  // Position popover right below the highlighted mark
+  const mark = _selMarkId ? document.querySelector(`mark[data-nid="${_selMarkId}"]`) : null;
+  if (mark) {
+    const rect = mark.getBoundingClientRect();
+    const pw = 288;
+    let left = rect.left;
+    left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+    let top  = rect.bottom + 8;
+    if (top + 100 > window.innerHeight) top = rect.top - 104;
+    if (top < 8) top = 8;
+    popover.style.left = left + 'px';
+    popover.style.top  = top  + 'px';
+  }
+  popover.classList.add('show');
   selDismiss();
-  setTimeout(() => input?.focus(), 60);
+  setTimeout(() => inputEl?.focus(), 60);
 }
 
 function cancelNote() {
-  const bar = document.getElementById('note-input-bar');
-  if (bar) bar.classList.remove('show');
+  const popover = document.getElementById('note-popover');
+  if (popover) popover.classList.remove('show');
 }
 
 function submitNote() {
-  const input = document.getElementById('nib-input');
-  const text  = input?.value.trim();
-  if (!text) { input?.focus(); return; }
+  const inputEl = document.getElementById('np-input');
+  const text    = inputEl?.value.trim();
+  if (!text) { inputEl?.focus(); return; }
   document.dispatchEvent(new CustomEvent('add-note', {
-    detail: { quote: _selText, text, qNum: _selQNum, markId: _selMarkId }
+    detail: { quote: _selText, text, qNum: _selQNum, markId: _selMarkId, qIdx: _selQIdx }
   }));
-  _selText = ''; _selMarkId = null; _selQNum = null;
+  _selText = ''; _selMarkId = null; _selQNum = null; _selQIdx = null;
   cancelNote();
 }
 </script>
