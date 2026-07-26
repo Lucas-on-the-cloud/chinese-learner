@@ -989,6 +989,15 @@ function tocflExamApp() {
       this.exam = exam;
       document.title = `${exam.title} — TOCFL FAFA`;
       this.loading = false;
+
+      const reviewId = p.get('review');
+      if (reviewId) {
+        try {
+          const _hist = JSON.parse(localStorage.getItem('_tocfl_hist') || '[]');
+          const _rv = _hist.find(e => e.id === reviewId);
+          if (_rv && _rv.answers) this.startReview(_rv);
+        } catch(e) {}
+      }
     },
 
     /* ── Start exam ── */
@@ -1014,6 +1023,45 @@ function tocflExamApp() {
       window.scrollTo(0,0);
       // Auto-play first question audio after exam layout renders
       this.$nextTick(() => setTimeout(() => this._autoPlay(), 150));
+    },
+
+    /* ── Review mode (open from history without setup screen) ── */
+    startReview(entry) {
+      const f = entry.skill_filter || 'both';
+      this.skillFilter = f;
+      this.parts = f==='listening' ? this.exam.tocfl_parts.filter(p=>p.skill==='Listening')
+                 : f==='reading'   ? this.exam.tocfl_parts.filter(p=>p.skill==='Reading')
+                 :                   [...this.exam.tocfl_parts];
+      _tocflAnswers = { ...entry.answers };
+      this.answers  = { ...entry.answers };
+
+      let total=0, lScore=0, lTotal=0, rScore=0, rTotal=0;
+      for (const part of this.parts) {
+        for (const g of part.tocfl_groups) {
+          for (const q of g.tocfl_questions) {
+            const ok = _tocflAnswers[q.id]===q.correct;
+            total += ok ? 1 : 0;
+            if (part.skill==='Listening') { lTotal++; lScore+=ok?1:0; }
+            else                          { rTotal++; rScore+=ok?1:0; }
+          }
+        }
+      }
+      this.examScore      = total;
+      this.listeningScore = lScore;
+      this.listeningTotal = lTotal;
+      this.readingScore   = rScore;
+      this.readingTotal   = rTotal;
+      this.tocflLevel     = estimateTocflLevel(
+        this.exam.band, f,
+        lTotal ? Math.round(lScore/lTotal*100) : 0,
+        rTotal ? Math.round(rScore/rTotal*100) : 0
+      );
+      this.currentQIdx = 0;
+      this.submitted   = true;
+      this.showResult  = false;
+      this.timer       = 0;
+      this.view        = 'exam';
+      window.scrollTo(0,0);
     },
 
     /* ── Sidebar helpers ── */
@@ -1207,6 +1255,7 @@ function tocflExamApp() {
           reading_score:   rTotal ? rScore : null,
           created_at: new Date().toISOString(),
           tocfl_exams: { title: this.exam.title, band: this.exam.band },
+          answers: { ...this.answers },
         };
         const _hist = JSON.parse(localStorage.getItem('_tocfl_hist') || '[]');
         _hist.unshift(_entry);
