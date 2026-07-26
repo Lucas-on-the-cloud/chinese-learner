@@ -170,63 +170,89 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 </div>
 
 <!-- FILTER / SECTION BAR -->
-<div class="sticky top-[62px] z-40 bg-white border-b border-gray-200 shadow-sm">
-  <div class="max-w-6xl mx-auto px-6 flex items-center gap-3 min-h-[52px] flex-wrap py-2">
+<div class="sticky top-[62px] z-40 bg-white border-b border-gray-200" style="box-shadow:0 2px 10px rgba(0,0,0,.07)">
+  <div class="max-w-6xl mx-auto px-6 flex items-center gap-3 min-h-[64px] flex-wrap py-3">
 
     <!-- Section switcher -->
-    <div class="flex gap-1 bg-gray-100 rounded-lg p-1 flex-shrink-0">
+    <div class="flex gap-2 flex-shrink-0">
       <button @click="activeSection='tocfl'"
-              :class="activeSection==='tocfl' ? 'bg-white shadow text-navy font-semibold' : 'text-gray-500'"
-              class="text-xs px-3 py-1.5 rounded-md transition cursor-pointer whitespace-nowrap">
-        <i class="fa-solid fa-file-pen mr-1"></i> TOCFL
+              :class="activeSection==='tocfl'
+                ? 'bg-orange text-white shadow-sm shadow-orange/40'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-orange hover:text-orange'"
+              class="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl transition cursor-pointer whitespace-nowrap">
+        <i class="fa-solid fa-file-pen"></i> TOCFL
       </button>
       <button @click="activeSection='general'"
-              :class="activeSection==='general' ? 'bg-white shadow text-navy font-semibold' : 'text-gray-500'"
-              class="text-xs px-3 py-1.5 rounded-md transition cursor-pointer whitespace-nowrap">
-        <i class="fa-solid fa-layer-group mr-1"></i> Tổng hợp
+              :class="activeSection==='general'
+                ? 'bg-blue text-white shadow-sm shadow-blue/40'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue hover:text-blue'"
+              class="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl transition cursor-pointer whitespace-nowrap">
+        <i class="fa-solid fa-layer-group"></i> Tổng hợp
       </button>
     </div>
 
-    <div class="w-px h-5 bg-gray-200 flex-shrink-0"></div>
+    <div class="w-px h-7 bg-gray-200 flex-shrink-0"></div>
 
     <!-- TOCFL Band pills -->
     <div x-show="activeSection==='tocfl'" class="flex gap-2 flex-wrap">
+      <button @click="activeBand=''"
+              :class="activeBand===''
+                ? 'bg-navy text-white border-navy'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-navy hover:text-navy'"
+              class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer">
+        Tất cả
+      </button>
       <button @click="activeBand='Band A'"
-              :class="activeBand==='Band A' ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
-              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
-        Band A <span class="font-normal opacity-70">(A1–A2)</span>
+              :class="activeBand==='Band A'
+                ? 'bg-blue text-white border-blue'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-blue hover:text-blue'"
+              class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer">
+        Band A
+        <span :class="activeBand==='Band A' ? 'text-white/70' : 'text-gray-400'" class="font-normal text-xs ml-0.5">A1–A2</span>
       </button>
       <button @click="activeBand='Band B'"
-              :class="activeBand==='Band B' ? 'border-purple text-purple bg-purple-lt' : 'border-gray-200 text-gray-500 hover:border-purple hover:text-purple'"
-              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
-        Band B <span class="font-normal opacity-70">(B1–B2)</span>
+              :class="activeBand==='Band B'
+                ? 'bg-purple text-white border-purple'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-purple hover:text-purple'"
+              class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer">
+        Band B
+        <span :class="activeBand==='Band B' ? 'text-white/70' : 'text-gray-400'" class="font-normal text-xs ml-0.5">B1–B2</span>
       </button>
       <button @click="activeBand='Band C'"
-              :class="activeBand==='Band C' ? 'border-green text-green bg-green-lt' : 'border-gray-200 text-gray-500 hover:border-green hover:text-green'"
-              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
-        Band C <span class="font-normal opacity-70">(C1–C2)</span>
+              :class="activeBand==='Band C'
+                ? 'bg-green text-white border-green'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-green hover:text-green'"
+              class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer">
+        Band C
+        <span :class="activeBand==='Band C' ? 'text-white/70' : 'text-gray-400'" class="font-normal text-xs ml-0.5">C1–C2</span>
       </button>
     </div>
 
     <!-- General Level pills -->
     <div x-show="activeSection==='general'" class="flex gap-2 flex-wrap">
       <button @click="activeLevel=''"
-              :class="activeLevel==='' ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
-              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
+              :class="activeLevel===''
+                ? 'bg-navy text-white border-navy'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-navy hover:text-navy'"
+              class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer">
         Tất cả
       </button>
       <template x-for="lv in levels" :key="lv">
         <button @click="activeLevel=lv"
-                :class="activeLevel===lv ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
-                class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer"
+                :class="activeLevel===lv
+                  ? 'bg-blue text-white border-blue'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue hover:text-blue'"
+                class="text-sm font-semibold px-4 py-2 rounded-xl border-[1.5px] transition cursor-pointer"
                 x-text="lv">
         </button>
       </template>
     </div>
 
     <!-- Count -->
-    <span class="ml-auto text-xs text-gray-400 flex-shrink-0"
-          x-text="(activeSection==='tocfl' ? tocflFiltered.length : filtered.length) + ' bộ đề'"></span>
+    <span class="ml-auto text-sm text-gray-400 flex-shrink-0"
+          x-text="(activeSection==='tocfl'
+            ? (activeBand==='' ? tocflExams.length + books.length : tocflFiltered.length)
+            : filtered.length) + ' bộ đề'"></span>
   </div>
 </div>
 
@@ -250,59 +276,168 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         </template>
       </div>
 
-      <!-- Empty -->
-      <div x-show="!tocflLoading && !tocflFiltered.length" x-cloak
-           class="text-center py-20 bg-white rounded-2xl border border-gray-200">
-        <i class="fa-solid fa-file-circle-xmark text-4xl text-gray-300 mb-4 block"></i>
-        <div class="text-gray-500 font-medium">Chưa có bộ đề nào cho Band này.</div>
-        <div class="text-sm text-gray-400 mt-1">Dữ liệu đang được cập nhật — thử lại sau.</div>
+      <!-- Band-specific view (A / B / C) -->
+      <div x-show="!tocflLoading && activeBand !== ''" x-cloak>
+        <div x-show="!tocflFiltered.length"
+             class="text-center py-20 bg-white rounded-2xl border border-gray-200">
+          <i class="fa-solid fa-file-circle-xmark text-4xl text-gray-300 mb-4 block"></i>
+          <div class="text-gray-500 font-medium">Chưa có bộ đề nào cho Band này.</div>
+          <div class="text-sm text-gray-400 mt-1">Dữ liệu đang được cập nhật — thử lại sau.</div>
+        </div>
+        <div x-show="tocflFiltered.length" class="exam-grid">
+          <template x-for="(exam, idx) in tocflFiltered" :key="exam.id">
+            <a :href="`/tocfl-exam.html?exam=${exam.id}`" class="exam-card">
+              <div class="card-head" :style="cardHeadStyle(exam, idx)">
+                <div class="card-head-bg zh" x-text="volNum(exam.title)"></div>
+                <div class="card-head-content">
+                  <div class="card-band-badge" x-text="exam.band"></div>
+                  <div class="card-vol-num zh" x-text="'Vol ' + volNum(exam.title)"></div>
+                  <div class="card-vol-label">
+                    <i class="fa-solid fa-file-pen" style="font-size:8px"></i>
+                    Đề thi mô phỏng
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-title" x-text="cardTitle(exam)"></div>
+                <div class="card-tags">
+                  <span class="card-tag"><i class="fa-solid fa-headphones" style="font-size:9px"></i> 50 câu Nghe</span>
+                  <span class="card-tag"><i class="fa-solid fa-book-open" style="font-size:9px"></i> 50 câu Đọc</span>
+                  <span class="card-tag" x-text="bandLevel(exam.band)"></span>
+                </div>
+                <template x-if="tocflResults[exam.id]">
+                  <div class="card-score-wrap">
+                    <div class="score-bar-bg">
+                      <div class="score-bar-fill"
+                           :style="`width:${pct(exam.id)}%;background:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"></div>
+                    </div>
+                    <div class="card-score-text">
+                      Điểm cao nhất:
+                      <b :style="`color:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"
+                         x-text="`${tocflResults[exam.id].score}/${tocflResults[exam.id].total} — ${pct(exam.id)}%`"></b>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <div class="card-footer">
+                <span class="card-time"><i class="fa-regular fa-clock"></i> ~60 phút · 100 câu</span>
+                <span class="card-cta" :style="`color:${bandAccent(exam.band)}`">
+                  Làm bài <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
+                </span>
+              </div>
+            </a>
+          </template>
+        </div>
       </div>
 
-      <!-- TOCFL Grid -->
-      <div x-show="!tocflLoading && tocflFiltered.length" x-cloak class="exam-grid">
-        <template x-for="(exam, idx) in tocflFiltered" :key="exam.id">
-          <a :href="`/tocfl-exam.html?exam=${exam.id}`" class="exam-card">
-            <div class="card-head" :style="cardHeadStyle(exam, idx)">
-              <div class="card-head-bg zh" x-text="volNum(exam.title)"></div>
-              <div class="card-head-content">
-                <div class="card-band-badge" x-text="exam.band"></div>
-                <div class="card-vol-num zh" x-text="'Vol ' + volNum(exam.title)"></div>
-                <div class="card-vol-label">
-                  <i class="fa-solid fa-file-pen" style="font-size:8px"></i>
-                  Đề thi mô phỏng
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="card-title" x-text="cardTitle(exam)"></div>
-              <div class="card-tags">
-                <span class="card-tag"><i class="fa-solid fa-headphones" style="font-size:9px"></i> 50 câu Nghe</span>
-                <span class="card-tag"><i class="fa-solid fa-book-open" style="font-size:9px"></i> 50 câu Đọc</span>
-                <span class="card-tag" x-text="bandLevel(exam.band)"></span>
-              </div>
-              <template x-if="tocflResults[exam.id]">
-                <div class="card-score-wrap">
-                  <div class="score-bar-bg">
-                    <div class="score-bar-fill"
-                         :style="`width:${pct(exam.id)}%;background:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"></div>
-                  </div>
-                  <div class="card-score-text">
-                    Điểm cao nhất:
-                    <b :style="`color:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"
-                       x-text="`${tocflResults[exam.id].score}/${tocflResults[exam.id].total} — ${pct(exam.id)}%`"></b>
+      <!-- Tất cả view: TOCFL exams + books -->
+      <div x-show="!tocflLoading && activeBand === ''" x-cloak>
+
+        <!-- TOCFL mock exam grid -->
+        <div x-show="tocflExams.length" class="exam-grid">
+          <template x-for="(exam, idx) in tocflExams" :key="'t'+exam.id">
+            <a :href="`/tocfl-exam.html?exam=${exam.id}`" class="exam-card">
+              <div class="card-head" :style="cardHeadStyle(exam, idx)">
+                <div class="card-head-bg zh" x-text="volNum(exam.title)"></div>
+                <div class="card-head-content">
+                  <div class="card-band-badge" x-text="exam.band"></div>
+                  <div class="card-vol-num zh" x-text="'Vol ' + volNum(exam.title)"></div>
+                  <div class="card-vol-label">
+                    <i class="fa-solid fa-file-pen" style="font-size:8px"></i>
+                    Đề thi mô phỏng
                   </div>
                 </div>
-              </template>
-            </div>
-            <div class="card-footer">
-              <span class="card-time"><i class="fa-regular fa-clock"></i> ~60 phút · 100 câu</span>
-              <span class="card-cta" :style="`color:${bandAccent(exam.band)}`">
-                Làm bài <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
-              </span>
-            </div>
-          </a>
-        </template>
-      </div>
+              </div>
+              <div class="card-body">
+                <div class="card-title" x-text="cardTitle(exam)"></div>
+                <div class="card-tags">
+                  <span class="card-tag"><i class="fa-solid fa-headphones" style="font-size:9px"></i> 50 câu Nghe</span>
+                  <span class="card-tag"><i class="fa-solid fa-book-open" style="font-size:9px"></i> 50 câu Đọc</span>
+                  <span class="card-tag" x-text="bandLevel(exam.band)"></span>
+                </div>
+                <template x-if="tocflResults[exam.id]">
+                  <div class="card-score-wrap">
+                    <div class="score-bar-bg">
+                      <div class="score-bar-fill"
+                           :style="`width:${pct(exam.id)}%;background:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"></div>
+                    </div>
+                    <div class="card-score-text">
+                      Điểm cao nhất:
+                      <b :style="`color:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"
+                         x-text="`${tocflResults[exam.id].score}/${tocflResults[exam.id].total} — ${pct(exam.id)}%`"></b>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <div class="card-footer">
+                <span class="card-time"><i class="fa-regular fa-clock"></i> ~60 phút · 100 câu</span>
+                <span class="card-cta" :style="`color:${bandAccent(exam.band)}`">
+                  Làm bài <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
+                </span>
+              </div>
+            </a>
+          </template>
+        </div>
+
+        <!-- Divider + books section -->
+        <div x-show="!loading && books.length" class="flex items-center gap-4 mt-8 mb-6">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+            <i class="fa-solid fa-book mr-1"></i> The Ultimate Guide to Chinese
+          </span>
+          <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <div x-show="!loading && books.length" class="exam-grid">
+          <template x-for="(book, idx) in books" :key="'b'+book.id">
+            <a :href="`/exam.html?book=${book.id}`" class="exam-card">
+              <div class="card-head" :style="bookHeadStyle(book, idx)">
+                <template x-if="book.cover_url">
+                  <img :src="book.cover_url" :alt="book.title"
+                       style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+                </template>
+                <div x-show="!book.cover_url" class="card-head-bg zh" x-text="book.level || 'B'"></div>
+                <div x-show="!book.cover_url" class="card-head-content">
+                  <div class="card-band-badge" x-text="book.level"></div>
+                  <div class="card-vol-num zh" x-text="book.level || 'B'"></div>
+                  <div class="card-vol-label">
+                    <i class="fa-solid fa-book" style="font-size:8px"></i>
+                    Sách học
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-title zh" x-text="book.title"></div>
+                <div class="card-tags">
+                  <span class="card-tag">
+                    <i class="fa-solid fa-layer-group" style="font-size:9px"></i>
+                    <span x-text="(unitCounts[book.id] || 0) + ' bài'"></span>
+                  </span>
+                  <span x-show="book.level" class="card-tag" x-text="book.level"></span>
+                </div>
+                <template x-if="results[book.id]">
+                  <div class="card-score-wrap">
+                    <div class="score-bar-bg">
+                      <div class="score-bar-fill"
+                           :style="`width:${bookPct(book.id)}%;background:#f47b20`"></div>
+                    </div>
+                    <div class="card-score-text">
+                      Hoàn thành: <b x-text="`${results[book.id].done}/${unitCounts[book.id]||0} bài`"></b>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              <div class="card-footer">
+                <span class="card-time"><i class="fa-regular fa-clock"></i> Tự chấm điểm</span>
+                <span class="card-cta" style="color:#f47b20">
+                  Học ngay <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
+                </span>
+              </div>
+            </a>
+          </template>
+        </div>
+
+      </div><!-- /Tất cả -->
 
     </div><!-- /TOCFL -->
 
@@ -485,7 +620,7 @@ function examsApp() {
     // TOCFL
     tocflLoading: true,
     tocflExams: [],
-    activeBand: 'Band A',
+    activeBand: '',
     tocflResults: {},
 
     get filtered() {
@@ -494,6 +629,7 @@ function examsApp() {
     },
 
     get tocflFiltered() {
+      if (!this.activeBand) return this.tocflExams;
       return this.tocflExams.filter(e => e.band === this.activeBand);
     },
 
@@ -575,6 +711,17 @@ function examsApp() {
       const g = BAND_GRADS[exam.band] || BAND_GRADS['Band A'];
       const [f, t] = g[idx % g.length];
       return `background:linear-gradient(135deg,${f},${t})`;
+    },
+
+    bookHeadStyle(book, idx) {
+      if (book.cover_url) return '';
+      return `background:${GRADIENTS[idx % GRADIENTS.length]}`;
+    },
+
+    bookPct(bookId) {
+      const r = this.results[bookId];
+      const total = this.unitCounts[bookId] || 0;
+      return r && total ? Math.round(r.done / total * 100) : 0;
     },
   };
 }
