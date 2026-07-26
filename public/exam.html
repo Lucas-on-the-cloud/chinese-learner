@@ -79,7 +79,7 @@ img{display:block;max-width:100%}
 .eb-submit:hover{background:var(--blue-dark)}
 
 /* ── Page body ────────────────────────────────────────── */
-.exam-body{flex:1;padding:32px 0 80px}
+.exam-body{flex:1}
 
 /* ── Book overview ────────────────────────────────────── */
 .book-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 60%,var(--blue) 100%);padding:52px 1.5rem 60px;position:relative;overflow:hidden}
@@ -106,7 +106,7 @@ img{display:block;max-width:100%}
 .uc-bar-fill{height:100%;border-radius:2px;transition:.3s}
 
 /* ── Section card ─────────────────────────────────────── */
-.section-wrap{max-width:860px;margin:0 auto;padding:0 1.5rem}
+.section-wrap{flex:1;min-width:0;padding:0 1.5rem}
 .section-card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:20px}
 .sc-head{display:flex;align-items:center;gap:14px;padding:16px 24px;border-bottom:1px solid var(--border)}
 .sc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
@@ -296,6 +296,50 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
   .modal-score-val{font-size:44px}
 }
 
+/* ── Exam layout (sidebar + content + notes) ── */
+.exam-layout{display:flex;align-items:flex-start;padding:28px 0 80px}
+.exam-sidebar{width:186px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:calc(var(--nav-h) + 52px);height:calc(100vh - var(--nav-h) - 52px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.exam-sidebar::-webkit-scrollbar{width:3px}
+.sidebar-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:0 2px}
+.sidebar-sec-label{font-size:10px;font-weight:700;color:var(--text-3);margin:10px 0 4px 2px;font-family:'Noto Serif TC',serif}
+.sidebar-sec-label.sec-active{color:var(--blue)}
+.q-grid-nums{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.q-num-btn{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);background:#fff;font-size:11px;font-weight:700;color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.1s;font-family:inherit}
+.q-num-btn:hover{border-color:var(--blue);color:var(--blue)}
+.q-num-btn.ans{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.q-num-btn.correct{border-color:var(--green);background:var(--green-lt);color:var(--green)}
+.q-num-btn.wrong{border-color:var(--red);background:var(--red-lt);color:var(--red)}
+@media(max-width:880px){.exam-sidebar{display:none}}
+
+/* ── Notes column ── */
+.notes-col{width:250px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:14px 12px;position:sticky;top:calc(var(--nav-h) + 52px);height:calc(100vh - var(--nav-h) - 52px);overflow-y:auto;display:flex;flex-direction:column;scrollbar-width:thin}
+.notes-col-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.note-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;margin-bottom:8px;position:relative}
+.note-card:hover{border-color:var(--blue);box-shadow:var(--shadow-sm)}
+.note-card-quote{font-size:11px;color:var(--text-3);font-family:'Noto Serif TC',serif;margin-bottom:4px;line-height:1.4;max-height:36px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note-card-text{font-size:12px;color:var(--text);font-weight:500;line-height:1.4}
+.note-card-del{position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--text-3);font-size:11px;opacity:0;transition:.12s;padding:0}
+.note-card:hover .note-card-del{opacity:1}
+.note-card-del:hover{color:var(--red)}
+.notes-empty{font-size:12px;color:var(--text-3);text-align:center;padding:24px 8px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.notes-empty i{font-size:22px;opacity:.25}
+.eb-notes-btn{font-size:12px;font-weight:600;color:var(--text-2);padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s;white-space:nowrap}
+.eb-notes-btn:hover{border-color:#f59e0b;color:#92400e}
+.eb-notes-btn.on{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+@media(max-width:1100px){.notes-col{display:none}.eb-notes-btn{display:none}}
+
+/* ── Note popover ── */
+.note-popover{position:fixed;display:none;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);z-index:10000;width:300px;overflow:hidden}
+.note-popover.show{display:block}
+.np-head{background:#fffbeb;padding:10px 14px;font-size:12px;font-weight:700;color:#92400e;border-bottom:1px solid #fde68a;display:flex;align-items:center;gap:6px}
+.np-quote{font-size:11px;color:var(--text-3);padding:8px 14px;font-family:'Noto Serif TC',serif;border-bottom:1px solid var(--border);max-height:52px;overflow:hidden;font-style:italic}
+.np-input{width:100%;border:none;padding:10px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;resize:none;height:80px;color:var(--text)}
+.np-actions{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border)}
+.np-save{flex:1;padding:7px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.np-save:hover{background:var(--blue-dark)}
+.np-cancel{flex:1;padding:7px;background:#f9fafb;color:var(--text-2);border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.np-cancel:hover{background:var(--red-lt);color:var(--red)}
+
 /* ── Floating chat widget ─────────────────────────────── */
 .chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .chat-bubble-btn{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s}
@@ -375,6 +419,11 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
       <button class="eb-submit" @click="submitExam()" x-show="!submitted">
         <i class="fa-solid fa-paper-plane" style="font-size:11px"></i> Nộp bài
       </button>
+      <button class="eb-notes-btn" :class="showNotes ? 'on' : ''" @click="showNotes = !showNotes">
+        <i class="fa-solid fa-note-sticky"></i>
+        Ghi chú
+        <span x-show="notes.length" x-text="`(${notes.length})`" style="font-size:10px;opacity:.7"></span>
+      </button>
     </div>
   </div>
 </div>
@@ -446,7 +495,25 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
 
   <!-- EXAM VIEW -->
   <div x-show="view==='exam' && !loading" x-cloak>
-    <div class="section-wrap">
+    <div class="exam-layout">
+
+      <!-- Left sidebar: question grid -->
+      <div class="exam-sidebar" x-show="sections.length" style="display:none">
+        <div class="sidebar-title">Bảng câu hỏi</div>
+        <template x-for="(sec, si) in sections" :key="sec.id">
+          <div>
+            <div class="sidebar-sec-label" :class="si===currentSectionIdx ? 'sec-active' : ''" x-text="zhNum(sec.section_number)"></div>
+            <div class="q-grid-nums">
+              <template x-for="q in (questionsBySection[sec.id]||[])" :key="q.id">
+                <button class="q-num-btn" :class="qSidebarClass(q, si)" @click="goToQuestion(q, si)" x-text="q.question_number"></button>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Main content -->
+      <div class="section-wrap exam-content-outer">
 
       <!-- Section card -->
       <template x-if="currentSection">
@@ -508,12 +575,12 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
                       </template>
                     </div>
                     <template x-for="q in questionsFor(currentSection.id, p.id)" :key="q.id">
-                      <div x-html="renderQ(q)" class="q-block"></div>
+                      <div :id="'q-' + q.id" x-html="renderQ(q)" class="q-block"></div>
                     </template>
                   </div>
                 </template>
                 <template x-for="q in questionsFor(currentSection.id, null)" :key="q.id">
-                  <div x-html="renderQ(q)" class="q-block"></div>
+                  <div :id="'q-' + q.id" x-html="renderQ(q)" class="q-block"></div>
                 </template>
               </div>
             </template>
@@ -522,7 +589,7 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
             <template x-if="!(passagesBySection[currentSection.id]||[]).length">
               <div>
                 <template x-for="q in (questionsBySection[currentSection.id]||[])" :key="q.id">
-                  <div x-html="renderQ(q)" class="q-block"></div>
+                  <div :id="'q-' + q.id" x-html="renderQ(q)" class="q-block"></div>
                 </template>
               </div>
             </template>
@@ -607,7 +674,30 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
         </div>
       </template>
 
-    </div><!-- /section-wrap -->
+      </div><!-- /section-wrap -->
+
+      <!-- Notes column -->
+      <div class="notes-col" x-show="showNotes" x-cloak style="display:none">
+        <div class="notes-col-title">
+          <span><i class="fa-solid fa-note-sticky" style="margin-right:5px;opacity:.6"></i>Ghi chú</span>
+          <span x-show="notes.length" x-text="notes.length + ' ghi chú'" style="font-size:10px"></span>
+        </div>
+        <template x-if="!notes.length">
+          <div class="notes-empty">
+            <i class="fa-solid fa-note-sticky"></i>
+            <span>Chọn văn bản trong đề để tạo ghi chú</span>
+          </div>
+        </template>
+        <template x-for="note in notes" :key="note.id">
+          <div class="note-card">
+            <button class="note-card-del" @click.stop="deleteNote(note.id)"><i class="fa-solid fa-xmark"></i></button>
+            <div class="note-card-quote" x-text="note.quote"></div>
+            <div class="note-card-text" x-text="note.text"></div>
+          </div>
+        </template>
+      </div><!-- /notes-col -->
+
+    </div><!-- /exam-layout -->
   </div><!-- /exam view -->
 
 </div><!-- /exam-body -->
@@ -716,8 +806,21 @@ mark.hl-4{background:#FCA5A5;color:inherit;border-radius:2px;cursor:pointer}
   <div class="hl-color" style="background:#E9D5FF" onclick="selHighlight(3)" title="Tím"></div>
   <div class="hl-color" style="background:#FCA5A5" onclick="selHighlight(4)" title="Đỏ"></div>
   <div class="sel-divider"></div>
+  <button style="background:none;border:none;cursor:pointer;font-size:15px;padding:0;line-height:1;transition:.12s" title="Thêm ghi chú" onclick="selAddNote()">📝</button>
+  <div class="sel-divider"></div>
   <button class="sel-dismiss" onclick="selRemoveHL()" title="Xóa highlight">✕</button>
   <button class="sel-dismiss" onclick="selDismiss()">×</button>
+</div>
+
+<!-- ── NOTE POPOVER ─────────────────────────────────────────── -->
+<div id="note-popover" class="note-popover">
+  <div class="np-head"><i class="fa-solid fa-note-sticky"></i> Thêm ghi chú</div>
+  <div class="np-quote" id="np-quote"></div>
+  <textarea class="np-input" id="np-input" placeholder="Nhập ghi chú của bạn…" onkeydown="if(event.ctrlKey&&event.key==='Enter')saveNote()"></textarea>
+  <div class="np-actions">
+    <button class="np-save" onclick="saveNote()">Lưu</button>
+    <button class="np-cancel" onclick="cancelNote()">Huỷ</button>
+  </div>
 </div>
 
 <!-- ── AI SIDE PANEL ────────────────────────────────────────── -->
@@ -794,6 +897,43 @@ const SEC_BG    = {listening:'#fdf4ff',completion:'var(--blue-lt)',cloze:'#fffbe
 // Non-reactive answer store — lets renderQ() avoid Alpine re-renders on each pick
 let _answers = {};
 
+/* ── Notes (add from text selection) ── */
+function selAddNote() {
+  const txt = _selText;
+  if (!txt) return;
+  const popover = document.getElementById('note-popover');
+  const quoteEl = document.getElementById('np-quote');
+  const inputEl = document.getElementById('np-input');
+  if (!popover || !quoteEl || !inputEl) return;
+  quoteEl.textContent = txt.length > 100 ? txt.slice(0,100)+'…' : txt;
+  inputEl.value = '';
+  const selPopup = document.getElementById('sel-popup');
+  const rect = selPopup?.getBoundingClientRect() || { left: window.innerWidth/2 - 150, bottom: 100, top: 100 };
+  let left = rect.left;
+  let top  = (rect.bottom || rect.top) + 10 + window.scrollY;
+  left = Math.max(8, Math.min(left, window.innerWidth - 316));
+  popover.style.left = left + 'px';
+  popover.style.top  = top  + 'px';
+  popover.classList.add('show');
+  selDismiss();
+  setTimeout(() => inputEl?.focus(), 60);
+}
+
+function cancelNote() {
+  const popover = document.getElementById('note-popover');
+  if (popover) popover.classList.remove('show');
+}
+
+function saveNote() {
+  const inputEl = document.getElementById('np-input');
+  const quoteEl = document.getElementById('np-quote');
+  const text = inputEl?.value.trim();
+  if (!text) { cancelNote(); return; }
+  const quote = quoteEl?.textContent || '';
+  document.dispatchEvent(new CustomEvent('add-note', { detail: { quote, text } }));
+  cancelNote();
+}
+
 // Global pick handler (called from rendered HTML)
 function pickAnswer(qId, label) {
   if (window.getSelection()?.toString().trim().length > 0) return; // user selecting text
@@ -829,6 +969,11 @@ function examApp() {
     // AI
     aiLoading: false,
     aiResult:  '',
+
+    // Notes
+    notes: [],
+    showNotes: false,
+    activeNote: null,
 
     // ── Computed ─────────────────────────
     get totalQ()     { return Object.values(this.questionsBySection).flat().length },
@@ -875,6 +1020,10 @@ function examApp() {
     // ── Init ─────────────────────────────
     async init() {
       document.addEventListener('pick-answer', e => this.pick(e.detail.qId, e.detail.label));
+      document.addEventListener('add-note', e => {
+        this.addNote(e.detail.quote, e.detail.text);
+        if (!this.showNotes) this.showNotes = true;
+      });
 
       if (_auth) {
         _auth.init().then(u => {
@@ -910,7 +1059,24 @@ function examApp() {
       const unitNum = p.get('unit'), subNum = p.get('sub');
       if (unitNum && subNum) {
         const u = this.units.find(u => u.unit_number===+unitNum && u.sub_number===+subNum);
-        if (u) { await this.loadUnit(u); return; }
+        if (u) {
+          await this.loadUnit(u);
+          const reviewId = p.get('review');
+          if (reviewId) {
+            try {
+              const _ehist = JSON.parse(localStorage.getItem('_exam_hist') || '[]');
+              const _rv = _ehist.find(e => e.id === reviewId);
+              if (_rv && _rv.answers) {
+                this.stopTimer();
+                _answers = { ..._rv.answers };
+                this.answers = { ..._rv.answers };
+                this.submitted = true;
+                this.showResult = false;
+              }
+            } catch(e) {}
+          }
+          return;
+        }
       }
       this.view = 'book';
     },
@@ -1076,6 +1242,28 @@ function examApp() {
       const score = this.examScore;
       const total = this.totalQ;
 
+      // Save to localStorage for history (no login required)
+      try {
+        const _entry = {
+          id: 'eh_' + Date.now(),
+          type: 'exam',
+          book_id: this.book?.id,
+          unit_id: this.activeUnit?.id,
+          score, total,
+          created_at: new Date().toISOString(),
+          exam_book: { title: this.book?.title || '', level: this.book?.level || '' },
+          exam_unit: {
+            title: this.activeUnit?.sub_title_zh || this.activeUnit?.title_zh || '',
+            unit_number: this.activeUnit?.unit_number,
+            sub_number: this.activeUnit?.sub_number,
+          },
+          answers: { ...this.answers },
+        };
+        const _ehist = JSON.parse(localStorage.getItem('_exam_hist') || '[]');
+        _ehist.unshift(_entry);
+        localStorage.setItem('_exam_hist', JSON.stringify(_ehist.slice(0, 200)));
+      } catch(e) {}
+
       if (_user && this.activeUnit) {
         await _db.from('exam_results').upsert({
           user_id: _user.id, unit_id: this.activeUnit.id,
@@ -1118,6 +1306,27 @@ function examApp() {
     async goNext() {
       const next = this.nextUnitItem;
       if (next) { this.showResult = false; await this.selectUnit(next); }
+    },
+
+    // ── Sidebar / Notes helpers ───────────
+    qSidebarClass(q, secIdx) {
+      if (this.submitted) {
+        return this.answers[q.id] === q.correct_answer ? 'correct' : this.answers[q.id] ? 'wrong' : '';
+      }
+      return this.answers[q.id] ? 'ans' : '';
+    },
+    goToQuestion(q, secIdx) {
+      this.currentSectionIdx = secIdx;
+      this.$nextTick(() => {
+        const el = document.getElementById('q-' + q.id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    },
+    addNote(quote, text) {
+      this.notes.unshift({ id: 'n_' + Date.now(), quote, text });
+    },
+    deleteNote(id) {
+      this.notes = this.notes.filter(n => n.id !== id);
     },
 
     // ── AI explanation ────────────────────
@@ -1192,6 +1401,7 @@ let _selRange = null;
 
   document.addEventListener('mousedown', e => {
     if (!e.target.closest('#sel-popup') && !e.target.closest('#exam-chat-widget')) selDismiss();
+    if (!e.target.closest('#note-popover') && !e.target.closest('#sel-popup')) cancelNote();
   });
 })();
 
