@@ -1198,13 +1198,18 @@ function tocflExamApp() {
       if (this.activeNote === note.id) { this.activeNote = null; return; }
       this.activeNote = note.id;
       const doHL = () => {
-        const marks = document.querySelectorAll(`mark[data-nid="${note.markId}"]`);
+        let marks = document.querySelectorAll(`mark[data-nid="${note.markId}"]`);
+        if (!marks.length) {
+          // x-html re-render wiped the mark — re-locate and re-wrap the text
+          _reapplyMarkInDOM(note.markId, note.quote);
+          marks = document.querySelectorAll(`mark[data-nid="${note.markId}"]`);
+        }
         marks.forEach(m => m.classList.add('hl-active'));
         if (marks.length) marks[0].scrollIntoView({ behavior:'smooth', block:'center' });
       };
       if (note.qIdx !== undefined && note.qIdx !== null && note.qIdx !== this.currentQIdx) {
         this.goToQ(note.qIdx);
-        this.$nextTick(() => setTimeout(doHL, 220));
+        this.$nextTick(() => setTimeout(doHL, 250));
       } else {
         doHL();
       }
@@ -1229,6 +1234,36 @@ function renderNavAuth(user) {
   if (!user) { el.innerHTML=`<a class="nav-btn" href="/login.html">Đăng nhập</a>`; return; }
   const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
   el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+
+/* ── Re-apply a highlight mark by searching the live DOM for the exact phrase ── */
+function _reapplyMarkInDOM(markId, searchText) {
+  if (!searchText || searchText.length < 2) return false;
+  const container = document.querySelector('.exam-content-outer');
+  if (!container) return false;
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      return n.parentElement.closest('mark,script,style,button')
+        ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  let node;
+  while ((node = walker.nextNode())) {
+    const txt = node.textContent;
+    const idx = txt.indexOf(searchText);
+    if (idx < 0 || idx + searchText.length > txt.length) continue;
+    try {
+      const range = document.createRange();
+      range.setStart(node, idx);
+      range.setEnd(node, idx + searchText.length);
+      const mark = document.createElement('mark');
+      mark.className = 'hl-1';
+      mark.dataset.nid = markId;
+      range.surroundContents(mark);
+      return true;
+    } catch { /* selection crosses elements — skip */ }
+  }
+  return false;
 }
 
 /* ── Auto-chain: shared group audio → per-question audio ── */
