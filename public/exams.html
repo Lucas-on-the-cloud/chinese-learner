@@ -517,17 +517,6 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <!-- ── HISTORY SECTION ── -->
     <div x-show="activeSection==='history'">
 
-      <!-- Not logged in -->
-      <div x-show="!currentUser && !historyLoading"
-           class="text-center py-20 bg-white rounded-2xl border border-gray-200">
-        <i class="fa-solid fa-lock text-4xl text-gray-300 mb-4 block"></i>
-        <div class="text-gray-600 font-semibold mb-2">Đăng nhập để xem lịch sử thi</div>
-        <a href="/login.html"
-           class="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#1a56db] px-5 py-2.5 rounded-xl mt-2 hover:bg-[#1544b8] transition">
-          <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
-        </a>
-      </div>
-
       <!-- Loading skeleton -->
       <div x-show="historyLoading" class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
@@ -546,7 +535,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </div>
 
       <!-- Empty -->
-      <div x-show="!historyLoading && currentUser && !history.length" x-cloak
+      <div x-show="!historyLoading && !history.length" x-cloak
            class="text-center py-20 bg-white rounded-2xl border border-gray-200">
         <i class="fa-solid fa-clock-rotate-left text-4xl text-gray-300 mb-4 block"></i>
         <div class="text-gray-500 font-semibold">Chưa có lần thi nào được ghi lại.</div>
@@ -887,19 +876,17 @@ function examsApp() {
       this.activeSection = 'history';
       if (!this.historyLoaded) {
         this.historyLoaded = true;
-        if (this.currentUser) this.loadHistory(this.currentUser.id);
+        this.loadHistory();
       }
     },
 
-    async loadHistory(uid) {
+    loadHistory() {
       this.historyLoading = true;
-      const { data } = await _db
-        .from('tocfl_results')
-        .select('id, exam_id, score, total, skill_filter, listening_score, reading_score, created_at, tocfl_exams(title, band)')
-        .eq('user_id', uid)
-        .order('created_at', { ascending: false })
-        .limit(200);
-      this.history = data || [];
+      try {
+        this.history = JSON.parse(localStorage.getItem('_tocfl_hist') || '[]');
+      } catch(e) {
+        this.history = [];
+      }
       this.historyLoading = false;
     },
 

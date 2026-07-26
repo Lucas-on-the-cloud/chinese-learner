@@ -1195,6 +1195,24 @@ function tocflExamApp() {
         rTotal ? Math.round(rScore/rTotal*100) : 0
       );
 
+      // Save to localStorage so history works without login
+      try {
+        const _entry = {
+          id: 'h_' + Date.now(),
+          exam_id: this.exam.id,
+          score: total,
+          total: this.totalQ,
+          skill_filter: this.skillFilter,
+          listening_score: lTotal ? lScore : null,
+          reading_score:   rTotal ? rScore : null,
+          created_at: new Date().toISOString(),
+          tocfl_exams: { title: this.exam.title, band: this.exam.band },
+        };
+        const _hist = JSON.parse(localStorage.getItem('_tocfl_hist') || '[]');
+        _hist.unshift(_entry);
+        localStorage.setItem('_tocfl_hist', JSON.stringify(_hist.slice(0, 200)));
+      } catch(e) {}
+
       if (_user && this.exam) {
         await _db.from('tocfl_results').upsert({
           user_id:_user.id, exam_id:this.exam.id,
