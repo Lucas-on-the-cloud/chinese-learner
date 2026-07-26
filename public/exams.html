@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -27,6 +27,8 @@ tailwind.config = {
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased}
 .zh{font-family:'Noto Serif TC',serif}
+[x-cloak]{display:none!important}
+
 /* Navbar */
 .navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e5e7eb;height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1100px;margin:0 auto;padding:0 1.5rem}
@@ -41,6 +43,55 @@ body{font-family:'Be Vietnam Pro',sans-serif;-webkit-font-smoothing:antialiased}
 .nav-auth{display:flex;align-items:center;gap:8px;margin-left:8px}
 .nav-btn{font-size:13px;font-weight:600;color:#fff;background:#1a56db;padding:7px 18px;border-radius:7px;text-decoration:none;transition:.15s;white-space:nowrap}
 .nav-btn:hover{background:#1544b8}
+
+/* TOCFL cards */
+.exam-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+.exam-card{background:#fff;border-radius:16px;border:1.5px solid #e5e7eb;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s,border-color .2s;text-decoration:none;color:inherit}
+.exam-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.12);border-color:transparent}
+.card-head{height:132px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-head-bg{position:absolute;inset:0;font-family:'Noto Serif TC',serif;font-size:110px;font-weight:700;color:rgba(255,255,255,.1);display:flex;align-items:flex-end;justify-content:flex-end;padding:0 12px;line-height:1;user-select:none}
+.card-head-content{position:relative;z-index:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.card-band-badge{font-size:10px;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:1.5px}
+.card-vol-num{font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700;color:#fff;line-height:1}
+.card-vol-label{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);color:rgba(255,255,255,.9);font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px}
+.card-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:8px}
+.card-title{font-weight:700;font-size:13.5px;color:#0d1b4b;line-height:1.45;font-family:'Noto Serif TC',serif}
+.card-tags{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#9ca3af;background:#f3f4f6;padding:2px 8px;border-radius:20px}
+.card-score-wrap{margin-top:auto;padding-top:6px}
+.score-bar-bg{height:4px;background:#f3f4f6;border-radius:2px;overflow:hidden;margin-bottom:4px}
+.score-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.card-score-text{font-size:11px;color:#6b7280}
+.card-footer{padding:10px 16px;border-top:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.card-time{font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px}
+.card-cta{font-size:12px;font-weight:700;display:flex;align-items:center;gap:4px}
+
+/* Skeleton */
+.skel{background:#e5e7eb;border-radius:4px;animation:sk 1.5s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Chat widget */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-fab{width:52px;height:52px;border-radius:50%;background:#1a56db;color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.38);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(26,86,219,.5)}
+.chat-unread{display:none;position:absolute;top:-3px;right:-3px;width:17px;height:17px;border-radius:50%;background:#ef4444;font-size:9px;font-weight:800;line-height:17px;text-align:center;border:2px solid #fff}
+.chat-panel{width:370px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid #e5e7eb;overflow:hidden;display:none;flex-direction:column;height:520px}
+.chat-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,#0d1b4b,#1a56db);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-header-sub{font-size:11px;opacity:.65;font-weight:400}
+.chat-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;line-height:1;padding:0 2px;transition:.12s}
+.chat-close:hover{color:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f4f5f7;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.chat-bubble{max-width:86%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.65;word-break:break-word}
+.chat-bubble.user{background:#1a56db;color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-bubble.bot{background:#fff;border:1px solid #e5e7eb;align-self:flex-start;border-bottom-left-radius:3px;color:#1f2937}
+.chat-bubble.system{background:#fef9c3;border:1px solid #fde047;align-self:center;text-align:center;font-size:12px;color:#713f12;max-width:92%}
+.chat-input-row{display:flex;border-top:1px solid #e5e7eb;flex-shrink:0}
+.chat-text-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent;color:#1f2937}
+.chat-send-btn{background:#1a56db;color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;flex-shrink:0}
+.chat-send-btn:hover{background:#1544b8}
+
 /* Footer */
 footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
 .footer-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
@@ -60,7 +111,9 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto}
 .footer-bottom-links{display:flex;gap:1.5rem}
 .footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px;text-decoration:none}
-@media(max-width:720px){.footer-main{grid-template-columns:1fr;gap:1.5rem}.nav-link{display:none}}
+
+@media(max-width:720px){.footer-main{grid-template-columns:1fr;gap:1.5rem}.nav-link{display:none}.exam-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.exam-grid{grid-template-columns:1fr}.chat-panel{width:calc(100vw - 24px)}}
 </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col" x-data="examsApp()" x-init="init()">
@@ -98,40 +151,82 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <i class="fa-solid fa-file-pen text-[9px]"></i> TOCFL FAFA · Đề thi luyện tập
     </div>
     <h1 class="zh text-4xl font-bold text-white leading-snug mb-3">Luyện thi TOCFL — 模擬試卷</h1>
-    <p class="text-white/65 text-sm leading-relaxed max-w-xl mb-6">Bộ đề thi thực hành theo chuẩn TOCFL — đầy đủ nghe, đọc hiểu, từ vựng. Làm xong tự chấm điểm ngay.</p>
+    <p class="text-white/65 text-sm leading-relaxed max-w-xl mb-6">Bộ đề mô phỏng chuẩn TOCFL đầy đủ Nghe &amp; Đọc hiểu, tự chấm điểm ngay. Phủ đầy Band A · B · C và các đề tổng hợp.</p>
     <div class="flex gap-6 flex-wrap">
       <div class="flex items-center gap-2 text-white/75 text-sm">
-        <span class="text-xl font-bold text-white" x-text="books.length || '–'"></span> bộ đề
+        <span class="text-xl font-bold text-white" x-text="tocflExams.length || '–'"></span> đề TOCFL
       </div>
       <div class="flex items-center gap-2 text-white/75 text-sm">
-        <span class="text-xl font-bold text-white" x-text="totalUnits || '–'"></span> sub-unit
+        <span class="text-xl font-bold text-white" x-text="books.length || '–'"></span> đề tổng hợp
       </div>
       <div class="flex items-center gap-2 text-white/75 text-sm">
-        <span class="text-xl font-bold text-white">A1→C1</span> cấp độ
+        <span class="text-xl font-bold text-white">Band A → C</span> cấp độ
+      </div>
+      <div class="flex items-center gap-2 text-white/75 text-sm">
+        <span class="text-xl font-bold text-white">繁體</span> Phồn thể
       </div>
     </div>
   </div>
 </div>
 
-<!-- FILTER BAR -->
+<!-- FILTER / SECTION BAR -->
 <div class="sticky top-[62px] z-40 bg-white border-b border-gray-200 shadow-sm">
-  <div class="max-w-6xl mx-auto px-6 flex items-center gap-5 min-h-[52px] flex-wrap">
-    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cấp độ</span>
-    <div class="flex gap-2 flex-wrap">
+  <div class="max-w-6xl mx-auto px-6 flex items-center gap-3 min-h-[52px] flex-wrap py-2">
+
+    <!-- Section switcher -->
+    <div class="flex gap-1 bg-gray-100 rounded-lg p-1 flex-shrink-0">
+      <button @click="activeSection='tocfl'"
+              :class="activeSection==='tocfl' ? 'bg-white shadow text-navy font-semibold' : 'text-gray-500'"
+              class="text-xs px-3 py-1.5 rounded-md transition cursor-pointer whitespace-nowrap">
+        <i class="fa-solid fa-file-pen mr-1"></i> TOCFL
+      </button>
+      <button @click="activeSection='general'"
+              :class="activeSection==='general' ? 'bg-white shadow text-navy font-semibold' : 'text-gray-500'"
+              class="text-xs px-3 py-1.5 rounded-md transition cursor-pointer whitespace-nowrap">
+        <i class="fa-solid fa-layer-group mr-1"></i> Tổng hợp
+      </button>
+    </div>
+
+    <div class="w-px h-5 bg-gray-200 flex-shrink-0"></div>
+
+    <!-- TOCFL Band pills -->
+    <div x-show="activeSection==='tocfl'" class="flex gap-2 flex-wrap">
+      <button @click="activeBand='Band A'"
+              :class="activeBand==='Band A' ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
+              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
+        Band A <span class="font-normal opacity-70">(A1–A2)</span>
+      </button>
+      <button @click="activeBand='Band B'"
+              :class="activeBand==='Band B' ? 'border-purple text-purple bg-purple-lt' : 'border-gray-200 text-gray-500 hover:border-purple hover:text-purple'"
+              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
+        Band B <span class="font-normal opacity-70">(B1–B2)</span>
+      </button>
+      <button @click="activeBand='Band C'"
+              :class="activeBand==='Band C' ? 'border-green text-green bg-green-lt' : 'border-gray-200 text-gray-500 hover:border-green hover:text-green'"
+              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
+        Band C <span class="font-normal opacity-70">(C1–C2)</span>
+      </button>
+    </div>
+
+    <!-- General Level pills -->
+    <div x-show="activeSection==='general'" class="flex gap-2 flex-wrap">
       <button @click="activeLevel=''"
-        :class="activeLevel==='' ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
-        class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
+              :class="activeLevel==='' ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
+              class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer">
         Tất cả
       </button>
       <template x-for="lv in levels" :key="lv">
         <button @click="activeLevel=lv"
-          :class="activeLevel===lv ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
-          class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer"
-          x-text="lv">
+                :class="activeLevel===lv ? 'border-blue text-blue bg-blue-lt' : 'border-gray-200 text-gray-500 hover:border-blue hover:text-blue'"
+                class="text-xs font-semibold px-3.5 py-1 rounded-full border-[1.5px] transition cursor-pointer"
+                x-text="lv">
         </button>
       </template>
     </div>
-    <span class="ml-auto text-xs text-gray-400" x-text="filtered.length + ' bộ đề'"></span>
+
+    <!-- Count -->
+    <span class="ml-auto text-xs text-gray-400 flex-shrink-0"
+          x-text="(activeSection==='tocfl' ? tocflFiltered.length : filtered.length) + ' bộ đề'"></span>
   </div>
 </div>
 
@@ -139,70 +234,167 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <div class="flex-1 py-8 px-6">
   <div class="max-w-6xl mx-auto">
 
-    <!-- Loading -->
-    <div x-show="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <template x-for="i in 6" :key="i">
-        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
-          <div class="h-36 bg-gray-100"></div>
-          <div class="p-5 space-y-3">
-            <div class="h-4 bg-gray-100 rounded w-3/4"></div>
-            <div class="h-3 bg-gray-100 rounded w-1/2"></div>
-          </div>
-        </div>
-      </template>
-    </div>
+    <!-- ── TOCFL SECTION ── -->
+    <div x-show="activeSection==='tocfl'">
 
-    <!-- Empty -->
-    <div x-show="!loading && !filtered.length"
-         class="text-center py-20 bg-white rounded-2xl border border-gray-200">
-      <i class="fa-solid fa-file-pen text-4xl text-gray-300 mb-4 block"></i>
-      <div class="text-gray-500 font-medium">Chưa có bộ đề nào được xuất bản.</div>
-      <div class="text-sm text-gray-400 mt-1">Thử bỏ bộ lọc hoặc quay lại sau.</div>
-    </div>
-
-    <!-- Grid -->
-    <div x-show="!loading && filtered.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <template x-for="(book, idx) in filtered" :key="book.id">
-        <a :href="`/exam.html?book=${book.id}`"
-           class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition hover:-translate-y-1 hover:shadow-lg group">
-          <!-- Thumb -->
-          <div class="h-36 relative flex items-center justify-center overflow-hidden"
-               :style="book.cover_url ? '' : `background:${gradients[idx % gradients.length]}`">
-            <template x-if="book.cover_url">
-              <img :src="book.cover_url" :alt="book.title" class="w-full h-full object-cover">
-            </template>
-            <template x-if="!book.cover_url">
-              <span class="zh text-[90px] font-bold text-white/10 leading-none select-none">試</span>
-            </template>
-            <span x-show="book.level"
-                  class="absolute top-2.5 left-3 text-[11px] font-bold text-white bg-black/30 backdrop-blur-sm px-2.5 py-0.5 rounded-md"
-                  x-text="book.level"></span>
-          </div>
-          <!-- Body -->
-          <div class="p-4 flex-1 flex flex-col gap-2">
-            <div class="zh font-bold text-navy text-[15px] leading-snug" x-text="book.title"></div>
-            <div class="flex items-center gap-2 text-xs text-gray-400 mt-auto">
-              <i class="fa-solid fa-layer-group text-[10px]"></i>
-              <span x-text="(unitCounts[book.id] || 0) + ' sub-unit'"></span>
-              <template x-if="results[book.id]">
-                <span class="ml-auto font-semibold text-green bg-green-lt px-2 py-0.5 rounded-full"
-                      x-text="results[book.id].done + '/' + (unitCounts[book.id]||0) + ' hoàn thành'"></span>
-              </template>
+      <!-- Loading -->
+      <div x-show="tocflLoading" class="exam-grid">
+        <template x-for="i in 6" :key="i">
+          <div class="exam-card" style="pointer-events:none">
+            <div style="height:132px" class="skel"></div>
+            <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+              <div class="skel" style="height:14px;width:72%;border-radius:4px"></div>
+              <div class="skel" style="height:11px;width:50%;border-radius:4px"></div>
             </div>
           </div>
-          <!-- Footer -->
-          <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-            <span class="text-xs text-gray-400">
-              <i class="fa-solid fa-clock text-[10px] mr-1"></i> Tự chấm điểm
-            </span>
-            <span class="text-xs font-bold text-blue group-hover:underline">Luyện thi →</span>
+        </template>
+      </div>
+
+      <!-- Empty -->
+      <div x-show="!tocflLoading && !tocflFiltered.length" x-cloak
+           class="text-center py-20 bg-white rounded-2xl border border-gray-200">
+        <i class="fa-solid fa-file-circle-xmark text-4xl text-gray-300 mb-4 block"></i>
+        <div class="text-gray-500 font-medium">Chưa có bộ đề nào cho Band này.</div>
+        <div class="text-sm text-gray-400 mt-1">Dữ liệu đang được cập nhật — thử lại sau.</div>
+      </div>
+
+      <!-- TOCFL Grid -->
+      <div x-show="!tocflLoading && tocflFiltered.length" x-cloak class="exam-grid">
+        <template x-for="(exam, idx) in tocflFiltered" :key="exam.id">
+          <a :href="`/tocfl-exam.html?exam=${exam.id}`" class="exam-card">
+            <div class="card-head" :style="cardHeadStyle(exam, idx)">
+              <div class="card-head-bg zh" x-text="volNum(exam.title)"></div>
+              <div class="card-head-content">
+                <div class="card-band-badge" x-text="exam.band"></div>
+                <div class="card-vol-num zh" x-text="'Vol ' + volNum(exam.title)"></div>
+                <div class="card-vol-label">
+                  <i class="fa-solid fa-file-pen" style="font-size:8px"></i>
+                  Đề thi mô phỏng
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="card-title" x-text="cardTitle(exam)"></div>
+              <div class="card-tags">
+                <span class="card-tag"><i class="fa-solid fa-headphones" style="font-size:9px"></i> 50 câu Nghe</span>
+                <span class="card-tag"><i class="fa-solid fa-book-open" style="font-size:9px"></i> 50 câu Đọc</span>
+                <span class="card-tag" x-text="bandLevel(exam.band)"></span>
+              </div>
+              <template x-if="tocflResults[exam.id]">
+                <div class="card-score-wrap">
+                  <div class="score-bar-bg">
+                    <div class="score-bar-fill"
+                         :style="`width:${pct(exam.id)}%;background:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"></div>
+                  </div>
+                  <div class="card-score-text">
+                    Điểm cao nhất:
+                    <b :style="`color:${pct(exam.id)>=60?'#16a34a':'#f47b20'}`"
+                       x-text="`${tocflResults[exam.id].score}/${tocflResults[exam.id].total} — ${pct(exam.id)}%`"></b>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <div class="card-footer">
+              <span class="card-time"><i class="fa-regular fa-clock"></i> ~60 phút · 100 câu</span>
+              <span class="card-cta" :style="`color:${bandAccent(exam.band)}`">
+                Làm bài <i class="fa-solid fa-arrow-right" style="font-size:10px"></i>
+              </span>
+            </div>
+          </a>
+        </template>
+      </div>
+
+    </div><!-- /TOCFL -->
+
+    <!-- ── GENERAL SECTION ── -->
+    <div x-show="activeSection==='general'">
+
+      <!-- Loading -->
+      <div x-show="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <template x-for="i in 6" :key="i">
+          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
+            <div class="h-36 bg-gray-100"></div>
+            <div class="p-5 space-y-3">
+              <div class="h-4 bg-gray-100 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+            </div>
           </div>
-        </a>
-      </template>
-    </div>
+        </template>
+      </div>
+
+      <!-- Empty -->
+      <div x-show="!loading && !filtered.length"
+           class="text-center py-20 bg-white rounded-2xl border border-gray-200">
+        <i class="fa-solid fa-file-pen text-4xl text-gray-300 mb-4 block"></i>
+        <div class="text-gray-500 font-medium">Chưa có bộ đề nào được xuất bản.</div>
+        <div class="text-sm text-gray-400 mt-1">Thử bỏ bộ lọc hoặc quay lại sau.</div>
+      </div>
+
+      <!-- General Grid -->
+      <div x-show="!loading && filtered.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <template x-for="(book, idx) in filtered" :key="book.id">
+          <a :href="`/exam.html?book=${book.id}`"
+             class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col transition hover:-translate-y-1 hover:shadow-lg group">
+            <div class="h-36 relative flex items-center justify-center overflow-hidden"
+                 :style="book.cover_url ? '' : `background:${gradients[idx % gradients.length]}`">
+              <template x-if="book.cover_url">
+                <img :src="book.cover_url" :alt="book.title" class="w-full h-full object-cover">
+              </template>
+              <template x-if="!book.cover_url">
+                <span class="zh text-[90px] font-bold text-white/10 leading-none select-none">試</span>
+              </template>
+              <span x-show="book.level"
+                    class="absolute top-2.5 left-3 text-[11px] font-bold text-white bg-black/30 backdrop-blur-sm px-2.5 py-0.5 rounded-md"
+                    x-text="book.level"></span>
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-2">
+              <div class="zh font-bold text-navy text-[15px] leading-snug" x-text="book.title"></div>
+              <div class="flex items-center gap-2 text-xs text-gray-400 mt-auto">
+                <i class="fa-solid fa-layer-group text-[10px]"></i>
+                <span x-text="(unitCounts[book.id] || 0) + ' sub-unit'"></span>
+                <template x-if="results[book.id]">
+                  <span class="ml-auto font-semibold text-green bg-green-lt px-2 py-0.5 rounded-full"
+                        x-text="results[book.id].done + '/' + (unitCounts[book.id]||0) + ' hoàn thành'"></span>
+                </template>
+              </div>
+            </div>
+            <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+              <span class="text-xs text-gray-400">
+                <i class="fa-solid fa-clock text-[10px] mr-1"></i> Tự chấm điểm
+              </span>
+              <span class="text-xs font-bold text-blue group-hover:underline">Luyện thi →</span>
+            </div>
+          </a>
+        </template>
+      </div>
+
+    </div><!-- /GENERAL -->
 
     <div id="comments-root" style="margin-top:48px"></div>
   </div>
+</div>
+
+<!-- CHAT WIDGET -->
+<div class="chat-widget">
+  <div class="chat-panel" id="ex-chat-panel">
+    <div class="chat-header">
+      <span class="chat-dot"></span>
+      <span>Trợ lý TOCFL AI</span>
+      <span class="chat-header-sub">· Hỏi đáp tiếng Trung &amp; TOCFL</span>
+      <button class="chat-close" onclick="exChatToggle()">✕</button>
+    </div>
+    <div class="chat-msgs" id="ex-chat-msgs"></div>
+    <div class="chat-input-row">
+      <input class="chat-text-input" id="ex-chat-input"
+             placeholder="Hỏi về TOCFL, từ vựng, ngữ pháp…"
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();exChatSend()}">
+      <button class="chat-send-btn" onclick="exChatSend()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-fab" onclick="exChatToggle()" title="Chat với AI Tutor TOCFL">
+    <i class="fa-solid fa-comments" id="ex-fab-icon"></i>
+    <span class="chat-unread" id="ex-chat-unread">1</span>
+  </button>
 </div>
 
 <!-- FOOTER -->
@@ -215,8 +407,8 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       </div>
       <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt — AI từ vựng, luyện viết, nghe chép chính tả.</p>
       <div class="footer-socials">
-        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a class="footer-social" href="/courses.html" title="Khóa học"><i class="fas fa-graduation-cap"></i></a>
+        <a class="footer-social" href="https://www.facebook.com/tocflfafa/" target="_blank" rel="noopener"><i class="fab fa-facebook-f"></i></a>
+        <a class="footer-social" href="/courses.html"><i class="fas fa-graduation-cap"></i></a>
       </div>
     </div>
     <div>
@@ -247,7 +439,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <script>
 const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
-const _db = supabase.createClient(_DB_URL, _DB_KEY);
+const _db  = supabase.createClient(_DB_URL, _DB_KEY);
 const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
 
 mountComments({
@@ -266,8 +458,22 @@ const GRADIENTS = [
   'linear-gradient(135deg,#78350f,#92400e)',
 ];
 
+const BAND_ACCENT = { 'Band A': '#1a56db', 'Band B': '#7c3aed', 'Band C': '#16a34a' };
+const BAND_LEVEL  = { 'Band A': 'A1–A2', 'Band B': 'B1–B2', 'Band C': 'C1–C2' };
+const BAND_GRADS  = {
+  'Band A': [['#0d1b4b','#1a56db'],['#1e3a8a','#3b82f6'],['#1e40af','#60a5fa'],
+             ['#075985','#0ea5e9'],['#0f172a','#1d4ed8'],['#1e3a8a','#0284c7']],
+  'Band B': [['#4c1d95','#7c3aed'],['#5b21b6','#a855f7'],['#3b0764','#9333ea'],
+             ['#4c1d95','#c084fc'],['#2e1065','#7c3aed'],['#581c87','#a21caf']],
+  'Band C': [['#064e3b','#16a34a'],['#14532d','#22c55e'],['#052e16','#15803d'],
+             ['#064e3b','#059669'],['#0f172a','#16a34a'],['#14532d','#10b981']],
+};
+
 function examsApp() {
   return {
+    activeSection: 'tocfl',
+
+    // General
     loading: true,
     books: [],
     levels: [],
@@ -276,10 +482,21 @@ function examsApp() {
     results: {},
     gradients: GRADIENTS,
 
+    // TOCFL
+    tocflLoading: true,
+    tocflExams: [],
+    activeBand: 'Band A',
+    tocflResults: {},
+
     get filtered() {
       if (!this.activeLevel) return this.books;
       return this.books.filter(b => b.level === this.activeLevel);
     },
+
+    get tocflFiltered() {
+      return this.tocflExams.filter(e => e.band === this.activeBand);
+    },
+
     get totalUnits() {
       return Object.values(this.unitCounts).reduce((a, b) => a + b, 0);
     },
@@ -287,30 +504,36 @@ function examsApp() {
     async init() {
       if (_auth) {
         _auth.init().then(user => {
-          if (user) this.loadResults(user.id);
+          if (user) { this.loadResults(user.id); this.loadTocflResults(user.id); }
           renderNavAuth(user);
         });
       }
 
-      const [{ data: books }, { data: unitRows }] = await Promise.all([
-        _db.from('exam_books').select('id,title,level,total_units,status,cover_url')
-           .eq('status', 'published').order('created_at', { ascending: false }),
-        _db.from('exam_units').select('book_id').eq('status', 'published'),
+      const [generalRes, tocflRes] = await Promise.all([
+        Promise.all([
+          _db.from('exam_books').select('id,title,level,total_units,status,cover_url')
+             .eq('status','published').order('created_at',{ascending:false}),
+          _db.from('exam_units').select('book_id').eq('status','published'),
+        ]),
+        _db.from('tocfl_exams').select('id,title,band,total_questions,publish_year')
+           .order('band').order('id'),
       ]);
 
-      this.books = books || [];
+      const [{ data: books }, { data: unitRows }] = generalRes;
+      this.books  = books || [];
       this.levels = [...new Set(this.books.map(b => b.level).filter(Boolean))].sort();
       (unitRows || []).forEach(r => {
         this.unitCounts[r.book_id] = (this.unitCounts[r.book_id] || 0) + 1;
       });
       this.loading = false;
+
+      this.tocflExams    = tocflRes.data || [];
+      this.tocflLoading  = false;
     },
 
     async loadResults(userId) {
-      const { data } = await _db
-        .from('exam_results')
-        .select('unit_id, exam_units(book_id)')
-        .eq('user_id', userId);
+      const { data } = await _db.from('exam_results')
+        .select('unit_id, exam_units(book_id)').eq('user_id', userId);
       const byBook = {};
       (data || []).forEach(r => {
         const bid = r.exam_units?.book_id;
@@ -320,19 +543,136 @@ function examsApp() {
       });
       this.results = byBook;
     },
+
+    async loadTocflResults(uid) {
+      const { data } = await _db.from('tocfl_results')
+        .select('exam_id,score,total').eq('user_id', uid).eq('skill_filter','both');
+      const best = {};
+      for (const r of data || []) {
+        if (!best[r.exam_id] || r.score > best[r.exam_id].score) best[r.exam_id] = r;
+      }
+      this.tocflResults = best;
+    },
+
+    pct(examId) {
+      const r = this.tocflResults[examId];
+      return r ? Math.round(r.score / r.total * 100) : 0;
+    },
+
+    volNum(title) {
+      return (String(title).match(/Vol\s*(\d+)/i) || [])[1] || '1';
+    },
+
+    cardTitle(exam) {
+      const b = { 'Band A':'A', 'Band B':'B', 'Band C':'C' }[exam.band] || exam.band;
+      return `TOCFL Band ${b} — Bộ ${this.volNum(exam.title)}`;
+    },
+
+    bandAccent(band) { return BAND_ACCENT[band] || '#1a56db'; },
+    bandLevel(band)  { return BAND_LEVEL[band]  || ''; },
+
+    cardHeadStyle(exam, idx) {
+      const g = BAND_GRADS[exam.band] || BAND_GRADS['Band A'];
+      const [f, t] = g[idx % g.length];
+      return `background:linear-gradient(135deg,${f},${t})`;
+    },
   };
 }
 
 function renderNavAuth(user) {
   const wrap = document.getElementById('nav-auth');
-  if (!user) { wrap.innerHTML = `<a href="/courses.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`; return; }
-  const init = user.email?.[0]?.toUpperCase() || 'U';
-  wrap.innerHTML = `<a href="/dashboard.html" class="w-8 h-8 rounded-full bg-gradient-to-br from-purple to-purple/70 flex items-center justify-center text-sm font-bold text-white" title="Dashboard">${init}</a>`;
+  if (!user) {
+    wrap.innerHTML = `<a href="/courses.html" class="text-sm font-semibold text-white bg-[#1a56db] hover:bg-[#1544b8] px-4 py-2 rounded-lg transition">Bắt đầu học</a>`;
+    return;
+  }
+  const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
+  wrap.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+
+/* ── Chat ── */
+let _exOpen = false, _exHistory = [], _exTyping = false, _exInited = false;
+
+const _EX_SYS = `Bạn là trợ lý học tiếng Trung phồn thể Đài Loan (繁體中文) và hỗ trợ ôn thi TOCFL dành cho học viên Việt Nam.
+
+NGÔN NGỮ: Ưu tiên trả lời TIẾNG VIỆT. Khi dùng chữ Hán phải dùng phồn thể (繁體，台灣標準), kèm pinyin có dấu thanh và dịch nghĩa.
+
+CHUYÊN MÔN:
+• Cấu trúc & cấp độ TOCFL: Band A (A1–A2), Band B (B1–B2), Band C (C1–C2)
+• Phần Nghe (聽力 · 50 câu) và Đọc hiểu (閱讀 · 50 câu)
+• Từ vựng, ngữ pháp tiếng Trung Đài Loan thường gặp trong TOCFL
+• Chiến lược làm bài, mẹo ôn thi hiệu quả cho từng Band
+
+Trả lời súc tích, thực tế, có ví dụ khi hữu ích. KHÔNG viết toàn câu tiếng Trung mà không giải thích.`;
+
+function exChatBubble(type, html, id) {
+  const msgs = document.getElementById('ex-chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'chat-bubble ' + type;
+  d.innerHTML = html;
+  if (id) d.id = id;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+function exChatToggle() {
+  _exOpen = !_exOpen;
+  document.getElementById('ex-chat-panel').classList.toggle('open', _exOpen);
+  document.getElementById('ex-fab-icon').className = _exOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-comments';
+  document.getElementById('ex-chat-unread').style.display = 'none';
+  if (_exOpen) {
+    if (!_exInited) {
+      _exInited = true;
+      exChatBubble('system', '👋 Xin chào! Tôi là trợ lý TOCFL AI. Hỏi tôi về:<br>• Cấu trúc bài thi Band A / B / C<br>• Từ vựng &amp; ngữ pháp phồn thể<br>• Chiến lược ôn thi &amp; mẹo làm bài');
+    }
+    document.getElementById('ex-chat-msgs').scrollTop = 9999;
+    setTimeout(() => document.getElementById('ex-chat-input').focus(), 60);
+  }
+}
+
+async function exChatSend() {
+  if (_exTyping) return;
+  const inp  = document.getElementById('ex-chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  if (!_exOpen) exChatToggle();
+  exChatBubble('user', text.replace(/</g, '&lt;'));
+  _exHistory.push({ role: 'user', content: text });
+  _exTyping = true;
+
+  const app = document.querySelector('[x-data]')?._x_dataStack?.[0];
+  const bandCtx = app?.activeSection === 'tocfl' && app?.activeBand
+    ? `\n\nNgười dùng đang xem đề ${app.activeBand}.` : '';
+
+  const lid = 'ex-' + Date.now();
+  const loader = exChatBubble('bot', '⏳ …', lid);
+
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role:'system', content: _EX_SYS + bandCtx }, ..._exHistory.slice(-12)],
+        max_tokens: 700, temperature: 0.3,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
+    const reply = data.content || '';
+    _exHistory.push({ role: 'assistant', content: reply });
+    loader.innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  } catch(e) {
+    loader.className = 'chat-bubble system';
+    loader.innerHTML = '❌ ' + (e.message || 'Lỗi kết nối');
+  }
+  _exTyping = false;
+  document.getElementById('ex-chat-msgs').scrollTop = 9999;
 }
 </script>
 <script src="/js/nav-mobile.js"></script>
 <script src="/js/track.js" defer></script>
 </body>
 </html>
-
-

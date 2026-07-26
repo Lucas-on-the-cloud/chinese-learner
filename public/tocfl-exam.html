@@ -1359,7 +1359,7 @@ document.addEventListener('mouseup', function(e) {
 });
 
 document.addEventListener('mousedown', function(e) {
-  if (!e.target.closest('#sel-popup') && !e.target.closest('#note-popover')) {
+  if (!e.target.closest('#sel-popup') && !e.target.closest('#note-popover') && !e.target.closest('.chat-widget')) {
     selDismiss();
     cancelNote();
   }
