@@ -371,8 +371,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <a class="nav-link" href="/vocab.html">Từ vựng</a>
       <a class="nav-link" href="/hantu.html">Bộ thủ</a>
       <a class="nav-link" href="/news.html">Đọc báo</a>
-      <a class="nav-link active" href="/tocfl.html">TOCFL</a>
-      <a class="nav-link" href="/exams.html">Đề thi</a>
+      <a class="nav-link active" href="/exams.html">Đề thi</a>
       <a class="nav-link" href="/about.html">Giới thiệu</a>
       <div class="nav-auth" id="nav-auth">
         <a class="nav-btn" href="/login.html">Đăng nhập</a>
@@ -432,7 +431,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 <!-- EXAM BAR -->
 <div class="exam-bar" x-show="view==='exam' && !loading" x-cloak>
   <div class="eb-inner">
-    <a class="eb-back" href="/tocfl.html">
+    <a class="eb-back" href="/exams.html">
       <i class="fa-solid fa-arrow-left"></i>
     </a>
     <div class="eb-sep"></div>
@@ -697,7 +696,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <button class="modal-btn" @click="retry()">
         <i class="fa-solid fa-rotate-right" style="font-size:11px"></i> Làm lại
       </button>
-      <a class="modal-btn primary" href="/tocfl.html">
+      <a class="modal-btn primary" href="/exams.html">
         <i class="fa-solid fa-arrow-left" style="font-size:11px"></i> Danh sách
       </a>
     </div>
@@ -757,7 +756,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
       <ul class="ft-links">
         <li><a href="/flashcards.html">Flashcard</a></li>
         <li><a href="/courses.html">Khóa học</a></li>
-        <li><a href="/tocfl.html">Luyện thi TOCFL</a></li>
+        <li><a href="/exams.html">Luyện thi TOCFL</a></li>
         <li><a href="/about.html">Giới thiệu</a></li>
       </ul>
     </div>
@@ -771,7 +770,7 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   <div class="ft-bottom">
     <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
     <div class="ft-bottom-links">
-      <a href="/tocfl.html">TOCFL</a>
+      <a href="/exams.html">Đề thi</a>
       <a href="/about.html">Giới thiệu</a>
     </div>
   </div>
@@ -954,7 +953,7 @@ function tocflExamApp() {
 
       const p = new URLSearchParams(location.search);
       const examId = p.get('exam');
-      if (!examId) { location.href='/tocfl.html'; return; }
+      if (!examId) { location.href='/exams.html'; return; }
 
       const { data:exam, error } = await _db.from('tocfl_exams').select(`
         id, title, band, total_questions,
@@ -970,7 +969,7 @@ function tocflExamApp() {
         )
       `).eq('id', examId).single();
 
-      if (error || !exam) { location.href='/tocfl.html'; return; }
+      if (error || !exam) { location.href='/exams.html'; return; }
 
       exam.tocfl_parts.sort((a,b) => {
         if (a.skill !== b.skill) return a.skill==='Listening' ? -1 : 1;
