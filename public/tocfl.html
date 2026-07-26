@@ -109,6 +109,29 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .ft-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px;text-decoration:none}
 @media(max-width:720px){.ft-main{grid-template-columns:1fr;gap:1.5rem}.nav-link{display:none}.exam-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.exam-grid{grid-template-columns:1fr}}
+
+/* ── Chat widget ── */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-fab{width:52px;height:52px;border-radius:50%;background:#1a56db;color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.38);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(26,86,219,.5)}
+.chat-unread{display:none;position:absolute;top:-3px;right:-3px;width:17px;height:17px;border-radius:50%;background:#ef4444;font-size:9px;font-weight:800;line-height:17px;text-align:center;border:2px solid #fff}
+.chat-panel{width:370px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid #e5e7eb;overflow:hidden;display:none;flex-direction:column;height:520px}
+.chat-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,#0d1b4b,#1a56db);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .chat-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-header-sub{font-size:11px;opacity:.65;font-weight:400}
+.chat-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;line-height:1;padding:0 2px;transition:.12s}
+.chat-close:hover{color:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f4f5f7;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.chat-bubble{max-width:86%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.65;word-break:break-word}
+.chat-bubble.user{background:#1a56db;color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-bubble.bot{background:#fff;border:1px solid #e5e7eb;align-self:flex-start;border-bottom-left-radius:3px;color:#1f2937}
+.chat-bubble.system{background:#fef9c3;border:1px solid #fde047;align-self:center;text-align:center;font-size:12px;color:#713f12;max-width:92%}
+.chat-input-row{display:flex;border-top:1px solid #e5e7eb;flex-shrink:0}
+.chat-text-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent;color:#1f2937}
+.chat-send-btn{background:#1a56db;color:#fff;border:none;padding:0 18px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;flex-shrink:0}
+.chat-send-btn:hover{background:#1544b8}
+@media(max-width:480px){.chat-panel{width:calc(100vw - 24px)}}
 </style>
 </head>
 <body x-data="tocflApp()" x-init="init()">
@@ -266,6 +289,29 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
   </div>
 </div>
 
+<!-- CHAT WIDGET: floating TOCFL AI tutor -->
+<div class="chat-widget">
+  <div class="chat-panel" id="tocfl-chat-panel">
+    <div class="chat-header">
+      <span class="chat-dot"></span>
+      <span>Trợ lý TOCFL AI</span>
+      <span class="chat-header-sub">· Hỏi đáp tiếng Trung &amp; TOCFL</span>
+      <button class="chat-close" onclick="tcChatToggle()">✕</button>
+    </div>
+    <div class="chat-msgs" id="tocfl-chat-msgs"></div>
+    <div class="chat-input-row">
+      <input class="chat-text-input" id="tocfl-chat-input"
+             placeholder="Hỏi về TOCFL, từ vựng, ngữ pháp…"
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();tcChatSend()}">
+      <button class="chat-send-btn" onclick="tcChatSend()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-fab" onclick="tcChatToggle()" title="Chat với AI Tutor TOCFL">
+    <i class="fa-solid fa-comments" id="tocfl-fab-icon"></i>
+    <span class="chat-unread" id="tocfl-chat-unread">1</span>
+  </button>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="ft-main">
@@ -391,6 +437,95 @@ function renderNavAuth(user) {
   if (!user) { el.innerHTML = `<a class="nav-btn" href="/login.html">Đăng nhập</a>`; return; }
   const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
   el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
+}
+
+/* ── TOCFL AI Chat tutor ── */
+let _tcOpen    = false;
+let _tcHistory = [];
+let _tcTyping  = false;
+let _tcInited  = false;
+
+const _TC_SYS = `Bạn là trợ lý học tiếng Trung phồn thể Đài Loan (繁體中文) và hỗ trợ ôn thi TOCFL dành cho học viên Việt Nam.
+
+NGÔN NGỮ: Ưu tiên trả lời TIẾNG VIỆT. Khi dùng chữ Hán phải dùng phồn thể (繁體，台灣標準), kèm pinyin có dấu thanh và dịch nghĩa.
+
+CHUYÊN MÔN CỦA BẠN:
+• Cấu trúc & cấp độ TOCFL: Band A (入門/基礎 A1–A2), Band B (進階/高階 B1–B2), Band C (流利/精通 C1–C2)
+• Phần Nghe (聽力 · 50 câu) và Đọc hiểu (閱讀 · 50 câu) — định dạng đề thi, cách chấm điểm
+• Từ vựng, ngữ pháp tiếng Trung Đài Loan thường gặp trong TOCFL
+• Chiến lược làm bài, mẹo ôn thi hiệu quả cho từng Band
+• Giải thích câu hỏi, đáp án hoặc khái niệm ngữ pháp khi được hỏi
+
+Trả lời súc tích, thực tế, có ví dụ khi hữu ích. KHÔNG viết toàn câu tiếng Trung mà không giải thích.`;
+
+function tcChatBubble(type, html, id) {
+  const msgs = document.getElementById('tocfl-chat-msgs');
+  const d    = document.createElement('div');
+  d.className = 'chat-bubble ' + type;
+  d.innerHTML = html;
+  if (id) d.id = id;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+function tcChatToggle() {
+  _tcOpen = !_tcOpen;
+  document.getElementById('tocfl-chat-panel').classList.toggle('open', _tcOpen);
+  document.getElementById('tocfl-fab-icon').className = _tcOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-comments';
+  document.getElementById('tocfl-chat-unread').style.display = 'none';
+  if (_tcOpen) {
+    if (!_tcInited) {
+      _tcInited = true;
+      tcChatBubble('system', '👋 Xin chào! Tôi là trợ lý TOCFL AI. Hỏi tôi về:<br>• Cấu trúc bài thi Band A / B / C<br>• Từ vựng &amp; ngữ pháp phồn thể<br>• Chiến lược ôn thi &amp; mẹo làm bài');
+    }
+    const msgs = document.getElementById('tocfl-chat-msgs');
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => document.getElementById('tocfl-chat-input').focus(), 60);
+  }
+}
+
+async function tcChatSend() {
+  if (_tcTyping) return;
+  const inp  = document.getElementById('tocfl-chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  if (!_tcOpen) tcChatToggle();
+  tcChatBubble('user', text.replace(/</g, '&lt;'));
+  _tcHistory.push({ role: 'user', content: text });
+  _tcTyping = true;
+
+  // Get currently active band from Alpine state for context
+  const activeBand = document.querySelector('[x-data]')?._x_dataStack?.[0]?.activeBand || '';
+  const bandCtx = activeBand ? `\n\nNgười dùng đang xem danh sách đề thi ${activeBand}.` : '';
+
+  const lid   = 'tc-' + Date.now();
+  const loader = tcChatBubble('bot', '⏳ …', lid);
+
+  try {
+    const msgs = [
+      { role: 'system', content: _TC_SYS + bandCtx },
+      ..._tcHistory.slice(-12),
+    ];
+    const res  = await fetch('/api/ai/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ model: 'gpt-4o-mini', messages: msgs, max_tokens: 700, temperature: 0.3 }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
+    const reply = data.content || '';
+    _tcHistory.push({ role: 'assistant', content: reply });
+    loader.innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    if (!_tcOpen) document.getElementById('tocfl-chat-unread').style.display = 'block';
+  } catch(e) {
+    loader.className = 'chat-bubble system';
+    loader.innerHTML = '❌ ' + (e.message || 'Lỗi kết nối');
+  }
+  _tcTyping = false;
+  document.getElementById('tocfl-chat-msgs').scrollTop = 9999;
 }
 </script>
 <script src="/js/nav-mobile.js" defer></script>
