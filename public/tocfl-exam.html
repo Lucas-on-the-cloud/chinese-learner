@@ -243,6 +243,29 @@ mark.hl-active{outline:2px solid #f59e0b;outline-offset:1px}
 .eb-notes-btn.on{border-color:#f59e0b;background:#fffbeb;color:#92400e}
 @media(max-width:1160px){.notes-col{display:none}.eb-notes-btn{display:none}}
 
+/* ── Chat widget ── */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-fab{width:50px;height:50px;border-radius:50%;background:var(--purple);color:#fff;border:none;font-size:19px;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,.38);display:flex;align-items:center;justify-content:center;position:relative;transition:transform .15s,box-shadow .15s;flex-shrink:0}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 6px 22px rgba(124,58,237,.5)}
+.chat-unread{display:none;position:absolute;top:-3px;right:-3px;width:17px;height:17px;border-radius:50%;background:#ef4444;font-size:9px;font-weight:800;line-height:17px;text-align:center;border:2px solid #fff}
+.chat-panel{width:370px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;height:520px}
+.chat-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,var(--purple),#a855f7);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .chat-dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-header-sub{font-size:11px;opacity:.65;font-weight:400}
+.chat-close{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;line-height:1;padding:0 2px;transition:.12s}
+.chat-close:hover{color:#fff}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg);scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.chat-bubble{max-width:86%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.65;word-break:break-word}
+.chat-bubble.user{background:var(--purple);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-bubble.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px;color:var(--text)}
+.chat-bubble.system{background:#fef9c3;border:1px solid #fde047;align-self:center;text-align:center;font-size:12px;color:#713f12;max-width:92%}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-text-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent;color:var(--text)}
+.chat-send-btn{background:var(--purple);color:#fff;border:none;padding:0 16px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;flex-shrink:0}
+.chat-send-btn:hover{background:#6d28d9}
+@media(max-width:480px){.chat-panel{width:calc(100vw - 24px)}}
+
 /* ── Result modal ── */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
 .modal-card{background:#fff;border-radius:20px;width:100%;max-width:520px;box-shadow:var(--shadow-lg);overflow:hidden;animation:modalIn .25s ease}
@@ -690,6 +713,29 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
     <button class="np-btn np-submit" onclick="submitNote()" title="Lưu"><i class="fa-solid fa-check"></i></button>
     <button class="np-btn np-cancel" onclick="cancelNote()" title="Hủy">×</button>
   </div>
+</div>
+
+<!-- CHAT WIDGET: AI tutor while taking the TOCFL exam -->
+<div class="chat-widget">
+  <div class="chat-panel" id="ex-chat-panel">
+    <div class="chat-header">
+      <span class="chat-dot"></span>
+      <span>Trợ lý AI · Hỗ trợ làm bài</span>
+      <span class="chat-header-sub" id="ex-chat-sub"></span>
+      <button class="chat-close" onclick="exChatToggle()">✕</button>
+    </div>
+    <div class="chat-msgs" id="ex-chat-msgs"></div>
+    <div class="chat-input-row">
+      <input class="chat-text-input" id="ex-chat-input"
+             placeholder="Hỏi về từ vựng, ngữ pháp, đoạn văn…"
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();exChatSend()}">
+      <button class="chat-send-btn" onclick="exChatSend()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-fab" onclick="exChatToggle()" title="Hỏi AI về câu đang làm">
+    <i class="fa-solid fa-robot" id="ex-fab-icon"></i>
+    <span class="chat-unread" id="ex-chat-unread">1</span>
+  </button>
 </div>
 
 <!-- FOOTER -->
@@ -1398,6 +1444,125 @@ function submitNote() {
   }));
   _selText = ''; _selMarkId = null; _selQNum = null; _selQIdx = null;
   cancelNote();
+}
+
+/* ── AI Chat tutor for the exam page ── */
+let _exChatOpen    = false;
+let _exChatHistory = [];
+let _exChatTyping  = false;
+let _exChatInited  = false;
+
+function _exChatGetApp() {
+  return document.querySelector('[x-data]')?._x_dataStack?.[0] || null;
+}
+
+function _exChatContext() {
+  const app = _exChatGetApp();
+  if (!app || app.view !== 'exam') return '';
+  const q   = app.currentQ;
+  const g   = app.currentGroup;
+  const p   = app.currentQPart;
+  const e   = app.exam;
+  const sub = app.submitted;
+  let ctx = '';
+  if (e)   ctx += `\nBộ đề: ${e.title} (${e.band})`;
+  if (p)   ctx += ` · Phần: ${p.skill === 'Listening' ? 'Nghe 聽力' : 'Đọc hiểu 閱讀'}`;
+  if (q)   ctx += `\nCâu ${q.question_num}`;
+  if (g?.shared_text)   ctx += `\n\nĐoạn văn:\n${g.shared_text}`;
+  if (q?.question_text) ctx += `\n\nCâu hỏi:\n${q.question_text}`;
+  if (q?.tocfl_options?.length) {
+    ctx += '\n\nCác lựa chọn:';
+    for (const o of q.tocfl_options) {
+      const mark = (sub && o.is_correct) ? ' ← đúng' : '';
+      ctx += `\n${o.label}. ${o.text || '[hình ảnh]'}${mark}`;
+    }
+  }
+  if (!sub) ctx += '\n\n[Người dùng ĐANG làm bài — KHÔNG tiết lộ đáp án, chỉ giải thích từ vựng và ngữ pháp để gợi ý.]';
+  else      ctx += '\n\n[Người dùng đã nộp bài — có thể giải thích đáp án đúng và lý do.]';
+  return ctx;
+}
+
+function _exChatSub() {
+  const app = _exChatGetApp();
+  if (!app || app.view !== 'exam') return '';
+  const q = app.currentQ;
+  const p = app.currentQPart;
+  return q ? ` · Câu ${q.question_num} · ${p?.skill === 'Listening' ? 'Nghe' : 'Đọc'}` : '';
+}
+
+function exChatBubble(type, html, id) {
+  const msgs = document.getElementById('ex-chat-msgs');
+  const d    = document.createElement('div');
+  d.className = 'chat-bubble ' + type;
+  d.innerHTML  = html;
+  if (id) d.id = id;
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+function exChatToggle() {
+  _exChatOpen = !_exChatOpen;
+  document.getElementById('ex-chat-panel').classList.toggle('open', _exChatOpen);
+  document.getElementById('ex-fab-icon').className = _exChatOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-robot';
+  document.getElementById('ex-chat-unread').style.display = 'none';
+  const sub = document.getElementById('ex-chat-sub');
+  if (sub) sub.textContent = _exChatSub();
+  if (_exChatOpen) {
+    if (!_exChatInited) {
+      _exChatInited = true;
+      exChatBubble('system', '🤖 Tôi có thể giải thích từ vựng, ngữ pháp và đoạn văn đang hiển thị.<br><span style="font-size:11px;opacity:.8">Tôi sẽ không nói thẳng đáp án khi bạn đang làm bài.</span>');
+    }
+    const msgs = document.getElementById('ex-chat-msgs');
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => document.getElementById('ex-chat-input').focus(), 60);
+  }
+}
+
+async function exChatSend() {
+  if (_exChatTyping) return;
+  const inp  = document.getElementById('ex-chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  if (!_exChatOpen) exChatToggle();
+  // Update subtitle with current question context
+  const sub = document.getElementById('ex-chat-sub');
+  if (sub) sub.textContent = _exChatSub();
+
+  exChatBubble('user', text.replace(/</g, '&lt;'));
+  _exChatHistory.push({ role: 'user', content: text });
+  _exChatTyping = true;
+
+  const SYS = `Bạn là trợ lý học tiếng Trung phồn thể Đài Loan (繁體中文) hỗ trợ người dùng làm bài thi TOCFL.
+
+NGÔN NGỮ: Trả lời TIẾNG VIỆT. Khi dùng chữ Hán phải dùng phồn thể (繁體), kèm pinyin có dấu thanh và nghĩa tiếng Việt.
+
+NHIỆM VỤ: Giải thích từ vựng, ngữ pháp, cấu trúc câu trong đoạn văn và câu hỏi hiện tại. Nếu đang làm bài, gợi ý hướng suy nghĩ chứ không nói thẳng đáp án.` + _exChatContext();
+
+  const lid    = 'exc-' + Date.now();
+  const loader = exChatBubble('bot', '⏳ …', lid);
+
+  try {
+    const msgs = [{ role: 'system', content: SYS }, ..._exChatHistory.slice(-10)];
+    const res  = await fetch('/api/ai/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ model: 'gpt-4o-mini', messages: msgs, max_tokens: 600, temperature: 0.3 }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) throw new Error(data.error?.message || `HTTP ${res.status}`);
+    const reply = data.content || '';
+    _exChatHistory.push({ role: 'assistant', content: reply });
+    loader.innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    if (!_exChatOpen) document.getElementById('ex-chat-unread').style.display = 'block';
+  } catch(e) {
+    loader.className = 'chat-bubble system';
+    loader.innerHTML = '❌ ' + (e.message || 'Lỗi kết nối');
+  }
+  _exChatTyping = false;
+  document.getElementById('ex-chat-msgs').scrollTop = 9999;
 }
 </script>
 <script src="/js/nav-mobile.js" defer></script>
