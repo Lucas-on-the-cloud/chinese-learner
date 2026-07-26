@@ -739,6 +739,7 @@ const _auth = typeof AuthService !== 'undefined' ? new AuthService(_db) : null;
 let _user         = null;
 let _tocflAnswers = {};
 let _caActive     = null; // { audio, btn } — the currently playing JS-driven audio
+const _playedGroups = new Set(); // group IDs whose shared audio has auto-started this session
 
 function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -799,6 +800,11 @@ function customAudio(src) {
     durationSec: 0,
     get timeDisplay()     { const s=this.currentSec;  return Math.floor(s/60)+':'+(s%60+'').padStart(2,'0'); },
     get durationDisplay() { const s=this.durationSec; return s ? Math.floor(s/60)+':'+(s%60+'').padStart(2,'0') : '--:--'; },
+    init() {
+      // Keep playing state in sync even when audio is paused externally (e.g. goToQ)
+      this.$refs.audio.addEventListener('pause', () => { this.playing = false; });
+      this.$refs.audio.addEventListener('play',  () => { this.playing = true;  });
+    },
     toggle() {
       const a = this.$refs.audio;
       if (_caActive) { _caActive.audio.pause(); _caActive.btn.innerHTML='<i class="fa-solid fa-play"></i>'; _caActive=null; }
@@ -957,6 +963,7 @@ function tocflExamApp() {
       this.submitted     = false;
       this.showResult    = false;
       this.tocflLevel    = null;
+      _playedGroups.clear();
       this.view          = 'exam';
       this.startTimer();
       window.scrollTo(0,0);
@@ -978,10 +985,16 @@ function tocflExamApp() {
 
     /* ── Navigation ── */
     _autoPlay() {
-      // Click the first visible play button (group audio first, then per-question audio)
-      const btn = document.querySelector('.ca-wrap:not(.ca-q) .ca-play-btn')
-               || document.querySelector('.ca-wrap.ca-q .ca-play-btn');
-      if (btn) btn.click();
+      const g = this.currentGroup;
+      if (g?.shared_audio_url && !_playedGroups.has(g.id)) {
+        // First visit to this group — play shared audio; question audio chains in after via 'ended' listener
+        const btn = document.querySelector('.ca-wrap:not(.ca-q) .ca-play-btn');
+        if (btn) { btn.click(); _playedGroups.add(g.id); }
+      } else {
+        // Shared audio already played (or no shared audio) — play per-question audio directly
+        const btn = document.querySelector('.ca-wrap.ca-q .ca-play-btn');
+        if (btn) btn.click();
+      }
     },
     goToQ(idx) {
       document.querySelectorAll('.ca-audio-el').forEach(a => a.pause());
@@ -1163,6 +1176,7 @@ function tocflExamApp() {
       this.tocflLevel  = null;
       this.currentQIdx = 0;
       this.timer       = this._timerInitial;
+      _playedGroups.clear();
       window.scrollTo(0,0);
       this.startTimer();
     },
@@ -1216,6 +1230,18 @@ function renderNavAuth(user) {
   const init = (user.user_metadata?.full_name || user.email || 'U')[0].toUpperCase();
   el.innerHTML = `<a href="/dashboard.html" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a855f7);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-decoration:none" title="Dashboard">${init}</a>`;
 }
+
+/* ── Auto-chain: shared group audio → per-question audio ── */
+document.addEventListener('ended', function(e) {
+  if (!e.target.classList.contains('ca-audio-el')) return;
+  const wrap = e.target.closest('.ca-wrap');
+  // Only trigger when the SHARED (group) audio ends, not question-level audio
+  if (!wrap || wrap.classList.contains('ca-q')) return;
+  setTimeout(() => {
+    const qBtn = document.querySelector('.ca-wrap.ca-q .ca-play-btn');
+    if (qBtn) qBtn.click();
+  }, 350);
+}, true); // capture phase: fired before Alpine's @ended handler
 
 /* ── Text selection / highlight / notes ── */
 let _selText = '', _selRange = null, _selMarkId = null, _selQNum = null, _selQIdx = null;
