@@ -76,6 +76,18 @@ async function uploadMp3(localPath, r2Key) {
   return r2url(r2Key);
 }
 
+async function uploadPng(localPath, r2Key) {
+  if (SKIP_UPLOAD) return r2url(r2Key);
+  if (await r2Has(r2Key)) return r2url(r2Key);
+  const buf = fs.readFileSync(localPath);
+  await r2.send(new PutObjectCommand({
+    Bucket: R2_BUCKET, Key: r2Key, Body: buf,
+    ContentType: 'image/png',
+    CacheControl: 'public, max-age=31536000, immutable',
+  }));
+  return r2url(r2Key);
+}
+
 // ─── XLSX parser ─────────────────────────────────────────────────────────────
 // Returns: [{filename, groupAudioId, questions:[{qNum,answer,audioId}]}]
 function parseAnswerXlsx(filePath, hasAudio) {
@@ -499,18 +511,43 @@ async function main() {
       const { filename, questions: xqs } = xg;
       const curGroupId = ++groupId;
 
-      const tFile = path.join(tDir, `${filename}.txt`);
-      if (!fs.existsSync(tFile)) {
-        console.warn(`  ⚠ skip ${filename} (no TXT — PNG only, skipping)`);
+      const tFile         = path.join(tDir, `${filename}.txt`);
+      const passagePng    = path.join(tDir, `${filename}_passage.png`);
+      const questionsPng  = path.join(tDir, `${filename}_questions.png`);
+      const hasTxt        = fs.existsSync(tFile);
+      const hasPng        = !hasTxt && fs.existsSync(passagePng) && fs.existsSync(questionsPng);
+
+      if (!hasTxt && !hasPng) {
+        console.warn(`  ⚠ skip ${filename} (no TXT or PNG)`);
         groupId--; continue;
       }
 
-      const { passageText, questions: parsed } = parseReadingComp(fs.readFileSync(tFile, 'utf8'));
+      let passageText = null, parsed = [];
+      let passageImgUrl = null, questionsImgUrl = null;
+
+      if (hasTxt) {
+        const r = parseReadingComp(fs.readFileSync(tFile, 'utf8'));
+        passageText = r.passageText || null;
+        parsed      = r.questions;
+      } else {
+        // PNG-only: upload both images
+        const r2Passage   = `qbank/bandb/rc/${filename}_passage.png`;
+        const r2Questions = `qbank/bandb/rc/${filename}_questions.png`;
+        try {
+          passageImgUrl   = await uploadPng(passagePng,   r2Passage);
+          questionsImgUrl = await uploadPng(questionsPng, r2Questions);
+          console.log(`  ↑ PNG ${filename}`);
+        } catch (e) {
+          console.warn(`  ⚠ PNG upload failed ${filename}: ${e.message}`);
+          groupId--; continue;
+        }
+      }
 
       groups.push({
         id: curGroupId, part_id: curPartId, order_num: ++orderNum, level: null,
-        shared_text: passageText || null,
-        shared_audio_url: null, shared_image_url: null,
+        shared_text: passageText,
+        shared_audio_url: null,
+        shared_image_url: passageImgUrl,
       });
 
       for (const xq of xqs) {
@@ -518,19 +555,23 @@ async function main() {
         const curQId = ++qId;
         const pq = parsed.find(q => q.qNum === qNum);
 
+        // For PNG groups: store questions image on first question so frontend knows to display it
+        const qImgUrl = (!hasTxt && qNum === 1) ? questionsImgUrl : null;
+
         questions.push({
           id: curQId, group_id: curGroupId, question_num: qNum,
           question_text: pq?.text || null,
-          question_audio_url: null, question_image_url: null, explanation: null,
+          question_audio_url: null,
+          question_image_url: qImgUrl,
+          explanation: null,
         });
 
         const src = pq || { options: {} };
         for (const label of ['A', 'B', 'C', 'D']) {
-          const text = src.options[label];
-          if (!text) continue;
+          const text = hasTxt ? src.options[label] : label; // PNG groups: label as placeholder text
           options.push({
             id: ++optId, question_id: curQId,
-            label, text, image_url: null,
+            label, text: text || label, image_url: null,
             is_correct: label === answer,
           });
         }

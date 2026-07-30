@@ -128,6 +128,13 @@ a{text-decoration:none;color:inherit}
 .passage-translate-bar{padding:8px 28px 14px;display:flex;align-items:center;gap:8px;background:#fff}
 .q-translation{margin-top:10px;padding:10px 14px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;font-size:14.5px;line-height:1.8;color:#78350f;font-family:'Be Vietnam Pro',sans-serif}
 
+/* Image passages */
+.passage-img{width:100%;border-radius:8px;display:block;cursor:zoom-in}
+.questions-img-block{padding:0 28px 20px;background:#fff}
+.questions-img-block img{width:100%;border-radius:8px;display:block;border:1px solid var(--border);cursor:zoom-in}
+.img-q-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.img-q-num{min-width:32px;font-size:13px;font-weight:700;color:var(--text-3);flex-shrink:0}
+
 /* Result badge on question */
 .q-result{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-left:8px;vertical-align:middle}
 .q-result.correct{background:var(--green-lt);color:var(--green)}
@@ -297,7 +304,15 @@ a{text-decoration:none;color:inherit}
               </div>
             </template>
 
-            <!-- Passage text -->
+            <!-- Passage image (PNG-only groups) -->
+            <template x-if="activeGroup.shared_image_url">
+              <div style="padding:20px 28px 0">
+                <img class="passage-img" :src="activeGroup.shared_image_url" alt="Đoạn văn"
+                  @click="window.open(activeGroup.shared_image_url,'_blank')">
+              </div>
+            </template>
+
+            <!-- Passage text (TXT groups) -->
             <template x-if="activeGroup.shared_text">
               <div>
                 <div class="passage-block">
@@ -322,6 +337,14 @@ a{text-decoration:none;color:inherit}
               </div>
             </template>
 
+            <!-- Questions image (first question carries the URL for PNG groups) -->
+            <template x-if="activeGroup.tocfl_questions?.[0]?.question_image_url">
+              <div class="questions-img-block">
+                <img :src="activeGroup.tocfl_questions[0].question_image_url" alt="Câu hỏi"
+                  @click="window.open(activeGroup.tocfl_questions[0].question_image_url,'_blank')">
+              </div>
+            </template>
+
             <!-- Questions -->
             <div class="questions-block">
               <template x-for="q in activeGroup.tocfl_questions" :key="q.id">
@@ -342,27 +365,44 @@ a{text-decoration:none;color:inherit}
                       </span>
                     </template>
                   </div>
-                  <!-- Question translation -->
+                  <!-- Question translation (TXT groups only) -->
                   <template x-if="showTrans[activeGroup.id] && tranCache[activeGroup.id]?.questions?.[q.id]">
                     <div class="q-translation" x-text="tranCache[activeGroup.id].questions[q.id]"></div>
                   </template>
 
-                  <!-- Options -->
-                  <div class="options-list">
-                    <template x-for="opt in q.tocfl_options" :key="opt.id">
-                      <button class="opt-btn"
-                        :class="{
-                          'correct': answers[q.id] && opt.is_correct,
-                          'wrong':   answers[q.id] && answers[q.id]===opt.label && !opt.is_correct,
-                          'selected': answers[q.id]===opt.label && !answers[q.id]
-                        }"
-                        :disabled="!!answers[q.id]"
-                        @click="selectAnswer(q.id, opt.label, opt.is_correct)">
-                        <span class="opt-label zh" x-text="opt.label"></span>
-                        <span class="zh" x-text="opt.text"></span>
-                      </button>
-                    </template>
-                  </div>
+                  <!-- Options: PNG groups show label-only buttons; TXT groups show full text -->
+                  <template x-if="activeGroup.shared_image_url">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap">
+                      <template x-for="opt in q.tocfl_options" :key="opt.id">
+                        <button class="opt-btn" style="width:auto;padding:10px 22px;font-size:16px;font-weight:700"
+                          :class="{
+                            'correct': answers[q.id] && opt.is_correct,
+                            'wrong':   answers[q.id] && answers[q.id]===opt.label && !opt.is_correct
+                          }"
+                          :disabled="!!answers[q.id]"
+                          @click="selectAnswer(q.id, opt.label, opt.is_correct)">
+                          <span class="zh" x-text="opt.label"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </template>
+                  <template x-if="!activeGroup.shared_image_url">
+                    <div class="options-list">
+                      <template x-for="opt in q.tocfl_options" :key="opt.id">
+                        <button class="opt-btn"
+                          :class="{
+                            'correct': answers[q.id] && opt.is_correct,
+                            'wrong':   answers[q.id] && answers[q.id]===opt.label && !opt.is_correct,
+                            'selected': answers[q.id]===opt.label && !answers[q.id]
+                          }"
+                          :disabled="!!answers[q.id]"
+                          @click="selectAnswer(q.id, opt.label, opt.is_correct)">
+                          <span class="opt-label zh" x-text="opt.label"></span>
+                          <span class="zh" x-text="opt.text"></span>
+                        </button>
+                      </template>
+                    </div>
+                  </template>
                 </div>
               </template>
             </div>
@@ -473,8 +513,8 @@ function qbankApp() {
 
       // Load groups + questions + options
       const { data: groupsData } = await _db.from('tocfl_groups')
-        .select(`id, part_id, order_num, shared_text, shared_audio_url,
-          tocfl_questions(id, question_num, question_text, question_audio_url,
+        .select(`id, part_id, order_num, shared_text, shared_audio_url, shared_image_url,
+          tocfl_questions(id, question_num, question_text, question_audio_url, question_image_url,
             tocfl_options(id, label, text, is_correct))`)
         .in('part_id', (partsData||[]).map(p => p.id))
         .order('order_num');
