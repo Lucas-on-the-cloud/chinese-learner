@@ -826,6 +826,7 @@ function examsApp() {
           _db.from('exam_units').select('book_id').eq('status','published'),
         ]),
         _db.from('tocfl_exams').select('id,title,band,total_questions,publish_year')
+           .in('band', ['Band A', 'Band B', 'Band C'])
            .order('band').order('id'),
       ]);
 

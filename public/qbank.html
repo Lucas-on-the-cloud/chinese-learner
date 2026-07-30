@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ngân hàng câu hỏi — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+.zh{font-family:'Noto Serif TC',serif}
+[x-cloak]{display:none!important}
+
+:root{
+  --blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --orange:#f47b20;--navy:#0d1b4b;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.1);
+  --nav-h:62px;--bar-h:52px;
+}
+
+/* Navbar */
+.navbar{position:sticky;top:0;z-index:300;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;box-shadow:var(--shadow-sm)}
+.nb-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px;margin:0 auto;padding:0 1.5rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:.15s;text-decoration:none;white-space:nowrap}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
+.nav-link.active{color:var(--blue);font-weight:600}
+
+/* Top bar */
+.top-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);height:var(--bar-h)}
+.tb-inner{padding:0 1.5rem;display:flex;align-items:center;height:100%;gap:10px;max-width:1200px;margin:0 auto;overflow-x:auto}
+.tb-back{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-3);transition:.15s;white-space:nowrap;text-decoration:none;flex-shrink:0;padding:6px 10px;border-radius:6px;border:1px solid var(--border)}
+.tb-back:hover{color:var(--blue);border-color:var(--blue)}
+.tb-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.tb-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0}
+.tb-parts{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tb-parts::-webkit-scrollbar{display:none}
+.tb-part-btn{font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--text-2);cursor:pointer;transition:.12s;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.tb-part-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tb-part-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.tb-count{font-size:12px;color:var(--text-3);white-space:nowrap;margin-left:auto;flex-shrink:0}
+
+/* Layout */
+.qb-layout{display:flex;flex:1;align-items:flex-start;max-width:1200px;margin:0 auto;width:100%}
+
+/* Sidebar */
+.qb-sidebar{width:200px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:14px 10px;position:sticky;top:calc(var(--nav-h) + var(--bar-h));height:calc(100vh - var(--nav-h) - var(--bar-h));overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+.sb-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding:0 2px}
+.sb-progress{font-size:11px;color:var(--text-3);margin-bottom:12px;padding:0 2px}
+.sb-progress strong{color:var(--blue)}
+.sb-group-btn{display:block;width:100%;text-align:left;font-size:12px;padding:7px 10px;border-radius:8px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;position:relative;display:flex;align-items:center;gap:6px}
+.sb-group-btn:hover{background:#f3f4f6}
+.sb-group-btn.active{background:var(--blue-lt);color:var(--blue);font-weight:600}
+.sb-group-btn.done{color:var(--green)}
+.sb-group-btn.done::after{content:'✓';font-size:11px;color:var(--green);margin-left:auto;flex-shrink:0}
+.sb-group-num{width:22px;height:22px;border-radius:6px;background:#f3f4f6;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-group-btn.active .sb-group-num{background:var(--blue);color:#fff}
+.sb-group-btn.done .sb-group-num{background:var(--green-lt);color:var(--green)}
+.sb-group-label{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;font-size:11.5px}
+
+/* Main content */
+.qb-main{flex:1;min-width:0;padding:24px 28px 64px}
+
+/* Loading */
+.qb-loading{display:flex;align-items:center;justify-content:center;flex:1;padding:4rem;color:var(--text-3);font-size:14px;gap:10px}
+
+/* Group card */
+.group-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px}
+.gc-head{padding:14px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px;background:#fafbfc}
+.gc-part-badge{font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.gc-part-badge.listening{background:var(--purple-lt);color:var(--purple)}
+.gc-part-badge.reading{background:var(--blue-lt);color:var(--blue)}
+.gc-group-num{font-size:12px;color:var(--text-3)}
+
+/* Audio player */
+.audio-block{padding:14px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px;background:#fafbfc}
+.audio-btn{width:36px;height:36px;border-radius:50%;background:var(--purple);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:.15s;flex-shrink:0}
+.audio-btn:hover{background:#6d28d9}
+.audio-label{font-size:12px;color:var(--text-3)}
+.q-audio-btn{width:26px;height:26px;border-radius:50%;background:var(--purple-lt);color:var(--purple);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s;flex-shrink:0;vertical-align:middle;margin-right:4px}
+.q-audio-btn:hover{background:var(--purple);color:#fff}
+
+/* Passage */
+.passage-block{padding:18px 20px;border-bottom:1px solid #f3f4f6;font-family:'Noto Serif TC',serif;font-size:14.5px;line-height:1.9;color:var(--text);white-space:pre-wrap}
+.passage-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-family:'Be Vietnam Pro',sans-serif}
+
+/* Questions */
+.questions-block{padding:20px}
+.question-item{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #f3f4f6}
+.question-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.q-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:#f3f4f6;font-size:12px;font-weight:700;color:var(--text-2);margin-right:8px;flex-shrink:0;vertical-align:middle}
+.q-text{font-family:'Noto Serif TC',serif;font-size:14.5px;line-height:1.7;margin-bottom:14px}
+.q-text-wrap{display:flex;align-items:flex-start;gap:0;margin-bottom:14px}
+
+/* Options */
+.options-list{display:flex;flex-direction:column;gap:7px}
+.opt-btn{width:100%;text-align:left;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-family:'Noto Serif TC',serif;font-size:14px;color:var(--text);transition:.12s;display:flex;align-items:baseline;gap:10px}
+.opt-btn:not([disabled]):hover{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.opt-btn[disabled]{cursor:default}
+.opt-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.opt-btn.correct{border-color:var(--green)!important;background:var(--green-lt)!important;color:var(--green)!important}
+.opt-btn.wrong{border-color:var(--red)!important;background:var(--red-lt)!important;color:var(--red)!important}
+.opt-label{font-size:12px;font-weight:700;min-width:20px;flex-shrink:0}
+
+/* Result badge on question */
+.q-result{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-left:8px;vertical-align:middle}
+.q-result.correct{background:var(--green-lt);color:var(--green)}
+.q-result.wrong{background:var(--red-lt);color:var(--red)}
+
+/* Navigation */
+.group-nav{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-top:1px solid #f3f4f6;background:#fafbfc}
+.nav-btn-prev,.nav-btn-next{font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);cursor:pointer;font-family:inherit;transition:.12s;display:flex;align-items:center;gap:6px}
+.nav-btn-prev:hover:not([disabled]),.nav-btn-next:hover:not([disabled]){border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.nav-btn-prev[disabled],.nav-btn-next[disabled]{opacity:.35;cursor:default}
+.nav-center{font-size:12px;color:var(--text-3)}
+.nav-center strong{color:var(--blue)}
+
+/* Group done banner */
+.group-done{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:var(--green-lt);color:var(--green);font-size:13px;font-weight:600;border-top:1px solid #bbf7d0}
+.group-done i{font-size:14px}
+
+/* Setup screen */
+.setup-screen{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.setup-card{width:100%;max-width:440px;background:#fff;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.14);overflow:hidden}
+.setup-head{padding:28px;background:linear-gradient(135deg,var(--navy),#1e3a8a);position:relative;overflow:hidden}
+.setup-head::before{content:'題';position:absolute;font-family:'Noto Serif TC',serif;font-size:200px;font-weight:700;color:rgba(255,255,255,.07);bottom:-40px;right:-10px;line-height:1;user-select:none}
+.setup-title{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;position:relative;z-index:1}
+.setup-sub{font-size:13px;color:rgba(255,255,255,.65);position:relative;z-index:1}
+.setup-body{padding:24px 28px}
+.setup-section-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.band-pills{display:flex;gap:8px;margin-bottom:20px}
+.band-pill{flex:1;padding:12px 10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-2);background:#fff;transition:.14s;text-align:center}
+.band-pill:hover{border-color:var(--blue);color:var(--blue)}
+.band-pill.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.band-pill.disabled{opacity:.4;cursor:default}
+.setup-info-box{background:#f9fafb;border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--text-2);line-height:1.7}
+.setup-start-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s}
+.setup-start-btn:hover{background:var(--blue-dark);transform:translateY(-1px)}
+.setup-start-btn:disabled{opacity:.5;cursor:default;transform:none}
+
+@media(max-width:768px){
+  .qb-sidebar{display:none}
+  .qb-main{padding:16px 16px 64px}
+  .nav-link{display:none}
+}
+</style>
+</head>
+<body x-data="qbankApp()" x-init="init()" x-cloak>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <div class="nb-inner">
+    <a class="nav-brand" href="/courses.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link active" href="/courses.html">Khóa học</a>
+      <a class="nav-link" href="/vocab.html">Từ vựng</a>
+      <a class="nav-link" href="/exams.html">Đề thi</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Setup screen (before loading) -->
+<div class="setup-screen" x-show="view === 'setup'">
+  <div class="setup-card">
+    <div class="setup-head">
+      <div class="setup-title zh">題庫練習</div>
+      <div class="setup-sub">Ngân hàng câu hỏi — luyện tập không giới hạn thời gian</div>
+    </div>
+    <div class="setup-body">
+      <div class="setup-section-title">Chọn band</div>
+      <div class="band-pills">
+        <button class="band-pill" :class="selectedBand==='QB-C'?'active':''" @click="selectedBand='QB-C'">Band C</button>
+        <button class="band-pill disabled" title="Sắp ra mắt">Band B</button>
+      </div>
+      <div class="setup-info-box">
+        <strong x-text="examInfo.total_questions || '–'"></strong> câu hỏi từ đề thi TOCFL chính thức —
+        4 dạng bài: Đối thoại, Đoạn văn nghe, Điền từ, Đọc hiểu.<br>
+        Nhấn vào đáp án để xem kết quả ngay lập tức.
+      </div>
+      <button class="setup-start-btn" :disabled="loading" @click="startPractice()">
+        <span x-show="loading">Đang tải...</span>
+        <span x-show="!loading">Bắt đầu luyện tập →</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Practice view -->
+<template x-if="view === 'practice'">
+  <div style="display:flex;flex-direction:column;flex:1">
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="tb-inner">
+        <a class="tb-back" href="/courses.html">
+          <i class="fas fa-chevron-left" style="font-size:10px"></i> Khóa học
+        </a>
+        <div class="tb-sep"></div>
+        <div class="tb-title zh" x-text="exam?.title || 'Ngân hàng câu hỏi'"></div>
+        <div class="tb-sep"></div>
+        <div class="tb-parts">
+          <template x-for="p in parts" :key="p.id">
+            <button class="tb-part-btn" :class="activePart?.id===p.id?'active':''"
+              @click="selectPart(p)" x-text="partLabel(p)">
+            </button>
+          </template>
+        </div>
+        <div class="tb-count" x-show="activePart">
+          <strong x-text="(activeGroupIdx+1)"></strong>/<span x-text="activePart?.groups?.length||0"></span> nhóm
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="qb-layout">
+      <!-- Sidebar -->
+      <div class="qb-sidebar">
+        <div class="sb-title">Danh sách nhóm</div>
+        <div class="sb-progress" x-show="activePart">
+          <strong x-text="doneCount()"></strong>/<span x-text="activePart?.groups?.length||0"></span> hoàn thành
+        </div>
+        <template x-if="activePart">
+          <div>
+            <template x-for="(g, idx) in activePart.groups" :key="g.id">
+              <button class="sb-group-btn"
+                :class="{'active': activeGroupIdx===idx, 'done': isGroupDone(g)}"
+                @click="goToGroup(idx)">
+                <span class="sb-group-num" x-text="idx+1"></span>
+                <span class="sb-group-label zh" x-text="groupLabel(g, idx)"></span>
+              </button>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <!-- Main -->
+      <div class="qb-main">
+        <template x-if="activePart && activeGroup">
+          <div class="group-card">
+            <!-- Card header -->
+            <div class="gc-head">
+              <span class="gc-part-badge" :class="activePart.skill==='Listening'?'listening':'reading'"
+                x-text="activePart.skill==='Listening'?'Nghe':'Đọc'"></span>
+              <span class="gc-part-badge" style="background:#f3f4f6;color:var(--text-2)"
+                x-text="partLabel(activePart)"></span>
+              <span class="gc-group-num">Nhóm <strong x-text="activeGroupIdx+1"></strong></span>
+            </div>
+
+            <!-- Group audio (if listening) -->
+            <template x-if="activeGroup.shared_audio_url">
+              <div class="audio-block">
+                <button class="audio-btn" @click="playAudio(activeGroup.shared_audio_url, 'group')"
+                  :title="playingId==='group'?'Đang phát...':'Nghe bài'">
+                  <i class="fas" :class="playingId==='group'?'fa-volume-up':'fa-play'"></i>
+                </button>
+                <span class="audio-label">
+                  <span x-show="playingId==='group'" style="color:var(--purple);font-weight:600">Đang phát...</span>
+                  <span x-show="playingId!=='group'">Nhấn để nghe bài</span>
+                </span>
+              </div>
+            </template>
+
+            <!-- Passage text -->
+            <template x-if="activeGroup.shared_text">
+              <div class="passage-block">
+                <div class="passage-label">Nội dung bài</div>
+                <span x-text="activeGroup.shared_text"></span>
+              </div>
+            </template>
+
+            <!-- Questions -->
+            <div class="questions-block">
+              <template x-for="q in activeGroup.tocfl_questions" :key="q.id">
+                <div class="question-item">
+                  <!-- Question header -->
+                  <div class="q-text-wrap">
+                    <template x-if="q.question_audio_url">
+                      <button class="q-audio-btn" @click="playAudio(q.question_audio_url, 'q'+q.id)">
+                        <i class="fas" :class="playingId==='q'+q.id?'fa-volume-up':'fa-play'"></i>
+                      </button>
+                    </template>
+                    <span class="q-num" x-text="q.question_num"></span>
+                    <span class="q-text zh" x-show="q.question_text" x-text="q.question_text" style="display:inline"></span>
+                    <template x-if="answers[q.id]">
+                      <span class="q-result" :class="results[q.id]?'correct':'wrong'">
+                        <i class="fas" :class="results[q.id]?'fa-check':'fa-times'"></i>
+                        <span x-text="results[q.id]?'Đúng':'Sai'"></span>
+                      </span>
+                    </template>
+                  </div>
+
+                  <!-- Options -->
+                  <div class="options-list">
+                    <template x-for="opt in q.tocfl_options" :key="opt.id">
+                      <button class="opt-btn"
+                        :class="{
+                          'correct': answers[q.id] && opt.is_correct,
+                          'wrong':   answers[q.id] && answers[q.id]===opt.label && !opt.is_correct,
+                          'selected': answers[q.id]===opt.label && !answers[q.id]
+                        }"
+                        :disabled="!!answers[q.id]"
+                        @click="selectAnswer(q.id, opt.label, opt.is_correct)">
+                        <span class="opt-label zh" x-text="opt.label"></span>
+                        <span class="zh" x-text="opt.text"></span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- Done banner -->
+            <template x-if="isGroupDone(activeGroup)">
+              <div class="group-done">
+                <i class="fas fa-check-circle"></i>
+                Đã hoàn thành nhóm này —
+                <strong x-text="groupScore(activeGroup)"></strong>/<span x-text="activeGroup.tocfl_questions.length"></span> câu đúng
+              </div>
+            </template>
+
+            <!-- Navigation -->
+            <div class="group-nav">
+              <button class="nav-btn-prev" :disabled="activeGroupIdx===0" @click="prevGroup()">
+                <i class="fas fa-chevron-left" style="font-size:10px"></i> Nhóm trước
+              </button>
+              <span class="nav-center">
+                <strong x-text="activeGroupIdx+1"></strong> / <span x-text="activePart?.groups?.length||0"></span>
+              </span>
+              <button class="nav-btn-next"
+                :disabled="activeGroupIdx>=(activePart?.groups?.length||1)-1"
+                @click="nextGroup()">
+                Nhóm sau <i class="fas fa-chevron-right" style="font-size:10px"></i>
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Part empty -->
+        <template x-if="!activePart">
+          <div style="text-align:center;padding:4rem;color:var(--text-3);font-size:14px">
+            Chọn dạng bài ở trên để bắt đầu.
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Hidden audio element -->
+<audio id="qb-audio" preload="none"></audio>
+
+<script>
+const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
+const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
+const _db = supabase.createClient(_DB_URL, _DB_KEY);
+
+function qbankApp() {
+  return {
+    view: 'setup',
+    loading: false,
+    selectedBand: 'QB-C',
+    exam: null,
+    examInfo: { total_questions: null },
+    parts: [],
+    activePart: null,
+    activeGroupIdx: 0,
+    answers: {},   // qId → label
+    results: {},   // qId → bool
+
+    playingId: null,
+    _audio: null,
+
+    get activeGroup() {
+      return this.activePart?.groups?.[this.activeGroupIdx] || null;
+    },
+
+    async init() {
+      // Pre-load exam info for setup screen
+      const band = new URLSearchParams(location.search).get('band') || 'QB-C';
+      this.selectedBand = band;
+      const { data } = await _db.from('tocfl_exams').select('id,title,total_questions').eq('band', band).single();
+      if (data) this.examInfo = data;
+      this._audio = document.getElementById('qb-audio');
+      this._audio.addEventListener('ended', () => { this.playingId = null; });
+    },
+
+    async startPractice() {
+      this.loading = true;
+      const band = this.selectedBand;
+
+      // Load exam
+      const { data: examData } = await _db.from('tocfl_exams').select('id,title,band,total_questions').eq('band', band).single();
+      if (!examData) { alert('Không tìm thấy đề thi. Vui lòng thử lại.'); this.loading = false; return; }
+      this.exam = examData;
+
+      // Load parts
+      const { data: partsData } = await _db.from('tocfl_parts')
+        .select('id,part_number,skill,instruction')
+        .eq('exam_id', examData.id)
+        .order('part_number');
+
+      // Load groups + questions + options
+      const { data: groupsData } = await _db.from('tocfl_groups')
+        .select(`id, part_id, order_num, shared_text, shared_audio_url,
+          tocfl_questions(id, question_num, question_text, question_audio_url,
+            tocfl_options(id, label, text, is_correct))`)
+        .in('part_id', (partsData||[]).map(p => p.id))
+        .order('order_num');
+
+      // Sort questions and options
+      for (const g of (groupsData || [])) {
+        g.tocfl_questions = (g.tocfl_questions || [])
+          .sort((a,b) => a.question_num - b.question_num);
+        for (const q of g.tocfl_questions) {
+          q.tocfl_options = (q.tocfl_options || [])
+            .sort((a,b) => a.label.localeCompare(b.label));
+        }
+      }
+
+      // Attach groups to parts
+      this.parts = (partsData || []).map(p => ({
+        ...p,
+        groups: (groupsData || []).filter(g => g.part_id === p.id).sort((a,b) => a.order_num - b.order_num),
+      }));
+
+      this.loading = false;
+      this.view = 'practice';
+      if (this.parts.length) this.selectPart(this.parts[0]);
+    },
+
+    selectPart(part) {
+      this.activePart = part;
+      this.activeGroupIdx = 0;
+      this.stopAudio();
+      this.$nextTick(() => window.scrollTo(0, 0));
+    },
+
+    goToGroup(idx) {
+      this.activeGroupIdx = idx;
+      this.stopAudio();
+      this.$nextTick(() => window.scrollTo(0, 0));
+    },
+
+    nextGroup() {
+      if (this.activeGroupIdx < (this.activePart?.groups?.length || 0) - 1) {
+        this.activeGroupIdx++;
+        this.stopAudio();
+        window.scrollTo(0, 0);
+      }
+    },
+
+    prevGroup() {
+      if (this.activeGroupIdx > 0) {
+        this.activeGroupIdx--;
+        this.stopAudio();
+        window.scrollTo(0, 0);
+      }
+    },
+
+    selectAnswer(qId, label, isCorrect) {
+      if (this.answers[qId]) return;
+      this.answers[qId] = label;
+      this.results[qId] = isCorrect;
+    },
+
+    isGroupDone(group) {
+      if (!group?.tocfl_questions?.length) return false;
+      return group.tocfl_questions.every(q => this.answers[q.id]);
+    },
+
+    groupScore(group) {
+      return (group?.tocfl_questions || []).filter(q => this.results[q.id]).length;
+    },
+
+    doneCount() {
+      return (this.activePart?.groups || []).filter(g => this.isGroupDone(g)).length;
+    },
+
+    playAudio(url, id) {
+      if (this.playingId === id) {
+        this._audio.pause();
+        this.playingId = null;
+        return;
+      }
+      this._audio.src = url;
+      this._audio.play().catch(() => {});
+      this.playingId = id;
+    },
+
+    stopAudio() {
+      this._audio?.pause();
+      this.playingId = null;
+    },
+
+    partLabel(p) {
+      const labels = { 1:'Đối thoại', 2:'Đoạn văn', 3:'Điền từ', 4:'Đọc hiểu' };
+      return labels[p.part_number] || p.instruction;
+    },
+
+    groupLabel(g, idx) {
+      // First few words of shared_text as label
+      const txt = g.shared_text || '';
+      const short = txt.replace(/\n/g,' ').trim().slice(0, 18);
+      return short || `Nhóm ${idx+1}`;
+    },
+  };
+}
+</script>
+</body>
+</html>
