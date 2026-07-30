@@ -152,36 +152,26 @@ a{text-decoration:none;color:inherit}
 .group-done{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:var(--green-lt);color:var(--green);font-size:13px;font-weight:600;border-top:1px solid #bbf7d0}
 .group-done i{font-size:14px}
 
-/* Setup page */
-.sp-page{flex:1;background:var(--bg)}
-.sp-hero{background:linear-gradient(135deg,var(--navy),#1e3a8a);padding:28px 0;position:relative;overflow:hidden}
-.sp-hero::before{content:'題';position:absolute;font-family:'Noto Sans TC',sans-serif;font-size:260px;font-weight:700;color:rgba(255,255,255,.06);bottom:-60px;right:40px;line-height:1;pointer-events:none}
-.sp-hero-inner{max-width:900px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;z-index:1}
-.sp-hero-text{}
-.sp-title{font-family:'Noto Sans TC',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
-.sp-sub{font-size:13px;color:rgba(255,255,255,.6)}
-.sp-band-toggle{display:flex;gap:4px;background:rgba(255,255,255,.12);border-radius:10px;padding:4px}
-.sp-band-btn{padding:7px 18px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.65);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
-.sp-band-btn:hover{color:#fff}
-.sp-band-btn.active{background:#fff;color:var(--navy)}
-.sp-body{max-width:900px;margin:0 auto;padding:28px 28px 60px}
-.sp-section{margin-bottom:28px}
-.sp-section-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
-.sp-section-label i{font-size:12px}
-.sp-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.sp-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
-.sp-card:hover{border-color:var(--blue);box-shadow:0 4px 20px rgba(26,86,219,.1);transform:translateY(-1px)}
-.sp-card.loading{opacity:.6;pointer-events:none}
-.sp-card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.sp-card-icon.listening{background:var(--purple-lt);color:var(--purple)}
-.sp-card-icon.reading{background:var(--blue-lt);color:var(--blue)}
-.sp-card-body{flex:1;min-width:0}
-.sp-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
-.sp-card-meta{font-size:12px;color:var(--text-3)}
-.sp-card-arrow{font-size:16px;color:var(--text-3);flex-shrink:0;transition:.15s}
-.sp-card:hover .sp-card-arrow{color:var(--blue);transform:translateX(3px)}
-.sp-loading{text-align:center;padding:40px;color:var(--text-3);font-size:14px}
-@media(max-width:540px){.sp-cards{grid-template-columns:1fr}}
+/* Setup screen */
+.setup-screen{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem}
+.setup-card{width:100%;max-width:420px;background:#fff;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.14);overflow:hidden}
+.setup-head{padding:28px;background:linear-gradient(135deg,var(--navy),#1e3a8a);position:relative;overflow:hidden}
+.setup-head::before{content:'題';position:absolute;font-family:'Noto Sans TC',sans-serif;font-size:200px;font-weight:700;color:rgba(255,255,255,.07);bottom:-40px;right:-10px;line-height:1;user-select:none}
+.setup-title{font-family:'Noto Sans TC',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;position:relative;z-index:1}
+.setup-sub{font-size:13px;color:rgba(255,255,255,.65);position:relative;z-index:1}
+.setup-body{padding:24px 28px}
+.setup-section-title{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.band-pills{display:flex;gap:8px;margin-bottom:20px}
+.band-pill{flex:1;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-2);background:#fff;transition:.14s;text-align:center}
+.band-pill:hover{border-color:var(--blue);color:var(--blue)}
+.band-pill.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.setup-info-box{background:#f9fafb;border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--text-2);line-height:1.7}
+.skill-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.skill-btn{padding:12px 10px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff}
+.skill-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.skill-btn:disabled{opacity:.5;cursor:default;transform:none;filter:none}
+.skill-btn.listen{background:var(--purple)}
+.skill-btn.read{background:var(--blue)}
 
 @media(max-width:768px){
   .qb-sidebar{display:none}
@@ -216,94 +206,38 @@ a{text-decoration:none;color:inherit}
   </div>
 </nav>
 
-<!-- Setup page -->
-<div class="sp-page" x-show="view === 'setup'">
-  <!-- Hero -->
-  <div class="sp-hero">
-    <div class="sp-hero-inner">
-      <div class="sp-hero-text">
-        <div class="sp-title zh">題庫練習</div>
-        <div class="sp-sub">Luyện tập không giới hạn thời gian — đáp án ngay lập tức</div>
+<!-- Setup screen -->
+<div class="setup-screen" x-show="view === 'setup'">
+  <div class="setup-card">
+    <div class="setup-head">
+      <div class="setup-title zh">題庫練習</div>
+      <div class="setup-sub">Ngân hàng câu hỏi — luyện tập không giới hạn thời gian</div>
+    </div>
+    <div class="setup-body">
+      <div class="setup-section-title">Chọn band</div>
+      <div class="band-pills">
+        <button class="band-pill" :class="selectedBand==='QB-B'?'active':''" @click="changeBand('QB-B')">Band B</button>
+        <button class="band-pill" :class="selectedBand==='QB-C'?'active':''" @click="changeBand('QB-C')">Band C</button>
       </div>
-      <div class="sp-band-toggle">
-        <button class="sp-band-btn" :class="selectedBand==='QB-B'?'active':''" @click="changeBand('QB-B')">Band B</button>
-        <button class="sp-band-btn" :class="selectedBand==='QB-C'?'active':''" @click="changeBand('QB-C')">Band C</button>
+      <div class="setup-info-box" x-show="!loadingBand">
+        <strong x-text="exam?.total_questions || '–'"></strong> câu hỏi —
+        Nghe: <span x-text="(partStat(1)||'') + ' đối thoại, ' + (partStat(2)||'') + ' đoạn văn'"></span><br>
+        Đọc: <span x-text="(partStat(3)||'') + ' điền từ, ' + (partStat(4)||'') + ' đọc hiểu'"></span>
+      </div>
+      <div class="setup-info-box" x-show="loadingBand" style="text-align:center;color:var(--text-3)">
+        <i class="fas fa-spinner fa-spin"></i> Đang tải...
+      </div>
+      <div class="skill-btns">
+        <button class="skill-btn listen" :disabled="loadingBand || !!loadingPart" @click="startPractice('listening')">
+          <i class="fas" :class="loadingPart==='listening'?'fa-spinner fa-spin':'fa-headphones'"></i>
+          Nghe
+        </button>
+        <button class="skill-btn read" :disabled="loadingBand || !!loadingPart" @click="startPractice('reading')">
+          <i class="fas" :class="loadingPart==='reading'?'fa-spinner fa-spin':'fa-book-open'"></i>
+          Đọc
+        </button>
       </div>
     </div>
-  </div>
-
-  <!-- Body -->
-  <div class="sp-body">
-    <!-- Loading state -->
-    <div class="sp-loading" x-show="loadingBand">
-      <i class="fas fa-spinner fa-spin" style="margin-right:6px"></i> Đang tải...
-    </div>
-
-    <template x-if="!loadingBand">
-      <div>
-        <!-- Nghe section -->
-        <div class="sp-section">
-          <div class="sp-section-label">
-            <i class="fas fa-headphones"></i> Nghe
-          </div>
-          <div class="sp-cards">
-            <!-- Đối thoại -->
-            <div class="sp-card" :class="loadingPart===1?'loading':''" @click="startPractice(1)">
-              <div class="sp-card-icon listening"><i class="fas fa-comments"></i></div>
-              <div class="sp-card-body">
-                <div class="sp-card-title">Đối thoại</div>
-                <div class="sp-card-meta" x-text="partStat(1)"></div>
-              </div>
-              <div class="sp-card-arrow">
-                <i class="fas" :class="loadingPart===1?'fa-spinner fa-spin':'fa-chevron-right'" style="font-size:13px"></i>
-              </div>
-            </div>
-            <!-- Đoạn văn -->
-            <div class="sp-card" :class="loadingPart===2?'loading':''" @click="startPractice(2)">
-              <div class="sp-card-icon listening"><i class="fas fa-volume-up"></i></div>
-              <div class="sp-card-body">
-                <div class="sp-card-title">Đoạn văn nghe</div>
-                <div class="sp-card-meta" x-text="partStat(2)"></div>
-              </div>
-              <div class="sp-card-arrow">
-                <i class="fas" :class="loadingPart===2?'fa-spinner fa-spin':'fa-chevron-right'" style="font-size:13px"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Đọc section -->
-        <div class="sp-section">
-          <div class="sp-section-label">
-            <i class="fas fa-book-open"></i> Đọc
-          </div>
-          <div class="sp-cards">
-            <!-- Điền từ -->
-            <div class="sp-card" :class="loadingPart===3?'loading':''" @click="startPractice(3)">
-              <div class="sp-card-icon reading"><i class="fas fa-pen-nib"></i></div>
-              <div class="sp-card-body">
-                <div class="sp-card-title">Điền từ</div>
-                <div class="sp-card-meta" x-text="partStat(3)"></div>
-              </div>
-              <div class="sp-card-arrow">
-                <i class="fas" :class="loadingPart===3?'fa-spinner fa-spin':'fa-chevron-right'" style="font-size:13px"></i>
-              </div>
-            </div>
-            <!-- Đọc hiểu -->
-            <div class="sp-card" :class="loadingPart===4?'loading':''" @click="startPractice(4)">
-              <div class="sp-card-icon reading"><i class="fas fa-file-alt"></i></div>
-              <div class="sp-card-body">
-                <div class="sp-card-title">Đọc hiểu</div>
-                <div class="sp-card-meta" x-text="partStat(4)"></div>
-              </div>
-              <div class="sp-card-arrow">
-                <i class="fas" :class="loadingPart===4?'fa-spinner fa-spin':'fa-chevron-right'" style="font-size:13px"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
   </div>
 </div>
 
@@ -317,10 +251,14 @@ a{text-decoration:none;color:inherit}
           <i class="fas fa-chevron-left" style="font-size:10px"></i> Dạng bài
         </button>
         <div class="tb-sep"></div>
-        <div class="tb-title" x-text="activePart ? partLabel(activePart) : ''"></div>
+        <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--blue-lt);color:var(--blue);flex-shrink:0" x-text="selectedBand.replace('QB-','Band ')"></span>
         <div class="tb-sep"></div>
-        <div style="font-size:12px;color:var(--text-3);white-space:nowrap;flex-shrink:0">
-          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--blue-lt);color:var(--blue)" x-text="selectedBand.replace('QB-','Band ')"></span>
+        <div class="tb-parts">
+          <template x-for="p in parts" :key="p.id">
+            <button class="tb-part-btn" :class="activePart?.id===p.id?'active':''"
+              @click="selectPart(p)" x-text="partLabel(p)">
+            </button>
+          </template>
         </div>
         <div class="tb-count" x-show="activePart">
           <strong x-text="(activeGroupIdx+1)"></strong>/<span x-text="activePart?.groups?.length||0"></span> nhóm
@@ -590,20 +528,21 @@ function qbankApp() {
       await this.loadBandInfo(band);
     },
 
-    async startPractice(partNum) {
+    async startPractice(skill) {
       if (this.loadingPart) return;
-      this.loadingPart = partNum;
+      this.loadingPart = skill;
 
-      // Find the part from partsInfo
-      const partInfo = this.partsInfo.find(p => p.part_number === partNum);
-      if (!partInfo) { this.loadingPart = null; return; }
+      // skill = 'listening' → parts 1,2 | 'reading' → parts 3,4
+      const nums = skill === 'listening' ? [1, 2] : [3, 4];
+      const matchedParts = this.partsInfo.filter(p => nums.includes(p.part_number));
+      if (!matchedParts.length) { this.loadingPart = null; return; }
 
-      // Load groups + questions + options for this part only
+      const partIds = matchedParts.map(p => p.id);
       const { data: groupsData } = await _db.from('tocfl_groups')
         .select(`id, part_id, order_num, shared_text, shared_audio_url, shared_image_url,
           tocfl_questions(id, question_num, question_text, question_audio_url, question_image_url,
             tocfl_options(id, label, text, is_correct))`)
-        .eq('part_id', partInfo.id)
+        .in('part_id', partIds)
         .order('order_num');
 
       for (const g of (groupsData || [])) {
@@ -613,8 +552,10 @@ function qbankApp() {
         }
       }
 
-      const part = { ...partInfo, groups: groupsData || [] };
-      this.parts = [part];
+      this.parts = matchedParts.map(p => ({
+        ...p,
+        groups: (groupsData || []).filter(g => g.part_id === p.id).sort((a,b) => a.order_num - b.order_num),
+      }));
       this.answers = {};
       this.results = {};
       this.tranCache = {};
@@ -622,7 +563,7 @@ function qbankApp() {
       this.translating = {};
       this.loadingPart = null;
       this.view = 'practice';
-      this.selectPart(part);
+      if (this.parts.length) this.selectPart(this.parts[0]);
     },
 
     backToSetup() {
@@ -759,8 +700,7 @@ function qbankApp() {
 
     partStat(num) {
       const p = this.partsInfo.find(x => x.part_number === num);
-      if (!p) return '…';
-      return `${p.question_count} câu`;
+      return p ? `${p.question_count}` : '–';
     },
 
     groupLabel(g, idx) {
