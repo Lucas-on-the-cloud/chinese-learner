@@ -152,6 +152,12 @@ level: "cơ bản" / "trung cấp" / "nâng cao"`;
   render() {
     const bgMap = { 'cơ bản': '#e6f4f0', 'trung cấp': '#fdf6e3', 'nâng cao': '#fde8e6' };
     const txMap = { 'cơ bản': '#0f6e56', 'trung cấp': '#b8860b', 'nâng cao': '#c0392b' };
+    if (this.items.length > 0) {
+      ['csv-btn', 'ws-btn', 'addall-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'inline-block';
+      });
+    }
     document.getElementById('vocab-list').innerHTML = this.items.map((w, i) => {
       const inFC = app.flashcards.has(w.char);
       const bg = bgMap[w.level] || '#f3ede3';
