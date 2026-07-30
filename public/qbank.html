@@ -169,6 +169,14 @@ a{text-decoration:none;color:inherit}
   .qb-main{padding:16px 16px 64px}
   .nav-link{display:none}
 }
+
+/* Text-selection translation popup */
+#sel-popup{position:fixed;z-index:9999;display:none;pointer-events:none;transform:translateX(-50%) translateY(-100%)}
+#sel-popup-inner{position:relative;filter:drop-shadow(0 4px 18px rgba(0,0,0,.28))}
+#sel-popup-content{background:#1e293b;color:#f8fafc;border-radius:10px;padding:9px 14px;font-size:14px;font-family:'Be Vietnam Pro',sans-serif;line-height:1.7;max-width:300px;min-width:100px;word-wrap:break-word;pointer-events:auto;cursor:default}
+#sel-popup-arrow{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #1e293b;margin:0 auto}
+.sel-loader{display:inline-block;width:11px;height:11px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:selSpin .65s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes selSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body x-data="qbankApp()" x-init="init()" x-cloak>
@@ -399,6 +407,16 @@ a{text-decoration:none;color:inherit}
 <!-- Hidden audio element -->
 <audio id="qb-audio" preload="none"></audio>
 
+<!-- Text-selection translation popup -->
+<div id="sel-popup">
+  <div id="sel-popup-inner">
+    <div id="sel-popup-content">
+      <span id="sel-popup-icon"></span><span id="sel-popup-text">Đang dịch...</span>
+    </div>
+    <div id="sel-popup-arrow"></div>
+  </div>
+</div>
+
 <script>
 const _DB_URL = 'https://prctmferugkxabyizslx.supabase.co';
 const _DB_KEY = 'sb_publishable_6-_0uUkFDKDCA4HBNdB0Gg_ZEL_GqJQ';
@@ -617,6 +635,66 @@ function qbankApp() {
     },
   };
 }
+
+// Text-selection popup — translate highlighted Chinese text on mouseup
+(function () {
+  const popup  = document.getElementById('sel-popup');
+  const icon   = document.getElementById('sel-popup-icon');
+  const label  = document.getElementById('sel-popup-text');
+
+  function show(rect) {
+    popup.style.left = (rect.left + rect.width / 2) + 'px';
+    popup.style.top  = (rect.top - 10) + 'px';
+    popup.style.display = 'block';
+  }
+
+  function hide() { popup.style.display = 'none'; }
+
+  async function myMemory(text) {
+    const url = 'https://api.mymemory.translated.net/get'
+      + '?q=' + encodeURIComponent(text.slice(0, 490))
+      + '&langpair=zh-TW|vi';
+    const r = await fetch(url);
+    const d = await r.json();
+    return d.responseData?.translatedText || '(không dịch được)';
+  }
+
+  document.addEventListener('mouseup', async function (e) {
+    const sel = window.getSelection();
+    const txt = sel?.toString().trim();
+    if (!txt || txt.length < 2) { hide(); return; }
+
+    // Only fire inside passage or question text areas
+    const range = sel.getRangeAt(0);
+    const anc = range.commonAncestorContainer;
+    const el = anc.nodeType === Node.TEXT_NODE ? anc.parentElement : anc;
+    if (!el.closest('.passage-block, .questions-block')) { hide(); return; }
+
+    const rect = range.getBoundingClientRect();
+    icon.className = 'sel-loader';
+    icon.textContent = '';
+    label.textContent = 'Đang dịch...';
+    show(rect);
+
+    try {
+      const result = await myMemory(txt);
+      icon.className = '';
+      icon.textContent = '';
+      label.textContent = result;
+    } catch (_) {
+      icon.className = '';
+      label.textContent = '(Lỗi kết nối)';
+    }
+  });
+
+  // Hide on click outside popup
+  document.addEventListener('mousedown', function (e) {
+    if (!popup.contains(e.target)) hide();
+  });
+
+  // Hide on scroll so it doesn't drift
+  window.addEventListener('scroll', hide, { passive: true });
+})();
 </script>
 </body>
 </html>
