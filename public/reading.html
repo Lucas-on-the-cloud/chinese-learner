@@ -24,6 +24,10 @@ img{display:block;max-width:100%}
   --success:#15803d;--success-lt:#f0fdf4;
   --warn:#92400e;--warn-lt:#fffbeb;--warn-bd:#fde68a;
   --danger:#c0392b;--danger-lt:#fde8e6;
+  --ltn-font: Arial, Helvetica, "Microsoft JhengHei", "微軟正黑體", "Heiti TC", "PingFang TC", "PMingLiU", "新細明體", "Noto Sans TC", sans-serif;
+  --art-size: 22px;
+  --art-lh: 1.7;
+  --art-ls: 0.5px;
 }
 
 /* NAVBAR */
@@ -68,7 +72,7 @@ img{display:block;max-width:100%}
 .il-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:.75rem;box-shadow:var(--shadow-sm)}
 .il-pair{margin-bottom:1rem}
 .il-pair:last-child{margin-bottom:0}
-.il-zh{font-family:'Noto Serif TC',serif;font-size:18px;letter-spacing:.03em;line-height:2.2;color:var(--text)}
+.il-zh{font-family:var(--ltn-font);font-size:var(--art-size);letter-spacing:var(--art-ls);line-height:var(--art-lh);color:var(--text);text-align:justify;word-break:break-word}
 .il-py{font-size:12px;color:var(--text-2);font-style:italic;line-height:1.6;margin-top:4px}
 .text-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:.75rem;line-height:2;white-space:pre-wrap;box-shadow:var(--shadow-sm)}
 .text-block.vietnamese{font-size:14px;line-height:1.9;color:var(--text)}

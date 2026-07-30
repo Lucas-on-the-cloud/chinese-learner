@@ -18,7 +18,7 @@ html{scroll-behavior:smooth}
 body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
 a{text-decoration:none;color:inherit}
 img{display:block;max-width:100%}
-.zh{font-family:'Noto Serif TC',serif}
+.zh{font-family:var(--ltn-font)}
 
 /* ── Tokens ───────────────────────────────────────────── */
 :root{
@@ -34,6 +34,10 @@ img{display:block;max-width:100%}
   --shadow-lg:0 10px 40px rgba(0,0,0,.14);
   --r:12px;
   --nav-h:62px;
+  --ltn-font: Arial, Helvetica, "Microsoft JhengHei", "微軟正黑體", "Heiti TC", "PingFang TC", "PMingLiU", "新細明體", "Noto Sans TC", sans-serif;
+  --art-size: 22px;
+  --art-lh: 1.7;
+  --art-ls: 0.5px;
 }
 
 /* ── x-cloak: hide until Alpine initialises ──────────── */
@@ -127,16 +131,16 @@ audio{accent-color:var(--purple);width:100%;height:32px}
 .passage-block{background:linear-gradient(135deg,var(--green-lt),#dcfce7);border:1.5px solid #bbf7d0;border-radius:12px;padding:16px 20px;margin-bottom:16px;max-height:42vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#86efac transparent}
 .passage-block::-webkit-scrollbar{width:4px}.passage-block::-webkit-scrollbar-track{background:transparent}.passage-block::-webkit-scrollbar-thumb{background:#86efac;border-radius:2px}
 .passage-label{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.passage-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:2;color:#166534;white-space:pre-wrap}
+.passage-text{font-family:var(--ltn-font);font-size:var(--art-size);line-height:var(--art-lh);letter-spacing:var(--art-ls);color:#166534;white-space:pre-wrap;text-align:justify;word-break:break-word}
 
 /* ── Questions ────────────────────────────────────────── */
 .q-block{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #f3f4f6}
 .q-block:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
 .q-stem{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
 .q-num{font-size:13px;font-weight:800;color:var(--blue);min-width:28px;flex-shrink:0;padding-top:1px}
-.q-text{font-family:'Noto Serif TC',serif;font-size:14px;line-height:1.7;color:var(--text)}
+.q-text{font-family:var(--ltn-font);font-size:var(--art-size);line-height:var(--art-lh);letter-spacing:var(--art-ls);color:var(--text);text-align:justify;word-break:break-word}
 .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.choice-btn{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:#fff;font-family:'Noto Serif TC',serif;font-size:13px;color:var(--text);transition:all .12s;text-align:left;width:100%;line-height:1.5}
+.choice-btn{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:#fff;font-family:var(--ltn-font);font-size:calc(var(--art-size) - 2px);letter-spacing:var(--art-ls);color:var(--text);transition:all .12s;text-align:left;width:100%;line-height:var(--art-lh)}
 .choice-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-lt)}
 .choice-lbl{font-weight:800;color:var(--text-3);min-width:16px;flex-shrink:0;font-family:'Be Vietnam Pro',sans-serif;margin-top:1px}
 .choice-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
