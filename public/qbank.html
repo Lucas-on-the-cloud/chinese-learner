@@ -13,7 +13,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
 a{text-decoration:none;color:inherit}
-.zh{font-family:'Noto Sans TC',sans-serif}
+.zh{font-family:var(--ltn-font)}
 [x-cloak]{display:none!important}
 
 :root{
@@ -27,6 +27,11 @@ a{text-decoration:none;color:inherit}
   --shadow-sm:0 1px 3px rgba(0,0,0,.08);
   --shadow:0 4px 16px rgba(0,0,0,.1);
   --nav-h:62px;--bar-h:52px;
+  /* LTN article typography */
+  --ltn-font: Arial, Helvetica, "Microsoft JhengHei", "微軟正黑體", "Heiti TC", "PingFang TC", "PMingLiU", "新細明體", "Noto Sans TC", sans-serif;
+  --art-size: 18px;
+  --art-lh: 1.7;
+  --art-ls: 0.5px;
 }
 
 /* Navbar */
@@ -95,27 +100,34 @@ a{text-decoration:none;color:inherit}
 .q-audio-btn{width:26px;height:26px;border-radius:50%;background:var(--purple-lt);color:var(--purple);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:.15s;flex-shrink:0;vertical-align:middle;margin-right:4px}
 .q-audio-btn:hover{background:var(--purple);color:#fff}
 
-/* Passage */
-.passage-block{padding:24px 28px;border-bottom:1px solid #f3f4f6;font-family:'Noto Sans TC',sans-serif;font-size:19px;line-height:2.3;color:#111;letter-spacing:.03em;white-space:pre-line}
+/* Passage — LTN article style */
+.passage-block{padding:24px 28px;border-bottom:1px solid #f3f4f6;color:#111;white-space:pre-line}
 .passage-label{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-family:'Be Vietnam Pro',sans-serif}
+.passage-text{font-family:var(--ltn-font);font-size:var(--art-size);line-height:var(--art-lh);letter-spacing:var(--art-ls);text-align:justify;word-break:break-word;color:#111}
 
 /* Questions */
-.questions-block{padding:24px}
-.question-item{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #f3f4f6}
+.questions-block{padding:20px 28px 28px}
+.question-item{margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid #f3f4f6}
 .question-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
 .q-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:#f3f4f6;font-size:13px;font-weight:700;color:var(--text-2);margin-right:10px;flex-shrink:0;vertical-align:middle}
-.q-text{font-family:'Noto Sans TC',sans-serif;font-size:18.5px;line-height:2.1;letter-spacing:.03em;color:#111;margin-bottom:18px}
-.q-text-wrap{display:flex;align-items:flex-start;gap:0;margin-bottom:16px}
+.q-text{font-family:var(--ltn-font);font-size:var(--art-size);line-height:var(--art-lh);letter-spacing:var(--art-ls);color:#111;margin-bottom:14px;text-align:justify;word-break:break-word}
+.q-text-wrap{display:flex;align-items:flex-start;gap:0;margin-bottom:12px}
 
 /* Options */
-.options-list{display:flex;flex-direction:column;gap:9px}
-.opt-btn{width:100%;text-align:left;padding:13px 18px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-size:17.5px;letter-spacing:.03em;color:var(--text);transition:.12s;display:flex;align-items:baseline;gap:14px}
+.options-list{display:flex;flex-direction:column;gap:8px}
+.opt-btn{width:100%;text-align:left;padding:11px 16px;border:1.5px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;font-family:var(--ltn-font);font-size:calc(var(--art-size) - 1px);letter-spacing:var(--art-ls);color:var(--text);transition:.12s;display:flex;align-items:baseline;gap:12px}
 .opt-btn:not([disabled]):hover{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
 .opt-btn[disabled]{cursor:default}
 .opt-btn.selected{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
 .opt-btn.correct{border-color:var(--green)!important;background:var(--green-lt)!important;color:var(--green)!important}
 .opt-btn.wrong{border-color:var(--red)!important;background:var(--red-lt)!important;color:var(--red)!important}
-.opt-label{font-size:13px;font-weight:700;min-width:22px;flex-shrink:0;color:var(--text-3)}
+.opt-label{font-size:12px;font-weight:700;min-width:20px;flex-shrink:0;color:var(--text-3);font-family:'Be Vietnam Pro',sans-serif}
+
+/* Font adjuster */
+.font-adj{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.font-adj-btn{width:26px;height:26px;border:1px solid var(--border);background:#f9fafb;border-radius:5px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text-2);display:flex;align-items:center;justify-content:center;font-family:'Be Vietnam Pro',sans-serif;transition:.12s;padding:0}
+.font-adj-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+.font-adj-label{font-size:11px;color:var(--text-3);min-width:26px;text-align:center;font-family:'Be Vietnam Pro',sans-serif}
 
 /* Translation */
 .translate-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid #d1d5db;background:#fff;color:var(--text-2);cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:.12s;flex-shrink:0}
@@ -263,6 +275,12 @@ a{text-decoration:none;color:inherit}
         <div class="tb-count" x-show="activePart">
           <strong x-text="(activeGroupIdx+1)"></strong>/<span x-text="activePart?.groups?.length||0"></span> nhóm
         </div>
+        <div class="tb-sep"></div>
+        <div class="font-adj">
+          <button class="font-adj-btn" @click="fontDown()" title="Giảm cỡ chữ">A−</button>
+          <span class="font-adj-label" x-text="artSize+'px'"></span>
+          <button class="font-adj-btn" @click="fontUp()" title="Tăng cỡ chữ">A+</button>
+        </div>
       </div>
     </div>
 
@@ -337,7 +355,7 @@ a{text-decoration:none;color:inherit}
                       <span x-text="showTrans[activeGroup.id] ? 'Ẩn dịch' : (translating[activeGroup.id] ? 'Đang dịch...' : 'Dịch tiếng Việt')"></span>
                     </button>
                   </div>
-                  <div style="margin-top:12px" x-text="activeGroup.shared_text"></div>
+                  <div class="passage-text" style="margin-top:12px" x-text="activeGroup.shared_text"></div>
                   <template x-if="showTrans[activeGroup.id] && tranCache[activeGroup.id]?.passage">
                     <div class="translation-passage">
                       <div class="translation-label">Bản dịch tiếng Việt</div>
@@ -492,6 +510,7 @@ function qbankApp() {
     showTrans: {},
     translating: {},
 
+    artSize: 18,
     playingId: null,
     _audio: null,
 
@@ -569,6 +588,18 @@ function qbankApp() {
     backToSetup() {
       this.stopAudio();
       this.view = 'setup';
+    },
+
+    fontUp() {
+      if (this.artSize >= 26) return;
+      this.artSize += 2;
+      document.documentElement.style.setProperty('--art-size', this.artSize + 'px');
+    },
+
+    fontDown() {
+      if (this.artSize <= 14) return;
+      this.artSize -= 2;
+      document.documentElement.style.setProperty('--art-size', this.artSize + 'px');
     },
 
     selectPart(part) {
