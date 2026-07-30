@@ -4,10 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — Admin · TOCFL FAFA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="css/admin.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* stat mini-bar */
+.mini-bar-wrap{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.mini-bar-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.mini-bar-label{width:100px;color:#6b7280;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-bar-track{flex:1;height:7px;background:#f3f4f6;border-radius:4px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.mini-bar-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151;min-width:28px;text-align:right;flex-shrink:0}
+/* flashcard list */
+.fc-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #f3f4f6}
+.fc-char{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:700;color:#1a56db;min-width:44px;text-align:center}
+.fc-info{flex:1;min-width:0}
+.fc-py{font-size:11px;color:#9ca3af;font-style:italic}
+.fc-meaning{font-size:13px;color:#1f2937;font-weight:500}
+.fc-lesson{font-family:'JetBrains Mono',monospace;font-size:10px;color:#d1d5db;margin-left:auto;flex-shrink:0}
+/* course list */
+.cr-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #f3f4f6}
+.cr-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cr-title{font-size:13px;font-weight:600;color:#1f2937;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr-meta{font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0}
+/* tocfl band pill */
+.band-pill-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.band-pill-card{flex:1;min-width:0;background:#f9fafb;border:1px solid #e5e7eb;border-radius:9px;padding:12px 14px}
+.band-pill-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#9ca3af;margin-bottom:4px}
+.band-pill-val{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:#0d1b4b}
+.band-pill-sub{font-size:11px;color:#6b7280;margin-top:2px}
+/* skeleton pulse */
+.skel{display:inline-block;background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skelAnim 1.2s infinite;border-radius:4px;color:transparent!important}
+@keyframes skelAnim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* stat-in-action */
+.stat-box{display:flex;align-items:flex-start;gap:18px;margin-top:8px}
+.stat-item{flex:1;text-align:center}
+.stat-item-val{font-family:'Noto Serif TC',serif;font-size:24px;font-weight:700;color:#0d1b4b}
+.stat-item-lbl{font-size:11px;color:#6b7280;margin-top:2px}
+.action-divider{width:1px;background:#e5e7eb;flex-shrink:0;align-self:stretch}
+</style>
 </head>
 <body>
 
@@ -87,208 +123,202 @@
       <a href="/courses.html" class="primary-btn"><i class="fa-solid fa-arrow-left"></i> &nbsp;Về trang chủ</a>
     </div>
   </header>
+
   <div class="content">
 
-    <!-- PRIMARY ACTIONS -->
+    <!-- ── PRIMARY ACTION CARDS ── -->
     <div class="primary-actions">
       <div class="action-card dark">
         <div style="position:relative;z-index:1">
-          <div class="action-eyebrow">Việc cần làm hôm nay · Today</div>
-          <div class="action-title">Thư viện bài học của bạn<br><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.65)">Quản lý, chỉnh sửa và thêm nội dung mới</span></div>
+          <div class="action-eyebrow">TOCFL FAFA · 管理面板</div>
+          <div class="action-title">Thư viện nội dung<br><span style="font-size:14px;font-weight:400;color:rgba(255,255,255,.65)">Quản lý bài học, khóa học và ngân hàng câu hỏi</span></div>
           <div class="action-btns">
-            <a href="/courses.html" class="btn-light">Xem bài học →</a>
-            <a href="/add-lesson.html" class="btn-ghost-light">Thêm bài mới</a>
+            <a href="courses.html" class="btn-light">Quản lý khóa học</a>
+            <a href="exams.html" class="btn-ghost-light">Câu hỏi TOCFL</a>
           </div>
         </div>
         <div class="action-glyph">學</div>
       </div>
+
       <div class="action-card">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div class="icon-chip" style="background:#fef3c7;color:#92400e"><i class="fa-solid fa-comments"></i></div>
-          <div style="font-size:13px;font-weight:600">Phản hồi mới</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div class="icon-chip" style="background:#eff6ff;color:#1a56db"><i class="fa-solid fa-book-open"></i></div>
+          <div style="font-size:13px;font-weight:600">Bài học &amp; Khóa học</div>
         </div>
-        <div style="font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700">7</div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:12px">4 báo lỗi · 3 góp ý</div>
-        <a class="link-arrow">Xem phản hồi <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
+        <div class="stat-box">
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-lessons" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Bài học</div>
+          </div>
+          <div class="action-divider"></div>
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-courses" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Khóa học</div>
+          </div>
+          <div class="action-divider"></div>
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-vocab" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Flashcard</div>
+          </div>
+        </div>
+        <a class="link-arrow" href="courses.html" style="margin-top:14px;display:inline-flex">Quản lý khóa học <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
       </div>
+
       <div class="action-card">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-          <div class="icon-chip" style="background:#eff6ff;color:#1a56db"><i class="fa-solid fa-sparkles"></i></div>
-          <div style="font-size:13px;font-weight:600">Chi phí AI tháng này</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div class="icon-chip" style="background:#f5f3ff;color:#7c3aed"><i class="fa-solid fa-file-pen"></i></div>
+          <div style="font-size:13px;font-weight:600">Ngân hàng câu hỏi TOCFL</div>
         </div>
-        <div style="font-family:'Noto Serif TC',serif;font-size:28px;font-weight:700">$24.71</div>
-        <div style="font-size:12px;color:#15803d;margin-bottom:12px">↓ 12% so với tháng trước</div>
-        <a class="link-arrow">Xem chi tiết <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
+        <div class="stat-box">
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-questions" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Câu hỏi</div>
+          </div>
+          <div class="action-divider"></div>
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-groups" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Nhóm bài</div>
+          </div>
+          <div class="action-divider"></div>
+          <div class="stat-item">
+            <div class="stat-item-val skel" id="ac-bands" style="min-width:40px;min-height:28px">…</div>
+            <div class="stat-item-lbl">Bộ đề</div>
+          </div>
+        </div>
+        <a class="link-arrow" href="exams.html" style="margin-top:14px;display:inline-flex">Quản lý đề thi <i class="fa-solid fa-arrow-right" style="font-size:10px"></i></a>
       </div>
     </div>
 
-    <!-- KPI ROW -->
+    <!-- ── KPI ROW ── -->
     <div class="kpi-row">
       <div class="kpi-card">
         <div class="kpi-top">
           <div class="icon-chip" style="background:#eff6ff;color:#1a56db"><i class="fa-solid fa-book-open"></i></div>
-          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
         </div>
         <div class="kpi-label">Tổng bài học</div>
         <div class="kpi-en">Total lessons</div>
-        <div class="kpi-value" id="kpi-lessons">…</div>
-        <div class="kpi-delta pos" id="kpi-lessons-delta">Đang tải…</div>
+        <div class="kpi-value skel" id="kpi-lessons" style="min-width:60px;min-height:34px">…</div>
+        <div class="kpi-delta" id="kpi-lessons-delta" style="color:#9ca3af">Đang tải…</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-top">
-          <div class="icon-chip" style="background:#f0fdf4;color:#15803d"><i class="fa-solid fa-spell-check"></i></div>
-          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+          <div class="icon-chip" style="background:#f0fdf4;color:#15803d"><i class="fa-solid fa-clone"></i></div>
         </div>
-        <div class="kpi-label">Từ vựng đã lưu</div>
+        <div class="kpi-label">Flashcard đã lưu</div>
         <div class="kpi-en">Saved flashcards</div>
-        <div class="kpi-value" id="kpi-vocab">…</div>
-        <div class="kpi-delta pos" id="kpi-vocab-delta">Đang tải…</div>
+        <div class="kpi-value skel" id="kpi-vocab" style="min-width:60px;min-height:34px">…</div>
+        <div class="kpi-delta" id="kpi-vocab-delta" style="color:#9ca3af">Đang tải…</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-top">
-          <div class="icon-chip" style="background:#fef3c7;color:#92400e"><i class="fa-solid fa-users"></i></div>
-          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+          <div class="icon-chip" style="background:#f5f3ff;color:#7c3aed"><i class="fa-solid fa-layer-group"></i></div>
         </div>
-        <div class="kpi-label">Người dùng tháng</div>
-        <div class="kpi-en">Monthly users</div>
-        <div class="kpi-value">2,841</div>
-        <div class="kpi-delta pos">+18.4%</div>
+        <div class="kpi-label">Nhóm bài TOCFL</div>
+        <div class="kpi-en">Question groups</div>
+        <div class="kpi-value skel" id="kpi-groups" style="min-width:60px;min-height:34px">…</div>
+        <div class="kpi-delta" id="kpi-groups-delta" style="color:#9ca3af">Đang tải…</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-top">
-          <div class="icon-chip" style="background:#fde8e6;color:#c0392b"><i class="fa-solid fa-eye"></i></div>
-          <i class="fa-solid fa-ellipsis" style="color:#9ca3af;font-size:14px"></i>
+          <div class="icon-chip" style="background:#fef3c7;color:#92400e"><i class="fa-solid fa-circle-question"></i></div>
         </div>
-        <div class="kpi-label">Lượt xem hôm nay</div>
-        <div class="kpi-en">Views today</div>
-        <div class="kpi-value">9,127</div>
-        <div class="kpi-delta neg">−2.1%</div>
+        <div class="kpi-label">Tổng câu hỏi TOCFL</div>
+        <div class="kpi-en">Total TOCFL questions</div>
+        <div class="kpi-value skel" id="kpi-questions" style="min-width:60px;min-height:34px">…</div>
+        <div class="kpi-delta" id="kpi-questions-delta" style="color:#9ca3af">Đang tải…</div>
       </div>
     </div>
 
-    <!-- CHART + AI COST -->
+    <!-- ── RECENT LESSONS + TOCFL BREAKDOWN ── -->
     <div class="two-col">
       <div class="card">
         <div class="card-hd">
           <div>
-            <div class="card-title">Lượt truy cập 30 ngày</div>
-            <div class="card-sub">Daily visits · last 30 days</div>
+            <div class="card-title">Bài học gần đây</div>
+            <div class="card-sub">Mới thêm vào thư viện</div>
           </div>
-          <div style="display:flex;gap:6px">
-            <button class="chip active">30D</button>
-            <button class="chip">90D</button>
-            <button class="chip">1Y</button>
-          </div>
-        </div>
-        <div class="chart-wrap" id="chart"></div>
-        <div class="legend-row">
-          <span><span class="legend-dot" style="background:#1a56db"></span>Lượt xem · Views</span>
-          <span><span class="legend-dot" style="background:#f47b20"></span>Người dùng mới · New users</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <div class="card-title">Chi phí AI · AI cost</div>
-            <div class="card-sub">Tháng 4, 2026 · April 2026</div>
-          </div>
-          <span style="font-size:11px;font-weight:600;color:#15803d;background:#f0fdf4;padding:3px 10px;border-radius:12px;border:1px solid #bbf7d0">Trong ngân sách</span>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:8px;margin-top:6px">
-          <span style="font-family:'Noto Serif TC',serif;font-size:32px;font-weight:700">$24.71</span>
-          <span style="font-size:13px;color:#6b7280">/ $50.00 ngân sách</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" style="width:49.4%"></div></div>
-        <div style="margin-top:18px">
-          <div class="provider-row">
-            <div class="pv-hd">
-              <div><span class="pv-name">Anthropic Claude</span><span class="pv-mono">claude-sonnet</span></div>
-              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">1,284 calls</span><span class="pv-amt">$16.81</span></div>
-            </div>
-            <div class="pv-track"><div class="pv-fill" style="width:68%;background:#f47b20"></div></div>
-          </div>
-          <div class="provider-row">
-            <div class="pv-hd">
-              <div><span class="pv-name">OpenAI GPT-4o</span><span class="pv-mono">gpt-4o-mini</span></div>
-              <div style="display:flex;align-items:center;gap:10px"><span class="pv-calls">612 calls</span><span class="pv-amt">$7.90</span></div>
-            </div>
-            <div class="pv-track"><div class="pv-fill" style="width:32%;background:#10a37f"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TABLE + FEEDBACK -->
-    <div class="two-col">
-      <div class="card">
-        <div class="card-hd">
-          <div>
-            <div class="card-title">Bài học gần đây · Recent lessons</div>
-            <div class="card-sub">Mới được thêm vào thư viện</div>
-          </div>
-          <a class="link-arrow" href="/courses.html">Xem tất cả →</a>
+          <a class="link-arrow" href="courses.html">Xem tất cả →</a>
         </div>
         <table class="data-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Bài / Lesson</th>
               <th>Quyển</th>
-              <th>Trạng thái</th>
-              <th></th>
+              <th>Tiêu đề</th>
             </tr>
           </thead>
           <tbody id="lessons-table-body">
-            <tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:24px">Đang tải…</td></tr>
+            <tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:24px"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải…</td></tr>
           </tbody>
         </table>
       </div>
+
       <div class="card">
         <div class="card-hd">
           <div>
-            <div class="card-title">Phản hồi mới nhất</div>
-            <div class="card-sub">7 chưa đọc</div>
+            <div class="card-title">Phân bổ câu hỏi TOCFL</div>
+            <div class="card-sub">Theo dạng bài &amp; kỹ năng</div>
           </div>
-          <a class="link-arrow">Hộp thư →</a>
         </div>
-        <div class="fb-item">
-          <div class="fb-hd">
-            <div class="fb-av">M</div>
-            <div class="fb-who">Minh Anh</div>
-            <span class="fb-badge" style="background:#fde8e6;color:#c0392b">Báo lỗi</span>
-            <span class="fb-time">2 phút trước</span>
-          </div>
-          <div class="fb-msg">Pinyin của chữ 行 ở Bài 8 hiển thị 'xíng' nhưng phải là 'háng' trong ngữ cảnh này.</div>
+        <div class="band-pill-row" id="band-pills">
+          <div class="band-pill-card skel" style="min-height:60px"></div>
+          <div class="band-pill-card skel" style="min-height:60px"></div>
         </div>
-        <div class="fb-item">
-          <div class="fb-hd">
-            <div class="fb-av">Q</div>
-            <div class="fb-who">Quang Vinh</div>
-            <span class="fb-badge" style="background:#fef3c7;color:#92400e">Góp ý</span>
-            <span class="fb-time">1 giờ trước</span>
+        <div class="mini-bar-wrap" id="parts-bars" style="margin-top:16px">
+          <div class="mini-bar-row">
+            <div class="mini-bar-label skel" style="width:80px;height:13px"></div>
+            <div class="mini-bar-track"><div class="mini-bar-fill skel" style="width:70%;height:100%"></div></div>
+            <div class="mini-bar-val skel" style="width:28px;height:13px"></div>
           </div>
-          <div class="fb-msg">Có thể thêm phím tắt số 1-4 để chọn màu highlight nhanh hơn không ạ?</div>
-        </div>
-        <div class="fb-item">
-          <div class="fb-hd">
-            <div class="fb-av">L</div>
-            <div class="fb-who">Linh Chi</div>
-            <span class="fb-badge" style="background:#f0fdf4;color:#15803d">Khen</span>
-            <span class="fb-time">Hôm qua</span>
+          <div class="mini-bar-row">
+            <div class="mini-bar-label skel" style="width:80px;height:13px"></div>
+            <div class="mini-bar-track"><div class="mini-bar-fill skel" style="width:50%;height:100%"></div></div>
+            <div class="mini-bar-val skel" style="width:28px;height:13px"></div>
           </div>
-          <div class="fb-msg">Tính năng AI tạo từ vựng tự động cực kỳ hữu ích, em đã thi đậu B2!</div>
-        </div>
-        <div class="fb-item">
-          <div class="fb-hd">
-            <div class="fb-av">H</div>
-            <div class="fb-who">Hoàng Long</div>
-            <span class="fb-badge" style="background:#fde8e6;color:#c0392b">Báo lỗi</span>
-            <span class="fb-time">2 ngày trước</span>
-          </div>
-          <div class="fb-msg">Trên iPhone, modal flashcard bị tràn ra ngoài viền màn hình.</div>
         </div>
       </div>
-  </div>
-</div>
+    </div>
+
+    <!-- ── RECENT FLASHCARDS + COURSES ── -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Flashcard gần đây</div>
+            <div class="card-sub">Từ vựng học sinh mới lưu</div>
+          </div>
+          <a class="link-arrow" href="flashcards.html">Xem tất cả →</a>
+        </div>
+        <div id="flashcard-list">
+          <div class="fc-item" style="border-top:none">
+            <div class="fc-char skel" style="width:44px;height:44px;border-radius:6px"></div>
+            <div class="fc-info">
+              <div class="skel" style="width:80px;height:12px;border-radius:3px;margin-bottom:5px"></div>
+              <div class="skel" style="width:120px;height:14px;border-radius:3px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Khóa học</div>
+            <div class="card-sub">Danh sách khóa học đang có</div>
+          </div>
+          <a class="link-arrow" href="courses.html">Quản lý →</a>
+        </div>
+        <div id="courses-list">
+          <div style="color:#9ca3af;text-align:center;padding:24px;font-size:13px">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải…
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
 
 <script src="../js/utils.js"></script>
 <script src="../js/database.js"></script>
@@ -297,6 +327,7 @@
 <script src="js/core.js"></script>
 <script src="../js/lesson-manager.js"></script>
 <script src="../js/file-importer.js"></script>
+
 <script>
 let collapsed = false;
 function toggleSidebar() {
@@ -305,6 +336,161 @@ function toggleSidebar() {
   document.getElementById('collapse-icon').className = collapsed
     ? 'fa-solid fa-angles-right' : 'fa-solid fa-angles-left';
 }
+
+// ── helpers ──────────────────────────────────────────────────────────
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = val;
+  el.classList.remove('skel');
+}
+function fmt(n) { return (n || 0).toLocaleString('vi-VN'); }
+
+const PART_LABELS = { 1:'Đối thoại', 2:'Đoạn văn nghe', 3:'Điền từ', 4:'Đọc hiểu' };
+const PART_COLORS = { 1:'#7c3aed', 2:'#a78bfa', 3:'#1a56db', 4:'#60a5fa' };
+
+// ── render helpers ────────────────────────────────────────────────────
+function renderLessons(rows) {
+  const tbody = document.getElementById('lessons-table-body');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#9ca3af;text-align:center;padding:24px">Chưa có bài học nào</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(l => `
+    <tr>
+      <td><span class="mono">${l.id}</span></td>
+      <td><span class="lesson-zh">${escHtml(l.chinese?.slice(0,6) || l.zh?.slice(0,6) || '–')}</span></td>
+      <td><span class="lvl-badge" style="background:#eff6ff;color:#1a56db">${escHtml(l.book || '–')}</span></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#374151">${escHtml(l.title || '–')}</td>
+    </tr>`).join('');
+}
+
+function renderTocfl(exams, parts) {
+  // Band pills
+  const pillsEl = document.getElementById('band-pills');
+  if (exams && exams.length) {
+    pillsEl.innerHTML = exams.map(e => `
+      <div class="band-pill-card">
+        <div class="band-pill-label">Band ${e.band?.replace('QB-','') || e.band}</div>
+        <div class="band-pill-val">${fmt(e.total_questions)}</div>
+        <div class="band-pill-sub">câu hỏi</div>
+      </div>`).join('');
+  } else {
+    pillsEl.innerHTML = '<div style="color:#9ca3af;font-size:13px">Chưa có dữ liệu</div>';
+  }
+
+  // Part bars — aggregate across all exams
+  const barsEl = document.getElementById('parts-bars');
+  if (!parts || !parts.length) { barsEl.innerHTML = '<div style="color:#9ca3af;font-size:13px">Chưa có dữ liệu</div>'; return; }
+
+  // Sum question_count per part_number
+  const partTotals = {};
+  parts.forEach(p => {
+    partTotals[p.part_number] = (partTotals[p.part_number] || 0) + (p.question_count || 0);
+  });
+  const maxQ = Math.max(...Object.values(partTotals), 1);
+
+  barsEl.innerHTML = Object.entries(partTotals)
+    .sort(([a],[b]) => a - b)
+    .map(([num, count]) => `
+      <div class="mini-bar-row">
+        <div class="mini-bar-label" title="${PART_LABELS[num] || 'Phần ' + num}">${PART_LABELS[num] || 'Phần ' + num}</div>
+        <div class="mini-bar-track">
+          <div class="mini-bar-fill" style="width:${Math.round(count/maxQ*100)}%;background:${PART_COLORS[num]||'#1a56db'}"></div>
+        </div>
+        <div class="mini-bar-val">${count}</div>
+      </div>`).join('');
+}
+
+function renderFlashcards(rows) {
+  const el = document.getElementById('flashcard-list');
+  if (!rows.length) { el.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:20px;font-size:13px">Chưa có flashcard nào</div>'; return; }
+  el.innerHTML = rows.map((f, i) => `
+    <div class="fc-item" ${i===0?'style="border-top:none"':''}>
+      <div class="fc-char">${escHtml(f.char || '?')}</div>
+      <div class="fc-info">
+        <div class="fc-py">${escHtml(f.pinyin || '')}</div>
+        <div class="fc-meaning">${escHtml(f.meaning || '')}</div>
+      </div>
+      ${f.lesson_id ? `<div class="fc-lesson">bài ${f.lesson_id}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderCourses(rows) {
+  const el = document.getElementById('courses-list');
+  if (!rows.length) { el.innerHTML = '<div style="color:#9ca3af;text-align:center;padding:20px;font-size:13px">Chưa có khóa học nào</div>'; return; }
+  el.innerHTML = rows.map((c, i) => `
+    <div class="cr-item" ${i===0?'style="border-top:none"':''}>
+      <div class="cr-dot" style="background:${c.published?'#15803d':'#9ca3af'}"></div>
+      <div class="cr-title" title="${escHtml(c.title||'')}">${escHtml(c.title || '(Không tên)')}</div>
+      <div class="cr-meta">${c.level ? escHtml(c.level)+' · ' : ''}${c.published ? 'Đã đăng' : 'Nháp'}</div>
+    </div>`).join('');
+}
+
+// ── main loader ───────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [
+      lessonsRes,
+      flashRes,
+      groupsRes,
+      examsRes,
+      partsRes,
+      recentLessonsRes,
+      recentFcRes,
+      coursesRes,
+    ] = await Promise.all([
+      DB.from('lessons').select('*', { count: 'exact', head: true }),
+      DB.from('flashcards').select('*', { count: 'exact', head: true }),
+      DB.from('tocfl_groups').select('*', { count: 'exact', head: true }),
+      DB.from('tocfl_exams').select('id, title, band, total_questions'),
+      DB.from('tocfl_parts').select('id, exam_id, part_number, skill, question_count'),
+      DB.from('lessons').select('id, book, title, chinese, zh').order('id', { ascending: false }).limit(8),
+      DB.from('flashcards').select('char, pinyin, meaning, lesson_id').order('id', { ascending: false }).limit(6),
+      DB.from('courses').select('id, title, published, level').order('sort_order', { ascending: true }).limit(12),
+    ]);
+
+    const lessonCount   = lessonsRes.count  || 0;
+    const flashCount    = flashRes.count    || 0;
+    const groupCount    = groupsRes.count   || 0;
+    const exams         = examsRes.data     || [];
+    const parts         = partsRes.data     || [];
+    const recentLessons = recentLessonsRes.data || [];
+    const recentFc      = recentFcRes.data  || [];
+    const courses       = coursesRes.data   || [];
+
+    const totalQ  = exams.reduce((s, e) => s + (e.total_questions || 0), 0);
+
+    // KPI cards
+    setEl('kpi-lessons',   fmt(lessonCount));
+    setEl('kpi-vocab',     fmt(flashCount));
+    setEl('kpi-groups',    fmt(groupCount));
+    setEl('kpi-questions', fmt(totalQ));
+    setEl('kpi-lessons-delta',   `${exams.length} bộ đề TOCFL`);
+    setEl('kpi-vocab-delta',     `Toàn bộ người dùng`);
+    setEl('kpi-groups-delta',    `${parts.length} phần thi`);
+    setEl('kpi-questions-delta', `${exams.length} bộ đề`);
+
+    // Primary action cards
+    setEl('ac-lessons',   fmt(lessonCount));
+    setEl('ac-courses',   fmt(courses.length));
+    setEl('ac-vocab',     fmt(flashCount));
+    setEl('ac-questions', fmt(totalQ));
+    setEl('ac-groups',    fmt(groupCount));
+    setEl('ac-bands',     String(exams.length));
+
+    // Tables & charts
+    renderLessons(recentLessons);
+    renderTocfl(exams, parts);
+    renderFlashcards(recentFc);
+    renderCourses(courses);
+
+  } catch (err) {
+    console.error('Dashboard error:', err);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
 </script>
 </body>
 </html>
