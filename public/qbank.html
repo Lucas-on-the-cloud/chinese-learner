@@ -1067,7 +1067,16 @@ document.addEventListener('alpine:initialized', () => {
   const ws     = new WorksheetManager();
   const chat   = new ChatManager(ai);
 
-  vocab._saveToDb = () => {};
+  // Save vocab per group to localStorage
+  vocab._saveToDb = function() {
+    const g = Alpine.$data(document.body)?.activeGroup;
+    if (!g || !vocab.items.length) return;
+    try { localStorage.setItem('qb_vocab_' + g.id, JSON.stringify(vocab.items)); } catch(e) {}
+  };
+
+  // Auto-save on every render
+  const _origRender = vocab.render.bind(vocab);
+  vocab.render = function() { _origRender(); vocab._saveToDb(); };
 
   window.app = {
     ai, vocab, chat,
@@ -1118,6 +1127,18 @@ document.addEventListener('alpine:initialized', () => {
       if (gb) { gb.textContent = 'Phân tích từ vựng'; gb.disabled = false; }
       vocab.items = [];
       chat.reset();
+
+      // Restore saved vocab for this group from localStorage
+      if (groupId) {
+        try {
+          const saved = localStorage.getItem('qb_vocab_' + groupId);
+          if (saved) {
+            vocab.items = JSON.parse(saved);
+            _origRender();
+            if (gb) gb.textContent = '↺ Tạo lại';
+          }
+        } catch(e) {}
+      }
     }
   });
 });
