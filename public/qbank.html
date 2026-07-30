@@ -117,6 +117,17 @@ a{text-decoration:none;color:inherit}
 .opt-btn.wrong{border-color:var(--red)!important;background:var(--red-lt)!important;color:var(--red)!important}
 .opt-label{font-size:13px;font-weight:700;min-width:22px;flex-shrink:0;color:var(--text-3)}
 
+/* Translation */
+.translate-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1.5px solid #d1d5db;background:#fff;color:var(--text-2);cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:.12s;flex-shrink:0}
+.translate-btn:hover{border-color:var(--blue);color:var(--blue)}
+.translate-btn.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue)}
+.translate-btn i{font-size:11px}
+.translation-box{margin-top:14px;padding:14px 16px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;font-size:15px;line-height:1.85;color:#78350f;font-family:'Be Vietnam Pro',sans-serif}
+.translation-label{font-size:10px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.translation-passage{margin-top:12px;padding:16px 18px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;font-size:15px;line-height:1.85;color:#78350f;font-family:'Be Vietnam Pro',sans-serif;border-top:none;border-top-left-radius:0;border-top-right-radius:0}
+.passage-translate-bar{padding:8px 28px 14px;display:flex;align-items:center;gap:8px;background:#fff}
+.q-translation{margin-top:10px;padding:10px 14px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;font-size:14.5px;line-height:1.8;color:#78350f;font-family:'Be Vietnam Pro',sans-serif}
+
 /* Result badge on question */
 .q-result{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;margin-left:8px;vertical-align:middle}
 .q-result.correct{background:var(--green-lt);color:var(--green)}
@@ -280,9 +291,26 @@ a{text-decoration:none;color:inherit}
 
             <!-- Passage text -->
             <template x-if="activeGroup.shared_text">
-              <div class="passage-block">
-                <div class="passage-label">Nội dung bài</div>
-                <span x-text="activeGroup.shared_text"></span>
+              <div>
+                <div class="passage-block">
+                  <div class="passage-label" style="display:flex;align-items:center;justify-content:space-between">
+                    <span>Nội dung bài</span>
+                    <button class="translate-btn"
+                      :class="showTrans[activeGroup.id] ? 'active' : ''"
+                      :disabled="translating[activeGroup.id]"
+                      @click="toggleTranslation(activeGroup)">
+                      <i class="fas" :class="translating[activeGroup.id] ? 'fa-spinner fa-spin' : 'fa-language'"></i>
+                      <span x-text="showTrans[activeGroup.id] ? 'Ẩn dịch' : (translating[activeGroup.id] ? 'Đang dịch...' : 'Dịch tiếng Việt')"></span>
+                    </button>
+                  </div>
+                  <div style="margin-top:12px" x-text="activeGroup.shared_text"></div>
+                  <template x-if="showTrans[activeGroup.id] && tranCache[activeGroup.id]?.passage">
+                    <div class="translation-passage">
+                      <div class="translation-label">Bản dịch tiếng Việt</div>
+                      <div x-text="tranCache[activeGroup.id].passage"></div>
+                    </div>
+                  </template>
+                </div>
               </div>
             </template>
 
@@ -306,6 +334,10 @@ a{text-decoration:none;color:inherit}
                       </span>
                     </template>
                   </div>
+                  <!-- Question translation -->
+                  <template x-if="showTrans[activeGroup.id] && tranCache[activeGroup.id]?.questions?.[q.id]">
+                    <div class="q-translation" x-text="tranCache[activeGroup.id].questions[q.id]"></div>
+                  </template>
 
                   <!-- Options -->
                   <div class="options-list">
@@ -384,6 +416,10 @@ function qbankApp() {
     activeGroupIdx: 0,
     answers: {},   // qId → label
     results: {},   // qId → bool
+
+    tranCache: {},    // groupId → { passage: '...', questions: { qId: '...' } }
+    showTrans: {},    // groupId → bool
+    translating: {},  // groupId → bool
 
     playingId: null,
     _audio: null,
@@ -508,6 +544,50 @@ function qbankApp() {
     stopAudio() {
       this._audio?.pause();
       this.playingId = null;
+    },
+
+    async toggleTranslation(group) {
+      const id = group.id;
+      // Already cached → just toggle visibility
+      if (this.tranCache[id]) {
+        this.showTrans[id] = !this.showTrans[id];
+        return;
+      }
+      this.translating[id] = true;
+      try {
+        const passage = group.shared_text || '';
+        const questions = (group.tocfl_questions || []).filter(q => q.question_text);
+
+        // Batch all texts into one request separated by |||
+        const SEP = ' ||| ';
+        const parts = [passage, ...questions.map(q => q.question_text)];
+        const combined = parts.join(SEP);
+
+        const translated = await this._gtranslate(combined);
+
+        // Split back by |||
+        const segs = translated.split(/\s*\|\|\|\s*/);
+        const passageTrans = segs[0] || '';
+        const qTrans = {};
+        questions.forEach((q, i) => { qTrans[q.id] = segs[i + 1] || ''; });
+
+        this.tranCache[id] = { passage: passageTrans, questions: qTrans };
+        this.showTrans[id] = true;
+      } catch (e) {
+        alert('Dịch thất bại — Google Translate bị giới hạn. Thử lại sau.');
+      }
+      this.translating[id] = false;
+    },
+
+    async _gtranslate(text) {
+      // Unofficial Google Translate API — free, no key needed
+      const url = 'https://translate.googleapis.com/translate_a/single'
+        + '?client=gtx&sl=zh-TW&tl=vi&dt=t&q=' + encodeURIComponent(text);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      // data[0] = array of [translated_chunk, original_chunk, ...]
+      return data[0].map(s => s[0]).join('');
     },
 
     partLabel(p) {
