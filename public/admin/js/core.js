@@ -15,6 +15,22 @@ window.app = {
 window.app.ai = new AIService(window.app.config);
 if (window.app.lessons.load) app.lessons.load();
 
+// Append logout link to sidebar nav
+document.addEventListener('DOMContentLoaded', () => {
+  const nav = document.querySelector('aside nav');
+  if (!nav) return;
+  const sep = document.createElement('div');
+  sep.className = 'nav-label';
+  sep.style.cssText = 'margin-top:auto;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)';
+  const a = document.createElement('a');
+  a.className = 'nav-item';
+  a.href = '/api/admin/logout';
+  a.style.cssText = 'color:rgba(255,255,255,.5)';
+  a.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i><span class="nav-item-text"><span class="nav-item-vi">Đăng xuất</span><span class="nav-item-en">Logout</span></span>';
+  nav.appendChild(sep);
+  nav.appendChild(a);
+});
+
 // ── Shared UI utilities ──────────────────────────────────────────────
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

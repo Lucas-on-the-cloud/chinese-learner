@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập — Admin · TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.card{width:100%;max-width:380px;background:#1e293b;border-radius:16px;box-shadow:0 24px 64px rgba(0,0,0,.5);overflow:hidden}
+.card-head{padding:2rem 2rem 1.5rem;text-align:center;background:linear-gradient(135deg,#1e3a8a,#1a56db)}
+.logo{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
+.logo em{color:#f47b20;font-style:normal}
+.sub{font-size:12px;color:rgba(255,255,255,.55);letter-spacing:.5px;text-transform:uppercase}
+.card-body{padding:2rem}
+label{display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
+input{width:100%;padding:11px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:16px}
+input:focus{border-color:#1a56db}
+input::placeholder{color:#475569}
+.btn{width:100%;padding:12px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-family:'Be Vietnam Pro',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;margin-top:4px}
+.btn:hover{background:#1544b8}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.error{color:#f87171;font-size:13px;margin-top:10px;min-height:18px;text-align:center}
+.icon{font-size:36px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-head">
+    <div class="icon">🔐</div>
+    <div class="logo">TOCFL <em>FAFA</em></div>
+    <div class="sub">Admin · Quản trị</div>
+  </div>
+  <div class="card-body">
+    <form onsubmit="doLogin(event)">
+      <label for="username">Tài khoản</label>
+      <input id="username" type="text" placeholder="Nhập tên đăng nhập" autocomplete="username" required>
+      <label for="password">Mật khẩu</label>
+      <input id="password" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+      <button class="btn" id="login-btn" type="submit">Đăng nhập</button>
+      <div class="error" id="error-msg"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+async function doLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('error-msg');
+
+  btn.disabled = true;
+  btn.textContent = 'Đang đăng nhập...';
+  err.textContent = '';
+
+  try {
+    const res = await fetch('/api/admin/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (res.ok) {
+      window.location.replace('/admin/');
+    } else {
+      const data = await res.json().catch(() => ({}));
+      err.textContent = data.error || 'Đăng nhập thất bại';
+      btn.disabled = false;
+      btn.textContent = 'Đăng nhập';
+    }
+  } catch {
+    err.textContent = 'Lỗi kết nối. Vui lòng thử lại.';
+    btn.disabled = false;
+    btn.textContent = 'Đăng nhập';
+  }
+}
+</script>
+</body>
+</html>
