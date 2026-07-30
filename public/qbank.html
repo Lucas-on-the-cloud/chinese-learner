@@ -9,6 +9,11 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/auth-service.js"></script>
+<script src="js/ai-service.js"></script>
+<script src="js/vocab-manager.js"></script>
+<script src="js/chat.js"></script>
+<script src="/js/comments.js"></script>
+<link rel="stylesheet" href="/css/comments.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -72,6 +77,62 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
 .footer-bottom-links{display:flex;gap:1.5rem}
 .footer-bottom-links a{color:rgba(255,255,255,.4);transition:color .15s;font-size:13px}
 @media(max-width:600px){.footer-inner{grid-template-columns:1fr;gap:1.5rem}}
+
+/* Right panel */
+.qb-right{width:300px;flex-shrink:0;background:#fff;border-left:1px solid var(--border);padding:20px 16px 64px;position:sticky;top:calc(var(--nav-h) + var(--bar-h));height:calc(100vh - var(--nav-h) - var(--bar-h));overflow-y:auto;scrollbar-width:thin;scrollbar-color:#e5e7eb transparent}
+@media(max-width:1200px){.qb-right{display:none}}
+
+/* AI panel */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.1rem;box-shadow:var(--shadow-sm);margin-bottom:12px}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;flex-wrap:wrap;gap:6px}
+.ai-panel-header h3{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text)}
+.ai-badge{background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.provider-badge{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:.3px}
+.ai-btn{background:var(--blue);color:#fff;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;padding:7px 13px;border-radius:7px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.ai-btn:hover{background:var(--blue-dark)}
+.ai-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-btn.csv-btn{background:#15803d}
+.ai-btn.csv-btn:hover{background:#166534}
+.ai-btn.ws-btn{background:var(--orange)}
+.ai-btn.ws-btn:hover{background:#d96612}
+.ai-loading{font-size:12px;color:var(--blue);display:none;align-items:center;gap:8px;margin-bottom:.75rem}
+.ai-loading.show{display:flex}
+.spinner{width:14px;height:14px;border:2px solid var(--blue-lt);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vocab-list{display:grid;gap:8px}
+.vocab-item{background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:flex-start;gap:10px;transition:all .15s}
+.vocab-item:hover{border-color:#c7d7fd;box-shadow:var(--shadow-sm)}
+.vocab-item.user-added{border-left:3px solid var(--green)}
+.vocab-char{font-family:'Noto Serif TC',serif;font-size:20px;font-weight:600;color:#c0392b;min-width:44px;text-align:center;border-radius:6px;padding:4px}
+.vocab-details{flex:1;min-width:0}
+.vocab-pinyin{font-size:11px;color:var(--text-2);font-style:italic}
+.vocab-meaning{font-size:13px;font-weight:500;margin-top:2px;color:var(--text)}
+.vocab-example{font-size:11px;color:var(--text-2);margin-top:3px;font-style:italic}
+.vocab-actions{display:flex;gap:4px;flex-shrink:0}
+.vocab-btn{background:#fff;border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text-2);padding:3px 8px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Be Vietnam Pro',sans-serif}
+.vocab-btn:hover{background:var(--green-lt);border-color:#bbf7d0;color:var(--green)}
+.vocab-btn.added{background:var(--green-lt);border-color:#bbf7d0;color:var(--green)}
+
+/* Chat widget */
+.chat-widget{position:fixed;bottom:24px;right:24px;z-index:490;display:none;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-widget.active{display:flex}
+.chat-bubble-btn{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(26,86,219,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;flex-shrink:0;position:relative}
+.chat-bubble-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(26,86,219,.45)}
+.chat-float-panel{width:360px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;display:none;flex-direction:column;height:68vh;max-height:640px;min-height:380px}
+.chat-float-panel.open{display:flex}
+.chat-header{background:linear-gradient(135deg,var(--navy),#1e3a8a);color:#fff;padding:12px 16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.chat-header .dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.6);font-size:18px;cursor:pointer;line-height:1;padding:0}
+.chat-close-btn:hover{color:#fff}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.chat-msg{max-width:86%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.chat-msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-msg.bot{background:#fff;border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-msg.system{background:#fffbeb;border:1px solid #fde68a;align-self:center;font-size:11px;color:#92400e;text-align:center}
+.chat-input-row{display:flex;border-top:1px solid var(--border);flex-shrink:0}
+.chat-input{flex:1;border:none;padding:11px 14px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;outline:none;background:transparent}
+.chat-send{background:var(--blue);color:#fff;border:none;padding:0 16px;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s}
+.chat-send:hover{background:var(--blue-dark)}
 
 /* Top bar */
 .top-bar{position:sticky;top:var(--nav-h);z-index:200;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);height:var(--bar-h)}
@@ -503,9 +564,48 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
           </div>
         </template>
       </div>
+
+      <!-- Right panel: vocab + comments -->
+      <div class="qb-right" id="qb-right">
+        <div class="ai-panel">
+          <div class="ai-panel-header">
+            <h3>✨ Từ vựng <span class="ai-badge">AI</span></h3>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <button class="ai-btn csv-btn" id="csv-btn" onclick="window.app&&app.vocab.exportCSV()" style="display:none">⬇ CSV</button>
+              <button class="ai-btn ws-btn" id="ws-btn" style="display:none">🖊 In</button>
+              <button class="ai-btn" id="addall-btn" style="display:none;background:var(--green)">＋ Flash</button>
+              <button class="ai-btn" id="gen-btn" onclick="window.app&&app.vocab.generate()">Phân tích</button>
+            </div>
+          </div>
+          <div class="ai-loading" id="ai-ld"><div class="spinner"></div><span id="ai-lt"></span></div>
+          <div class="vocab-list" id="vocab-list"></div>
+        </div>
+        <div id="comments-root"></div>
+      </div>
     </div>
   </div>
 </template>
+
+<!-- Chat widget (fixed, always in DOM) -->
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-float-panel" id="chat-float-panel">
+    <div class="chat-header">
+      <div class="dot"></div>Chat với bài thi
+      <button class="chat-close-btn" onclick="app.chat.toggle()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-msgs">
+      <div class="chat-msg system">Hỏi bất kỳ điều gì về câu hỏi này.<br><span style="font-size:10px;opacity:.7">Gõ "add 漢字" để thêm từ vào danh sách.</span></div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" placeholder="Hỏi về câu hỏi này..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();app.chat.send()}">
+      <button class="chat-send" onclick="app.chat.send()">Gửi</button>
+    </div>
+  </div>
+  <button class="chat-bubble-btn" onclick="app.chat.toggle()" title="Chat với AI">
+    💬
+    <span style="position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:.4px;line-height:1.4">AI</span>
+  </button>
+</div>
 
 <!-- Hidden audio element -->
 <audio id="qb-audio" preload="none"></audio>
@@ -836,6 +936,88 @@ function qbankApp() {
   // Hide on scroll so it doesn't drift
   window.addEventListener('scroll', hide, { passive: true });
 })();
+
+// ── AI modules init ──────────────────────────────────────────────────────────
+document.addEventListener('alpine:initialized', () => {
+  const ai = new AIService({});
+  const vocab = new VocabManager(ai, null);
+  const chat  = new ChatManager(ai);
+
+  // stub out features not included in qbank
+  vocab._saveToDb = () => {};
+
+  window.app = {
+    ai, vocab, chat,
+    flashcards: { has: () => false, add: () => {}, addBulk: async () => {} },
+    handwriting: { open: () => {} },
+    get currentLesson() {
+      const state = Alpine.$data(document.body);
+      const g = state?.activeGroup;
+      if (!g) return null;
+      const passage = g.shared_text || '';
+      const questions = (g.tocfl_questions || []).map(q => {
+        const opts = (q.tocfl_options || []).map(o => `(${o.label}) ${o.text}`).join('  ');
+        return `Q: ${q.question_text || ''}\n${opts}`;
+      }).join('\n\n');
+      return {
+        id: g.id,
+        title: 'Câu hỏi ' + (g.id || ''),
+        zh: [passage, questions].filter(Boolean).join('\n\n'),
+        py: '', vi: '',
+      };
+    }
+  };
+
+  // exportCSV: patch title fallback
+  const origExportCSV = vocab.exportCSV.bind(vocab);
+  vocab.exportCSV = function() {
+    const l = app.currentLesson;
+    if (l && !l.title) l.title = 'qbank';
+    origExportCSV();
+  };
+
+  // show/hide chat bubble based on view
+  let lastGroupId = null;
+  Alpine.effect(() => {
+    const state = Alpine.$data(document.body);
+    const inPractice = state?.view === 'practice';
+    document.getElementById('chat-widget').classList.toggle('active', inPractice);
+
+    // reset vocab + chat when group changes
+    const groupId = state?.activeGroup?.id;
+    if (groupId !== lastGroupId) {
+      lastGroupId = groupId;
+      // clear vocab panel
+      const vl = document.getElementById('vocab-list');
+      if (vl) vl.innerHTML = '';
+      ['csv-btn','ws-btn','addall-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      const gb = document.getElementById('gen-btn');
+      if (gb) { gb.textContent = 'Phân tích'; gb.disabled = false; }
+      if (vocab) vocab.items = [];
+      // reset chat
+      chat.reset();
+      // mount comments for this group
+      if (groupId && typeof mountComments === 'function') {
+        requestAnimationFrame(() => {
+          const cr = document.getElementById('comments-root');
+          if (cr) {
+            cr.innerHTML = '';
+            mountComments({
+              container: '#comments-root',
+              entityType: 'qbank_group',
+              entityId: String(groupId),
+              supabaseUrl: _DB_URL,
+              supabaseKey: _DB_KEY,
+            });
+          }
+        });
+      }
+    }
+  });
+});
 </script>
 
 <footer>
