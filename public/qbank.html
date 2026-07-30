@@ -488,13 +488,19 @@ mark.hl-4{background:#FCA5A5;border-radius:2px}
             <!-- Group audio (if listening) -->
             <template x-if="activeGroup.shared_audio_url">
               <div class="audio-block">
-                <button class="audio-btn" @click="playAudio(activeGroup.shared_audio_url, 'group')"
-                  :title="playingId==='group'?'Đang phát...':'Nghe bài'">
-                  <i class="fas" :class="playingId==='group'?'fa-volume-up':'fa-play'"></i>
+                <button class="audio-btn" @click="playGroupSequence()"
+                  :title="_audioQueue.length?'Dừng':'Nghe toàn bộ'"
+                  :style="_audioQueue.length?'background:var(--red)':''">
+                  <i class="fas" :class="_audioQueue.length?'fa-stop':'fa-play'"></i>
                 </button>
                 <span class="audio-label">
-                  <span x-show="playingId==='group'" style="color:var(--purple);font-weight:600">Đang phát...</span>
-                  <span x-show="playingId!=='group'">Nhấn để nghe bài</span>
+                  <span x-show="_audioQueue.length > 0" style="color:var(--purple);font-weight:600">
+                    Đang phát
+                    <span x-show="_audioQueueIdx === 0"> bài nghe...</span>
+                    <span x-show="_audioQueueIdx > 0"> câu hỏi <span x-text="_audioQueueIdx"></span>...</span>
+                    &nbsp;(<span x-text="_audioQueueIdx+1"></span>/<span x-text="_audioQueue.length"></span>)
+                  </span>
+                  <span x-show="_audioQueue.length === 0">Nhấn để nghe bài + câu hỏi</span>
                 </span>
               </div>
             </template>
@@ -764,6 +770,8 @@ function qbankApp() {
     artSize: 22,
     playingId: null,
     _audio: null,
+    _audioQueue: [],
+    _audioQueueIdx: 0,
 
     get activeGroup() {
       return this.activePart?.groups?.[this.activeGroupIdx] || null;
@@ -773,7 +781,13 @@ function qbankApp() {
       const band = new URLSearchParams(location.search).get('band') || 'QB-C';
       this.selectedBand = band;
       this._audio = document.getElementById('qb-audio');
-      this._audio.addEventListener('ended', () => { this.playingId = null; });
+      this._audio.addEventListener('ended', () => {
+        if (this._audioQueue.length > 0) {
+          this._playQueueItem(this._audioQueueIdx + 1);
+        } else {
+          this.playingId = null;
+        }
+      });
       await this.loadBandInfo(band);
     },
 
@@ -902,6 +916,7 @@ function qbankApp() {
     },
 
     playAudio(url, id) {
+      this._audioQueue = [];   // cancel any running sequence
       if (this.playingId === id) {
         this._audio.pause();
         this.playingId = null;
@@ -912,9 +927,46 @@ function qbankApp() {
       this.playingId = id;
     },
 
+    playGroupSequence() {
+      const g = this.activeGroup;
+      if (!g) return;
+      // If a sequence is running → stop
+      if (this._audioQueue.length > 0) {
+        this._audio.pause();
+        this.playingId = null;
+        this._audioQueue = [];
+        return;
+      }
+      // Build queue: group audio first, then each question audio in order
+      const queue = [];
+      if (g.shared_audio_url) queue.push({ url: g.shared_audio_url, id: 'group' });
+      for (const q of (g.tocfl_questions || [])) {
+        if (q.question_audio_url) queue.push({ url: q.question_audio_url, id: 'q' + q.id });
+      }
+      if (!queue.length) return;
+      this._audioQueue = queue;
+      this._playQueueItem(0);
+    },
+
+    _playQueueItem(idx) {
+      if (idx >= this._audioQueue.length) {
+        this.playingId = null;
+        this._audioQueue = [];
+        this._audioQueueIdx = 0;
+        return;
+      }
+      const item = this._audioQueue[idx];
+      this._audioQueueIdx = idx;
+      this.playingId = item.id;
+      this._audio.src = item.url;
+      this._audio.play().catch(() => {});
+    },
+
     stopAudio() {
       this._audio?.pause();
       this.playingId = null;
+      this._audioQueue = [];
+      this._audioQueueIdx = 0;
     },
 
     async toggleTranslation(group) {
