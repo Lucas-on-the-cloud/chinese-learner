@@ -19,6 +19,7 @@ button{font-family:inherit}
   --orange:#f47b20;
   --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
   --zh-font:"Microsoft JhengHei","微軟正黑體","Heiti TC","PingFang TC","PMingLiU","新細明體","Noto Sans TC",sans-serif;
+  --zh-size:22px;--zh-lh:1.75;--zh-ls:0.5px;
   --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
 }
 
@@ -67,7 +68,7 @@ button{font-family:inherit}
 @media (prefers-reduced-motion: reduce){.audio-bars span{animation:none !important;height:45% !important}}
 
 .nf-current{padding:10px 4px;text-align:center;min-height:64px;display:flex;align-items:center;justify-content:center}
-.nf-current-text{font-family:var(--zh-font);font-size:22px;font-weight:500;color:var(--navy);line-height:1.65;letter-spacing:.04em}
+.nf-current-text{font-family:var(--zh-font);font-size:var(--zh-size);font-weight:500;color:var(--navy);line-height:var(--zh-lh);letter-spacing:var(--zh-ls)}
 .nf-current-text.empty{color:var(--text-3);font-size:14px;font-weight:400;font-family:'Be Vietnam Pro',sans-serif}
 
 .player-controls{display:flex;align-items:center;gap:10px;border-top:1px solid #f3f4f6;padding-top:12px}
@@ -84,14 +85,14 @@ button{font-family:inherit}
 .kbd-hint{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:4px}
 .kbd{display:inline-block;padding:1px 6px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:10px;font-family:monospace;color:var(--text-2)}
 
-.nf-right{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:560px}
+.nf-right{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:640px}
 .nf-right-hd{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;justify-content:space-between}
 .nf-list{overflow-y:auto;flex:1}
 .nf-row{display:flex;align-items:baseline;gap:10px;padding:11px 16px;width:100%;background:transparent;border:none;border-bottom:1px solid #f3f4f6;cursor:pointer;text-align:left;transition:background .12s}
 .nf-row:last-child{border-bottom:none}
 .nf-row:hover{background:#f8fafc}
 .nf-row-idx{flex:none;width:1.6em;text-align:right;font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;padding-top:.3em}
-.nf-row-text{flex:1;font-family:var(--zh-font);font-size:15px;color:var(--text-3);line-height:1.6;letter-spacing:.03em}
+.nf-row-text{flex:1;font-family:var(--zh-font);font-size:var(--zh-size);color:var(--text-3);line-height:var(--zh-lh);letter-spacing:var(--zh-ls)}
 .nf-row.past .nf-row-text{color:var(--text-2)}
 .nf-row.active{background:var(--blue-lt)}
 .nf-row.active .nf-row-text{color:var(--blue-dark);font-weight:600}
@@ -103,8 +104,8 @@ button{font-family:inherit}
 .tr-panel{margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
 .tr-row{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;padding:9px 0;border-top:1px dashed var(--border)}
 .tr-row:first-child{border-top:none}
-.tr-hz{font-family:var(--zh-font);font-size:15px;color:var(--text);letter-spacing:.03em}
-.tr-vi{font-size:13.5px;color:var(--text-2);font-style:italic;line-height:1.6}
+.tr-hz{font-family:var(--zh-font);font-size:var(--zh-size);color:var(--text);line-height:var(--zh-lh);letter-spacing:var(--zh-ls)}
+.tr-vi{font-size:17px;color:var(--text-2);font-style:italic;line-height:1.7}
 @media(max-width:640px){.tr-row{grid-template-columns:1fr}}
 
 .done-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px}
