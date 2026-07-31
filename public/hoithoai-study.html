@@ -24,13 +24,19 @@ button{font-family:inherit}
 }
 
 /* NAVBAR */
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
 .navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.nb-inner{max-width:1000px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;width:100%}
+.navbar .container{display:flex;align-items:center;justify-content:space-between;width:100%}
 .nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand img{height:32px;border-radius:5px}
 .nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
 .nav-brand-text em{color:var(--orange);font-style:normal}
-.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px}
+.nav-menu{display:flex;align-items:center;gap:2px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px;transition:all .15s;text-decoration:none}
+.nav-link:hover{color:var(--text);background:#f3f4f6}
 .nav-link.active{color:var(--blue);font-weight:600}
+.nav-btn{font-size:13px;font-weight:600;color:#fff;background:var(--blue);padding:7px 18px;border-radius:7px;margin-left:8px;text-decoration:none;transition:background .15s}
+.nav-btn:hover{background:var(--blue-dark,#1544b8)}
 
 /* HEADER */
 .content-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:26px 1.5rem 32px;position:relative;overflow:hidden}
@@ -113,16 +119,38 @@ button{font-family:inherit}
 .done-btn.is-done{background:var(--green);color:#fff}
 
 @media(max-width:820px){.nf-grid{grid-template-columns:1fr}.nf-right{max-height:400px}}
+@media(max-width:640px){.nav-link{display:none}.footer-main{grid-template-columns:1fr;gap:1.5rem}}
 
-footer{background:#111827;color:rgba(255,255,255,.5);font-size:12.5px;text-align:center;padding:20px;margin-top:auto}
+footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:auto}
+.footer-main{padding:40px 1.5rem;display:grid;grid-template-columns:1.8fr 1fr 1.4fr;gap:3rem;max-width:1100px;margin:0 auto}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+.footer-brand-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700;color:#fff}
+.footer-brand-name em{color:var(--orange);font-style:normal}
+.footer-desc{font-size:13px;line-height:1.75;margin-bottom:1.25rem;max-width:320px}
+.footer-col-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.5px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.footer-links a{color:rgba(255,255,255,.5);font-size:13px;transition:color .15s;text-decoration:none}
+.footer-links a:hover{color:rgba(255,255,255,.85)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding:14px 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;max-width:1100px;margin:0 auto;font-size:13px}
 </style>
 </head>
 <body>
 
 <nav class="navbar">
-  <div class="nb-inner">
-    <a class="nav-brand" href="/about.html"><span class="nav-brand-text">TOCFL <em>FAFA</em></span></a>
-    <a class="nav-link active" href="/hoithoai.html">Hội thoại</a>
+  <div class="container">
+    <a class="nav-brand" href="/about.html">
+      <img src="images/logo.jpg" alt="TOCFL FAFA" onerror="this.style.display='none'">
+      <span class="nav-brand-text">TOCFL <em>FAFA</em></span>
+    </a>
+    <div class="nav-menu">
+      <a class="nav-link" href="/flashcards.html">Flashcard</a>
+      <a class="nav-link" href="/courses.html">Khóa học</a>
+      <a class="nav-link active" href="/hoithoai.html">Hội thoại</a>
+      <a class="nav-link" href="/vocab.html">Từ vựng</a>
+      <a class="nav-link" href="/hantu.html">Bộ thủ</a>
+      <a class="nav-link" href="/about.html">Giới thiệu</a>
+      <a class="nav-btn" href="/courses.html">Bắt đầu học</a>
+    </div>
   </div>
 </nav>
 
@@ -176,7 +204,33 @@ footer{background:#111827;color:rgba(255,255,255,.5);font-size:12.5px;text-align
   </div>
 </div>
 
-<footer>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</footer>
+<footer>
+  <div class="footer-main">
+    <div>
+      <div class="footer-brand">
+        <img src="images/logo.jpg" alt="TOCFL FAFA" style="height:28px;border-radius:5px" onerror="this.style.display='none'">
+        <span class="footer-brand-name">TOCFL <em>FAFA</em></span>
+      </div>
+      <p class="footer-desc">Nền tảng luyện thi TOCFL phồn thể (繁體中文) dành riêng cho người Việt.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Liên kết</div>
+      <ul class="footer-links">
+        <li><a href="/courses.html">Khóa học</a></li>
+        <li><a href="/hoithoai.html">Hội thoại</a></li>
+        <li><a href="/flashcards.html">Flashcard</a></li>
+        <li><a href="/about.html">Giới thiệu</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Thông tin</div>
+      <div style="color:rgba(255,255,255,.5)">Taoyuan, Taiwan</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</span>
+  </div>
+</footer>
 
 <script>
 const DONE_KEY = 'hoithoai_done';
