@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hội thoại — TOCFL FAFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.youtube.com/iframe_api"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+:root{
+  --navy:#0d1b4b;--blue:#1a56db;--blue-dark:#1544b8;--blue-lt:#eff6ff;
+  --green:#16a34a;--green-lt:#f0fdf4;
+  --red:#dc2626;--red-lt:#fef2f2;
+  --orange:#f47b20;
+  --text:#1f2937;--text-2:#6b7280;--text-3:#9ca3af;
+  --bg:#f4f5f7;--border:#e5e7eb;--surface:#fff;
+}
+
+/* NAVBAR */
+.navbar{position:sticky;top:0;z-index:200;background:#fff;border-bottom:1px solid var(--border);height:62px;display:flex;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.nb-inner{max-width:1000px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-brand-text{font-family:'Noto Serif TC',serif;font-size:18px;font-weight:700;color:var(--navy)}
+.nav-brand-text em{color:var(--orange);font-style:normal}
+.nav-link{font-size:14px;font-weight:500;color:var(--text-2);padding:6px 12px;border-radius:6px}
+.nav-link.active{color:var(--blue);font-weight:600}
+
+/* HEADER */
+.content-header{background:linear-gradient(135deg,var(--navy) 0%,#1e3a8a 100%);padding:26px 1.5rem 32px;position:relative;overflow:hidden}
+.content-header::after{content:'話';position:absolute;font-family:'Noto Serif TC',serif;font-size:220px;font-weight:700;color:rgba(255,255,255,.04);bottom:-70px;right:4%;pointer-events:none}
+.ch-inner{max-width:1000px;margin:0 auto}
+.ch-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:6px;margin-bottom:12px;border:none;cursor:pointer;font-family:inherit;transition:all .15s}
+.ch-back:hover{color:#fff;background:rgba(255,255,255,.18)}
+.ch-crumb{font-size:11.5px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.content-header h1{font-family:'Noto Serif TC',serif;font-size:clamp(19px,2.6vw,25px);font-weight:700;color:#fff;line-height:1.35}
+
+/* MAIN */
+.app-main{flex:1;max-width:1000px;width:100%;margin:0 auto;padding:22px 1.5rem 60px}
+
+/* Prev/Next nav */
+.ex-nav{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 10px;margin-bottom:16px}
+.ex-nav-btn{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--text-2);font-size:13px;font-weight:600;padding:7px 12px;border-radius:8px;cursor:pointer;transition:all .12s}
+.ex-nav-btn:hover:not(:disabled){background:#f3f4f6;color:var(--text)}
+.ex-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.ex-nav-counter{font-size:12.5px;color:var(--text-3);font-weight:500}
+
+/* 2-col grid */
+.nf-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}
+.nf-left{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.video-embed{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:8px;overflow:hidden}
+.video-embed iframe,.video-embed>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.audio-stage{background:var(--blue-lt);border-radius:8px;padding:20px;display:flex;align-items:center;gap:16px}
+.audio-mark{flex:none;width:48px;height:48px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-weight:700;font-size:15px}
+.audio-bars{display:flex;gap:3px;align-items:flex-end;height:24px;flex:1}
+.audio-bars span{width:4px;background:var(--blue);border-radius:2px;height:20%;opacity:.5;transition:height .18s ease}
+.audio-stage[data-playing="true"] .audio-bars span{animation:bar 1.1s ease-in-out infinite;opacity:1}
+.audio-bars span:nth-child(1){animation-delay:-1.0s}.audio-bars span:nth-child(2){animation-delay:-.7s}
+.audio-bars span:nth-child(3){animation-delay:-.4s}.audio-bars span:nth-child(4){animation-delay:-.9s}
+.audio-bars span:nth-child(5){animation-delay:-.2s}
+@keyframes bar{0%,100%{height:20%}50%{height:90%}}
+@media (prefers-reduced-motion: reduce){.audio-bars span{animation:none !important;height:45% !important}}
+
+.nf-current{padding:10px 4px;text-align:center;min-height:64px;display:flex;align-items:center;justify-content:center}
+.nf-current-text{font-family:'Noto Serif TC',serif;font-size:21px;font-weight:600;color:var(--navy);line-height:1.5}
+.nf-current-text.empty{color:var(--text-3);font-size:14px;font-weight:400;font-family:'Be Vietnam Pro',sans-serif}
+
+.player-controls{display:flex;align-items:center;gap:10px;border-top:1px solid #f3f4f6;padding-top:12px}
+.play-btn{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.play-btn:hover{border-color:var(--blue);color:var(--blue)}
+.seek-row{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.seek-row input[type=range]{flex:1;accent-color:var(--blue)}
+.time-lbl{font-size:11.5px;color:var(--text-3);flex:none;font-variant-numeric:tabular-nums}
+.speed-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.speed-row-label{font-size:11px;font-weight:600;color:var(--text-3)}
+.speed-pill{font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .12s;font-family:inherit}
+.speed-pill.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.speed-pill:not(.active):hover{border-color:#9ca3af}
+.kbd-hint{font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:4px}
+.kbd{display:inline-block;padding:1px 6px;background:#f3f4f6;border:1px solid #d1d5db;border-radius:4px;font-size:10px;font-family:monospace;color:var(--text-2)}
+
+.nf-right{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:560px}
+.nf-right-hd{padding:12px 16px;border-bottom:1px solid var(--border);font-size:12.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;justify-content:space-between}
+.nf-list{overflow-y:auto;flex:1}
+.nf-row{display:flex;align-items:baseline;gap:10px;padding:11px 16px;width:100%;background:transparent;border:none;border-bottom:1px solid #f3f4f6;cursor:pointer;text-align:left;transition:background .12s}
+.nf-row:last-child{border-bottom:none}
+.nf-row:hover{background:#f8fafc}
+.nf-row-idx{flex:none;width:1.6em;text-align:right;font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;padding-top:.3em}
+.nf-row-text{flex:1;font-family:'Noto Serif TC',serif;font-size:15.5px;color:var(--text-3);line-height:1.55}
+.nf-row.past .nf-row-text{color:var(--text-2)}
+.nf-row.active{background:var(--blue-lt)}
+.nf-row.active .nf-row-text{color:var(--blue-dark);font-weight:600}
+.nf-row.active .nf-row-idx{color:var(--blue)}
+
+/* Translation panel */
+.tr-toggle{width:100%;margin-top:16px;padding:11px;border:1px solid var(--border);background:var(--surface);border-radius:10px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.tr-toggle:hover{border-color:var(--blue);color:var(--blue)}
+.tr-panel{margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.tr-row{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;padding:9px 0;border-top:1px dashed var(--border)}
+.tr-row:first-child{border-top:none}
+.tr-hz{font-family:'Noto Serif TC',serif;font-size:15.5px;color:var(--text)}
+.tr-vi{font-size:13.5px;color:var(--text-2);font-style:italic;line-height:1.6}
+@media(max-width:640px){.tr-row{grid-template-columns:1fr}}
+
+.done-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px}
+.done-btn{padding:9px 18px;border-radius:8px;border:1.5px solid var(--green);background:var(--green-lt);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px}
+.done-btn.is-done{background:var(--green);color:#fff}
+
+@media(max-width:820px){.nf-grid{grid-template-columns:1fr}.nf-right{max-height:400px}}
+
+footer{background:#111827;color:rgba(255,255,255,.5);font-size:12.5px;text-align:center;padding:20px;margin-top:auto}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nb-inner">
+    <a class="nav-brand" href="/about.html"><span class="nav-brand-text">TOCFL <em>FAFA</em></span></a>
+    <a class="nav-link active" href="/hoithoai.html">Hội thoại</a>
+  </div>
+</nav>
+
+<div class="content-header">
+  <div class="ch-inner">
+    <a class="ch-back" id="backBtn" href="/hoithoai.html"><i class="fas fa-arrow-left"></i>&nbsp;Hội thoại</a>
+    <div class="ch-crumb" id="ch-crumb">Đang tải…</div>
+    <h1 id="ch-title">Đang tải…</h1>
+  </div>
+</div>
+
+<div class="app-main">
+  <div class="ex-nav">
+    <button class="ex-nav-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i> Bài trước</button>
+    <span class="ex-nav-counter" id="counter">— / —</span>
+    <button class="ex-nav-btn" id="nextBtn">Bài sau <i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+
+  <div class="nf-grid">
+    <div class="nf-left">
+      <div id="mediaMount"></div>
+      <div class="nf-current"><div class="nf-current-text empty" id="currentLine">Bấm phát để bắt đầu</div></div>
+      <div class="player-controls">
+        <button class="play-btn" id="playBtn"><i class="fa-solid fa-play"></i></button>
+        <div class="seek-row">
+          <span class="time-lbl" id="curTime">0:00</span>
+          <input type="range" id="seekBar" min="0" max="1000" value="0">
+          <span class="time-lbl" id="durTime">0:00</span>
+        </div>
+      </div>
+      <div class="speed-row">
+        <span class="speed-row-label">Tốc độ</span>
+        <button class="speed-pill active" data-rate="1">1×</button>
+        <button class="speed-pill" data-rate="0.75">0.75×</button>
+        <button class="speed-pill" data-rate="0.5">0.5×</button>
+      </div>
+      <div class="kbd-hint"><span class="kbd">␣</span> Phát / Tạm dừng &nbsp; <span class="kbd">←</span><span class="kbd">→</span> Câu trước / sau</div>
+    </div>
+
+    <div class="nf-right">
+      <div class="nf-right-hd"><span>Phụ đề đồng bộ</span><span id="capCount"></span></div>
+      <div class="nf-list" id="capList"></div>
+    </div>
+  </div>
+
+  <button class="tr-toggle" id="trToggle"><i class="fa-solid fa-language"></i> Hiện bản dịch &amp; hội thoại đầy đủ</button>
+  <div class="tr-panel" id="trPanel" hidden></div>
+
+  <div class="done-row">
+    <button class="done-btn" id="doneBtn"><i class="fa-solid fa-check"></i> Đánh dấu đã luyện xong</button>
+  </div>
+</div>
+
+<footer>TOCFL FAFA © 2026 · Học tiếng Trung phồn thể dành cho người Việt</footer>
+
+<script>
+const DONE_KEY = 'hoithoai_done';
+function loadDone(){ try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); } catch { return new Set(); } }
+function saveDone(set){ localStorage.setItem(DONE_KEY, JSON.stringify([...set])); }
+
+let ytApiReadyResolve;
+const ytApiReady = new Promise(res => { ytApiReadyResolve = res; });
+window.onYouTubeIframeAPIReady = () => ytApiReadyResolve();
+
+let ytPlayer = null, audioEl = null, playing = false, lastCapIdx = -1, pollTimer = null;
+
+function fmtTime(t){
+  if(!isFinite(t) || t < 0) t = 0;
+  return Math.floor(t/60) + ':' + String(Math.floor(t%60)).padStart(2,'0');
+}
+
+(async () => {
+  const res = await fetch('/data/hoithoai.json');
+  const data = await res.json();
+  const params  = new URLSearchParams(location.search);
+  const bookParam = params.get('book');
+  if (bookParam) document.getElementById('backBtn').href = '/hoithoai.html?book=' + bookParam;
+  const id = params.get('d') || data.items[0].id;
+  const idx = data.items.findIndex(it => it.id === id);
+  const item = data.items[idx >= 0 ? idx : 0];
+  const book = data.books.find(b => b.id === item.b);
+  const lesson = book.lessons.find(l => l.id === item.l);
+
+  document.title = item.title + ' — Hội thoại — TOCFL FAFA';
+  document.getElementById('ch-crumb').textContent = book.name.split('|')[0].trim() + ' › ' + lesson.name;
+  document.getElementById('ch-title').textContent = item.title;
+  document.getElementById('counter').textContent = (idx+1) + ' / ' + data.items.length;
+  document.getElementById('capCount').textContent = item.caps.length + ' câu';
+
+  const prevItem = data.items[idx-1], nextItem = data.items[idx+1];
+  const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn');
+  const bookSuffix = bookParam ? '&book=' + bookParam : '';
+  if (prevItem) prevBtn.onclick = () => location.href = '/hoithoai-study.html?d=' + prevItem.id + bookSuffix; else prevBtn.disabled = true;
+  if (nextItem) nextBtn.onclick = () => location.href = '/hoithoai-study.html?d=' + nextItem.id + bookSuffix; else nextBtn.disabled = true;
+
+  // Caption list
+  const capList = document.getElementById('capList');
+  item.caps.forEach((c, i) => {
+    const row = document.createElement('button');
+    row.className = 'nf-row';
+    row.dataset.i = i;
+    row.innerHTML = '<span class="nf-row-idx">'+(i+1)+'</span><span class="nf-row-text">'+c[2]+'</span>';
+    row.addEventListener('click', () => seekTo(c[0], true));
+    capList.appendChild(row);
+  });
+
+  // Translation panel
+  const trPanel = document.getElementById('trPanel');
+  const hzLines = (item.hanzi||'').split('\n').filter(Boolean);
+  const viLines = (item.vi||'').split('\n').filter(Boolean);
+  const n = Math.max(hzLines.length, viLines.length);
+  let trHtml = '';
+  for (let i=0;i<n;i++) trHtml += '<div class="tr-row"><div class="tr-hz">'+(hzLines[i]||'')+'</div><div class="tr-vi">'+(viLines[i]||'')+'</div></div>';
+  trPanel.innerHTML = trHtml;
+  document.getElementById('trToggle').addEventListener('click', () => {
+    trPanel.hidden = !trPanel.hidden;
+    document.getElementById('trToggle').innerHTML = trPanel.hidden
+      ? '<i class="fa-solid fa-language"></i> Hiện bản dịch &amp; hội thoại đầy đủ'
+      : '<i class="fa-solid fa-language"></i> Ẩn bản dịch';
+  });
+
+  // Done button
+  const done = loadDone();
+  const doneBtn = document.getElementById('doneBtn');
+  function refreshDoneBtn(){
+    const isDone = done.has(item.id);
+    doneBtn.classList.toggle('is-done', isDone);
+    doneBtn.innerHTML = isDone
+      ? '<i class="fa-solid fa-check-double"></i> Đã luyện xong'
+      : '<i class="fa-solid fa-check"></i> Đánh dấu đã luyện xong';
+  }
+  refreshDoneBtn();
+  doneBtn.addEventListener('click', () => {
+    if (done.has(item.id)) done.delete(item.id); else done.add(item.id);
+    saveDone(done); refreshDoneBtn();
+  });
+  function markDone(){ if(!done.has(item.id)){ done.add(item.id); saveDone(done); refreshDoneBtn(); } }
+
+  // Media setup
+  const mount = document.getElementById('mediaMount');
+  if (item.yt) {
+    mount.innerHTML = '<div class="video-embed"><div id="ytMount"></div></div>';
+    await ytApiReady;
+    ytPlayer = new YT.Player('ytMount', {
+      videoId: item.yt,
+      playerVars: { start: Math.floor(item.off||0), rel: 0, modestbranding: 1, playsinline: 1 },
+      events: {
+        onReady: () => { updateTimeUI(0, estimateDuration()); },
+        onStateChange: (e) => {
+          setPlayingUI(e.data === YT.PlayerState.PLAYING);
+          if (e.data === YT.PlayerState.PLAYING) startPoll(); else stopPoll();
+          if (e.data === YT.PlayerState.ENDED) markDone();
+        },
+      },
+    });
+  } else {
+    mount.innerHTML = '<div class="audio-stage" id="audioStage" data-playing="false">' +
+      '<div class="audio-mark">'+item.b+'-'+item.l+'</div>' +
+      '<div class="audio-bars"><span></span><span></span><span></span><span></span><span></span></div>' +
+      '</div>';
+    audioEl = new Audio('https://zh.taiwandiary.vn/' + item.audio);
+    audioEl.preload = 'none';
+    audioEl.addEventListener('play', () => setPlayingUI(true));
+    audioEl.addEventListener('pause', () => setPlayingUI(false));
+    audioEl.addEventListener('ended', () => { setPlayingUI(false); markDone(); });
+    audioEl.addEventListener('timeupdate', () => {
+      updateHighlight(audioEl.currentTime);
+      updateTimeUI(audioEl.currentTime, audioEl.duration || estimateDuration());
+    });
+  }
+
+  function estimateDuration(){
+    const last = item.caps[item.caps.length-1];
+    return last ? last[1] + 2 : 60;
+  }
+
+  function updateTimeUI(cur, dur){
+    document.getElementById('curTime').textContent = fmtTime(cur);
+    if (isFinite(dur)) document.getElementById('durTime').textContent = fmtTime(dur);
+    const bar = document.getElementById('seekBar');
+    if (isFinite(dur) && dur > 0) bar.value = Math.min(1000, (cur/dur)*1000);
+  }
+
+  function setPlayingUI(isPlaying){
+    playing = isPlaying;
+    document.getElementById('playBtn').innerHTML = isPlaying
+      ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+    const stage = document.getElementById('audioStage');
+    if (stage) stage.dataset.playing = isPlaying ? 'true' : 'false';
+  }
+
+  function updateHighlight(t){
+    let idx2 = -1;
+    for (let i=0;i<item.caps.length;i++){
+      if (t >= item.caps[i][0] && (i === item.caps.length-1 || t < item.caps[i+1][0])){ idx2 = i; break; }
+    }
+    if (idx2 === state_lastIdx()) return;
+    setLastIdx(idx2);
+    const rows = capList.querySelectorAll('.nf-row');
+    rows.forEach((r,i) => {
+      r.classList.toggle('active', i===idx2);
+      r.classList.toggle('past', i<idx2);
+    });
+    const curLine = document.getElementById('currentLine');
+    if (idx2 >= 0) {
+      curLine.textContent = item.caps[idx2][2];
+      curLine.classList.remove('empty');
+      rows[idx2]?.scrollIntoView({ block:'center', behavior:'smooth' });
+    }
+  }
+  let _lastIdx = -1;
+  function state_lastIdx(){ return _lastIdx; }
+  function setLastIdx(v){ _lastIdx = v; }
+
+  function startPoll(){
+    stopPoll();
+    pollTimer = setInterval(() => {
+      if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+      const t = ytPlayer.getCurrentTime();
+      updateHighlight(t);
+      updateTimeUI(t, ytPlayer.getDuration() || estimateDuration());
+    }, 200);
+  }
+  function stopPoll(){ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+  function seekTo(t, autoplay){
+    if (item.yt && ytPlayer) {
+      ytPlayer.seekTo(t, true);
+      if (autoplay) ytPlayer.playVideo();
+    } else if (audioEl) {
+      audioEl.currentTime = t;
+      if (autoplay) audioEl.play();
+    }
+  }
+
+  document.getElementById('playBtn').addEventListener('click', () => {
+    if (item.yt && ytPlayer) {
+      playing ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
+    } else if (audioEl) {
+      audioEl.paused ? audioEl.play() : audioEl.pause();
+    }
+  });
+
+  document.querySelectorAll('.speed-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const rate = parseFloat(btn.dataset.rate);
+      document.querySelectorAll('.speed-pill').forEach(b => b.classList.toggle('active', b===btn));
+      if (item.yt && ytPlayer) ytPlayer.setPlaybackRate(rate);
+      else if (audioEl) audioEl.playbackRate = rate;
+    });
+  });
+
+  document.getElementById('seekBar').addEventListener('input', (e) => {
+    const dur = (item.yt && ytPlayer && ytPlayer.getDuration()) || estimateDuration();
+    seekTo((e.target.value/1000) * dur, false);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    if (e.key === ' ') { e.preventDefault(); document.getElementById('playBtn').click(); }
+    else if (e.key === 'ArrowRight') {
+      const next = Math.min(item.caps.length-1, state_lastIdx()+1);
+      if (item.caps[next]) seekTo(item.caps[next][0], true);
+    } else if (e.key === 'ArrowLeft') {
+      const prev = Math.max(0, state_lastIdx()-1);
+      if (item.caps[prev]) seekTo(item.caps[prev][0], true);
+    }
+  });
+})();
+</script>
+</body>
+</html>
