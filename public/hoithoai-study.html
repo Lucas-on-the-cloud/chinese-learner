@@ -319,7 +319,7 @@ function fmtTime(t){
     '</div>';
   // Always use direct audio URL — more reliable than YouTube embedding
   // (all 149 items have item.audio; yt embedding can be region/restriction-blocked)
-  audioEl = new Audio('https://zh.taiwandiary.vn/' + item.audio);
+  audioEl = new Audio(item.audio);
   audioEl.preload = 'none';
   audioEl.addEventListener('play',  () => setPlayingUI(true));
   audioEl.addEventListener('pause', () => setPlayingUI(false));
