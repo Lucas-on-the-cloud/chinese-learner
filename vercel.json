@@ -17,6 +17,7 @@
     }
   ],
   "crons": [
-    { "path": "/api/cron/fetch-news", "schedule": "0 6 * * *" }
+    { "path": "/api/cron/fetch-news", "schedule": "0 6 * * *" },
+    { "path": "/api/cron/ping",       "schedule": "0 8 * * *" }
   ]
 }
