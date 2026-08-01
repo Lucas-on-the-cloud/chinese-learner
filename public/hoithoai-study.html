@@ -6,7 +6,6 @@
 <title>Hội thoại — TOCFL FAFA</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.youtube.com/iframe_api"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Be Vietnam Pro',sans-serif;font-size:15px;color:#1f2937;background:#f4f5f7;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100vh}
@@ -237,11 +236,7 @@ const DONE_KEY = 'hoithoai_done';
 function loadDone(){ try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || '[]')); } catch { return new Set(); } }
 function saveDone(set){ localStorage.setItem(DONE_KEY, JSON.stringify([...set])); }
 
-let ytApiReadyResolve;
-const ytApiReady = new Promise(res => { ytApiReadyResolve = res; });
-window.onYouTubeIframeAPIReady = () => ytApiReadyResolve();
-
-let ytPlayer = null, audioEl = null, playing = false, lastCapIdx = -1, pollTimer = null;
+let audioEl = null, playing = false, pollTimer = null;
 
 function fmtTime(t){
   if(!isFinite(t) || t < 0) t = 0;
@@ -317,47 +312,22 @@ function fmtTime(t){
 
   // Media setup
   const mount = document.getElementById('mediaMount');
-  if (item.yt) {
-    // Audio-stage UI (video hidden — audio only)
-    mount.innerHTML =
-      '<div class="audio-stage" id="audioStage" data-playing="false">' +
-        '<div class="audio-mark" style="font-size:24px;letter-spacing:0">聽</div>' +
-        '<div class="audio-bars"><span></span><span></span><span></span><span></span><span></span></div>' +
-      '</div>';
-    // YouTube iframe off-screen (still plays audio via YT API)
-    const ytWrap = document.createElement('div');
-    ytWrap.style.cssText = 'position:fixed;width:1px;height:1px;top:-9999px;left:-9999px;overflow:hidden;pointer-events:none';
-    ytWrap.innerHTML = '<div id="ytMount"></div>';
-    document.body.appendChild(ytWrap);
-
-    await ytApiReady;
-    ytPlayer = new YT.Player('ytMount', {
-      videoId: item.yt,
-      playerVars: { start: Math.floor(item.off||0), rel: 0, modestbranding: 1, playsinline: 1 },
-      events: {
-        onReady: () => { updateTimeUI(0, estimateDuration()); },
-        onStateChange: (e) => {
-          setPlayingUI(e.data === YT.PlayerState.PLAYING);
-          if (e.data === YT.PlayerState.PLAYING) startPoll(); else stopPoll();
-          if (e.data === YT.PlayerState.ENDED) markDone();
-        },
-      },
-    });
-  } else {
-    mount.innerHTML = '<div class="audio-stage" id="audioStage" data-playing="false">' +
-      '<div class="audio-mark">'+item.b+'-'+item.l+'</div>' +
+  mount.innerHTML =
+    '<div class="audio-stage" id="audioStage" data-playing="false">' +
+      '<div class="audio-mark" style="font-size:24px;letter-spacing:0">聽</div>' +
       '<div class="audio-bars"><span></span><span></span><span></span><span></span><span></span></div>' +
-      '</div>';
-    audioEl = new Audio('https://zh.taiwandiary.vn/' + item.audio);
-    audioEl.preload = 'none';
-    audioEl.addEventListener('play', () => setPlayingUI(true));
-    audioEl.addEventListener('pause', () => setPlayingUI(false));
-    audioEl.addEventListener('ended', () => { setPlayingUI(false); markDone(); });
-    audioEl.addEventListener('timeupdate', () => {
-      updateHighlight(audioEl.currentTime);
-      updateTimeUI(audioEl.currentTime, audioEl.duration || estimateDuration());
-    });
-  }
+    '</div>';
+  // Always use direct audio URL — more reliable than YouTube embedding
+  // (all 149 items have item.audio; yt embedding can be region/restriction-blocked)
+  audioEl = new Audio('https://zh.taiwandiary.vn/' + item.audio);
+  audioEl.preload = 'none';
+  audioEl.addEventListener('play',  () => setPlayingUI(true));
+  audioEl.addEventListener('pause', () => setPlayingUI(false));
+  audioEl.addEventListener('ended', () => { setPlayingUI(false); markDone(); });
+  audioEl.addEventListener('timeupdate', () => {
+    updateHighlight(audioEl.currentTime);
+    updateTimeUI(audioEl.currentTime, audioEl.duration || estimateDuration());
+  });
 
   function estimateDuration(){
     const last = item.caps[item.caps.length-1];
@@ -405,43 +375,34 @@ function fmtTime(t){
   function startPoll(){
     stopPoll();
     pollTimer = setInterval(() => {
-      if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
-      const t = ytPlayer.getCurrentTime();
-      updateHighlight(t);
-      updateTimeUI(t, ytPlayer.getDuration() || estimateDuration());
+      if (!audioEl) return;
+      updateHighlight(audioEl.currentTime);
+      updateTimeUI(audioEl.currentTime, audioEl.duration || estimateDuration());
     }, 200);
   }
   function stopPoll(){ if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
   function seekTo(t, autoplay){
-    if (item.yt && ytPlayer) {
-      ytPlayer.seekTo(t, true);
-      if (autoplay) ytPlayer.playVideo();
-    } else if (audioEl) {
-      audioEl.currentTime = t;
-      if (autoplay) audioEl.play();
-    }
+    if (!audioEl) return;
+    audioEl.currentTime = t;
+    if (autoplay) audioEl.play();
   }
 
   document.getElementById('playBtn').addEventListener('click', () => {
-    if (item.yt && ytPlayer) {
-      playing ? ytPlayer.pauseVideo() : ytPlayer.playVideo();
-    } else if (audioEl) {
-      audioEl.paused ? audioEl.play() : audioEl.pause();
-    }
+    if (!audioEl) return;
+    audioEl.paused ? audioEl.play() : audioEl.pause();
   });
 
   document.querySelectorAll('.speed-pill').forEach(btn => {
     btn.addEventListener('click', () => {
       const rate = parseFloat(btn.dataset.rate);
       document.querySelectorAll('.speed-pill').forEach(b => b.classList.toggle('active', b===btn));
-      if (item.yt && ytPlayer) ytPlayer.setPlaybackRate(rate);
-      else if (audioEl) audioEl.playbackRate = rate;
+      if (audioEl) audioEl.playbackRate = rate;
     });
   });
 
   document.getElementById('seekBar').addEventListener('input', (e) => {
-    const dur = (item.yt && ytPlayer && ytPlayer.getDuration()) || estimateDuration();
+    const dur = (audioEl?.duration) || estimateDuration();
     seekTo((e.target.value/1000) * dur, false);
   });
 
