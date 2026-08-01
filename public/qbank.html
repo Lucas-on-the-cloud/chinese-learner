@@ -772,6 +772,7 @@ function qbankApp() {
     _audio: null,
     _audioQueue: [],
     _audioQueueIdx: 0,
+    _endedFired: false,
 
     get activeGroup() {
       return this.activePart?.groups?.[this.activeGroupIdx] || null;
@@ -782,12 +783,15 @@ function qbankApp() {
       this.selectedBand = band;
       this._audio = document.getElementById('qb-audio');
       this._audio.addEventListener('ended', () => {
+        if (this._endedFired) return;   // guard against double-fire when src changes
+        this._endedFired = true;
         if (this._audioQueue.length > 0) {
           this._playQueueItem(this._audioQueueIdx + 1);
         } else {
           this.playingId = null;
         }
       });
+      this._audio.addEventListener('playing', () => { this._endedFired = false; });
       await this.loadBandInfo(band);
     },
 
