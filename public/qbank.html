@@ -1145,9 +1145,19 @@ document.addEventListener('alpine:initialized', () => {
       const g = state?.activeGroup;
       if (!g) return null;
       const passage = g.shared_text || '';
-      const questions = (g.tocfl_questions || []).map(q => {
-        const opts = (q.tocfl_options || []).map(o => `(${o.label}) ${o.text}`).join('  ');
-        return `Q: ${q.question_text || ''}\n${opts}`;
+      const answers = state?.answers || {};
+      const results = state?.results || {};
+      const questions = (g.tocfl_questions || []).map((q, i) => {
+        const num = q.question_num || (i + 1);
+        const opts = (q.tocfl_options || []).map(o => {
+          const correct = o.is_correct ? ' ✓' : '';
+          return `(${o.label}) ${o.text}${correct}`;
+        }).join('  ');
+        const chosen = answers[q.id];
+        const status = chosen
+          ? (results[q.id] ? `[Người dùng chọn ${chosen} — ĐÚNG]` : `[Người dùng chọn ${chosen} — SAI]`)
+          : '';
+        return `Câu ${num}: ${q.question_text || ''}\n${opts}${status ? '\n' + status : ''}`;
       }).join('\n\n');
       return {
         id: g.id,
