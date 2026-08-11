@@ -205,6 +205,17 @@ footer{background:#111827;color:rgba(255,255,255,.6);font-size:13px;margin-top:a
         <i class="fas fa-spinner fa-spin"></i> Đang tải khóa học…
       </div>
     </div>
+
+    <!-- Đọc hiểu Đương Đại 5 & 6 section -->
+    <div id="duongdai-reading-section" style="margin-top:48px;display:none">
+      <div class="grid-label" style="display:flex;margin-bottom:20px">
+        <i class="fas fa-book-open" style="color:#b45309;font-size:12px"></i>
+        <span>Đọc hiểu Đương Đại 5 &amp; 6 · 當代中文課程</span>
+        <span style="font-size:12px;color:var(--text-3);font-weight:400;margin-left:8px">Luận điểm học thuật trình độ 高階 — Chính trị, Xã hội, Khoa học, Triết học</span>
+      </div>
+      <div class="courses-grid" id="duongdai-reading-grid"></div>
+    </div>
+
     <!-- Ngân hàng câu hỏi section -->
     <div style="margin-top:48px">
       <div class="grid-label" style="display:flex;margin-bottom:20px">
@@ -427,12 +438,13 @@ const GRADIENTS = [
   'linear-gradient(135deg,#7f1d1d,#991b1b)',
 ];
 
-let allCourses   = [];
-let skillMap     = {}; // courseId → {reading, listening}
-let vocabMap     = {}; // courseId → vocab_book_id
-let activeLevel  = '';
-let activeSkill  = '';
-let currentUser  = null;
+let allCourses    = [];
+let skillMap      = {}; // courseId → {reading, listening}
+let vocabMap      = {}; // courseId → vocab_book_id
+let duongdaiIds   = new Set(); // course IDs that are DUONGDAI reading courses
+let activeLevel   = '';
+let activeSkill   = '';
+let currentUser   = null;
 
 function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -448,17 +460,18 @@ function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
   // Load data in parallel
   const [{ data: courses }, { data: links }, { data: lessonCount }, { data: vocabBooks }] = await Promise.all([
     db.from('courses').select('*').eq('published', true).order('sort_order', { ascending: false }).order('created_at', { ascending: false }),
-    db.from('course_books').select('course_id,skill_type'),
+    db.from('course_books').select('course_id,skill_type,book_name'),
     db.from('lessons').select('id', { count: 'exact', head: true }),
     db.from('vocab_books').select('id, book_name'),
   ]);
 
   allCourses = courses || [];
 
-  // Build skillMap
+  // Build skillMap + detect DUONGDAI courses
   (links || []).forEach(l => {
     if (!skillMap[l.course_id]) skillMap[l.course_id] = { reading: false, listening: false };
     skillMap[l.course_id][l.skill_type] = true;
+    if ((l.book_name || '').startsWith('DUONGDAI_')) duongdaiIds.add(l.course_id);
   });
 
   // Build vocabMap: fuzzy-match course title → vocab_book_id
@@ -503,6 +516,7 @@ function esc(t) { return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
   document.getElementById('grid-label').style.display = 'flex';
   renderCourses();
+  renderDuongdaiReading();
 })();
 
 // ── Filter logic ────────────────────────────────
@@ -518,8 +532,45 @@ function setFilter(btn, type) {
   renderCourses();
 }
 
+function renderDuongdaiReading() {
+  const courses = allCourses.filter(c => duongdaiIds.has(c.id));
+  const section = document.getElementById('duongdai-reading-section');
+  const grid    = document.getElementById('duongdai-reading-grid');
+  if (!courses.length) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const BOOK_GRADS = {
+    5: 'linear-gradient(135deg,#0c4a6e,#075985)',
+    6: 'linear-gradient(135deg,#713f12,#92400e)',
+  };
+  grid.innerHTML = courses.map(c => {
+    const num      = parseInt((c.title.match(/\d+$/) || [])[0]) || 0;
+    const grad     = BOOK_GRADS[num] || 'linear-gradient(135deg,#1f2937,#374151)';
+    const char     = ['','一','二','三','四','五','六','七','八','九','十'][num] || '學';
+    const ctaClass = currentUser ? 'continue' : '';
+    const ctaText  = currentUser ? '▶ Tiếp tục học' : 'Học ngay →';
+    return `<div class="course-card" onclick="location.href='/course.html?id=${c.id}'">
+      <div class="course-thumb">
+        <div class="course-thumb-ph" style="background:${grad};font-size:70px">${char}</div>
+        <span class="ct-level-badge">${esc(c.level)}</span>
+        <span class="ct-free-badge"><i class="fas fa-check-circle" style="font-size:9px"></i> Miễn phí</span>
+      </div>
+      <div class="course-body">
+        <div class="course-title">${esc(c.title)}</div>
+        ${c.description ? `<div class="course-desc">${esc(c.description)}</div>` : ''}
+        <div class="course-skills"><span class="skill-badge reading"><i class="fas fa-book-open" style="font-size:9px"></i> Reading</span></div>
+      </div>
+      <div class="course-footer">
+        <span class="cf-price free">🎁 Miễn phí</span>
+        <a class="cf-btn ${ctaClass}" href="/course.html?id=${c.id}" onclick="event.stopPropagation()">${ctaText}</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderCourses() {
   const filtered = allCourses.filter(c => {
+    if (duongdaiIds.has(c.id)) return false; // shown in dedicated section
     if (activeLevel && c.level !== activeLevel) return false;
     if (activeSkill) {
       const skills = skillMap[c.id] || {};
