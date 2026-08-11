@@ -275,12 +275,10 @@ function buildLessons(bookNum) {
     const articleClean = article.split('\n').filter(l => !introClean.includes(l.trim()));
 
     const vocabItems = vocab[s.lessonNum] || [];
-    const vocabStr = formatVocab(vocabItems);
 
     const chinese = [
       intro,
       articleClean.join('\n'),
-      vocabStr,
     ].filter(Boolean).join('\n\n');
 
     // Fallback title for lessons where the chapter title page wasn't OCR'd
