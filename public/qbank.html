@@ -600,9 +600,6 @@ mark.hl-4{background:#FCA5A5;border-radius:2px}
                           @click="selectAnswer(q.id, opt.label, opt.is_correct)">
                           <span class="opt-label zh" x-text="opt.label"></span>
                           <span class="zh" x-text="opt.text"></span>
-                          <template x-if="showTrans[activeGroup.id] && opt.text_vi">
-                            <span style="display:block;font-size:12px;color:#78350f;font-style:italic;font-weight:400;margin-top:2px" x-text="opt.text_vi"></span>
-                          </template>
                         </button>
                       </template>
                     </div>
@@ -830,9 +827,9 @@ function qbankApp() {
 
       const partIds = matchedParts.map(p => p.id);
       const { data: groupsData } = await _db.from('tocfl_groups')
-        .select(`id, part_id, order_num, shared_text, shared_text_vi, shared_audio_url, shared_image_url,
-          tocfl_questions(id, question_num, question_text, question_text_vi, question_audio_url, question_image_url,
-            tocfl_options(id, label, text, text_vi, is_correct))`)
+        .select(`id, part_id, order_num, shared_text, shared_audio_url, shared_image_url,
+          tocfl_questions(id, question_num, question_text, question_audio_url, question_image_url,
+            tocfl_options(id, label, text, is_correct))`)
         .in('part_id', partIds)
         .order('order_num');
 
@@ -983,21 +980,7 @@ function qbankApp() {
         this.showTrans = { ...this.showTrans, [id]: !this.showTrans[id] };
         return;
       }
-
-      // Use pre-translated data from DB if available (no API call needed)
-      const hasDbTrans = group.shared_text_vi
-        || (group.tocfl_questions || []).some(q => q.question_text_vi);
-      if (hasDbTrans) {
-        const qTrans = {};
-        (group.tocfl_questions || []).forEach(q => {
-          if (q.question_text_vi) qTrans[q.id] = q.question_text_vi;
-        });
-        this.tranCache = { ...this.tranCache, [id]: { passage: group.shared_text_vi || '', questions: qTrans } };
-        this.showTrans = { ...this.showTrans, [id]: true };
-        return;
-      }
-
-      // Fall back to MyMemory API for groups not yet in DB
+      // Mark as translating (spread to trigger Alpine reactivity)
       this.translating = { ...this.translating, [id]: true };
       try {
         const passage = group.shared_text || '';
@@ -1176,19 +1159,11 @@ document.addEventListener('alpine:initialized', () => {
           : '';
         return `Câu ${num}: ${q.question_text || ''}\n${opts}${status ? '\n' + status : ''}`;
       }).join('\n\n');
-      const viParts = [];
-      if (g.shared_text_vi) viParts.push(g.shared_text_vi);
-      const qVi = (g.tocfl_questions || [])
-        .filter(q => q.question_text_vi)
-        .map((q, i) => `Câu ${q.question_num || (i + 1)}: ${q.question_text_vi}`)
-        .join('\n');
-      if (qVi) viParts.push(qVi);
-
       return {
         id: g.id,
         title: 'Câu hỏi ' + (g.id || ''),
         zh: [passage, questions].filter(Boolean).join('\n\n'),
-        py: '', vi: viParts.join('\n\n'),
+        py: '', vi: '',
       };
     }
   };
