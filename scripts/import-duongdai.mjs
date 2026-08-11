@@ -11,10 +11,12 @@ import fs from 'node:fs';
 
 const DRY    = process.argv.includes('--dry');
 const PUSH   = process.argv.includes('--push');
+const UPDATE = process.argv.includes('--update');   // delete + re-insert existing lessons
+const VOCAB  = process.argv.includes('--vocab');    // import to vocab_books/vocab_lessons/vocabularies
 const BOOK   = process.argv.find(a => a.startsWith('--book='))?.slice(7);
 const LESSON = parseInt(process.argv.find(a => a.startsWith('--lesson='))?.slice(9) || '0');
 
-if (!DRY && !PUSH) { console.error('Pass --dry or --push'); process.exit(1); }
+if (!DRY && !PUSH && !UPDATE && !VOCAB) { console.error('Pass --dry / --push / --update / --vocab'); process.exit(1); }
 
 // ── Page text helpers ────────────────────────────────────────────────────────
 function getPageText(page) {
@@ -142,37 +144,65 @@ function extractIntro(pages, startIdx) {
 }
 
 // ── HTML vocabulary parser ───────────────────────────────────────────────────
+// Process h2 headings sequentially so unlabeled "生詞 New Words" sections are
+// attributed to the correct lesson. Stop collecting per lesson when grammar
+// sections start (語法點 / 語言擴展 / 論點呈現 / 口語表達 / 重點詞彙).
 function loadVocabFromHtml(htmlPath) {
   const html = fs.readFileSync(htmlPath, 'utf8');
-  // vocab[lessonNum] = [{num, word, pinyin, pos, en}]
-  const vocab = {};
+  const vocab = {}; // lessonNum → [{word, pinyin, pos, en}]
 
-  // Match each 生詞 heading with lesson audio code: "生詞 New Words 01-03"
-  // Skip duplicates from id attributes by tracking processed table positions
-  const sectionRe = /生詞[^<]*?(\d{2})-0[1-9]/gi;
-  const processedTables = new Set();
-  let m;
-  while ((m = sectionRe.exec(html)) !== null) {
-    const lesson = parseInt(m[1]);
-    if (!vocab[lesson]) vocab[lesson] = [];
+  const LESSON_NUM_MAP = { 一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10 };
+  const GRAMMAR_STOP = /^(語法點|語言擴展|論點呈現|口語表達|重點詞彙|語言實踐|延伸練習)/;
 
-    // Find the next <table> after this heading (may skip an intermediate <h2>)
-    const tableStart = html.indexOf('<table', m.index);
-    if (tableStart < 0 || tableStart - m.index > 2000) continue;
-    if (processedTables.has(tableStart)) continue; // deduplicate id vs text match
-    processedTables.add(tableStart);
+  let currentLesson = null;
+  let vocabOpen = false; // collecting vocab for this lesson (stops at grammar sections)
 
-    const tableEnd = html.indexOf('</table>', tableStart);
-    if (tableEnd < 0) continue;
-    const chunk = html.slice(tableStart, tableEnd + 8);
+  const h2Re = /<h2[^>]*>([\s\S]*?)<\/h2>/gi;
+  let h;
+  while ((h = h2Re.exec(html)) !== null) {
+    const text = h[1].replace(/<[^>]+>/g, '').trim();
 
-    // Parse table rows
-    const rowRe = /<tr>[\s\S]*?<\/tr>/gi;
-    let row;
-    while ((row = rowRe.exec(chunk)) !== null) {
-      const cells = [...row[0].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map(c => c[1].replace(/<[^>]+>/g,'').trim());
-      if (cells.length >= 4 && /[一-鿿]/.test(cells[1])) {
-        vocab[lesson].push({ num: cells[0], word: cells[1], pinyin: cells[2], pos: cells[3], en: cells[4]||'' });
+    // New lesson — reset state
+    const lm = text.match(/第([一二三四五六七八九十]+)課/);
+    if (lm) {
+      currentLesson = LESSON_NUM_MAP[lm[1]] || null;
+      vocabOpen = true;
+      continue;
+    }
+
+    // Audio-coded 生詞 heading also pins the lesson number
+    const am = text.match(/生詞[^]*?(\d{2})-\d+/);
+    if (am) {
+      currentLesson = parseInt(am[1]);
+      vocabOpen = true;
+    }
+
+    // Grammar/exercise section — stop vocab collection for this lesson
+    if (currentLesson && GRAMMAR_STOP.test(text)) {
+      vocabOpen = false;
+      continue;
+    }
+
+    // Collect from any 生詞 heading while vocab is still open
+    if (text.includes('生詞') && currentLesson && vocabOpen) {
+      const tableStart = html.indexOf('<table', h.index);
+      if (tableStart < 0 || tableStart - h.index > 2000) continue;
+      const tableEnd = html.indexOf('</table>', tableStart);
+      if (tableEnd < 0) continue;
+
+      if (!vocab[currentLesson]) vocab[currentLesson] = [];
+      const chunk = html.slice(tableStart, tableEnd + 8);
+      const rowRe = /<tr>[\s\S]*?<\/tr>/gi;
+      let row;
+      while ((row = rowRe.exec(chunk)) !== null) {
+        const cells = [...row[0].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)]
+          .map(c => c[1].replace(/<[^>]+>/g, '').trim());
+        if (cells.length >= 4 && /[一-鿿]/.test(cells[1])) {
+          // Deduplicate within this lesson
+          if (!vocab[currentLesson].some(v => v.word === cells[1])) {
+            vocab[currentLesson].push({ word: cells[1], pinyin: cells[2], pos: cells[3], en: cells[4] || '' });
+          }
+        }
       }
     }
   }
@@ -288,10 +318,30 @@ for (const b of books) {
 
 console.log(`\nTotal lessons to import: ${allLessons.length}`);
 
-if (PUSH) {
+// ── Build raw vocab map (lessonNum → items[]) per book ──────────────────────
+// Used by both --update (text in chinese field) and --vocab (vocab tables)
+function buildRawVocab(bookNum) {
+  const base = 'baidoc_duongdai/';
+  const htmlPaths = bookNum === 5
+    ? [base+'MinerU_html_當代中文課程5_–_課本_2085663802504814592.html',
+       base+'MinerU_html_當代中文課程5_–_課本_2085663849715896320.html']
+    : [base+'MinerU_html_當代中文課程6_–_課本_(1)_2085663696980316160.html',
+       base+'MinerU_html_當代中文課程6_–_課本_(1)_2085663748167602176.html'];
+  const combined = {};
+  for (const hp of htmlPaths) {
+    if (!fs.existsSync(hp)) continue;
+    const v = loadVocabFromHtml(hp);
+    for (const [k, items] of Object.entries(v)) {
+      if (!combined[k]) combined[k] = [];
+      items.forEach(w => { if (!combined[k].some(x => x.word === w.word)) combined[k].push(w); });
+    }
+  }
+  return combined;
+}
+
+if (PUSH || UPDATE) {
   const db = getClient({ writes: true });
 
-  // 1. Create courses
   const courseData = [
     { title: '當代中文課程 5', level: '高階', description: '10 bài đọc trình độ cao cấp từ giáo trình 當代中文課程 quyển 5 (NTU MTCP). Chủ đề: tự do ngôn luận, thực phẩm biến đổi gen, phẫu thuật thẩm mỹ, truyền thống & hiện đại, mang thai hộ, án tử hình, thuế thu nhập, vấn đề tị nạn, điện hạt nhân, hôn nhân đồng giới.', published: true, sort_order: 10 },
     { title: '當代中文課程 6', level: '高階', description: '10 bài đọc trình độ cao cấp từ giáo trình 當代中文課程 quyển 6 (NTU MTCP). Chủ đề: giáo dục nghề nghiệp, công nghệ & cuộc sống, nghệ thuật múa, kỹ năng giao tiếp, gấu trúc ngoại giao, tình cảm, Olympic, quê hương, trí tuệ & năng lực.', published: true, sort_order: 11 },
@@ -302,28 +352,114 @@ if (PUSH) {
     if (BOOK && parseInt(BOOK) !== bookNum) continue;
     const bookName = `DUONGDAI_${bookNum}`;
 
-    // Upsert course
     const { data: existing } = await db.from('courses').select('id').ilike('title', `%當代中文課程 ${bookNum}%`).single();
     let courseId;
     if (existing) {
       courseId = existing.id;
-      console.log(`Course ${bookNum} already exists (id=${courseId}), skipping create`);
+      console.log(`Course ${bookNum} exists (id=${courseId})`);
     } else {
       const { data: created, error } = await db.from('courses').insert(cd).select('id').single();
       if (error) { console.error('create course error:', error.message); continue; }
       courseId = created.id;
       console.log(`Created course id=${courseId}: ${cd.title}`);
-
-      // Create course_books link
       await db.from('course_books').insert({ course_id: courseId, book_name: bookName, skill_type: 'reading', sort_order: 0 });
     }
 
-    // Insert lessons
     const bookLessons = allLessons.filter(l => l.book === bookName);
-    console.log(`Inserting ${bookLessons.length} lessons for Book ${bookNum}...`);
-    const { error: lerr } = await db.from('lessons').insert(bookLessons);
-    if (lerr) console.error('insert lessons error:', lerr.message);
-    else console.log(`✓ ${bookLessons.length} lessons inserted`);
+
+    if (UPDATE) {
+      // Delete existing lessons and re-insert with updated content
+      const { error: delErr } = await db.from('lessons').delete().eq('book', bookName);
+      if (delErr) { console.error('delete error:', delErr.message); continue; }
+      console.log(`Deleted old lessons for ${bookName}`);
+    }
+
+    if (PUSH || UPDATE) {
+      console.log(`Inserting ${bookLessons.length} lessons for Book ${bookNum}...`);
+      const { error: lerr } = await db.from('lessons').insert(bookLessons);
+      if (lerr) console.error('insert lessons error:', lerr.message);
+      else console.log(`✓ ${bookLessons.length} lessons inserted`);
+    }
+  }
+}
+
+if (VOCAB) {
+  const db = getClient({ writes: true });
+  const VOCAB_BOOK_NAMES = {
+    5: '當代中文課程 5 · Đọc hiểu | Đương Đại 5 Reading',
+    6: '當代中文課程 6 · Đọc hiểu | Đương Đại 6 Reading',
+  };
+  const NUM_TO_HAN = ['','一','二','三','四','五','六','七','八','九','十'];
+  const POS_MAP = { N:'Danh từ',V:'Động từ',Vs:'Tính từ',Vst:'Tính từ',Vi:'Động từ',Vt:'Động từ',Adv:'Trạng từ',Prep:'Giới từ',Conj:'Liên từ',Det:'Hạn định từ',Ptc:'Tiểu từ',Ph:'Thành ngữ',Vaux:'Động từ phụ trợ','V-sep':'Động từ li hợp','N/V':'Danh/Động từ','Vs-attr':'Tính từ' };
+
+  // Get current max ids (all tables use manual ids)
+  const [{ data: maxVb }, { data: maxVl }, { data: maxVc }] = await Promise.all([
+    db.from('vocab_books').select('id').order('id', { ascending: false }).limit(1),
+    db.from('vocab_lessons').select('id').order('id', { ascending: false }).limit(1),
+    db.from('vocabularies').select('id').order('id', { ascending: false }).limit(1),
+  ]);
+  let nextVbId = (maxVb?.[0]?.id || 0) + 1;
+  let nextVlId = (maxVl?.[0]?.id || 0) + 1;
+  let nextVcId = (maxVc?.[0]?.id || 0) + 1;
+
+  for (const bookNum of (BOOK ? [parseInt(BOOK)] : [5, 6])) {
+    const rawVocab = buildRawVocab(bookNum);
+    const bookLessons = allLessons.filter(l => l.book === `DUONGDAI_${bookNum}`);
+    const vbName = VOCAB_BOOK_NAMES[bookNum];
+
+    // Upsert vocab_book
+    let vbId;
+    const { data: existVb } = await db.from('vocab_books').select('id').eq('book_name', vbName).single();
+    if (existVb) {
+      vbId = existVb.id;
+      console.log(`vocab_book exists id=${vbId} — cleaning old data`);
+      const { data: oldLessons } = await db.from('vocab_lessons').select('id').eq('book_id', vbId);
+      if (oldLessons?.length) {
+        await db.from('vocabularies').delete().in('lesson_id', oldLessons.map(l => l.id));
+        await db.from('vocab_lessons').delete().eq('book_id', vbId);
+      }
+    } else {
+      vbId = nextVbId++;
+      const { error } = await db.from('vocab_books')
+        .insert({ id: vbId, book_name: vbName, lesson_count: bookLessons.length, word_count: 0 });
+      if (error) { console.error('vocab_book error:', error.message); continue; }
+      console.log(`Created vocab_book id=${vbId}: ${vbName}`);
+    }
+
+    let totalInserted = 0;
+    for (const ls of bookLessons) {
+      const han = ls.title.match(/第([一二三四五六七八九十]+)課/)?.[1] || '';
+      const num = NUM_TO_HAN.indexOf(han);
+      const words = rawVocab[num] || [];
+
+      const vlId = nextVlId++;
+      const { error: vlErr } = await db.from('vocab_lessons')
+        .insert({ id: vlId, book_id: vbId, lesson_name: ls.title, word_count: words.length });
+      if (vlErr) { console.error('vocab_lesson error:', vlErr.message); continue; }
+
+      if (!words.length) { console.log(`  L${num}: 0 words`); continue; }
+
+      // Insert words in batches of 100
+      const rows = words.map(w => ({
+        id: nextVcId++,
+        book_id: vbId,
+        lesson_id: vlId,
+        hanzi: w.word,
+        pinyin: w.pinyin,
+        part_of_speech: POS_MAP[w.pos] || w.pos || '',
+        definition: w.en,
+      }));
+
+      for (let i = 0; i < rows.length; i += 100) {
+        const { error: wErr } = await db.from('vocabularies').insert(rows.slice(i, i + 100));
+        if (wErr) { console.error(`  vocab batch error L${num}:`, wErr.message); break; }
+      }
+      totalInserted += rows.length;
+      process.stdout.write(`  L${num}(${rows.length})`);
+    }
+
+    await db.from('vocab_books').update({ word_count: totalInserted }).eq('id', vbId);
+    console.log(`\n✓ Book ${bookNum}: ${totalInserted} words`);
   }
 }
 
