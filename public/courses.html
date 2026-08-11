@@ -549,7 +549,6 @@ function renderDuongdaiReading() {
     const char     = ['','一','二','三','四','五','六','七','八','九','十'][num] || '學';
     const ctaClass = currentUser ? 'continue' : '';
     const ctaText  = currentUser ? '▶ Tiếp tục học' : 'Học ngay →';
-    const vocabId  = vocabMap[c.id];
     return `<div class="course-card" onclick="location.href='/course.html?id=${c.id}'">
       <div class="course-thumb">
         <div class="course-thumb-ph" style="background:${grad};font-size:70px">${char}</div>
@@ -563,10 +562,7 @@ function renderDuongdaiReading() {
       </div>
       <div class="course-footer">
         <span class="cf-price free">🎁 Miễn phí</span>
-        <div class="cf-btn-row">
-          ${vocabId ? `<a class="cf-vocab-btn" href="/vocab.html?book=${vocabId}" onclick="event.stopPropagation()"><i class="fas fa-book" style="font-size:10px"></i> Từ vựng</a>` : ''}
-          <a class="cf-btn ${ctaClass}" href="/course.html?id=${c.id}" onclick="event.stopPropagation()">${ctaText}</a>
-        </div>
+        <a class="cf-btn ${ctaClass}" href="/course.html?id=${c.id}" onclick="event.stopPropagation()">${ctaText}</a>
       </div>
     </div>`;
   }).join('');
